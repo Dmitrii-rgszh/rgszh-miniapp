@@ -1,0 +1,6 @@
+# Не коммитим весь node_modules (и кеши внутри него)
+node_modules/
+# Не коммитим бинарь cloudflared
+cloudflared.exe
+# Не коммитим большие .pack-файлы кеша
+*.pack
