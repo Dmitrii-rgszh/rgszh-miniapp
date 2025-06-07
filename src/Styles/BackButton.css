@@ -1,0 +1,134 @@
+/* =============================================================================
+   src/Styles/HomeButton.css
+   Анимированная glass-кнопка «домой», выезжает из левого края, без объёма!
+============================================================================= */
+
+.back-btn {
+  position: absolute;
+  top: 140px;
+  left: -60px;  /* за пределами видимой области */
+  width: 64px;
+  height: 64px;
+  background: rgba(255, 255, 255, 0.10);
+  backdrop-filter: blur(8px);
+  border: 1.5px solid rgba(255,255,255,0.17); /* лёгкая стеклянная рамка */
+  border-radius: 16px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  cursor: pointer;
+  transition: background 0.25s, border 0.25s;
+}
+
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  transform: scale(0);
+  background: rgba(255, 255, 255, 0.5); /* Белый полупрозрачный */
+  animation: ripple-animation 600ms linear;
+  pointer-events: none;
+  z-index: 2;
+}
+
+@keyframes ripple-animation {
+  to {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+.back-btn svg {
+  width: 36px;
+  height: 36px;
+  stroke: white;
+  fill: none;
+}
+
+/* === Анимация ВЪЕЗДА кнопки (из левого края) === */
+.back-btn.animate-home {
+  animation: slideInHomeLeft 0.8s cubic-bezier(0.22,1,0.36,1) forwards;
+}
+@keyframes slideInHomeLeft {
+  from {
+    left: -90px;
+    opacity: 0;
+  }
+  to {
+    left: calc(50% - 90px);  /* Рядом с логотипом по центру */
+    opacity: 1;
+  }
+}
+
+/* === Анимация ВЫЕЗДА кнопки (обратно за левый край) === */
+.back-btn.animate-home-exit {
+  animation: slideOutHomeLeft 0.7s cubic-bezier(0.65,0.05,0.36,1) forwards;
+}
+@keyframes slideOutHomeLeft {
+  from {
+    left: calc(50% - 90px);
+    opacity: 1;
+  }
+  to {
+    left: -90px;
+    opacity: 0;
+  }
+}
+
+/* Плавное появление SVG-иконки */
+.back-btn .home-icon {
+  width: 36px;
+  height: 36px;
+  fill: #ffffff;
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+.back-btn.animate-home .home-icon {
+  opacity: 1;
+}
+
+/* --- Мобильная версия (≤768px) --- */
+@media (max-width: 768px) {
+  .back-btn {
+    top: 140px;
+    left: 60px !important;    /* Сдвинута к левому краю экрана */
+    width: 65px;
+    height: 65px;
+    border-radius: 12px;
+    border: 1.2px solid rgba(255,255,255,0.18);
+  }
+  .back-btn.animate-home {
+    animation: slideInHomeLeftMobile 0.8s cubic-bezier(0.22,1,0.36,1) forwards;
+  }
+  @keyframes slideInHomeLeftMobile {
+    from {
+      left: -60px;
+      opacity: 0;
+    }
+    to {
+      left: 24px;     /* ВЫРОВНЯТЬ С next-btn! */
+      opacity: 1;
+    }
+  }
+  .back-btn.animate-home-exit {
+    animation: slideOutHomeLeftMobile 0.7s cubic-bezier(0.65,0.05,0.36,1) forwards;
+  }
+  @keyframes slideOutHomeLeftMobile {
+    from {
+      left: 60px;     /* ВЫРОВНЯТЬ С next-btn! */
+      opacity: 1;
+    }
+    to {
+      left: -60px;
+      opacity: 0;
+    }
+  }
+  .back-btn .home-icon {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+
+

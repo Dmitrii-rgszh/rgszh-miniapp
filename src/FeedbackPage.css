@@ -1,0 +1,149 @@
+/* ============================================================================
+   FeedbackPage.css
+
+   Здесь только те стили, которые нужны для FeedbackPage:
+   1) Смещение .content-wrapper так, чтобы первый шаг (autosuggest) был под логотипом.
+   2) Центрирование заголовка и поля ввода (autosuggest) для шага 1.
+   3) Позиционирование кнопки «Вперёд» (next-btn) справа от логотипа,
+      зеркально стилизованно, как кнопка «Домой» в PollsPage.
+   4) Анимация «покачивания» (shake-btn) для кнопки «Вперёд», когда доступен переход.
+   ============================================================================ */
+
+/* ------------------------------------------------------------------------
+   1) Сдвигаем .content-wrapper вверх/вниз, чтобы step 1 оказался непосредственно
+      под логотипом. Предполагаем, что логотип занимает примерно верхние 270px,
+      поэтому ставим top: 280px; (подчистите под свой реальный размер).
+------------------------------------------------------------------------ */
+.feedback-container .content-wrapper {
+  position: absolute;
+  top: 280px;         /* При необходимости скорректируйте */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 400px;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-y: auto;
+  padding-bottom: 80px;
+}
+
+/* ------------------------------------------------------------------------
+   2) Центрируем h2 и input внутри .autosuggest-container (первый шаг)
+------------------------------------------------------------------------ */
+.feedback-container .autosuggest-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.feedback-container .autosuggest-container h2 {
+  text-align: center;
+  font-size: 20px;
+  margin-bottom: 12px;
+}
+
+/* Если Autosuggest рендерит контейнер .react-autosuggest__container */
+.feedback-container .autosuggest-container .react-autosuggest__container {
+  width: 100%;
+  max-width: 320px; /* Можно поднастроить */
+}
+
+.feedback-container .autosuggest-container input {
+  width: 100%;
+  padding: 10px;
+  font-size: 18px;
+  border-radius: 8px;
+  border: none;
+  outline: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  text-align: center;
+}
+
+/* ------------------------------------------------------------------------
+   3) Кнопка «Вперёд» (next-btn) справа от логотипа (зеркально кнопке «Домой»)
+   ------------------------------------------------------------------------ */
+/*
+   Используем position:absolute и такой же top, что и у home-btn в PollsPage,
+   но зеркально: вместо left=calc(50% - 154px) ставим right=calc(50% - 154px).
+   Отрегулируйте «154px» под собственный размер логотипа / отступ.
+*/
+.next-btn {
+  position: absolute !important;
+  top: 138px !important;                 /* То же, что и у home-btn в PollsPage */
+  right: calc(50% - 154px) !important;   /* Зеркально home-btn.left:calc(50% - 154px) */
+  width: 64px !important;
+  height: 64px !important;
+  background-color: rgba(255, 255, 255, 0.12) !important;
+  border: none !important;
+  border-radius: 10px !important;
+  box-shadow: none !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  opacity: 0 !important;
+  transform: translateX(20px) !important; /* Появляется «справа», потому чуть смещаем влево */
+  transition: opacity 0.6s ease, transform 0.6s ease !important;
+}
+
+/* Въезд кнопки (аналог home-btn.animate-home) */
+.next-btn.animate-next {
+  opacity: 1 !important;
+  transform: translateX(0) !important;
+}
+
+/* Уезд кнопки при клике (аналог home-btn.animate-home-exit) */
+.next-btn.animate-next-exit {
+  opacity: 0 !important;
+  transform: translateX(20px) !important;
+  transition: opacity 0.4s ease, transform 0.4s ease !important;
+}
+
+/* Размер SVG-стрелки внутри кнопки */
+.next-btn svg {
+  width: 36px !important;
+  height: 36px !important;
+  stroke: white !important;
+  fill: none !important;
+}
+
+/* ------------------------------------------------------------------------
+   4) Анимация «покачивания» (shake-btn) для кнопки «Вперёд»
+------------------------------------------------------------------------ */
+.shake-btn {
+  animation: shake 0.5s infinite alternate ease-in-out !important;
+}
+
+@keyframes shake {
+  from { transform: translateX(0); }
+  to   { transform: translateX(6px); }
+}
+
+/* ------------------------------------------------------------------------
+   5) Адаптация для мобильных (если необходимо)
+------------------------------------------------------------------------ */
+@media (max-width: 768px) {
+  .feedback-container .content-wrapper {
+    top: 260px;
+    max-width: 350px;
+    padding-bottom: 60px;
+  }
+  .feedback-container .autosuggest-container .react-autosuggest__container {
+    max-width: 320px;
+  }
+  .next-btn {
+    top: 120px; /* Сдвигаем, если логотип меньше на мобилках */
+    right: calc(50% - 140px);
+  }
+}
+
+
+
+
+
+
+

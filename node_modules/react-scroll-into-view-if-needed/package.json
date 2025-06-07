@@ -1,0 +1,63 @@
+{
+  "name": "react-scroll-into-view-if-needed",
+  "version": "3.0.1",
+  "description": "A thin component wrapper around scroll-into-view-if-needed",
+  "main": "dist/umd/index.js",
+  "module": "dist/es/index.js",
+  "repository": "git@github.com:icd2k3/react-scroll-into-view-if-needed.git",
+  "author": "Justin Schrader <me@justin.beer>",
+  "license": "MIT",
+  "keywords": [
+    "react",
+    "scroll-into-view-if-needed",
+    "scroll",
+    "scrolling"
+  ],
+  "scripts": {
+    "build": "rollup -c && cross-env BUILD_TYPE=standalone rollup -c",
+    "lint": "eslint ./src/**",
+    "prepublishOnly": "yarn build",
+    "test": "jest",
+    "travis": "yarn run lint && jest && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js"
+  },
+  "husky": {
+    "hooks": {
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS",
+      "pre-push": "yarn lint && yarn test"
+    }
+  },
+  "peerDependencies": {
+    "prop-types": ">=15",
+    "react": ">=17"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.13.16",
+    "@babel/core": "^7.14.2",
+    "@babel/plugin-proposal-class-properties": "^7.13.0",
+    "@babel/preset-env": "^7.14.2",
+    "@babel/preset-react": "^7.13.13",
+    "@commitlint/config-conventional": "^12.1.4",
+    "babel-eslint": "^10.0.1",
+    "commitlint": "^12.1.4",
+    "coveralls": "^3.1.0",
+    "cross-env": "^7.0.3",
+    "enzyme": "^3.11.0",
+    "enzyme-adapter-react-17-updated": "^1.0.2",
+    "enzyme-to-json": "^3.6.2",
+    "eslint": "^7.26.0",
+    "eslint-config-airbnb": "^18.2.1",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-jsx-a11y": "^6.4.1",
+    "eslint-plugin-react": "^7.23.2",
+    "husky": "^6.0.0",
+    "jest": "^26.6.3",
+    "prop-types": "^15.7.2",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "rollup": "^2.47.0",
+    "rollup-plugin-babel": "^4.4.0",
+    "rollup-plugin-commonjs": "^10.1.0",
+    "rollup-plugin-node-resolve": "^5.2.0",
+    "scroll-into-view-if-needed": "^2.2.28"
+  }
+}

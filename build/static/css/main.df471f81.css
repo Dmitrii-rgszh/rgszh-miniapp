@@ -1,0 +1,1559 @@
+@import url(https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap);
+/* =============================================================================
+   src/Styles/global.css
+
+   Здесь подключаем шрифт Montserrat и задаём его как базовый для всего документа.
+   ============================================================================= */
+
+/* 1) Подключаем Montserrat из Google Fonts */
+
+/* 2) Сброс типов и box-sizing (если ещё не делали) */
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+}
+* {
+  box-sizing: border-box;
+}
+
+/* 3) Устанавливаем Montserrat как шрифт для всего документа */
+html, body {
+  font-family: 'Montserrat', sans-serif;
+  color: #ffffff; /* если хотите, можете задать цвет текста по-умолчанию (опционально) */
+}
+
+/* =============================================================================
+   src/Styles/background.css
+
+   1) Фон-градиент для всего приложения + анимация bgShift
+   2) SVG-шум поверх градиента (opacity ~4%)
+   3) 10 «плавающих» шариков (subtle-dot) с дрейфом и пульсацией
+      — яркость точек (alpha) поднята c 0.03 до 0.04
+      — в keyframes pulseDotN увеличены масштабы пульсации ~на 30%
+   4) Иконка pi.png, которая «плывёт» и «наклоняется»
+============================================================================= */
+
+/* Сброс отступов и подгонка под full-screen */
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+}
+* {
+  box-sizing: border-box;
+}
+
+/* === Переменные цвета === */
+:root {
+  --bg-dark-start: #0a1f5c;
+  --bg-dark-end:   #8b003c;
+}
+
+/* === Основной фон: градиент 120deg + анимация «перетекания» 30s === */
+.app-container,
+.mainmenu-container,
+.welcome-container {
+  position: relative;
+  min-height: 100vh;
+  width: 100%;
+  overflow-x: hidden;
+  background: linear-gradient(120deg, #0a1f5c, #8b003c);
+  background: linear-gradient(120deg, var(--bg-dark-start), var(--bg-dark-end));
+  background-size: 200% 200%;
+  animation: bgShift 30s infinite alternate;
+}
+
+@keyframes bgShift {
+  to {
+    background-position: 100% 100%;
+  }
+}
+
+/* Отключаем анимацию градиента на узких экранах (опционально) */
+@media (max-width: 768px) {
+  .app-container,
+  .mainmenu-container,
+  .welcome-container {
+    animation: none;
+  }
+}
+
+/* =============================================================================
+   SVG-шум (fractalNoise) через ::before
+============================================================================= */
+.app-container::before,
+.mainmenu-container::before,
+.welcome-container::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27100%25%27 height=%27100%25%27%3E%3Cfilter id=%27noise%27%3E  %3CfeTurbulence type=%27fractalNoise%27 baseFrequency=%270.8%27 numOctaves=%273%27 stitchTiles=%27stitch%27/%3E%3C/filter%3E%3Crect width=%27100%25%27 height=%27100%25%27 filter=%27url%28%23noise%29%27/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  opacity: 0.05;          /* Шум почти прозрачный (4%) */
+  pointer-events: none;
+  z-index: 1;             /* Поверх градиента, но под контентом */
+}
+
+.subtle-dot {
+  position: absolute;
+  background: rgba(255,255,255,0.04);
+  border-radius: 50%;
+  animation: move 15s linear infinite, fade 20s ease-in-out infinite;
+  z-index: 1;
+}
+
+/* =============================================================================
+   «Плавающие» шарики (subtle-dot) внутри .mainmenu-container и .welcome-container
+============================================================================= */
+.mainmenu-container .subtle-dot,
+.welcome-container .subtle-dot {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* ==== ТОЧКА 1 ==== */
+.mainmenu-container .dot-1,
+.welcome-container .dot-1 {
+  top:  10%;
+  left:  5%;
+  background-color: rgba(255, 255, 255, 0.14);
+  animation: moveDot1 60s linear infinite, pulseDot1 6s ease-in-out infinite;
+}
+
+@keyframes moveDot1 {
+  0%   { transform: translate(0, 0) scale(1); opacity: 0.25; }
+  10%  { transform: translate(2vw, 1vh) scale(1.05); opacity: 0.12;}
+  25%  { transform: translate(4vw, 4vh) scale(1.45); opacity: 0.34;}
+  35%  { transform: translate(10vw, 7vh) scale(0.8); opacity: 0.17;}
+  50%  { transform: translate(20vw, 15vh) scale(1.2); opacity: 0.21;}
+  65%  { transform: translate(10vw, 10vh) scale(0.9); opacity: 0.28;}
+  80%  { transform: translate(2vw, 4vh) scale(1.3); opacity: 0.15;}
+  100% { transform: translate(0, 0) scale(1);}
+}
+
+/* ==== ТОЧКА 2 ==== */
+.mainmenu-container .dot-2,
+.welcome-container .dot-2 {
+  bottom: 10%;
+  right:  5%;
+  background-color: rgba(255, 255, 255, 0.17);
+  animation: moveDot2 60s linear infinite, pulseDot2 2s ease-in-out infinite;
+}
+
+@keyframes moveDot2 {
+  0%   { transform: translate(0, 0) scale(1); opacity: 0.17; }
+  15%  { transform: translate(-3vw, -4vh) scale(1.1); opacity: 0.13;}
+  30%  { transform: translate(-10vw, -10vh) scale(1.95); opacity: 0.31;}
+  50%  { transform: translate(-25vw, -20vh) scale(0.85); opacity: 0.16;}
+  70%  { transform: translate(-12vw, -8vh) scale(1.25); opacity: 0.11;}
+  90%  { transform: translate(-3vw, -2vh) scale(1.05); opacity: 0.25; }
+  100% { transform: translate(0, 0) scale(1); opacity: 0.12;}
+}
+
+/* ==== ТОЧКА 3 ==== */
+.mainmenu-container .dot-3,
+.welcome-container .dot-3 {
+  top:  20%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(255, 255, 255, 0.12);
+  animation: moveDot3 70s linear infinite, pulseDot3 7s ease-in-out infinite;
+}
+
+@keyframes moveDot3 {
+  0%   { transform: translateX(-50%) translateY(0) scale(1); opacity: 0.16;}
+  20%  { transform: translateX(-40%) translateY(5vh) scale(1.18); opacity: 0.25;}
+  35%  { transform: translateX(-55%) translateY(12vh) scale(0.85); opacity: 0.11;}
+  50%  { transform: translateX(-50%) translateY(25vh) scale(1.38); opacity: 0.16;}
+  65%  { transform: translateX(-40%) translateY(18vh) scale(1.1); opacity: 0.25;}
+  85%  { transform: translateX(-53%) translateY(4vh) scale(0.95); opacity: 0.28;}
+  100% { transform: translateX(-50%) translateY(0) scale(1); opacity: 0.12;}
+}
+
+/* ==== ТОЧКА 4 ==== */
+.mainmenu-container .dot-4,
+.welcome-container .dot-4 {
+  bottom: 15%;
+  left:   15%;
+  background-color: rgba(255, 255, 255, 0.13);
+  animation: moveDot4 90s linear infinite, pulseDot4 9s ease-in-out infinite;
+}
+
+@keyframes moveDot4 {
+  0%   { transform: translateX(-50%) translateY(0) scale(0.7); opacity: 0.11;}
+  20%  { transform: translateX(-40%) translateY(5vh) scale(1.28); opacity: 0.15;}
+  35%  { transform: translateX(-55%) translateY(12vh) scale(0.85); opacity: 0.21;}
+  50%  { transform: translateX(-50%) translateY(25vh) scale(1.68); opacity: 0.12;}
+  65%  { transform: translateX(-40%) translateY(18vh) scale(1.1); opacity: 0.08;}
+  85%  { transform: translateX(-53%) translateY(4vh) scale(0.95); opacity: 0.34;}
+  100% { transform: translateX(-50%) translateY(0) scale(1); opacity: 0.5;}
+}
+
+/* ==== ТОЧКА 5 ==== */
+.mainmenu-container .dot-5,
+.welcome-container .dot-5 {
+  top:   5%;
+  right: 20%;
+  background-color: rgba(255, 255, 255, 0.1);
+  animation: moveDot5 65s linear infinite, pulseDot5 5s ease-in-out infinite;
+}
+
+@keyframes moveDot5 {
+  0%   { transform: translateX(-50%) translateY(0) scale(0.8); opacity: 0.21;}
+  20%  { transform: translateX(-40%) translateY(5vh) scale(1.88); opacity: 0.14;}
+  35%  { transform: translateX(-55%) translateY(12vh) scale(1.85); opacity: 0.34;}
+  50%  { transform: translateX(-50%) translateY(25vh) scale(1.58); opacity: 0.10;}
+  65%  { transform: translateX(-40%) translateY(18vh) scale(1.1); opacity: 0.21;}
+  85%  { transform: translateX(-53%) translateY(4vh) scale(0.65); opacity: 0.17;}
+  100% { transform: translateX(-50%) translateY(0) scale(1); opacity: 0.13;}
+}
+
+/* ==== ТОЧКА 6 ==== */
+.mainmenu-container .dot-6,
+.welcome-container .dot-6 {
+  bottom: 25%;
+  right: 10%;
+  background-color: rgba(255, 255, 255, 0.18);
+  animation: moveDot6 75s linear infinite, pulseDot6 6s ease-in-out infinite;
+}
+
+@keyframes moveDot6 {
+  0%   { transform: translate(0, 0) scale(1); opacity: 0.14}
+  10%  { transform: translate(2vw, 1vh) scale(1.05); opacity: 0.10;}
+  25%  { transform: translate(4vw, 4vh) scale(1.45); opacity: 0.17;}
+  35%  { transform: translate(10vw, 7vh) scale(0.8); opacity: 0.31;}
+  50%  { transform: translate(20vw, 15vh) scale(1.2); opacity: 0.11;}
+  65%  { transform: translate(10vw, 10vh) scale(0.9); opacity: 0.21;}
+  80%  { transform: translate(2vw, 4vh) scale(1.3); opacity: 0.34;}
+  100% { transform: translate(0, 0) scale(1); opacity: 0.21;}
+}
+
+/* ==== ТОЧКА 7 ==== */
+.mainmenu-container .dot-7,
+.welcome-container .dot-7 {
+  top:   35%;
+  left:  10%;
+  background-color: rgba(255, 255, 255, 0.13);
+  animation: moveDot7 85s linear infinite, pulseDot7 8s ease-in-out infinite;
+}
+
+@keyframes moveDot7 {
+  0%   { transform: translate(0, 0) scale(1); opacity: 0.31;}
+  15%  { transform: translate(-3vw, -4vh) scale(1.1); opacity: 0.21;}
+  30%  { transform: translate(-10vw, -10vh) scale(1.55); opacity: 0.10;}
+  50%  { transform: translate(-25vw, -20vh) scale(0.85); opacity: 0.13;}
+  70%  { transform: translate(-12vw, -8vh) scale(1.25); opacity: 0.21;}
+  90%  { transform: translate(-3vw, -2vh) scale(1.05); opacity: 0.17;}
+  100% { transform: translate(0, 0) scale(1); opacity: 0.31;}
+}
+
+/* ==== ТОЧКА 8 ==== */
+.mainmenu-container .dot-8,
+.welcome-container .dot-8 {
+  bottom: 30%;
+  left:   25%;
+  background-color: rgba(255, 255, 255, 0.12);
+  animation: moveDot8 95s linear infinite, pulseDot8 7s ease-in-out infinite;
+}
+
+@keyframes moveDot8 {
+  0%   { transform: translateX(-50%) translateY(0) scale(1); opacity: 0.34;}
+  20%  { transform: translateX(-40%) translateY(5vh) scale(1.18); opacity: 0.31;}
+  35%  { transform: translateX(-55%) translateY(12vh) scale(0.85); opacity: 0.10;}
+  50%  { transform: translateX(-50%) translateY(25vh) scale(1.38); opacity: 0.11;}
+  65%  { transform: translateX(-40%) translateY(18vh) scale(1.1); opacity: 0.17;}
+  85%  { transform: translateX(-53%) translateY(4vh) scale(0.95); opacity: 0.34;}
+  100% { transform: translateX(-50%) translateY(0) scale(1); opacity: 0.21;}
+}
+
+/* ==== ТОЧКА 9 ==== */
+.mainmenu-container .dot-9,
+.welcome-container .dot-9 {
+  top:    50%;
+  right:  50%;
+  transform: translateX(50%);
+  background-color: rgba(255, 255, 255, 0.11);
+  animation: moveDot9 65s linear infinite, pulseDot9 6s ease-in-out infinite;
+}
+
+@keyframes moveDot9 {
+  0%   { transform: translate(0, 0) scale(1); opacity: 0.10;}
+  10%  { transform: translate(2vw, 1vh) scale(1.05); opacity: 0.13;}
+  25%  { transform: translate(4vw, 4vh) scale(1.45); opacity: 0.11;}
+  35%  { transform: translate(10vw, 7vh) scale(0.8); opacity: 0.34;}
+  50%  { transform: translate(20vw, 15vh) scale(1.2); opacity: 0.17;}
+  65%  { transform: translate(10vw, 10vh) scale(0.9); opacity: 0.16;}
+  80%  { transform: translate(2vw, 4vh) scale(1.3); opacity: 0.14;}
+  100% { transform: translate(0, 0) scale(1); opacity: 0.21;}
+}
+
+/* ==== ТОЧКА 10 ==== */
+.mainmenu-container .dot-10,
+.welcome-container .dot-10 {
+  bottom: 5%;
+  left:   50%;
+  transform: translateX(-50%);
+  background-color: rgba(255, 255, 255, 0.1);
+  animation: moveDot10 80s linear infinite, pulseDot10 8s ease-in-out infinite;
+}
+
+@keyframes moveDot10 {
+  0%   { transform: translate(0, 0) scale(1); opacity: 0.14;}
+  15%  { transform: translate(-3vw, -4vh) scale(1.1); opacity: 0.16;}
+  30%  { transform: translate(-10vw, -10vh) scale(1.55); opacity: 0.17;}
+  50%  { transform: translate(-25vw, -20vh) scale(0.85); opacity: 0.34;}
+  70%  { transform: translate(-12vw, -8vh) scale(1.25); opacity: 0.11;}
+  90%  { transform: translate(-3vw, -2vh) scale(1.05); opacity: 0.13;}
+  100% { transform: translate(0, 0) scale(1); opacity: 0.10;}
+}
+
+/* =============================================================================
+   ПИ-КНОПКА: «pi.png», которая движется и покачивается
+   (оставлено без изменений, точно как было)
+============================================================================= */
+/* .pi-wrapper – внешняя обёртка, отвечает за движение (translate) */
+.mainmenu-container .pi-wrapper,
+.welcome-container .pi-wrapper {
+  position: absolute;
+  /* Начальная позиция */
+  top:  40%;
+  left: 40%;
+  z-index: 2;
+  /* Длительность движения (в секундах) задаётся через CSS-переменную --pi-move-duration.
+     В JS она устанавливается случайно от 50s до 90s. */
+  animation: movePi 70s linear infinite;
+  animation: movePi var(--pi-move-duration, 70s) linear infinite;
+}
+
+/* .pi-fly – внутренняя обёртка/картинка, отвечает за вращение */
+.mainmenu-container .pi-wrapper,
+.welcome-container .pi-wrapper {
+  position: absolute;
+  /* Начальная позиция (≈центр экрана) */
+  top:  40%;
+  left: 40%;
+  z-index: 2;
+  /* Длительность движения (50s–90s), задаётся через --pi-move-duration */
+  animation: movePi 70s linear infinite;
+  animation: movePi var(--pi-move-duration, 70s) linear infinite;
+}
+
+/* .pi-fly — внутренняя обёртка/картинка, отвечает за вращение */
+.mainmenu-container .pi-fly,
+.welcome-container .pi-fly {
+  width:  48px;
+  height: 48px;
+  transform-origin: 50% 50%;
+  /* Длительность вращения (4s–8s), задаётся через --pi-rotate-duration */
+  animation: rotatePi 6s ease-in-out infinite;
+  animation: rotatePi var(--pi-rotate-duration, 6s) ease-in-out infinite;
+}
+
+/* === Ключевые кадры для движения pi (±30vw, ±20vh) === */
+@keyframes movePi {
+  0%   { transform: translate(0,     0    ); }
+  25%  { transform: translate(-30vw, -20vh); }
+  50%  { transform: translate(0,     0    ); }
+  75%  { transform: translate(30vw,  20vh ); }
+  100% { transform: translate(0,     0    ); }
+}
+
+/* === Ключевые кадры для покачивания (вращения) pi === */
+@keyframes rotatePi {
+  0%   { transform: rotate(0deg);   }
+  25%  { transform: rotate(-18deg); }
+  50%  { transform: rotate(0deg);   }
+  75%  { transform: rotate(19deg);  }
+  100% { transform: rotate(0deg);   }
+}
+
+.pi-wrapper img {
+  filter:
+    drop-shadow(0 0 10px #fff)
+    drop-shadow(0 0 32px #7fc7ff)   /* синий неон */
+    drop-shadow(0 0 64px #e97eff);  /* розовый неон */
+  opacity: 0.64;
+  transition: filter 0.3s, opacity 0.3s;
+}
+
+
+
+
+
+
+
+
+
+/* =============================================================================
+   src/Styles/logo.css
+
+   Здесь исправлены ключевые кадры так, чтобы entry-анимация
+   «приземляла» рамку с логотипом на top:110px, а exit-анимация
+   уводила её обратно наверх.
+   ============================================================================= */
+
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+}
+* {
+  box-sizing: border-box;
+}
+
+/* ---------------------------------------------------
+   1) Контейнер рамки «glassmorphism»
+--------------------------------------------------- */
+.logo-wrapper {
+  position: absolute;
+  top: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 160px;
+  height: 160px;
+  background-color: rgba(255, 255, 255, 0.10);
+  -webkit-backdrop-filter: blur(8px);
+          backdrop-filter: blur(8px);
+  border-radius: 20px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+  opacity: 0;
+  z-index: 3;
+
+  /*
+    1) slideDownWrapper (0.8s) — в начале «въезжает» логотип
+    2) shakeLeftRight   (25s) — каждые 25 секунд лёгкая встряска влево/вправо (начиная с delay 2s)
+    3) shakeUpDown      (30s) — каждые 30 секунд лёгкая встряска вверх/вниз (начиная с delay 5s)
+  */
+  animation:
+    slideDownWrapper 0.8s ease-out forwards,
+    shakeLeftRight 25s ease-in-out infinite 2s,
+    shakeUpDown    30s ease-in-out infinite 5s;
+
+  /* Чтобы логотип «удерживался» в исходном состоянии
+     между встрясками (не уходил в другой transform) */
+  animation-fill-mode: both;
+}
+
+/* ---------------------------------------------------
+   2) Само изображение логотипа внутри рамки
+--------------------------------------------------- */
+.logo-wrapper .logo-image {
+  position: absolute;
+  top:   50%;
+  left:  50%;
+  transform: translate(-50%, -50%);
+  width:   120px;
+  height:  120px;
+  object-fit: contain;
+  z-index: 11;       /* поверх рамки */
+}
+
+/* ---------------------------------------------------
+   3) Entry-анимация (обычные экраны ≥769px и ≤1919px)
+      – рамка «въезжает» сверху и встаёт на top:110px
+--------------------------------------------------- */
+.logo-wrapper.animate-logo {
+  animation: slideDownWrapper 0.8s ease-out forwards;
+}
+
+/* === «Лёгкая встряска» вверх–вниз === */
+@keyframes shakeUpDown {
+  0%   { transform: translateX(-50%) translateY(0); }
+  10%  { transform: translateX(-50%) translateY(-8px); }
+  20%  { transform: translateX(-50%) translateY(8px); }
+  30%  { transform: translateX(-50%) translateY(-5px); }
+  40%  { transform: translateX(-50%) translateY(5px); }
+  50%  { transform: translateX(-50%) translateY(0); }
+  100% { transform: translateX(-50%) translateY(0); }
+}
+
+@keyframes slideDownWrapper {
+  0%   {
+    opacity: 0;
+    top: -200px;
+    transform: translateX(-50%);
+  }
+  100% {
+    opacity: 1;
+    top: 110px;
+    transform: translateX(-50%);
+  }
+}
+.logo-wrapper.animate-logo .logo-image {
+  animation: fadeInImage 0.8s ease-out forwards;
+}
+@keyframes fadeInImage {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ---------------------------------------------------
+   4) Entry-анимация (мобильные ≤768px):
+      рамка «въезжает» до top:110px, размеры 120×120
+--------------------------------------------------- */
+@media (max-width: 768px) {
+  .logo-wrapper {
+    top:   -150px;   /* стартовая позиция скрытая */
+    width: 120px;
+    height: 120px;
+    border-radius: 16px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+  }
+  .logo-wrapper.animate-logo {
+    animation: slideDownWrapperMobile 0.8s ease-out forwards;
+  }
+  @keyframes slideDownWrapperMobile {
+    from {
+      opacity: 0;
+      top:    -150px;
+    }
+    to {
+      opacity: 1;
+      top:    110px;   /* <-- здесь тоже 110px */
+    }
+  }
+  .logo-wrapper .logo-image {
+    width:  90px;
+    height: 90px;
+  }
+  .logo-wrapper.animate-logo .logo-image {
+    animation: fadeInImage 0.8s ease-out forwards;
+  }
+}
+
+/* ---------------------------------------------------
+   5) Entry-анимация (широкие ≥1920px):
+      рамка «въезжает» до top:110px, размеры 200×200
+--------------------------------------------------- */
+@media (min-width: 1920px) {
+  .logo-wrapper {
+    top:   -250px;  /* старт */
+    width: 200px;
+    height: 200px;
+    border-radius: 24px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+  }
+  .logo-wrapper.animate-logo {
+    animation: slideDownWrapperLarge 0.8s ease-out forwards;
+  }
+  @keyframes slideDownWrapperLarge {
+    from {
+      opacity: 0;
+      top:   -250px;
+    }
+    to {
+      opacity: 1;
+      top:   110px;  /* <-- и здесь 110px */
+    }
+  }
+  .logo-wrapper .logo-image {
+    width:  150px;
+    height: 150px;
+  }
+  .logo-wrapper.animate-logo .logo-image {
+    animation: fadeInImage 0.8s ease-out forwards;
+  }
+}
+
+/* ---------------------------------------------------
+   6) Exit-анимация (обычные экраны) – рамка «уезжает» вверх
+   из позиции top:110px обратно на top:-200px
+--------------------------------------------------- */
+.logo-wrapper.animate-logo-exit {
+  animation: slideUpWrapper 0.8s ease-in forwards;
+}
+@keyframes slideUpWrapper {
+  from {
+    opacity: 1;
+    top:   110px;   /* <-- стартовать из 110px */
+  }
+  to {
+    opacity: 0;
+    top:   -200px;  /* обратно «за» верхний край */
+  }
+}
+
+/* ---------------------------------------------------
+   7) Exit-анимация (мобильные ≤768px):
+      рамка «уезжает» вверх из top:110px в top:-150px
+--------------------------------------------------- */
+@media (max-width: 768px) {
+  .logo-wrapper.animate-logo-exit {
+    animation: slideUpWrapperMobile 0.8s ease-in forwards;
+  }
+  @keyframes slideUpWrapperMobile {
+    from {
+      opacity: 1;
+      top:   110px;  /* <-- стартовая позиция 110px */
+    }
+    to {
+      opacity: 0;
+      top:   -150px; /* обратно «за» экран */
+    }
+  }
+  .logo-wrapper.animate-logo-exit .logo-image {
+    animation: fadeInImage 0.8s ease-in forwards;
+  }
+}
+
+/* ---------------------------------------------------
+   8) Exit-анимация (широкие ≥1920px):
+      рамка «уезжает» вверх из top:110px в top:-250px
+--------------------------------------------------- */
+@media (min-width: 1920px) {
+  .logo-wrapper.animate-logo-exit {
+    animation: slideUpWrapperLarge 0.8s ease-in forwards;
+  }
+  @keyframes slideUpWrapperLarge {
+    from {
+      opacity: 1;
+      top:   110px;  /* <-- стартовая позиция 110px */
+    }
+    to {
+      opacity: 0;
+      top:   -250px; /* «за» край экрана */
+    }
+  }
+  .logo-wrapper.animate-logo-exit .logo-image {
+    animation: fadeInImage 0.8s ease-in forwards;
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* =============================================================================
+   src/WelcomePage.css
+
+   1) .welcome-container           — фон-градиент и базовый контейнер.
+   2) .text-wrapper                — полная ширина, текст ровно по центру.
+   3) .text-wrapper.animate-text   — entry-анимация: из translateX(-100%) → 0.
+   4) .text-wrapper.animate-text-exit — exit-анимация: из 0 → translateX(100%).
+   ============================================================================= */
+
+/* ----------------------------------------
+   1) Сбросы
+---------------------------------------- */
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+}
+
+/* ----------------------------------------
+   2) Контейнер страницы
+---------------------------------------- */
+.welcome-container {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  background: linear-gradient(120deg, #0a1f5c, #8b003c);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden; /* чтобы «уезжающий» текст не прокручивался */
+}
+
+/* ----------------------------------------
+   3) Сброс отступов у лого и текста
+---------------------------------------- */
+.logo-wrapper,
+.text-wrapper {
+  margin-bottom: 0;
+}
+
+/* ----------------------------------------
+   4) Блок обёртки текста — занимает всю ширину,
+      текст центрируется через text-align:center.
+---------------------------------------- */
+.text-wrapper {
+  position: absolute;
+  top: 0;                 /* будем задавать точный top через медиазоны */
+  left: 0;
+  width: 100%;
+  text-align: center;
+  opacity: 0;             /* изначально скрыт */
+  /* После анимации остаёмся в конечном состоянии */
+  animation-fill-mode: forwards;
+  z-index: 5;             /* поверх фоновых элементов, под логотипом */
+}
+
+/* ----------------------------------------
+   5) Медиазоны: задаём top, чтобы текст располагался под логотипом.
+---------------------------------------- */
+/* Обычные десктопы (≥769px и ≤1919px):
+   Логотип стоит на top:110px и имеет приблизительно height=160px,
+   значит текст нужно сместить вниз до 110 + 160 + 10 = 280px */
+@media (min-width: 769px) and (max-width: 1919px) {
+  .text-wrapper {
+    top: 280px;
+  }
+}
+
+/* Мобильные (≤768px): логотип: top:110px, height≈120px,
+   значит текст: 110 + 120 + 10 = 240px */
+@media (max-width: 768px) {
+  .text-wrapper {
+    top: 240px;
+  }
+}
+
+/* Широкие экраны (≥1920px): логотип: top:110px, height≈200px,
+   значит текст: 110 + 200 + 10 = 320px */
+@media (min-width: 1920px) {
+  .text-wrapper {
+    top: 320px;
+  }
+}
+
+/* ----------------------------------------
+   6) Стили для заголовка внутри .text-wrapper
+---------------------------------------- */
+.welcome-title {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.8rem;
+  font-weight: 500;
+  color: #ffffff;
+  margin: 0;
+  display: inline-block;
+  /* тень, чтобы надпись «отделялась» от фона */
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+@media (max-width: 768px) {
+  .welcome-title {
+    font-size: 1.4rem;
+  }
+}
+
+/* ----------------------------------------
+   7) Entry-анимация текста (выезд слева → в центр)
+   Ключевые кадры: from translateX(-100%) и opacity:0,
+                  to   translateX(0)       и opacity:1
+---------------------------------------- */
+.text-wrapper.animate-text {
+  animation: slideInText 0.8s cubic-bezier(0.22,1,0.36,1) forwards;
+}
+
+@keyframes slideInText {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* ----------------------------------------
+   8) Exit-анимация текста (уезд из центра → вправо за экран)
+   Ключевые кадры: from translateX(0) и opacity:1,
+                  to   translateX(100%) и opacity:0
+---------------------------------------- */
+.text-wrapper.animate-text-exit {
+  animation: slideOutText 0.8s cubic-bezier(0.65,0.05,0.36,1) forwards;
+}
+
+@keyframes slideOutText {
+  0% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ============================================================================
+   Buttons.css
+   ----------------------------------------------------------------------------
+   1) Контейнер .button-container остаётся без жёсткой высоты — он «садится»
+      под кнопки (auto-height) и при этом привязан по top: 300px, чтобы
+      располагаться ниже логотипа.
+   2) Кнопки (.btn-custom) анимируются отдельным ключевым кадром slideUpFromBottom:
+      • from { transform: translateY(100vh); opacity: 0; }
+      • to   { transform: translateY(0);     opacity: 1; }
+   3) Для каждой кнопки через псевдокласс :nth-child(n) задаётся своя задержка,
+      чтобы они «выезжали» одна за другой.
+   ============================================================================ */
+
+/* ======================================
+   1) Контейнер для всех кнопок
+   ====================================== */
+.button-container {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+
+  display: flex;
+  flex-direction: column;     /* Кнопки одна под другой */
+  justify-content: flex-start;
+  align-items: center;        /* Кнопки по центру по X */
+
+  gap: 14px;                  /* Расстояние между кнопками */
+
+  width: 100%;
+  max-width: 350px;           /* Можно скорректировать */
+  z-index: 2;
+
+  /* Позиция контейнера на экране (30px ниже низа логотипа): */
+  /* логотип: top = 110px, height ≈ 160px → низ = 270px; +30 = 300px */
+  top: 300px;
+
+  /* Никакой height — контейнер «подстраивается» под кнопки */
+}
+
+/* ======================================
+   2) Общие стили для кнопок (.btn-custom)
+   ====================================== */
+.btn-custom {
+  /* Сделать кнопки одинаковой ширины: */
+  flex: 1 1;
+  min-width: 200px;
+  max-width: 300px;
+
+  /* Вместо жёсткой высоты — паддинги: */
+  padding: 12px 24px;
+  min-height: 48px;  /* Гарантируем высоту минимум 48px */
+
+  box-sizing: border-box;
+
+  background: linear-gradient(
+    120deg,
+    var(--bg-dark-start),
+    var(--bg-dark-end)
+  );
+  color: #ffffff;
+  font-size: 18px;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 300;
+  text-align: center;
+  line-height: 1.2;
+
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+
+  /*
+     Изначально кнопки «спрятаны» внизу экрана:
+     transform: translateY(100vh) — сдвигает каждый элемент вниз на высоту окна.
+     opacity: 0 — кнопка невидима, пока не стартует анимация.
+  */
+  transform: translateY(100vh);
+  opacity: 0;
+
+  /* Запуск анимации выезда (slideUpFromBottom) с задержкой по-умолчанию = 0s */
+  animation-name: slideUpFromBottom;
+  animation-duration: 0.6s;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); /* ease-out */
+  animation-fill-mode: forwards;
+  /* animation-delay будет задаваться ниже через nth-child */
+}
+
+/* --------------------------------------
+   3) Псевдоклассы для поочерёдной задержки
+   -------------------------------------- */
+/* Первая кнопка (nth-child(1)) — задержка 0.1s */
+.button-container .btn-custom:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+/* Вторая кнопка — задержка 0.2s */
+.button-container .btn-custom:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+/* Третья кнопка — задержка 0.3s */
+.button-container .btn-custom:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+/* Четвёртая кнопка — задержка 0.4s */
+.button-container .btn-custom:nth-child(4) {
+  animation-delay: 0.4s;
+}
+
+/* Пятая кнопка — задержка 0.5s (если есть) */
+.button-container .btn-custom:nth-child(5) {
+  animation-delay: 0.5s;
+}
+
+/* Добавьте аналогичные правила, если кнопок больше */
+
+/* 4) Кадры «выезда» из низа экрана вверх */
+@keyframes slideUpFromBottom {
+  0% {
+    transform: translateY(100vh);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* ======================================
+   5) Hover/active/focus и другие эффекты
+      (оставляем ваши существующие)
+   ====================================== */
+.btn-custom:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+}
+
+.btn-custom:active {
+  transform: translateY(0) scale(0.95);
+}
+
+.btn-custom:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.6);
+}
+
+.btn-custom .ripple {
+  position: absolute;
+  border-radius: 50%;
+  transform: scale(0);
+  background: rgba(255, 255, 255, 0.6); /* чуть более яркий цвет */
+  animation: ripple-animation 400ms cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+}
+
+@keyframes ripple-animation {
+  0% {
+    transform: scale(0);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(4);    /* сначала быстро разрастаясь */
+    opacity: 0.4;
+  }
+  100% {
+    transform: scale(8);    /* выносим намного дальше */
+    opacity: 0;
+  }
+}
+
+.btn-custom:disabled {
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.5);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* ======================================
+   6) Медиазапрос для мобильных (≤768px)
+   ====================================== */
+@media (max-width: 768px) {
+  .button-container {
+    /* Мобильный логотип: top=110px + height=120px → низ=230px +30 = 260px */
+    top: 260px;
+    max-width: 300px;
+    gap: 12px;
+  }
+  .button-container .btn-custom {
+    padding: 10px 20px;
+    min-height: 50px;
+    min-width: 350px;
+    font-size: 18px;
+    border-radius: 10px;
+
+    /* На мобильных задержки чуть укоротим */
+  }
+  .button-container .btn-custom:nth-child(1) {
+    animation-delay: 0.1s;
+  }
+  .button-container .btn-custom:nth-child(2) {
+    animation-delay: 0.2s;
+  }
+  .button-container .btn-custom:nth-child(3) {
+    animation-delay: 0.3s;
+  }
+  /* и так далее по количеству кнопок… */
+}
+
+/* Exit-анимация для кнопок: сдвиг вниз + исчезнуть */
+.btn-custom.animate-exit {
+  animation-name: slideDownFromTop;
+  animation-duration: 0.6s;
+  animation-timing-function: cubic-bezier(0.65, 0.05, 0.36, 1);
+  animation-fill-mode: forwards;
+}
+
+/* Стагеринг: первая кнопка уезжает с задержкой 0.1s, вторая — 0.2s и т.д. */
+.btn-exit1 { animation-delay: 0.1s; }
+.btn-exit2 { animation-delay: 0.2s; }
+.btn-exit3 { animation-delay: 0.3s; }
+/* Добавьте btn-exit4, btn-exit5… по тому же принципу */
+
+/* Ключевые кадры для уезда вниз */
+@keyframes slideDownFromTop {
+  0% { transform: translateY(0);   opacity: 1; }
+  100% { transform: translateY(100vh); opacity: 0; }
+}
+
+
+
+
+
+
+/* =============================================================================
+   src/Styles/HomeButton.css
+   Анимированная glass-кнопка «домой», выезжает из левого края, без объёма!
+============================================================================= */
+
+.home-btn {
+  position: absolute;
+  top: 140px;
+  left: -80px;  /* за пределами видимой области */
+  width: 80px;
+  height: 80px;
+  background: rgba(255, 255, 255, 0.10);
+  -webkit-backdrop-filter: blur(8px);
+          backdrop-filter: blur(8px);
+  border: 1.5px solid rgba(255,255,255,0.17); /* лёгкая стеклянная рамка */
+  border-radius: 16px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  cursor: pointer;
+  transition: background 0.25s, border 0.25s;
+}
+
+/* === Анимация ВЪЕЗДА кнопки (из левого края) === */
+.home-btn.animate-home {
+  animation: slideInHomeLeft 0.8s cubic-bezier(0.22,1,0.36,1) forwards;
+}
+@keyframes slideInHomeLeft {
+  from {
+    left: -90px;
+    opacity: 0;
+  }
+  to {
+    left: calc(50% - 90px);  /* Рядом с логотипом по центру */
+    opacity: 1;
+  }
+}
+
+/* === Анимация ВЫЕЗДА кнопки (обратно за левый край) === */
+.home-btn.animate-home-exit {
+  animation: slideOutHomeLeft 0.7s cubic-bezier(0.65,0.05,0.36,1) forwards;
+}
+@keyframes slideOutHomeLeft {
+  from {
+    left: calc(50% - 90px);
+    opacity: 1;
+  }
+  to {
+    left: -90px;
+    opacity: 0;
+  }
+}
+
+/* Плавное появление SVG-иконки */
+.home-btn .home-icon {
+  width: 36px;
+  height: 36px;
+  fill: #ffffff;
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+.home-btn.animate-home .home-icon {
+  opacity: 1;
+}
+
+/* --- Мобильная версия (≤768px) --- */
+@media (max-width: 768px) {
+  .home-btn {
+    top: 140px;
+    left: 60px !important;    /* Сдвинута к левому краю экрана */
+    width: 65px;
+    height: 65px;
+    border-radius: 12px;
+    border: 1.2px solid rgba(255,255,255,0.18);
+  }
+  .home-btn.animate-home {
+    animation: slideInHomeLeftMobile 0.8s cubic-bezier(0.22,1,0.36,1) forwards;
+  }
+  @keyframes slideInHomeLeftMobile {
+    from {
+      left: -60px;
+      opacity: 0;
+    }
+    to {
+      left: 55px;
+      opacity: 1;
+    }
+  }
+  .home-btn.animate-home-exit {
+    animation: slideOutHomeLeftMobile 0.7s cubic-bezier(0.65,0.05,0.36,1) forwards;
+  }
+  @keyframes slideOutHomeLeftMobile {
+    from {
+      left: 55px;
+      opacity: 1;
+    }
+    to {
+      left: -60px;
+      opacity: 0;
+    }
+  }
+  .home-btn .home-icon {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+
+
+
+/* ============================================================================
+   FeedbackPage.css
+
+   Здесь только те стили, которые нужны для FeedbackPage:
+   1) Смещение .content-wrapper так, чтобы первый шаг (autosuggest) был под логотипом.
+   2) Центрирование заголовка и поля ввода (autosuggest) для шага 1.
+   3) Позиционирование кнопки «Вперёд» (next-btn) справа от логотипа,
+      зеркально стилизованно, как кнопка «Домой» в PollsPage.
+   4) Анимация «покачивания» (shake-btn) для кнопки «Вперёд», когда доступен переход.
+   ============================================================================ */
+
+/* ------------------------------------------------------------------------
+   1) Сдвигаем .content-wrapper вверх/вниз, чтобы step 1 оказался непосредственно
+      под логотипом. Предполагаем, что логотип занимает примерно верхние 270px,
+      поэтому ставим top: 280px; (подчистите под свой реальный размер).
+------------------------------------------------------------------------ */
+.feedback-container .content-wrapper {
+  position: absolute;
+  top: 280px;         /* При необходимости скорректируйте */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 400px;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-y: auto;
+  padding-bottom: 80px;
+}
+
+/* ------------------------------------------------------------------------
+   2) Центрируем h2 и input внутри .autosuggest-container (первый шаг)
+------------------------------------------------------------------------ */
+.feedback-container .autosuggest-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.feedback-container .autosuggest-container h2 {
+  text-align: center;
+  font-size: 20px;
+  margin-bottom: 12px;
+}
+
+/* Если Autosuggest рендерит контейнер .react-autosuggest__container */
+.feedback-container .autosuggest-container .react-autosuggest__container {
+  width: 100%;
+  max-width: 320px; /* Можно поднастроить */
+}
+
+.feedback-container .autosuggest-container input {
+  width: 100%;
+  padding: 10px;
+  font-size: 18px;
+  border-radius: 8px;
+  border: none;
+  outline: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  text-align: center;
+}
+
+/* ------------------------------------------------------------------------
+   3) Кнопка «Вперёд» (next-btn) справа от логотипа (зеркально кнопке «Домой»)
+   ------------------------------------------------------------------------ */
+/*
+   Используем position:absolute и такой же top, что и у home-btn в PollsPage,
+   но зеркально: вместо left=calc(50% - 154px) ставим right=calc(50% - 154px).
+   Отрегулируйте «154px» под собственный размер логотипа / отступ.
+*/
+.next-btn {
+  position: absolute !important;
+  top: 138px !important;                 /* То же, что и у home-btn в PollsPage */
+  right: calc(50% - 154px) !important;   /* Зеркально home-btn.left:calc(50% - 154px) */
+  width: 64px !important;
+  height: 64px !important;
+  background-color: rgba(255, 255, 255, 0.12) !important;
+  border: none !important;
+  border-radius: 10px !important;
+  box-shadow: none !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  opacity: 0 !important;
+  transform: translateX(20px) !important; /* Появляется «справа», потому чуть смещаем влево */
+  transition: opacity 0.6s ease, transform 0.6s ease !important;
+}
+
+/* Въезд кнопки (аналог home-btn.animate-home) */
+.next-btn.animate-next {
+  opacity: 1 !important;
+  transform: translateX(0) !important;
+}
+
+/* Уезд кнопки при клике (аналог home-btn.animate-home-exit) */
+.next-btn.animate-next-exit {
+  opacity: 0 !important;
+  transform: translateX(20px) !important;
+  transition: opacity 0.4s ease, transform 0.4s ease !important;
+}
+
+/* Размер SVG-стрелки внутри кнопки */
+.next-btn svg {
+  width: 36px !important;
+  height: 36px !important;
+  stroke: white !important;
+  fill: none !important;
+}
+
+/* ------------------------------------------------------------------------
+   4) Анимация «покачивания» (shake-btn) для кнопки «Вперёд»
+------------------------------------------------------------------------ */
+.shake-btn {
+  animation: shake 0.5s infinite alternate ease-in-out !important;
+}
+
+@keyframes shake {
+  from { transform: translateX(0); }
+  to   { transform: translateX(6px); }
+}
+
+/* ------------------------------------------------------------------------
+   5) Адаптация для мобильных (если необходимо)
+------------------------------------------------------------------------ */
+@media (max-width: 768px) {
+  .feedback-container .content-wrapper {
+    top: 260px;
+    max-width: 350px;
+    padding-bottom: 60px;
+  }
+  .feedback-container .autosuggest-container .react-autosuggest__container {
+    max-width: 320px;
+  }
+  .next-btn {
+    top: 120px; /* Сдвигаем, если логотип меньше на мобилках */
+    right: calc(50% - 140px);
+  }
+}
+
+
+
+
+
+
+
+
+/* =============================================================================
+   src/Styles/HomeButton.css
+   Анимированная glass-кнопка «домой», выезжает из левого края, без объёма!
+============================================================================= */
+
+.back-btn {
+  position: absolute;
+  top: 140px;
+  left: -60px;  /* за пределами видимой области */
+  width: 64px;
+  height: 64px;
+  background: rgba(255, 255, 255, 0.10);
+  -webkit-backdrop-filter: blur(8px);
+          backdrop-filter: blur(8px);
+  border: 1.5px solid rgba(255,255,255,0.17); /* лёгкая стеклянная рамка */
+  border-radius: 16px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  cursor: pointer;
+  transition: background 0.25s, border 0.25s;
+}
+
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  transform: scale(0);
+  background: rgba(255, 255, 255, 0.5); /* Белый полупрозрачный */
+  animation: ripple-animation 600ms linear;
+  pointer-events: none;
+  z-index: 2;
+}
+
+@keyframes ripple-animation {
+  to {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+.back-btn svg {
+  width: 36px;
+  height: 36px;
+  stroke: white;
+  fill: none;
+}
+
+/* === Анимация ВЪЕЗДА кнопки (из левого края) === */
+.back-btn.animate-home {
+  animation: slideInHomeLeft 0.8s cubic-bezier(0.22,1,0.36,1) forwards;
+}
+@keyframes slideInHomeLeft {
+  from {
+    left: -90px;
+    opacity: 0;
+  }
+  to {
+    left: calc(50% - 90px);  /* Рядом с логотипом по центру */
+    opacity: 1;
+  }
+}
+
+/* === Анимация ВЫЕЗДА кнопки (обратно за левый край) === */
+.back-btn.animate-home-exit {
+  animation: slideOutHomeLeft 0.7s cubic-bezier(0.65,0.05,0.36,1) forwards;
+}
+@keyframes slideOutHomeLeft {
+  from {
+    left: calc(50% - 90px);
+    opacity: 1;
+  }
+  to {
+    left: -90px;
+    opacity: 0;
+  }
+}
+
+/* Плавное появление SVG-иконки */
+.back-btn .home-icon {
+  width: 36px;
+  height: 36px;
+  fill: #ffffff;
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+.back-btn.animate-home .home-icon {
+  opacity: 1;
+}
+
+/* --- Мобильная версия (≤768px) --- */
+@media (max-width: 768px) {
+  .back-btn {
+    top: 140px;
+    left: 60px !important;    /* Сдвинута к левому краю экрана */
+    width: 65px;
+    height: 65px;
+    border-radius: 12px;
+    border: 1.2px solid rgba(255,255,255,0.18);
+  }
+  .back-btn.animate-home {
+    animation: slideInHomeLeftMobile 0.8s cubic-bezier(0.22,1,0.36,1) forwards;
+  }
+  @keyframes slideInHomeLeftMobile {
+    from {
+      left: -60px;
+      opacity: 0;
+    }
+    to {
+      left: 24px;     /* ВЫРОВНЯТЬ С next-btn! */
+      opacity: 1;
+    }
+  }
+  .back-btn.animate-home-exit {
+    animation: slideOutHomeLeftMobile 0.7s cubic-bezier(0.65,0.05,0.36,1) forwards;
+  }
+  @keyframes slideOutHomeLeftMobile {
+    from {
+      left: 60px;     /* ВЫРОВНЯТЬ С next-btn! */
+      opacity: 1;
+    }
+    to {
+      left: -60px;
+      opacity: 0;
+    }
+  }
+  .back-btn .home-icon {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+
+
+
+.next-btn {
+  position: relative;
+  top: 138px;
+  right: 24px;
+  width: 64px;
+  height: 64px;
+  border: 1.5px solid rgba(255,255,255,0.17);
+  background: rgba(255,255,255,0.12);
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;                   /* скрыта по умолчанию */
+  transform: translateX(100px); /* за правым краем по умолчанию */
+  transition: opacity 0.6s, transform 0.6s;
+  z-index: 11;
+  overflow: hidden;
+}
+
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  transform: scale(0);
+  background: rgba(255, 255, 255, 0.5); /* Белый полупрозрачный */
+  animation: ripple-animation 600ms linear;
+  pointer-events: none;
+  z-index: 2;
+}
+
+@keyframes ripple-animation {
+  to {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+.next-btn.animate-next {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.next-btn.animate-next-exit {
+  opacity: 0;
+  transform: translateX(100px);
+  transition: opacity 0.4s, transform 0.4s;
+}
+
+.next-btn svg {
+  width: 36px;
+  height: 36px;
+  stroke: white;
+  fill: none;
+}
+
+.shaker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.shaker.shake-btn {
+  animation: shake 2.5s infinite alternate;
+}
+
+@keyframes shake {
+  0%   { transform: translateX(-2px); }
+  20%  { transform: translateX(-2px);}
+  50%  { transform: translateX(3px);}
+  80%  { transform: translateX(-2px);}
+  100% { transform: translateX(-2px); }
+}
+
+@media (max-width: 768px) {
+  .next-btn {
+    top: 120px;
+    border: 1.5px solid rgba(255,255,255,0.17) !important;
+    right: 60px !important;    /* ОК — оставить так! */
+    width: 32px;
+    height: 32px;
+  }
+
+  .next-btn svg {
+    width: 24px;
+    height: 24px;
+  }
+}
+
+
+
+
+
+
+body, h1, h2, h3, h4, h5, h6, button, input, textarea {
+  font-family: 'Montserrat', 'Arial', sans-serif !important;
+}
+
+
+
+
+/*# sourceMappingURL=main.df471f81.css.map*/

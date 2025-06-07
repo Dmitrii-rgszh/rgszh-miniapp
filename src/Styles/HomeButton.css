@@ -1,0 +1,110 @@
+/* =============================================================================
+   src/Styles/HomeButton.css
+   Анимированная glass-кнопка «домой», выезжает из левого края, без объёма!
+============================================================================= */
+
+.home-btn {
+  position: absolute;
+  top: 140px;
+  left: -80px;  /* за пределами видимой области */
+  width: 80px;
+  height: 80px;
+  background: rgba(255, 255, 255, 0.10);
+  backdrop-filter: blur(8px);
+  border: 1.5px solid rgba(255,255,255,0.17); /* лёгкая стеклянная рамка */
+  border-radius: 16px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  cursor: pointer;
+  transition: background 0.25s, border 0.25s;
+}
+
+/* === Анимация ВЪЕЗДА кнопки (из левого края) === */
+.home-btn.animate-home {
+  animation: slideInHomeLeft 0.8s cubic-bezier(0.22,1,0.36,1) forwards;
+}
+@keyframes slideInHomeLeft {
+  from {
+    left: -90px;
+    opacity: 0;
+  }
+  to {
+    left: calc(50% - 90px);  /* Рядом с логотипом по центру */
+    opacity: 1;
+  }
+}
+
+/* === Анимация ВЫЕЗДА кнопки (обратно за левый край) === */
+.home-btn.animate-home-exit {
+  animation: slideOutHomeLeft 0.7s cubic-bezier(0.65,0.05,0.36,1) forwards;
+}
+@keyframes slideOutHomeLeft {
+  from {
+    left: calc(50% - 90px);
+    opacity: 1;
+  }
+  to {
+    left: -90px;
+    opacity: 0;
+  }
+}
+
+/* Плавное появление SVG-иконки */
+.home-btn .home-icon {
+  width: 36px;
+  height: 36px;
+  fill: #ffffff;
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+.home-btn.animate-home .home-icon {
+  opacity: 1;
+}
+
+/* --- Мобильная версия (≤768px) --- */
+@media (max-width: 768px) {
+  .home-btn {
+    top: 140px;
+    left: 60px !important;    /* Сдвинута к левому краю экрана */
+    width: 65px;
+    height: 65px;
+    border-radius: 12px;
+    border: 1.2px solid rgba(255,255,255,0.18);
+  }
+  .home-btn.animate-home {
+    animation: slideInHomeLeftMobile 0.8s cubic-bezier(0.22,1,0.36,1) forwards;
+  }
+  @keyframes slideInHomeLeftMobile {
+    from {
+      left: -60px;
+      opacity: 0;
+    }
+    to {
+      left: 55px;
+      opacity: 1;
+    }
+  }
+  .home-btn.animate-home-exit {
+    animation: slideOutHomeLeftMobile 0.7s cubic-bezier(0.65,0.05,0.36,1) forwards;
+  }
+  @keyframes slideOutHomeLeftMobile {
+    from {
+      left: 55px;
+      opacity: 1;
+    }
+    to {
+      left: -60px;
+      opacity: 0;
+    }
+  }
+  .home-btn .home-icon {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+
+

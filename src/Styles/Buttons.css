@@ -1,0 +1,236 @@
+/* ============================================================================
+   Buttons.css
+   ----------------------------------------------------------------------------
+   1) Контейнер .button-container остаётся без жёсткой высоты — он «садится»
+      под кнопки (auto-height) и при этом привязан по top: 300px, чтобы
+      располагаться ниже логотипа.
+   2) Кнопки (.btn-custom) анимируются отдельным ключевым кадром slideUpFromBottom:
+      • from { transform: translateY(100vh); opacity: 0; }
+      • to   { transform: translateY(0);     opacity: 1; }
+   3) Для каждой кнопки через псевдокласс :nth-child(n) задаётся своя задержка,
+      чтобы они «выезжали» одна за другой.
+   ============================================================================ */
+
+/* ======================================
+   1) Контейнер для всех кнопок
+   ====================================== */
+.button-container {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+
+  display: flex;
+  flex-direction: column;     /* Кнопки одна под другой */
+  justify-content: flex-start;
+  align-items: center;        /* Кнопки по центру по X */
+
+  gap: 14px;                  /* Расстояние между кнопками */
+
+  width: 100%;
+  max-width: 350px;           /* Можно скорректировать */
+  z-index: 2;
+
+  /* Позиция контейнера на экране (30px ниже низа логотипа): */
+  /* логотип: top = 110px, height ≈ 160px → низ = 270px; +30 = 300px */
+  top: 300px;
+
+  /* Никакой height — контейнер «подстраивается» под кнопки */
+}
+
+/* ======================================
+   2) Общие стили для кнопок (.btn-custom)
+   ====================================== */
+.btn-custom {
+  /* Сделать кнопки одинаковой ширины: */
+  flex: 1;
+  min-width: 200px;
+  max-width: 300px;
+
+  /* Вместо жёсткой высоты — паддинги: */
+  padding: 12px 24px;
+  min-height: 48px;  /* Гарантируем высоту минимум 48px */
+
+  box-sizing: border-box;
+
+  background: linear-gradient(
+    120deg,
+    var(--bg-dark-start),
+    var(--bg-dark-end)
+  );
+  color: #ffffff;
+  font-size: 18px;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 300;
+  text-align: center;
+  line-height: 1.2;
+
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+
+  /*
+     Изначально кнопки «спрятаны» внизу экрана:
+     transform: translateY(100vh) — сдвигает каждый элемент вниз на высоту окна.
+     opacity: 0 — кнопка невидима, пока не стартует анимация.
+  */
+  transform: translateY(100vh);
+  opacity: 0;
+
+  /* Запуск анимации выезда (slideUpFromBottom) с задержкой по-умолчанию = 0s */
+  animation-name: slideUpFromBottom;
+  animation-duration: 0.6s;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); /* ease-out */
+  animation-fill-mode: forwards;
+  /* animation-delay будет задаваться ниже через nth-child */
+}
+
+/* --------------------------------------
+   3) Псевдоклассы для поочерёдной задержки
+   -------------------------------------- */
+/* Первая кнопка (nth-child(1)) — задержка 0.1s */
+.button-container .btn-custom:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+/* Вторая кнопка — задержка 0.2s */
+.button-container .btn-custom:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+/* Третья кнопка — задержка 0.3s */
+.button-container .btn-custom:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+/* Четвёртая кнопка — задержка 0.4s */
+.button-container .btn-custom:nth-child(4) {
+  animation-delay: 0.4s;
+}
+
+/* Пятая кнопка — задержка 0.5s (если есть) */
+.button-container .btn-custom:nth-child(5) {
+  animation-delay: 0.5s;
+}
+
+/* Добавьте аналогичные правила, если кнопок больше */
+
+/* 4) Кадры «выезда» из низа экрана вверх */
+@keyframes slideUpFromBottom {
+  0% {
+    transform: translateY(100vh);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* ======================================
+   5) Hover/active/focus и другие эффекты
+      (оставляем ваши существующие)
+   ====================================== */
+.btn-custom:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+}
+
+.btn-custom:active {
+  transform: translateY(0) scale(0.95);
+}
+
+.btn-custom:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.6);
+}
+
+.btn-custom .ripple {
+  position: absolute;
+  border-radius: 50%;
+  transform: scale(0);
+  background: rgba(255, 255, 255, 0.6); /* чуть более яркий цвет */
+  animation: ripple-animation 400ms cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+}
+
+@keyframes ripple-animation {
+  0% {
+    transform: scale(0);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(4);    /* сначала быстро разрастаясь */
+    opacity: 0.4;
+  }
+  100% {
+    transform: scale(8);    /* выносим намного дальше */
+    opacity: 0;
+  }
+}
+
+.btn-custom:disabled {
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.5);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* ======================================
+   6) Медиазапрос для мобильных (≤768px)
+   ====================================== */
+@media (max-width: 768px) {
+  .button-container {
+    /* Мобильный логотип: top=110px + height=120px → низ=230px +30 = 260px */
+    top: 260px;
+    max-width: 300px;
+    gap: 12px;
+  }
+  .button-container .btn-custom {
+    padding: 10px 20px;
+    min-height: 50px;
+    min-width: 350px;
+    font-size: 18px;
+    border-radius: 10px;
+
+    /* На мобильных задержки чуть укоротим */
+  }
+  .button-container .btn-custom:nth-child(1) {
+    animation-delay: 0.1s;
+  }
+  .button-container .btn-custom:nth-child(2) {
+    animation-delay: 0.2s;
+  }
+  .button-container .btn-custom:nth-child(3) {
+    animation-delay: 0.3s;
+  }
+  /* и так далее по количеству кнопок… */
+}
+
+/* Exit-анимация для кнопок: сдвиг вниз + исчезнуть */
+.btn-custom.animate-exit {
+  animation-name: slideDownFromTop;
+  animation-duration: 0.6s;
+  animation-timing-function: cubic-bezier(0.65, 0.05, 0.36, 1);
+  animation-fill-mode: forwards;
+}
+
+/* Стагеринг: первая кнопка уезжает с задержкой 0.1s, вторая — 0.2s и т.д. */
+.btn-exit1 { animation-delay: 0.1s; }
+.btn-exit2 { animation-delay: 0.2s; }
+.btn-exit3 { animation-delay: 0.3s; }
+/* Добавьте btn-exit4, btn-exit5… по тому же принципу */
+
+/* Ключевые кадры для уезда вниз */
+@keyframes slideDownFromTop {
+  0% { transform: translateY(0);   opacity: 1; }
+  100% { transform: translateY(100vh); opacity: 0; }
+}
+
+
+
+
+

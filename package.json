@@ -1,0 +1,59 @@
+{
+  "name": "miniapp",
+  "version": "0.1.0",
+  "private": true,
+  "proxy": "http://localhost:5000",
+  "dependencies": {
+    "@craco/craco": "^7.1.0",
+    "@testing-library/dom": "^10.4.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.2.0",
+    "@testing-library/user-event": "^13.5.0",
+    "axios": "^1.7.9",
+    "framer-motion": "^12.16.0",
+    "react": "^19.0.0",
+    "react-autosuggest": "^10.1.0",
+    "react-datepicker": "^8.2.1",
+    "react-div-100vh": "^0.7.0",
+    "react-dom": "^19.0.0",
+    "react-mobile-picker": "^1.0.1",
+    "react-parallax": "^3.5.1",
+    "react-router-dom": "^7.1.5",
+    "react-scripts": "^5.0.1",
+    "react-scroll-into-view-if-needed": "^3.0.1",
+    "react-select": "^5.10.0",
+    "react-swipeable": "^7.0.2",
+    "socket.io-client": "^4.8.1",
+    "web-push": "^3.6.7",
+    "web-vitals": "^2.1.4"
+  },
+  "scripts": {
+    "start": "craco start",
+    "build": "craco build",
+    "test": "craco test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "css-minimizer-webpack-plugin": "^7.0.0",
+    "file-loader": "^6.2.0",
+    "react-app-rewired": "^2.2.1"
+  }
+}
