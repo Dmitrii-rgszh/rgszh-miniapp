@@ -1,0 +1,53 @@
+/* Базовый «стеклянный» стиль */
+.option-button {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 8px;
+  padding: 15px 2px;
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+/* Hover-эффект */
+.option-button:hover {
+  transform: none;
+}
+
+/* Выбранное состояние */
+.option-button.selected {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.8);
+
+  /* запускаем пульсацию ореола */
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+  }
+  50% {
+    box-shadow: 0 0 8px 4px rgba(255, 255, 255, 0.4);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+  }
+}
+
+/* Вариант 2: цветная подсветка */
+/*
+.option-button.selected {
+  background: rgba(30, 144, 255, 0.3);  // легкий синий оттенок
+  border-color: rgba(30, 144, 255, 0.8);
+}
+*/
+
+/* Вариант 3: тень на выбранной кнопке */
+/*
+.option-button.selected {
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
+}
+*/

@@ -27,14 +27,30 @@
   gap: 14px;                  /* Расстояние между кнопками */
 
   width: 100%;
-  max-width: 350px;           /* Можно скорректировать */
+  max-width: 300px;           /* Можно скорректировать */
   z-index: 2;
 
   /* Позиция контейнера на экране (30px ниже низа логотипа): */
   /* логотип: top = 110px, height ≈ 160px → низ = 270px; +30 = 300px */
-  top: 300px;
+  top: 350px;
 
   /* Никакой height — контейнер «подстраивается» под кнопки */
+}
+
+/* каждая строка «опрос + QR» */
+.poll-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* чтобы главный btn занял всё оставшееся место */
+  width: 100%;                     /* растягиваемся на 100% container */
+  margin-bottom: 16px;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.poll-row.animate-row {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 /* ======================================
@@ -192,7 +208,7 @@
   .button-container .btn-custom {
     padding: 10px 20px;
     min-height: 50px;
-    min-width: 350px;
+    min-width: 280px;
     font-size: 18px;
     border-radius: 10px;
 
@@ -230,7 +246,128 @@
   100% { transform: translateY(100vh); opacity: 0; }
 }
 
+.btn-qr {
+  width: 48px;     /* фиксированный размер */
+  height: 48px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
+/* SVG‑иконка */
+.btn-qr svg {
+  width: 24px;
+  height: 24px;
+  fill: white;
+  stroke: none;
+}
 
+/* Порядковые задержки появления (slide-up) для QR‑кнопок */
+/* Всего 6 кнопок в .button-container: 3 опросные + 3 QR */
+.button-container .btn-custom:nth-child(1) { animation-delay: 0.10s; } /* 1-я опросная */
+.button-container .btn-custom:nth-child(2) { animation-delay: 0.15s; } /* 1-я QR */
+.button-container .btn-custom:nth-child(3) { animation-delay: 0.20s; } /* 2-я опросная */
+.button-container .btn-custom:nth-child(4) { animation-delay: 0.25s; } /* 2-я QR */
+.button-container .btn-custom:nth-child(5) { animation-delay: 0.30s; } /* 3-я опросная */
+.button-container .btn-custom:nth-child(6) { animation-delay: 0.35s; } /* 3-я QR */
+
+/* Выезд (exit) stagerring для QR‑кнопок */
+.btn-exit4 { animation-delay: 0.40s; } /* 1-я QR */
+.btn-exit5 { animation-delay: 0.50s; } /* 2-я QR */
+.btn-exit6 { animation-delay: 0.60s; } /* 3-я QR */
+
+.poll-row {
+  display: flex;
+  align-items: center;
+  justify-content: center; /* или space-between, если нужно растянуть */
+  gap: 12px;              /* расстояние между кнопками */
+  margin-bottom: 16px;    /* отступ между строками */
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+/* Когда нужно «выкатить» строки */
+.poll-row.animate-row {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ----------------------------------------- */
+/* 2) QR‑кнопка в том же стиле, что и .btn-custom */
+/* ----------------------------------------- */
+.btn-qr {
+  flex: 0 0 48px;        /* не растягиваем, фиксируем ширину 48px */
+  height: 48px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid rgba(255,255,255,0.17);
+  background: rgba(255,255,255,0.12);
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+/* Чтобы ripple‑эффект тоже работал */
+.btn-qr .ripple {
+  border-radius: 50%;
+}
+
+.btn-qr svg {
+  width: 20px;
+  height: 20px;
+  fill: white;
+  stroke: none;
+}
+
+/* QR‑модалка */
+.qr-modal {
+  position: fixed;
+  top: 0; left: 0; right:0; bottom:0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+}
+
+/* Полупрозрачный фон */
+.qr-overlay {
+  position: absolute;
+  top:0; left:0; right:0; bottom:0;
+  background: rgba(0,0,0,0.6);
+}
+
+/* Окошко с контентом */
+.qr-box {
+  position: relative;
+  background: rgba(255,255,255,1);
+  border-radius: 16px;
+  padding: 24px;
+  text-align: center;
+  z-index: 21;
+  max-width: 90%;
+}
+
+/* Сам QR */
+.qr-box img {
+  width: 256px;
+  height: 256px;
+  margin-bottom: 16px;
+}
+
+/* Подпись с названием опроса */
+.qr-label {
+  color: black;
+  font-size: 24px;
+  margin-bottom: 16px;
+}
+
+/* Кнопка «Закрыть» */
+.btn-close {
+  width: 120px;
+  margin: 0 auto;
+}
 
 

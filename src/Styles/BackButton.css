@@ -5,7 +5,7 @@
 
 .back-btn {
   position: absolute;
-  top: 140px;
+  top: 180px;
   left: -60px;  /* за пределами видимой области */
   width: 64px;
   height: 64px;
@@ -56,7 +56,7 @@
     opacity: 0;
   }
   to {
-    left: calc(50% - 90px);  /* Рядом с логотипом по центру */
+    left: calc(50% - 200px);  /* Рядом с логотипом по центру */
     opacity: 1;
   }
 }
@@ -92,7 +92,7 @@
 @media (max-width: 768px) {
   .back-btn {
     top: 140px;
-    left: 60px !important;    /* Сдвинута к левому краю экрана */
+    left: 70px !important;    /* Сдвинута к левому краю экрана */
     width: 65px;
     height: 65px;
     border-radius: 12px;

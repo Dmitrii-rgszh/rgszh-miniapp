@@ -198,7 +198,7 @@ html, body, #root {
   @keyframes slideUpWrapperMobile {
     from {
       opacity: 1;
-      top:   110px;  /* <-- стартовая позиция 110px */
+      top:   100px;  /* <-- стартовая позиция 110px */
     }
     to {
       opacity: 0;
@@ -221,7 +221,7 @@ html, body, #root {
   @keyframes slideUpWrapperLarge {
     from {
       opacity: 1;
-      top:   110px;  /* <-- стартовая позиция 110px */
+      top:   100px;  /* <-- стартовая позиция 110px */
     }
     to {
       opacity: 0;

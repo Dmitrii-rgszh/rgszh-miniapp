@@ -2,16 +2,16 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Autosuggest          from 'react-autosuggest';
-import { useSwipeable }     from 'react-swipeable';
 import { useNavigate }      from 'react-router-dom';
 
 import './Styles/logo.css';         // стили и анимации логотипа
 import './Styles/Buttons.css';      // базовые стили кнопок
-import './FeedbackPage.css'; // правки специфичные для FeedbackPage (контент, next-btn и т.д.)
+ // правки специфичные для FeedbackPage (контент, next-btn и т.д.)
 import './Styles/background.css';
 import './Styles/BackButton.css';
 import './Styles/NextButton.css';
-
+import './Styles/OptionButton.css';
+import './FeedbackPage.css';
 import backgroundImage from './components/background.png';
 import logoImage       from './components/logo.png';
 import piImage         from './components/pi.png';
@@ -27,6 +27,22 @@ export default function FeedbackPage() {
   const nextRef = useRef(null);
   const navigate = useNavigate();
   const [rippleArray, setRippleArray] = useState([]);
+
+  // вычисляем корень API в зависимости от окружения
+  const getApiBase = () => {
+    const { hostname, port, protocol } = window.location;
+    // если мы в React‑dev‑server (localhost:3000) — зовём бэкенд на 5000
+    if ((hostname === 'localhost' || hostname === '127.0.0.1') && port === '3000') {
+      return `${protocol}//${hostname}:5000`;
+    }
+    // во всех остальных случаях (prod‑сборка, когда Flask раздаёт статику)
+    // оставляем относительный путь:
+    return '';
+  };
+
+const API_BASE_URL = getApiBase();
+
+
   // ---------------------------------------------
   // 2) Состояние имени пользователя (localStorage)
   // ---------------------------------------------
@@ -110,9 +126,6 @@ export default function FeedbackPage() {
   // Шаг 8: общее впечатление
   const [impression, setImpression] = useState('');
 
-  // Шаг 9: NPS (рекомендация)
-  const [recommendation, setRecommendation] = useState(null);
-
   // ---------------------------------------------
   // 5) При изменении списка спикеров пересоздаём качества
   // ---------------------------------------------
@@ -181,6 +194,7 @@ export default function FeedbackPage() {
   // 9) Дополнительные опции (шаг 6)
   // ---------------------------------------------
   const toggleAdditionalSelection = (option) => {
+    // 1) «Мне всего хватает» — эксклюзивно
     if (option === 'Мне всего хватает') {
       if (additionalSelections.includes(option)) {
         setAdditionalSelections([]);
@@ -191,20 +205,27 @@ export default function FeedbackPage() {
       }
       return;
     }
-    if (additionalSelections.includes('Мне всего хватает')) return;
 
+    // 2) Если ранее стояло «Мне всего хватает» — сбрасываем его и сразу ставим новый выбор
+    if (additionalSelections.includes('Мне всего хватает')) {
+      setAdditionalSelections([option]);
+      if (option !== 'Статистических данных') setStatsDetails('');
+      return;
+    }
+
+    // 3) Ограничение в 3 варианта
     if (!additionalSelections.includes(option) && additionalSelections.length >= 3) {
       alert('Можно выбрать не более 3 вариантов');
       return;
     }
+
+    // 4) Обычное переключение
     if (additionalSelections.includes(option)) {
-      // Снимаем выбор
+      // снимаем выбор
       setAdditionalSelections(prev => prev.filter(x => x !== option));
-      if (option === 'Статистических данных') {
-        setStatsDetails('');
-      }
+      if (option === 'Статистических данных') setStatsDetails('');
     } else {
-      // Добавляем выбор
+      // добавляем выбор
       setAdditionalSelections(prev => [...prev, option]);
     }
   };
@@ -227,16 +248,7 @@ export default function FeedbackPage() {
       default: return '';
     }
   };
-
-  // ---------------------------------------------
-  // 11) Swipeable для перелистывания шагов
-  // ---------------------------------------------
-  const swipeHandlers = useSwipeable({
-    onSwipedLeft:  () => { if (currentStep < 9) handleNext(); },
-    onSwipedRight: () => { if (currentStep > 1) handlePrev(); },
-    preventDefault: true
-  });
-
+  
   // ---------------------------------------------
   // 12) Проверка canGoNext (условия перехода вперёд)
   // ---------------------------------------------
@@ -245,7 +257,7 @@ export default function FeedbackPage() {
       case 1:
         return partner.trim() !== '' && partners.includes(partner);
       case 2:
-        return speakersList.every(s => s.fullName.trim() !== '' && speakersData.includes(s.fullName));
+        return speakersList.some(s => s.fullName.trim() !== '' && speakersData.includes(s.fullName));
       case 3:
         return countSelectedQualities() >= 3;
       case 4:
@@ -258,13 +270,18 @@ export default function FeedbackPage() {
       case 5:
         return brightThoughts.trim().length >= 5;
       case 6:
+        // Если выбрали «Статистических данных» — требуется ввод ≥ 5 символов
+        if (additionalSelections.includes('Статистических данных')) {
+          return statsDetails.trim().length >= 5;
+        }
+        // Иначе достаточно хотя бы одного выбора
         return additionalSelections.length > 0;
       case 7:
         return mood.trim() !== '';
       case 8:
         return impression.trim() !== '';
       case 9:
-        return recommendation !== null;
+        return hasChangedRating;
       default:
         return true;
     }
@@ -380,12 +397,12 @@ export default function FeedbackPage() {
     };
 
     try {
-      const response = await fetch('https://rgszh-miniapp.org/api/proxy/feedback/save', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-        credentials: 'include',
-      });
+      const response = await fetch('/api/feedback/save', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify(data),
+                          credentials: 'include',
+                        });
       if (!response.ok) {
         alert('Ошибка при сохранении данных');
       }
@@ -409,11 +426,41 @@ export default function FeedbackPage() {
     }
   }, [currentStep]);
 
+  useEffect(() => {
+  if ((currentStep === 2 || currentStep === 3) && nextRef.current) {
+    nextRef.current.classList.add('animate-next');
+  }
+  }, [currentStep]);
+
   // ---------------------------------------------
   // 18) renderSuggestion для Autosuggest
   // ---------------------------------------------
   const renderSuggestion = suggestion => <div>{suggestion}</div>;
+  const titleRef = useRef(null);
+  const inputRef = useRef(null);
+  
+  // Шаг 9: рекомендация
+  const [recommendation, setRecommendation] = useState(3);
+const [hasChangedRating, setHasChangedRating] = useState(false);
 
+useEffect(() => {
+  if (recommendation !== 3) {
+    setHasChangedRating(true);
+  }
+}, [recommendation]);
+
+  // Функция для текста под слайдером
+  function getCommentForRating(val) {
+    switch (val) {
+      case 1: return 'Очень плохо';
+      case 2: return 'Могло быть лучше';
+      case 3: return 'Нормально';
+      case 4: return 'Хорошо';
+      case 5: return 'Огонь! Всем и всегда!';
+      default: return '';
+    }
+  }
+  
   // ---------------------------------------------
   // 19) renderStep: рендерим контент по текущему шагу
   // ---------------------------------------------
@@ -444,6 +491,7 @@ export default function FeedbackPage() {
         return (
           <div>
             <h2>Введите ФИО спикера(ов)</h2>
+
             {speakersList.map((speaker, index) => (
               <div key={speaker.id} style={{ marginBottom: '10px', textAlign: 'center' }}>
                 <div className="autosuggest-container">
@@ -462,62 +510,97 @@ export default function FeedbackPage() {
                     }}
                   />
                 </div>
-                {speakersList.length > 1 && (
-                  <button
-                    type="button"
-                    className="delete-speaker-btn"
-                    onClick={() => handleRemoveSpeaker(index)}
-                  >
-                    Удалить
-                  </button>
+
+                {/* Кнопки под последним полем */}
+                {index === speakersList.length - 1 && (
+                  <div style={{
+                    display: 'inline-flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    gap: '12px',
+                    margin: '0px auto'
+                  }}>
+                    {/* Всегда: Добавить спикера */}
+                    <button
+                      type="button"
+                      className="add-speaker-btn"
+                      onClick={handleAddSpeaker}
+                    >
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+                        <path d="M12 5v14M5 12h14" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+                      </svg>
+                    </button>
+
+                    {/* Удалить: только если спикеров больше одного */}
+                    {speakersList.length > 1 && (
+                      <button
+                        type="button"
+                        className="delete-speaker-btn"
+                        onClick={() => handleRemoveSpeaker(index)}
+                      >
+                        <svg width="24" height="24" viewBox="0 0 20 20" fill="none">
+                          <path d="M3 6h18" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+                          <path d="M8 6V4h8v2" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+                          <path d="M19 6l-1 14H6L5 6" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+                          <path d="M10 11v6M14 11v6" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+                        </svg>
+                      </button>
+                    )}
+                  </div>
                 )}
               </div>
             ))}
-            <button type="button" className="add-speaker-btn" onClick={handleAddSpeaker}>
-              <span className="add-speaker-symbol">+</span>
-            </button>
           </div>
         );
 
       case 3:
         return (
-          <div>
+          <div className="step3-container">
             <h2>Оцените качества спикера</h2>
             <h3>{speakersList[currentSpeakerIndex].fullName || 'Спикер'}</h3>
-            {qualityRows.map((row, idx) => {
-              const currentValue = speakerQualities[currentSpeakerIndex]?.[idx];
-              return (
-                <div key={idx} className="quality-row">
-                  <button
-                    type="button"
-                    className={`quality-option-btn ${currentValue === row.positive ? 'positive-selected' : ''}`}
-                    onClick={() => handleQualitySelectForSpeaker(idx, 'positive')}
-                  >
-                    {row.positive}
-                  </button>
-                  <button
-                    type="button"
-                    className={`quality-option-btn ${currentValue === row.negative ? 'negative-selected' : ''}`}
-                    onClick={() => handleQualitySelectForSpeaker(idx, 'negative')}
-                  >
-                    {row.negative}
-                  </button>
-                </div>
-              );
-            })}
-            {countSelectedQualities() < 3 && <p className="quality-warning">Выберите минимум 3 качества</p>}
+
+            <div className="qualities-wrapper">
+              {qualityRows.map((row, idx) => {
+                const selected = speakerQualities[currentSpeakerIndex]?.[idx];
+                return (
+                  <div key={idx} className="quality-row">
+                    <button
+                      type="button"
+                      className={`option-button ${selected === row.positive ? 'selected' : ''}`}
+                      onClick={() => handleQualitySelectForSpeaker(idx, 'positive')}
+                    >
+                      {row.positive}
+                    </button>
+                    <button
+                      type="button"
+                      className={`option-button ${selected === row.negative ? 'selected' : ''}`}
+                      onClick={() => handleQualitySelectForSpeaker(idx, 'negative')}
+                    >
+                      {row.negative}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+
+            {countSelectedQualities() < 3 && (
+              <p className="quality-warning">Выберите минимум 3 качества</p>
+            )}
           </div>
         );
 
       case 4:
         return (
-          <div>
+          <div className="step4-container">
             <h2>Оцените полезность информации</h2>
+
             <div className="usefulness-container">
               <button
                 type="button"
-                className={`usefulness-btn ${
-                  usefulness === 'Полезно в работе (буду применять на практике)' ? 'positive-selected' : ''
+                className={`option-button ${
+                  usefulness === 'Полезно в работе (буду применять на практике)'
+                    ? 'selected'
+                    : ''
                 }`}
                 onClick={() => {
                   setUsefulness('Полезно в работе (буду применять на практике)');
@@ -526,121 +609,114 @@ export default function FeedbackPage() {
               >
                 Полезно в работе (буду применять на практике)
               </button>
+
               <button
                 type="button"
-                className={`usefulness-btn ${
-                  usefulness === 'Бесполезно в работе (с моими клиентами это не работает)' ? 'negative-selected' : ''
+                className={`option-button ${
+                  usefulness ===
+                  'Бесполезно в работе (с моими клиентами это не работает)'
+                    ? 'selected'
+                    : ''
                 }`}
-                onClick={() => setUsefulness('Бесполезно в работе (с моими клиентами это не работает)')}
+                onClick={() =>
+                  setUsefulness(
+                    'Бесполезно в работе (с моими клиентами это не работает)'
+                  )
+                }
               >
                 Бесполезно в работе (с моими клиентами это не работает)
               </button>
             </div>
-            {usefulness === 'Бесполезно в работе (с моими клиентами это не работает)' && (
-              <div className="useless-argument-container">
-                <p className="useless-argument-label">Аргументируйте свой ответ:</p>
-                <textarea
-                  className="useless-argument-textarea"
+
+            {usefulness ===
+              'Бесполезно в работе (с моими клиентами это не работает)' && (
+              <div className="argument-container">
+                <input
+                  type="text"
+                  className="argument-input"
+                  placeholder="Аргументация (минимум 30 символов)"
                   value={uselessArgument}
-                  onChange={(e) => setUselessArgument(e.target.value)}
+                  onChange={e => setUselessArgument(e.target.value)}
                 />
               </div>
             )}
           </div>
         );
-
-      case 5:
-        return (
-          <div>
-            <h2>Поделитесь самыми яркими впечатлениями о мероприятии</h2>
-            <textarea
-              className="bright-thoughts-textarea"
-              value={brightThoughts}
-              onChange={(e) => setBrightThoughts(e.target.value)}
-            />
-          </div>
-        );
+      
+        case 5:
+         return (
+           <div className="step5-container">
+             <h2>Поделитесь самыми яркими впечатлениями о мероприятии</h2>
+             <textarea
+               className="bright-thoughts-input"
+               placeholder="Не менее 5 символов"
+               value={brightThoughts}
+               onChange={e => setBrightThoughts(e.target.value)}
+               rows={4}
+             />
+           </div>
+         );
 
       case 6:
         return (
-          <div>
-            <h2>Что хотелось бы добавить к мероприятию?</h2>
-            {additionalOptions.map(option => {
-              const isSelected = additionalSelections.includes(option);
+          <div className="step6-container">
+            <h2>Чего хотелось бы добавить к мероприятию?</h2>
+            <div className="additional-options">
+              {additionalOptions.map(option => {
+                const isAllSelected = additionalSelections.includes('Мне всего хватает');
+                const isSelected   = additionalSelections.includes(option);
 
-              if (option === 'Мне всего хватает') {
                 return (
-                  <button
-                    key={option}
-                    type="button"
-                    className={`add-option-btn ${isSelected ? 'selected' : ''}`}
-                    onClick={() => toggleAdditionalSelection(option)}
-                  >
-                    {option}
-                  </button>
-                );
-              }
-
-              if (option === 'Статистических данных') {
-                return (
-                  <React.Fragment key={option}>
+                  <div key={option} className="option-item">
                     <button
                       type="button"
-                      className={`add-option-btn ${isSelected ? 'selected' : ''}`}
+                      className={`option-button ${isSelected ? 'selected' : ''}`}
                       onClick={() => toggleAdditionalSelection(option)}
                     >
                       {option}
                     </button>
-                    {isSelected && (
-                      <div className="stats-details-container">
-                        <input
-                          type="text"
-                          className="stats-details-input"
-                          placeholder="Уточните, какие именно статистические данные"
-                          value={statsDetails}
-                          onChange={(e) => setStatsDetails(e.target.value)}
-                        />
-                      </div>
-                    )}
-                  </React.Fragment>
-                );
-              }
 
-              return (
-                <button
-                  key={option}
-                  type="button"
-                  className={`add-option-btn ${isSelected ? 'selected' : ''}`}
-                  onClick={() => toggleAdditionalSelection(option)}
-                >
-                  {option}
-                </button>
-              );
-            })}
+                    {/* Рендерим инпут прямо под кнопкой «Статистических данных» */}
+                    {option === 'Статистических данных' && isSelected && (
+                      <input
+                        type="text"
+                        className="stats-details-input"
+                        placeholder="Каких именно?"
+                        value={statsDetails}
+                        onChange={e => setStatsDetails(e.target.value)}
+                        minLength={5}
+                        required
+                      />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </div>
         );
 
+      {/* Шаг 7: Настроение пользователя после тренинга */}
       case 7:
         return (
-          <div>
-            <h2>Я чувствовал себя на мероприятии...</h2>
-            <div className="mood-container">
+          <div className="step7-container">
+            <h2>Ваше настроение после тренинга</h2>
+            <div className="impression-container">
               <button
-                className={`mood-btn ${mood === 'happy' ? 'selected' : ''}`}
+                className={`impression-btn ${mood === 'happy' ? 'selected' : ''}`}
                 style={{ fontSize: '60px' }}
                 onClick={() => setMood('happy')}
               >
                 😃
               </button>
               <button
-                className={`mood-btn ${mood === 'neutral' ? 'selected' : ''}`}
+                className={`impression-btn ${mood === 'neutral' ? 'selected' : ''}`}
                 style={{ fontSize: '60px' }}
                 onClick={() => setMood('neutral')}
               >
                 😐
               </button>
               <button
-                className={`mood-btn ${mood === 'sad' ? 'selected' : ''}`}
+                className={`impression-btn ${mood === 'sad' ? 'selected' : ''}`}
                 style={{ fontSize: '60px' }}
                 onClick={() => setMood('sad')}
               >
@@ -649,62 +725,51 @@ export default function FeedbackPage() {
             </div>
           </div>
         );
-
+  
       case 8:
         return (
-          <div>
+          <div className="step8-container">
             <h2>Общее впечатление от тренинга</h2>
             <div className="impression-container">
               <button
                 className={`impression-btn ${impression === 'happy' ? 'selected' : ''}`}
-                style={{ fontSize: '60px' }}
                 onClick={() => setImpression('happy')}
-              >
-                😃
-              </button>
+                style={{ fontSize: '60px' }}
+              >😃</button>
               <button
                 className={`impression-btn ${impression === 'neutral' ? 'selected' : ''}`}
-                style={{ fontSize: '60px' }}
                 onClick={() => setImpression('neutral')}
-              >
-                😐
-              </button>
+                style={{ fontSize: '60px' }}
+              >😐</button>
               <button
                 className={`impression-btn ${impression === 'sad' ? 'selected' : ''}`}
-                style={{ fontSize: '60px' }}
                 onClick={() => setImpression('sad')}
-              >
-                ☹️
-              </button>
+                style={{ fontSize: '60px' }}
+              >☹️</button>
             </div>
           </div>
         );
 
+
       case 9:
         return (
-          <div>
+          <div className="step9-container">
             <h2>Насколько вы готовы рекомендовать тренинг?</h2>
-            <p>Оцените по шкале от 1 до 5</p>
-            <div className="recommendation-slider-container">
-              <input
-                type="range"
-                min="1"
-                max="5"
-                step="1"
-                value={recommendation !== null ? recommendation : 3}
-                onChange={(e) => setRecommendation(parseInt(e.target.value, 10))}
-                className="recommendation-slider"
-              />
-              <div
-                className="recommendation-value"
-                style={{ color: getRecommendationColor(recommendation !== null ? recommendation : 3) }}
-              >
-                {recommendation !== null ? recommendation : 3}
-              </div>
-              <div className="recommendation-label">
-                {getRecommendationLabel(recommendation !== null ? recommendation : 3)}
-              </div>
-            </div>
+            <p className="step9-subtitle">Оцените по шкале от 1 до 5</p>
+
+            <input
+              type="range"
+              min="1"
+              max="5"
+              value={recommendation}
+              className="rating-slider"
+              onChange={e => setRecommendation(+e.target.value)}
+              // динамически меняем backgroundSize, чтобы заполнение шло вправо
+              style={{ backgroundSize: `${((recommendation - 1) / 4) * 100}% 100%` }}
+            />
+
+            <span className="rating-value">{recommendation}</span>
+            <p className="rating-comment">{getCommentForRating(recommendation)}</p>
           </div>
         );
 
@@ -718,29 +783,37 @@ export default function FeedbackPage() {
   // ---------------------------------------------
   if (isFinished) {
     return (
-      <div className="thank-you-message" style={{ backgroundImage: `url(${backgroundImage})` }}>
-        {/* Логотип */}
-        <div ref={logoRef} className="logo-wrapper">
+      <div
+        className="mainmenu-container feedback-container"
+        style={{ backgroundImage: `url(${backgroundImage})` }}
+      >
+        {/* фоновые точки и π */}
+        <div className="subtle-dot dot-1" />
+        <div className="subtle-dot dot-2" />
+        <div className="subtle-dot dot-3" />
+        <div className="subtle-dot dot-4" />
+        <div className="subtle-dot dot-5" />
+        <div className="subtle-dot dot-6" />
+        <div className="subtle-dot dot-7" />
+        <div className="subtle-dot dot-8" />
+        <div className="subtle-dot dot-9" />
+        <div className="subtle-dot dot-10" />
+        <div className="pi-wrapper">
+          <img src={piImage} className="pi-fly" alt="Pi" />
+        </div>
+        <div className="mainmenu-overlay" />
+
+        {/* Логотип (анимация «въезда») */}
+        <div ref={logoRef} className="logo-wrapper animate-logo">
           <img src={logoImage} alt="Логотип" className="logo-image" />
         </div>
-        {/* Кнопка «Назад» */}
-        <div className="back-btn-container">
-          <button className="back-btn" onClick={() => navigate('/main-menu')}>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M12 20l-8-8 8-8"
-                stroke="white"
-                strokeWidth="2"
-                fill="none"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
+
+        {/* Центрированный текст благодарности */}
+        <div className="content-wrapper">
+          <h2 className="thank-you-text">
+            Спасибо за прохождение оценки мероприятия! Отличных продаж!
+          </h2>
         </div>
-        <h2 className="thank-you-text">
-          Спасибо за прохождение оценки мероприятия{userName ? `, ${userName}` : ''}!
-        </h2>
       </div>
     );
   }
@@ -793,67 +866,84 @@ export default function FeedbackPage() {
         </button>
       )}
 
-      {/* Кнопка «Далее» — справа от логотипа, только на шаге 1 */}
-      {currentStep === 1 && (
+      {/* Кнопка «Далее» (1–9 шаг) */}
+      {(currentStep >= 1 && currentStep <= 9) && (
         <button
           ref={nextRef}
-          className={"next-btn" + (nextButtonExit ? " animate-next-exit" : "")}
-          onClick={(e) => { handleNextRipple(e); handleNext(e); }}
+          className={
+            "next-btn" +
+            ( nextButtonExit
+                ? " animate-next-exit"
+                : canGoNext()
+                  ? " animate-next"
+                  : ""
+            )
+          }
+          onClick={e => {
+            handleNextRipple(e);
+            currentStep < 9 ? handleNext() : handleFinish();
+          }}
           disabled={!canGoNext()}
         >
+          {/* ripple-эффект */}
           {rippleArray.map(r => (
             <span key={r.key} className="ripple" style={r.style} />
           ))}
-          <span className={"shaker" + (canGoNext() && !nextButtonExit ? " shake-btn" : "")}>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              width="24"
-              stroke="white"
-              fill="white"
-              height="24"
-            >
-              <path
-                d="M12 4l8 8-8 8"
-                stroke="white"
-                strokeWidth="1"
-                fill="white"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </span>
-        </button>
-      )}
 
-      {/* ====== Контент шага ====== */}
-      <div className="content-wrapper" {...swipeHandlers}>
-        {renderStep()}
-        {/* Кнопки «Вперёд» и «Готово» для шагов > 1 (как есть) */}
-        {currentStep > 1 && (
-          <div className="top-btn-container">
+          {/* иконка внутри «шейкера» */}
+          <span
+            className={
+              "shaker" +
+              ( !nextButtonExit && canGoNext()
+                ? (currentStep < 9 ? " shake-btn" : " pop-btn")
+                : ""
+              )
+            }
+          >
             {currentStep < 9 ? (
-              <button className="top-btn" onClick={handleNext} disabled={!canGoNext()}>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
+              <>
+                {/* закрашенная белым стрелка вправо */}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  width="24"
+                  height="24"
+                  stroke="none"
+                  fill="none"
+                >
+                  <polygon
+                    points="9,5 17,12 9,19"
+                    fill="white"
+                    stroke="none"
+                  />
+                </svg>
+              </>
+            ) : (
+              <>
+                {/* галочка — конец опроса */}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  width="24"
+                  height="24"
+                  fill="white"
+                  stroke="none"
+                >
                   <path
-                    d="M12 4l8 8-8 8"
-                    stroke="white"
+                    d="M5 13l4 4L19 7"
                     strokeWidth="2"
-                    fill="none"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   />
                 </svg>
-              </button>
-            ) : (
-              <button className="top-btn finish-btn" onClick={handleFinish} disabled={!canGoNext()}>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white">
-                  <path d="M9 16.17L4.83 12l-1.42 1.41L9 19l10-10-1.41-1.41z" />
-                </svg>
-              </button>
+              </>
             )}
-          </div>
-        )}
+          </span>
+        </button>
+      )}
+      
+      <div className="content-wrapper">
+        {renderStep()}  
       </div>
     </div>
   );

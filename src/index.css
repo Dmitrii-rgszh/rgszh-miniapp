@@ -1,5 +1,8 @@
 body, h1, h2, h3, h4, h5, h6, button, input, textarea {
-  font-family: 'Montserrat', 'Arial', sans-serif !important;
+  font-family: 'Montserrat', sans-serif;
 }
+
+/* Подключение Montserrat (300 — лёгкое, 400 — обычное, 600 — полужирное) */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&display=swap');
 
 
