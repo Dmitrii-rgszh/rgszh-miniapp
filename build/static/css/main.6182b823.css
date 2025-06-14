@@ -1,4 +1,6 @@
 @import url(https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap);
+@import url(https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&display=swap);
+@import url(https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&display=swap);
 /* =============================================================================
    src/Styles/global.css
 
@@ -99,8 +101,9 @@ html, body, #root {
 
 .subtle-dot {
   position: absolute;
-  background: rgba(255,255,255,0.04);
+  background: rgba(255,255,255,0.08);
   border-radius: 50%;
+  filter: brightness(2);
   animation: move 15s linear infinite, fade 20s ease-in-out infinite;
   z-index: 1;
 }
@@ -123,19 +126,19 @@ html, body, #root {
 .welcome-container .dot-1 {
   top:  10%;
   left:  5%;
-  background-color: rgba(255, 255, 255, 0.14);
+  background-color: rgba(255, 255, 255, 0.44);
   animation: moveDot1 60s linear infinite, pulseDot1 6s ease-in-out infinite;
 }
 
 @keyframes moveDot1 {
   0%   { transform: translate(0, 0) scale(1); opacity: 0.25; }
-  10%  { transform: translate(2vw, 1vh) scale(1.05); opacity: 0.12;}
-  25%  { transform: translate(4vw, 4vh) scale(1.45); opacity: 0.34;}
-  35%  { transform: translate(10vw, 7vh) scale(0.8); opacity: 0.17;}
-  50%  { transform: translate(20vw, 15vh) scale(1.2); opacity: 0.21;}
-  65%  { transform: translate(10vw, 10vh) scale(0.9); opacity: 0.28;}
-  80%  { transform: translate(2vw, 4vh) scale(1.3); opacity: 0.15;}
-  100% { transform: translate(0, 0) scale(1);}
+  10%  { transform: translate(2vw, 1vh) scale(1.05); opacity: 0.18;}
+  25%  { transform: translate(4vw, 4vh) scale(1.45); opacity: 0.39;}
+  35%  { transform: translate(10vw, 7vh) scale(0.8); opacity: 0.23;}
+  50%  { transform: translate(20vw, 15vh) scale(1.2); opacity: 0.26;}
+  65%  { transform: translate(10vw, 10vh) scale(0.9); opacity: 0.32;}
+  80%  { transform: translate(2vw, 4vh) scale(1.3); opacity: 0.2;}
+  100% { transform: translate(0, 0) scale(0.4);}
 }
 
 /* ==== ТОЧКА 2 ==== */
@@ -143,18 +146,18 @@ html, body, #root {
 .welcome-container .dot-2 {
   bottom: 10%;
   right:  5%;
-  background-color: rgba(255, 255, 255, 0.17);
+  background-color: rgba(255, 255, 255, 0.38);
   animation: moveDot2 60s linear infinite, pulseDot2 2s ease-in-out infinite;
 }
 
 @keyframes moveDot2 {
-  0%   { transform: translate(0, 0) scale(1); opacity: 0.17; }
-  15%  { transform: translate(-3vw, -4vh) scale(1.1); opacity: 0.13;}
-  30%  { transform: translate(-10vw, -10vh) scale(1.95); opacity: 0.31;}
-  50%  { transform: translate(-25vw, -20vh) scale(0.85); opacity: 0.16;}
-  70%  { transform: translate(-12vw, -8vh) scale(1.25); opacity: 0.11;}
-  90%  { transform: translate(-3vw, -2vh) scale(1.05); opacity: 0.25; }
-  100% { transform: translate(0, 0) scale(1); opacity: 0.12;}
+  0%   { transform: translate(0, 0) scale(1); opacity: 0.2; }
+  15%  { transform: translate(-3vw, -4vh) scale(1.1); opacity: 0.16;}
+  30%  { transform: translate(-10vw, -10vh) scale(1.95); opacity: 0.33;}
+  50%  { transform: translate(-25vw, -20vh) scale(0.85); opacity: 0.19;}
+  70%  { transform: translate(-12vw, -8vh) scale(1.25); opacity: 0.14;}
+  90%  { transform: translate(-3vw, -2vh) scale(1.05); opacity: 0.28; }
+  100% { transform: translate(0, 0) scale(1); opacity: 0.15;}
 }
 
 /* ==== ТОЧКА 3 ==== */
@@ -163,18 +166,18 @@ html, body, #root {
   top:  20%;
   left: 50%;
   transform: translateX(-50%);
-  background-color: rgba(255, 255, 255, 0.12);
+  background-color: rgba(255, 255, 255, 0.24);
   animation: moveDot3 70s linear infinite, pulseDot3 7s ease-in-out infinite;
 }
 
 @keyframes moveDot3 {
-  0%   { transform: translateX(-50%) translateY(0) scale(1); opacity: 0.16;}
-  20%  { transform: translateX(-40%) translateY(5vh) scale(1.18); opacity: 0.25;}
-  35%  { transform: translateX(-55%) translateY(12vh) scale(0.85); opacity: 0.11;}
-  50%  { transform: translateX(-50%) translateY(25vh) scale(1.38); opacity: 0.16;}
-  65%  { transform: translateX(-40%) translateY(18vh) scale(1.1); opacity: 0.25;}
-  85%  { transform: translateX(-53%) translateY(4vh) scale(0.95); opacity: 0.28;}
-  100% { transform: translateX(-50%) translateY(0) scale(1); opacity: 0.12;}
+  0%   { transform: translateX(-50%) translateY(0) scale(1); opacity: 0.19;}
+  20%  { transform: translateX(-40%) translateY(5vh) scale(1.18); opacity: 0.28;}
+  35%  { transform: translateX(-55%) translateY(12vh) scale(0.85); opacity: 0.13;}
+  50%  { transform: translateX(-50%) translateY(25vh) scale(1.38); opacity: 0.18;}
+  65%  { transform: translateX(-40%) translateY(18vh) scale(1.1); opacity: 0.27;}
+  85%  { transform: translateX(-53%) translateY(4vh) scale(0.95); opacity: 0.3;}
+  100% { transform: translateX(-50%) translateY(0) scale(1); opacity: 0.14;}
 }
 
 /* ==== ТОЧКА 4 ==== */
@@ -182,18 +185,18 @@ html, body, #root {
 .welcome-container .dot-4 {
   bottom: 15%;
   left:   15%;
-  background-color: rgba(255, 255, 255, 0.13);
+  background-color: rgba(255, 255, 255, 0.39);
   animation: moveDot4 90s linear infinite, pulseDot4 9s ease-in-out infinite;
 }
 
 @keyframes moveDot4 {
-  0%   { transform: translateX(-50%) translateY(0) scale(0.7); opacity: 0.11;}
-  20%  { transform: translateX(-40%) translateY(5vh) scale(1.28); opacity: 0.15;}
-  35%  { transform: translateX(-55%) translateY(12vh) scale(0.85); opacity: 0.21;}
-  50%  { transform: translateX(-50%) translateY(25vh) scale(1.68); opacity: 0.12;}
-  65%  { transform: translateX(-40%) translateY(18vh) scale(1.1); opacity: 0.08;}
-  85%  { transform: translateX(-53%) translateY(4vh) scale(0.95); opacity: 0.34;}
-  100% { transform: translateX(-50%) translateY(0) scale(1); opacity: 0.5;}
+  0%   { transform: translateX(-50%) translateY(0) scale(0.7); opacity: 0.13;}
+  20%  { transform: translateX(-40%) translateY(5vh) scale(1.28); opacity: 0.18;}
+  35%  { transform: translateX(-55%) translateY(12vh) scale(0.85); opacity: 0.24;}
+  50%  { transform: translateX(-50%) translateY(25vh) scale(1.68); opacity: 0.15;}
+  65%  { transform: translateX(-40%) translateY(18vh) scale(1.1); opacity: 0.11;}
+  85%  { transform: translateX(-53%) translateY(4vh) scale(0.95); opacity: 0.37;}
+  100% { transform: translateX(-50%) translateY(0) scale(1); opacity: 0.42;}
 }
 
 /* ==== ТОЧКА 5 ==== */
@@ -201,18 +204,18 @@ html, body, #root {
 .welcome-container .dot-5 {
   top:   5%;
   right: 20%;
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.51);
   animation: moveDot5 65s linear infinite, pulseDot5 5s ease-in-out infinite;
 }
 
 @keyframes moveDot5 {
-  0%   { transform: translateX(-50%) translateY(0) scale(0.8); opacity: 0.21;}
-  20%  { transform: translateX(-40%) translateY(5vh) scale(1.88); opacity: 0.14;}
+  0%   { transform: translateX(-50%) translateY(0) scale(0.8); opacity: 0.25;}
+  20%  { transform: translateX(-40%) translateY(5vh) scale(1.88); opacity: 0.17;}
   35%  { transform: translateX(-55%) translateY(12vh) scale(1.85); opacity: 0.34;}
-  50%  { transform: translateX(-50%) translateY(25vh) scale(1.58); opacity: 0.10;}
-  65%  { transform: translateX(-40%) translateY(18vh) scale(1.1); opacity: 0.21;}
-  85%  { transform: translateX(-53%) translateY(4vh) scale(0.65); opacity: 0.17;}
-  100% { transform: translateX(-50%) translateY(0) scale(1); opacity: 0.13;}
+  50%  { transform: translateX(-50%) translateY(25vh) scale(1.58); opacity: 0.14;}
+  65%  { transform: translateX(-40%) translateY(18vh) scale(1.1); opacity: 0.29;}
+  85%  { transform: translateX(-53%) translateY(4vh) scale(0.65); opacity: 0.21;}
+  100% { transform: translateX(-50%) translateY(0) scale(1); opacity: 0.16;}
 }
 
 /* ==== ТОЧКА 6 ==== */
@@ -220,15 +223,15 @@ html, body, #root {
 .welcome-container .dot-6 {
   bottom: 25%;
   right: 10%;
-  background-color: rgba(255, 255, 255, 0.18);
+  background-color: rgba(255, 255, 255, 0.32);
   animation: moveDot6 75s linear infinite, pulseDot6 6s ease-in-out infinite;
 }
 
 @keyframes moveDot6 {
-  0%   { transform: translate(0, 0) scale(1); opacity: 0.14}
-  10%  { transform: translate(2vw, 1vh) scale(1.05); opacity: 0.10;}
-  25%  { transform: translate(4vw, 4vh) scale(1.45); opacity: 0.17;}
-  35%  { transform: translate(10vw, 7vh) scale(0.8); opacity: 0.31;}
+  0%   { transform: translate(0, 0) scale(1); opacity: 0.18}
+  10%  { transform: translate(2vw, 1vh) scale(1.05); opacity: 0.14;}
+  25%  { transform: translate(4vw, 4vh) scale(1.45); opacity: 0.21;}
+  35%  { transform: translate(10vw, 7vh) scale(0.8); opacity: 0.38;}
   50%  { transform: translate(20vw, 15vh) scale(1.2); opacity: 0.11;}
   65%  { transform: translate(10vw, 10vh) scale(0.9); opacity: 0.21;}
   80%  { transform: translate(2vw, 4vh) scale(1.3); opacity: 0.34;}
@@ -240,18 +243,18 @@ html, body, #root {
 .welcome-container .dot-7 {
   top:   35%;
   left:  10%;
-  background-color: rgba(255, 255, 255, 0.13);
+  background-color: rgba(255, 255, 255, 0.39);
   animation: moveDot7 85s linear infinite, pulseDot7 8s ease-in-out infinite;
 }
 
 @keyframes moveDot7 {
-  0%   { transform: translate(0, 0) scale(1); opacity: 0.31;}
+  0%   { transform: translate(0, 0) scale(1); opacity: 0.41;}
   15%  { transform: translate(-3vw, -4vh) scale(1.1); opacity: 0.21;}
-  30%  { transform: translate(-10vw, -10vh) scale(1.55); opacity: 0.10;}
-  50%  { transform: translate(-25vw, -20vh) scale(0.85); opacity: 0.13;}
-  70%  { transform: translate(-12vw, -8vh) scale(1.25); opacity: 0.21;}
+  30%  { transform: translate(-10vw, -10vh) scale(1.55); opacity: 0.15;}
+  50%  { transform: translate(-25vw, -20vh) scale(0.85); opacity: 0.18;}
+  70%  { transform: translate(-12vw, -8vh) scale(1.25); opacity: 0.24;}
   90%  { transform: translate(-3vw, -2vh) scale(1.05); opacity: 0.17;}
-  100% { transform: translate(0, 0) scale(1); opacity: 0.31;}
+  100% { transform: translate(0, 0) scale(1); opacity: 0.1;}
 }
 
 /* ==== ТОЧКА 8 ==== */
@@ -259,18 +262,18 @@ html, body, #root {
 .welcome-container .dot-8 {
   bottom: 30%;
   left:   25%;
-  background-color: rgba(255, 255, 255, 0.12);
+  background-color: rgba(255, 255, 255, 0.24);
   animation: moveDot8 95s linear infinite, pulseDot8 7s ease-in-out infinite;
 }
 
 @keyframes moveDot8 {
-  0%   { transform: translateX(-50%) translateY(0) scale(1); opacity: 0.34;}
+  0%   { transform: translateX(-50%) translateY(0) scale(1); opacity: 0.44;}
   20%  { transform: translateX(-40%) translateY(5vh) scale(1.18); opacity: 0.31;}
   35%  { transform: translateX(-55%) translateY(12vh) scale(0.85); opacity: 0.10;}
-  50%  { transform: translateX(-50%) translateY(25vh) scale(1.38); opacity: 0.11;}
-  65%  { transform: translateX(-40%) translateY(18vh) scale(1.1); opacity: 0.17;}
+  50%  { transform: translateX(-50%) translateY(25vh) scale(1.38); opacity: 0.17;}
+  65%  { transform: translateX(-40%) translateY(18vh) scale(1.1); opacity: 0.21;}
   85%  { transform: translateX(-53%) translateY(4vh) scale(0.95); opacity: 0.34;}
-  100% { transform: translateX(-50%) translateY(0) scale(1); opacity: 0.21;}
+  100% { transform: translateX(-50%) translateY(0) scale(1); opacity: 0.25;}
 }
 
 /* ==== ТОЧКА 9 ==== */
@@ -279,7 +282,7 @@ html, body, #root {
   top:    50%;
   right:  50%;
   transform: translateX(50%);
-  background-color: rgba(255, 255, 255, 0.11);
+  background-color: rgba(255, 255, 255, 0.55);
   animation: moveDot9 65s linear infinite, pulseDot9 6s ease-in-out infinite;
 }
 
@@ -287,10 +290,10 @@ html, body, #root {
   0%   { transform: translate(0, 0) scale(1); opacity: 0.10;}
   10%  { transform: translate(2vw, 1vh) scale(1.05); opacity: 0.13;}
   25%  { transform: translate(4vw, 4vh) scale(1.45); opacity: 0.11;}
-  35%  { transform: translate(10vw, 7vh) scale(0.8); opacity: 0.34;}
-  50%  { transform: translate(20vw, 15vh) scale(1.2); opacity: 0.17;}
+  35%  { transform: translate(10vw, 7vh) scale(0.8); opacity: 0.44;}
+  50%  { transform: translate(20vw, 15vh) scale(1.2); opacity: 0.27;}
   65%  { transform: translate(10vw, 10vh) scale(0.9); opacity: 0.16;}
-  80%  { transform: translate(2vw, 4vh) scale(1.3); opacity: 0.14;}
+  80%  { transform: translate(2vw, 4vh) scale(1.3); opacity: 0.18;}
   100% { transform: translate(0, 0) scale(1); opacity: 0.21;}
 }
 
@@ -300,7 +303,7 @@ html, body, #root {
   bottom: 5%;
   left:   50%;
   transform: translateX(-50%);
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.3);
   animation: moveDot10 80s linear infinite, pulseDot10 8s ease-in-out infinite;
 }
 
@@ -379,7 +382,7 @@ html, body, #root {
     drop-shadow(0 0 10px #fff)
     drop-shadow(0 0 32px #7fc7ff)   /* синий неон */
     drop-shadow(0 0 64px #e97eff);  /* розовый неон */
-  opacity: 0.64;
+  opacity: 0.54;
   transition: filter 0.3s, opacity 0.3s;
 }
 
@@ -592,7 +595,7 @@ html, body, #root {
   @keyframes slideUpWrapperMobile {
     from {
       opacity: 1;
-      top:   110px;  /* <-- стартовая позиция 110px */
+      top:   100px;  /* <-- стартовая позиция 110px */
     }
     to {
       opacity: 0;
@@ -615,7 +618,7 @@ html, body, #root {
   @keyframes slideUpWrapperLarge {
     from {
       opacity: 1;
-      top:   110px;  /* <-- стартовая позиция 110px */
+      top:   100px;  /* <-- стартовая позиция 110px */
     }
     to {
       opacity: 0;
@@ -850,14 +853,30 @@ html, body, #root {
   gap: 14px;                  /* Расстояние между кнопками */
 
   width: 100%;
-  max-width: 350px;           /* Можно скорректировать */
+  max-width: 300px;           /* Можно скорректировать */
   z-index: 2;
 
   /* Позиция контейнера на экране (30px ниже низа логотипа): */
   /* логотип: top = 110px, height ≈ 160px → низ = 270px; +30 = 300px */
-  top: 300px;
+  top: 350px;
 
   /* Никакой height — контейнер «подстраивается» под кнопки */
+}
+
+/* каждая строка «опрос + QR» */
+.poll-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* чтобы главный btn занял всё оставшееся место */
+  width: 100%;                     /* растягиваемся на 100% container */
+  margin-bottom: 16px;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.poll-row.animate-row {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 /* ======================================
@@ -1015,7 +1034,7 @@ html, body, #root {
   .button-container .btn-custom {
     padding: 10px 20px;
     min-height: 50px;
-    min-width: 350px;
+    min-width: 280px;
     font-size: 18px;
     border-radius: 10px;
 
@@ -1053,6 +1072,225 @@ html, body, #root {
   100% { transform: translateY(100vh); opacity: 0; }
 }
 
+.btn-qr {
+  width: 48px;     /* фиксированный размер */
+  height: 48px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* SVG‑иконка */
+.btn-qr svg {
+  width: 24px;
+  height: 24px;
+  fill: white;
+  stroke: none;
+}
+
+/* Порядковые задержки появления (slide-up) для QR‑кнопок */
+/* Всего 6 кнопок в .button-container: 3 опросные + 3 QR */
+.button-container .btn-custom:nth-child(1) { animation-delay: 0.10s; } /* 1-я опросная */
+.button-container .btn-custom:nth-child(2) { animation-delay: 0.15s; } /* 1-я QR */
+.button-container .btn-custom:nth-child(3) { animation-delay: 0.20s; } /* 2-я опросная */
+.button-container .btn-custom:nth-child(4) { animation-delay: 0.25s; } /* 2-я QR */
+.button-container .btn-custom:nth-child(5) { animation-delay: 0.30s; } /* 3-я опросная */
+.button-container .btn-custom:nth-child(6) { animation-delay: 0.35s; } /* 3-я QR */
+
+/* Выезд (exit) stagerring для QR‑кнопок */
+.btn-exit4 { animation-delay: 0.40s; } /* 1-я QR */
+.btn-exit5 { animation-delay: 0.50s; } /* 2-я QR */
+.btn-exit6 { animation-delay: 0.60s; } /* 3-я QR */
+
+.poll-row {
+  display: flex;
+  align-items: center;
+  justify-content: center; /* или space-between, если нужно растянуть */
+  gap: 12px;              /* расстояние между кнопками */
+  margin-bottom: 16px;    /* отступ между строками */
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+/* Когда нужно «выкатить» строки */
+.poll-row.animate-row {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ----------------------------------------- */
+/* 2) QR‑кнопка в том же стиле, что и .btn-custom */
+/* ----------------------------------------- */
+.btn-qr {
+  flex: 0 0 48px;        /* не растягиваем, фиксируем ширину 48px */
+  height: 48px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid rgba(255,255,255,0.17);
+  background: rgba(255,255,255,0.12);
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+/* Чтобы ripple‑эффект тоже работал */
+.btn-qr .ripple {
+  border-radius: 50%;
+}
+
+.btn-qr svg {
+  width: 20px;
+  height: 20px;
+  fill: white;
+  stroke: none;
+}
+
+/* QR‑модалка */
+.qr-modal {
+  position: fixed;
+  top: 0; left: 0; right:0; bottom:0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+}
+
+/* Полупрозрачный фон */
+.qr-overlay {
+  position: absolute;
+  top:0; left:0; right:0; bottom:0;
+  background: rgba(0,0,0,0.6);
+}
+
+/* Окошко с контентом */
+.qr-box {
+  position: relative;
+  background: rgba(255,255,255,1);
+  border-radius: 16px;
+  padding: 24px;
+  text-align: center;
+  z-index: 21;
+  max-width: 90%;
+}
+
+/* Сам QR */
+.qr-box img {
+  width: 256px;
+  height: 256px;
+  margin-bottom: 16px;
+}
+
+/* Подпись с названием опроса */
+.qr-label {
+  color: black;
+  font-size: 24px;
+  margin-bottom: 16px;
+}
+
+/* Кнопка «Закрыть» */
+.btn-close {
+  width: 120px;
+  margin: 0 auto;
+}
+
+
+
+/* =============================================================================
+   src/Styles/HomeButton.css
+   Анимированная glass‑кнопка «домой», выезжает слева→справа и уезжает обратно
+============================================================================= */
+
+.home-btn {
+  position: absolute;
+  top: 140px;
+  /* по центру экрана, с учётом ширины кнопки */
+  left: calc(50% - 40px);
+  
+  width: 80px;
+  height: 80px;
+  background: rgba(255, 255, 255, 0.10);
+  -webkit-backdrop-filter: blur(8px);
+          backdrop-filter: blur(8px);
+  border: 1.5px solid rgba(255,255,255,0.17);
+  border-radius: 16px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  /* изначально скрыта за левой границей через transform */
+  transform: translateX(-200%);
+  opacity: 0;
+  
+  /* единая анимация въезда и появления */
+  transition: 
+    transform 0.8s cubic-bezier(0.22,1,0.36,1) 0.1s,
+    opacity 0.5s ease 0.1s;
+  cursor: pointer;
+}
+
+/* === Въезд кнопки === */
+.home-btn.animate-home {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+/* === Уезд кнопки === */
+.home-btn.animate-home-exit {
+  transform: translateX(-200%);
+  opacity: 0;
+  transition: 
+    transform 0.7s cubic-bezier(0.65,0.05,0.36,1) 0.1s,
+    opacity 0.4s ease 0.1s;
+}
+
+/* Плавное появление SVG‑иконки */
+.home-btn .home-icon {
+  width: 36px;
+  height: 36px;
+  fill: #ffffff;
+  opacity: 0;
+  transition: opacity 0.4s ease 0.3s;
+}
+.home-btn.animate-home .home-icon {
+  opacity: 1;
+}
+
+/* --- Мобильная версия (≤768px) --- */
+@media (max-width: 768px) {
+  .home-btn {
+    top: 140px;
+    left: 70px;           /* ближе к левому краю, не загораживает логотип */
+    width: 64px;
+    height: 64px;
+    border-radius: 12px;
+    transition:
+      transform 0.8s cubic-bezier(0.22,1,0.36,1) 0.1s,
+      opacity 0.5s ease 0.1s;
+  }
+  .home-btn.animate-home {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  .home-btn.animate-home-exit {
+    transform: translateX(-200%);
+    opacity: 0;
+    transition:
+      transform 0.7s cubic-bezier(0.65,0.05,0.36,1) 0.1s,
+      opacity 0.4s ease 0.1s;
+  }
+  .home-btn .home-icon {
+    width: 32px;
+    height: 32px;
+    transition: opacity 0.4s ease 0.3s;
+  }
+}
+
+
+
 
 
 
@@ -1063,12 +1301,12 @@ html, body, #root {
    Анимированная glass-кнопка «домой», выезжает из левого края, без объёма!
 ============================================================================= */
 
-.home-btn {
+.back-btn {
   position: absolute;
-  top: 140px;
-  left: -80px;  /* за пределами видимой области */
-  width: 80px;
-  height: 80px;
+  top: 180px;
+  left: -60px;  /* за пределами видимой области */
+  width: 64px;
+  height: 64px;
   background: rgba(255, 255, 255, 0.10);
   -webkit-backdrop-filter: blur(8px);
           backdrop-filter: blur(8px);
@@ -1083,8 +1321,32 @@ html, body, #root {
   transition: background 0.25s, border 0.25s;
 }
 
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  transform: scale(0);
+  background: rgba(255, 255, 255, 0.5); /* Белый полупрозрачный */
+  animation: ripple-animation 600ms linear;
+  pointer-events: none;
+  z-index: 2;
+}
+
+@keyframes ripple-animation {
+  to {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+.back-btn svg {
+  width: 36px;
+  height: 36px;
+  stroke: white;
+  fill: none;
+}
+
 /* === Анимация ВЪЕЗДА кнопки (из левого края) === */
-.home-btn.animate-home {
+.back-btn.animate-home {
   animation: slideInHomeLeft 0.8s cubic-bezier(0.22,1,0.36,1) forwards;
 }
 @keyframes slideInHomeLeft {
@@ -1093,13 +1355,13 @@ html, body, #root {
     opacity: 0;
   }
   to {
-    left: calc(50% - 90px);  /* Рядом с логотипом по центру */
+    left: calc(50% - 200px);  /* Рядом с логотипом по центру */
     opacity: 1;
   }
 }
 
 /* === Анимация ВЫЕЗДА кнопки (обратно за левый край) === */
-.home-btn.animate-home-exit {
+.back-btn.animate-home-exit {
   animation: slideOutHomeLeft 0.7s cubic-bezier(0.65,0.05,0.36,1) forwards;
 }
 @keyframes slideOutHomeLeft {
@@ -1114,28 +1376,28 @@ html, body, #root {
 }
 
 /* Плавное появление SVG-иконки */
-.home-btn .home-icon {
+.back-btn .home-icon {
   width: 36px;
   height: 36px;
   fill: #ffffff;
   opacity: 0;
   transition: opacity 0.4s;
 }
-.home-btn.animate-home .home-icon {
+.back-btn.animate-home .home-icon {
   opacity: 1;
 }
 
 /* --- Мобильная версия (≤768px) --- */
 @media (max-width: 768px) {
-  .home-btn {
+  .back-btn {
     top: 140px;
-    left: 60px !important;    /* Сдвинута к левому краю экрана */
+    left: 70px !important;    /* Сдвинута к левому краю экрана */
     width: 65px;
     height: 65px;
     border-radius: 12px;
     border: 1.2px solid rgba(255,255,255,0.18);
   }
-  .home-btn.animate-home {
+  .back-btn.animate-home {
     animation: slideInHomeLeftMobile 0.8s cubic-bezier(0.22,1,0.36,1) forwards;
   }
   @keyframes slideInHomeLeftMobile {
@@ -1144,16 +1406,16 @@ html, body, #root {
       opacity: 0;
     }
     to {
-      left: 55px;
+      left: 24px;     /* ВЫРОВНЯТЬ С next-btn! */
       opacity: 1;
     }
   }
-  .home-btn.animate-home-exit {
+  .back-btn.animate-home-exit {
     animation: slideOutHomeLeftMobile 0.7s cubic-bezier(0.65,0.05,0.36,1) forwards;
   }
   @keyframes slideOutHomeLeftMobile {
     from {
-      left: 55px;
+      left: 60px;     /* ВЫРОВНЯТЬ С next-btn! */
       opacity: 1;
     }
     to {
@@ -1161,7 +1423,7 @@ html, body, #root {
       opacity: 0;
     }
   }
-  .home-btn .home-icon {
+  .back-btn .home-icon {
     width: 32px;
     height: 32px;
   }
@@ -1170,22 +1432,182 @@ html, body, #root {
 
 
 
-/* ============================================================================
-   FeedbackPage.css
+/* NextButton.css */
 
-   Здесь только те стили, которые нужны для FeedbackPage:
-   1) Смещение .content-wrapper так, чтобы первый шаг (autosuggest) был под логотипом.
-   2) Центрирование заголовка и поля ввода (autosuggest) для шага 1.
-   3) Позиционирование кнопки «Вперёд» (next-btn) справа от логотипа,
-      зеркально стилизованно, как кнопка «Домой» в PollsPage.
-   4) Анимация «покачивания» (shake-btn) для кнопки «Вперёд», когда доступен переход.
-   ============================================================================ */
+/* ——————————————————————————— */
+/* Базовые стили кнопки «Далее»   */
+.next-btn {
+  position: absolute;
+  top: 180px;
+  right: 70px;
+  width: 64px;
+  height: 64px;
+  border: 1.5px solid rgba(255, 255, 255, 0.17);
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 1;
+  transform: translateX(0);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+  z-index: 10;
+}
 
-/* ------------------------------------------------------------------------
-   1) Сдвигаем .content-wrapper вверх/вниз, чтобы step 1 оказался непосредственно
-      под логотипом. Предполагаем, что логотип занимает примерно верхние 270px,
-      поэтому ставим top: 280px; (подчистите под свой реальный размер).
------------------------------------------------------------------------- */
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  transform: scale(0);
+  background: rgba(255, 255, 255, 0.5);
+  animation: ripple-animation 600ms linear;
+  pointer-events: none;
+  z-index: 2;
+}
+
+@keyframes ripple-animation {
+  to {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+/* появление и скрытие кнопки по классам */
+.next-btn.animate-next {
+  opacity: 1;
+  transform: translateX(0);
+}
+.next-btn.animate-next-exit {
+  opacity: 0;
+  transform: translateX(100px);
+  transition: opacity 0.4s, transform 0.4s;
+}
+
+/* Стили для svg внутри кнопки */
+.next-btn svg {
+  width: 36px;
+  height: 36px;
+  stroke: white;
+  fill: none;
+}
+
+/* Контейнер иконки внутри кнопки */
+.shaker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Тряска для шагов 1–8 */
+@keyframes shake {
+  0%   { transform: translateX(-2px); }
+  20%  { transform: translateX(-2px); }
+  50%  { transform: translateX(3px); }
+  80%  { transform: translateX(-2px); }
+  100% { transform: translateX(-2px); }
+}
+.shaker.shake-btn {
+  animation: shake 0.5s infinite alternate;
+}
+
+/* Поп‑анимация для галочки на шаге 9 */
+@keyframes pop {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+.shaker.pop-btn {
+  animation: pop 0.4s ease-out infinite;
+}
+
+/* ——————————————————————————— */
+/* Стили для мелких экранов       */
+@media (max-width: 768px) {
+  .next-btn {
+    top: 140px !important;
+    right: 70px !important;
+    width: 32px;
+    height: 32px;
+  }
+
+  .next-btn svg {
+    width: 24px;
+    height: 24px;
+    stroke: white;
+    fill: none;
+  }
+
+  .shaker.shake-btn {
+    animation: shake 0.25s infinite alternate !important;
+  }
+
+  /* Поп‑анимация и на маленьких экранах */
+  .shaker.pop-btn {
+    animation: pop 0.4s ease-out infinite !important;
+  }
+}
+
+/* Базовый «стеклянный» стиль */
+.option-button {
+  background: rgba(255, 255, 255, 0.1);
+  -webkit-backdrop-filter: blur(8px);
+          backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 8px;
+  padding: 15px 2px;
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+/* Hover-эффект */
+.option-button:hover {
+  transform: none;
+}
+
+/* Выбранное состояние */
+.option-button.selected {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.8);
+
+  /* запускаем пульсацию ореола */
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+  }
+  50% {
+    box-shadow: 0 0 8px 4px rgba(255, 255, 255, 0.4);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+  }
+}
+
+/* Вариант 2: цветная подсветка */
+/*
+.option-button.selected {
+  background: rgba(30, 144, 255, 0.3);  // легкий синий оттенок
+  border-color: rgba(30, 144, 255, 0.8);
+}
+*/
+
+/* Вариант 3: тень на выбранной кнопке */
+/*
+.option-button.selected {
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
+}
+*/
+
+/* Основной контейнер опроса */
+.feedback-container {
+  font-weight: 300; /* лёгкое начертание по умолчанию */
+  color: white;     /* сохраняем белый цвет текста */
+}
+
 .feedback-container .content-wrapper {
   position: absolute;
   top: 280px;         /* При необходимости скорректируйте */
@@ -1245,8 +1667,8 @@ html, body, #root {
 */
 .next-btn {
   position: absolute !important;
-  top: 138px !important;                 /* То же, что и у home-btn в PollsPage */
-  right: calc(50% - 154px) !important;   /* Зеркально home-btn.left:calc(50% - 154px) */
+  top: 180px;                 /* То же, что и у home-btn в PollsPage */
+  right: 70px;   /* Зеркально home-btn.left:calc(50% - 154px) */
   width: 64px !important;
   height: 64px !important;
   background-color: rgba(255, 255, 255, 0.12) !important;
@@ -1309,251 +1731,581 @@ html, body, #root {
   }
   .next-btn {
     top: 120px; /* Сдвигаем, если логотип меньше на мобилках */
-    right: calc(50% - 140px);
+    right: 70px;
   }
 }
 
-
-
-
-
-
-
-
 /* =============================================================================
    src/Styles/HomeButton.css
-   Анимированная glass-кнопка «домой», выезжает из левого края, без объёма!
+   Анимированная glass‑кнопка «домой», выезжает слева→справа и уезжает обратно
 ============================================================================= */
 
-.back-btn {
+.home-btn {
   position: absolute;
   top: 140px;
-  left: -60px;  /* за пределами видимой области */
-  width: 64px;
-  height: 64px;
+  /* по центру экрана, с учётом ширины кнопки */
+  left: 70px;
+  width: 80px;
+  height: 80px;
   background: rgba(255, 255, 255, 0.10);
   -webkit-backdrop-filter: blur(8px);
           backdrop-filter: blur(8px);
-  border: 1.5px solid rgba(255,255,255,0.17); /* лёгкая стеклянная рамка */
+  border: 1.5px solid rgba(255,255,255,0.17);
   border-radius: 16px;
   z-index: 5;
   display: flex;
   align-items: center;
   justify-content: center;
+  
+  /* изначально скрыта за левой границей через transform */
+  transform: translateX(-200%);
   opacity: 0;
+  
+  /* единая анимация въезда и появления */
+  transition: 
+    transform 0.8s cubic-bezier(0.22,1,0.36,1) 0.1s,
+    opacity 0.5s ease 0.1s;
   cursor: pointer;
-  transition: background 0.25s, border 0.25s;
 }
 
-.ripple {
-  position: absolute;
-  border-radius: 50%;
-  transform: scale(0);
-  background: rgba(255, 255, 255, 0.5); /* Белый полупрозрачный */
-  animation: ripple-animation 600ms linear;
-  pointer-events: none;
-  z-index: 2;
+/* === Въезд кнопки === */
+.home-btn.animate-home {
+  transform: translateX(0);
+  opacity: 1;
 }
 
-@keyframes ripple-animation {
-  to {
-    transform: scale(4);
-    opacity: 0;
-  }
+/* === Уезд кнопки === */
+.home-btn.animate-home-exit {
+  transform: translateX(-200%);
+  opacity: 0;
+  transition: 
+    transform 0.7s cubic-bezier(0.65,0.05,0.36,1) 0.1s,
+    opacity 0.4s ease 0.1s;
 }
 
-.back-btn svg {
-  width: 36px;
-  height: 36px;
-  stroke: white;
-  fill: none;
-}
-
-/* === Анимация ВЪЕЗДА кнопки (из левого края) === */
-.back-btn.animate-home {
-  animation: slideInHomeLeft 0.8s cubic-bezier(0.22,1,0.36,1) forwards;
-}
-@keyframes slideInHomeLeft {
-  from {
-    left: -90px;
-    opacity: 0;
-  }
-  to {
-    left: calc(50% - 90px);  /* Рядом с логотипом по центру */
-    opacity: 1;
-  }
-}
-
-/* === Анимация ВЫЕЗДА кнопки (обратно за левый край) === */
-.back-btn.animate-home-exit {
-  animation: slideOutHomeLeft 0.7s cubic-bezier(0.65,0.05,0.36,1) forwards;
-}
-@keyframes slideOutHomeLeft {
-  from {
-    left: calc(50% - 90px);
-    opacity: 1;
-  }
-  to {
-    left: -90px;
-    opacity: 0;
-  }
-}
-
-/* Плавное появление SVG-иконки */
-.back-btn .home-icon {
+/* Плавное появление SVG‑иконки */
+.home-btn .home-icon {
   width: 36px;
   height: 36px;
   fill: #ffffff;
   opacity: 0;
-  transition: opacity 0.4s;
+  transition: opacity 0.4s ease 0.3s;
 }
-.back-btn.animate-home .home-icon {
+.home-btn.animate-home .home-icon {
   opacity: 1;
 }
 
 /* --- Мобильная версия (≤768px) --- */
 @media (max-width: 768px) {
-  .back-btn {
+  .home-btn {
     top: 140px;
-    left: 60px !important;    /* Сдвинута к левому краю экрана */
-    width: 65px;
-    height: 65px;
+    left: 70px;           /* ближе к левому краю, не загораживает логотип */
+    width: 60px;
+    height: 60px;
     border-radius: 12px;
-    border: 1.2px solid rgba(255,255,255,0.18);
+    transition:
+      transform 0.8s cubic-bezier(0.22,1,0.36,1) 0.1s,
+      opacity 0.5s ease 0.1s;
   }
-  .back-btn.animate-home {
-    animation: slideInHomeLeftMobile 0.8s cubic-bezier(0.22,1,0.36,1) forwards;
+  .home-btn.animate-home {
+    transform: translateX(0);
+    opacity: 1;
   }
-  @keyframes slideInHomeLeftMobile {
-    from {
-      left: -60px;
-      opacity: 0;
-    }
-    to {
-      left: 24px;     /* ВЫРОВНЯТЬ С next-btn! */
-      opacity: 1;
-    }
-  }
-  .back-btn.animate-home-exit {
-    animation: slideOutHomeLeftMobile 0.7s cubic-bezier(0.65,0.05,0.36,1) forwards;
-  }
-  @keyframes slideOutHomeLeftMobile {
-    from {
-      left: 60px;     /* ВЫРОВНЯТЬ С next-btn! */
-      opacity: 1;
-    }
-    to {
-      left: -60px;
-      opacity: 0;
-    }
-  }
-  .back-btn .home-icon {
-    width: 32px;
-    height: 32px;
-  }
-}
-
-
-
-
-.next-btn {
-  position: relative;
-  top: 138px;
-  right: 24px;
-  width: 64px;
-  height: 64px;
-  border: 1.5px solid rgba(255,255,255,0.17);
-  background: rgba(255,255,255,0.12);
-  border-radius: 10px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;                   /* скрыта по умолчанию */
-  transform: translateX(100px); /* за правым краем по умолчанию */
-  transition: opacity 0.6s, transform 0.6s;
-  z-index: 11;
-  overflow: hidden;
-}
-
-.ripple {
-  position: absolute;
-  border-radius: 50%;
-  transform: scale(0);
-  background: rgba(255, 255, 255, 0.5); /* Белый полупрозрачный */
-  animation: ripple-animation 600ms linear;
-  pointer-events: none;
-  z-index: 2;
-}
-
-@keyframes ripple-animation {
-  to {
-    transform: scale(4);
+  .home-btn.animate-home-exit {
+    transform: translateX(-200%);
     opacity: 0;
+    transition:
+      transform 0.7s cubic-bezier(0.65,0.05,0.36,1) 0.1s,
+      opacity 0.4s ease 0.1s;
+  }
+  .home-btn .home-icon {
+    width: 32px;
+    height: 32px;
+    transition: opacity 0.4s ease 0.3s;
   }
 }
 
-.next-btn.animate-next {
-  opacity: 1;
-  transform: translateX(0);
-}
+/* ============================================
+   Slide‑in / Slide‑out анимации для элементов
+============================================ */
 
-.next-btn.animate-next-exit {
+/* 1) Исходное состояние «спрятано внизу» */
+/* Исходное состояние — спрятано снизу */
+.slide-element {
+  transform: translateY(100%);
   opacity: 0;
-  transform: translateX(100px);
-  transition: opacity 0.4s, transform 0.4s;
 }
 
-.next-btn svg {
-  width: 36px;
-  height: 36px;
-  stroke: white;
-  fill: none;
+/* Въезд снизу */
+.slide-in {
+  animation: slideInUp 0.6s ease-out forwards;
+}
+.slide-in.delay-1 { animation-delay: 0.1s; }
+.slide-in.delay-2 { animation-delay: 0.2s; }
+
+/* Выезд вниз */
+.slide-out {
+  animation: slideOutDown 0.5s ease-in forwards;
+}
+.slide-out.delay-1 { animation-delay: 0.1s; }
+.slide-out.delay-2 { animation-delay: 0.2s; }
+
+@keyframes slideInUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+@keyframes slideOutDown {
+  from { transform: translateY(0);    opacity: 1; }
+  to   { transform: translateY(100%); opacity: 0; }
 }
 
-.shaker {
+/* «Стеклянные» стили для + и корзины */
+.add-speaker-btn,
+.delete-speaker-btn {
+  background: rgba(255, 255, 255, 0.1);
+  -webkit-backdrop-filter: blur(8px);
+          backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 12px;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s ease, opacity 0.2s ease;
 }
 
-.shaker.shake-btn {
-  animation: shake 2.5s infinite alternate;
+.add-speaker-btn:hover,
+.delete-speaker-btn:hover {
+  transform: scale(1.05);
 }
 
-@keyframes shake {
-  0%   { transform: translateX(-2px); }
-  20%  { transform: translateX(-2px);}
-  50%  { transform: translateX(3px);}
-  80%  { transform: translateX(-2px);}
-  100% { transform: translateX(-2px); }
+.add-speaker-btn svg,
+.delete-speaker-btn svg {
+  width: 20px;
+  height: 20px;
+  stroke: white;
 }
 
-@media (max-width: 768px) {
-  .next-btn {
-    top: 120px;
-    border: 1.5px solid rgba(255,255,255,0.17) !important;
-    right: 60px !important;    /* ОК — оставить так! */
-    width: 32px;
-    height: 32px;
-  }
+.step3-container {
+  text-align: center;
+  padding: 0 0px;
+}
 
-  .next-btn svg {
-    width: 24px;
-    height: 24px;
-  }
+.step3-container h3 {
+  font-size: 24px;      /* желаемый размер шрифта */
+  font-weight: 600;     /* при необходимости — сделать полужирным */
+  line-height: 1.1;     /* высота строки */
+  margin: 12px 0 10px;  /* отступ сверху и снизу */
+}
+
+.step3-container h2 {
+  font-size: 24px;      /* желаемый размер шрифта */
+  font-weight: 600;     /* при необходимости — сделать полужирным */
+  line-height: 1.1;     /* высота строки */
+  margin: 12px 0 10px;  /* отступ сверху и снизу */
+}
+
+.qualities-wrapper {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.quality-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-gap: 12px;
+  gap: 12px;
+  /* тянем строку на всю ширину родителя */
+  width: 100%;
+  margin: 8px 0;
+}
+
+/* Кнопка теперь растягивается на всю ячейку */
+.option-button {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.quality-warning {
+  color: #fff;
+  margin-top: 12px;
+  font-size: 14px;
+}
+
+/* Контейнер для двух кнопок «Полезно/Бесполезно» */
+.usefulness-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;               /* ровно 4px между кнопками */
+  max-width: 400px;       /* или ваш желаемый максимум */
+  margin: 16px auto 0;    /* отцентрирован, расстояние сверху */
+}
+
+/* Контейнер для поля аргументации */
+.argument-container {
+  max-width: 400px;
+  margin: 8px auto 0;
+  text-align: center;
+}
+
+.argument-input {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: none;
+  background: white;
+  color: black;
+  font-family: Montserrat;
+  font-size: 16px;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.step4-container {
+  text-align: center;
+}
+
+.step5-container {
+  text-align: center;
+  padding: 0 16px;
+}
+
+.step5-container h2 {
+  font-size: 24px;
+  font-weight: 400;
+  margin-bottom: 12px;
+  line-height: 1.2;
+}
+
+/* textarea в стеклянном стиле */
+.bright-thoughts-input {
+  width: 100%;
+  max-width: 400px;
+  min-height: 50px;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.1);
+  -webkit-backdrop-filter: blur(8px);
+          backdrop-filter: blur(8px);
+  color: #fff;
+  text-align: center;
+  box-sizing: border-box;
+  resize: vertical;
+  margin: 0 auto;
+}
+
+.argument-input,
+.bright-thoughts-input {
+  width: 100%;
+  max-width: 400px;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.5);
+  background: rgba(255,255,255,0.1);
+  -webkit-backdrop-filter: blur(8px);
+          backdrop-filter: blur(8px);
+  box-sizing: border-box;
+
+  /* вот это делает текст внутри белым */
+  color: #fff;
+  font-size: 18px;
+  resize: vertical;
+}
+
+/* плейсхолдеры тоже сделаем светлыми */
+.argument-input::placeholder,
+.bright-thoughts-input::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* для браузерной совместимости можно добавить */
+.argument-input::-webkit-input-placeholder,
+.bright-thoughts-input::-webkit-input-placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.step6-container h2 {
+  text-align: center;
+}
+
+/* Шаг 6: сетка вариантов с gap 4px */
+.step6-container .additional-options {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  grid-gap: 8px;
+  gap: 8px;             /* ровно 4px между кнопками */
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 10 16px;
+  box-sizing: border-box;
+}
+
+/* Обёртка каждой ячейки, чтобы input шел прямо под кнопкой */
+.option-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;             /* 4px между кнопкой и полем ввода */
+}
+
+/* Стилизация поля ввода под «Статистических данных» */
+.stats-details-input {
+  margin-top: 8px;                       /* отступ до кнопки */
+  width: 100%;
+  padding: 12px;                         /* такой же padding, как у .option-button */
+  text-align: center;
+  font-size: 16px;                       /* и тот же размер шрифта */
+  line-height: 1em;                      /* высота строки = font-size */
+  height: calc(1em + 2 * 18px);          /* font-size + 2 × вертикальные паддинги */
+  border-radius: 10px;                   /* или 8px, если у ваших кнопок border-radius:8px */
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.1);
+  -webkit-backdrop-filter: blur(8px);
+          backdrop-filter: blur(8px);
+  color: #fff;
+  box-sizing: border-box;
+}
+
+.step7-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;    /* центр по горизонтали */
+  justify-content: center;/* (при необходимости) центр по вертикали внутри родителя */
+  text-align: center;
+}
+
+.step7-container h2 {
+  margin-bottom: 16px;     /* отступ под заголовком */
+}
+
+.step7-container .impression-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;               /* расстояние между смайликами */
+}
+
+.impression-btn {
+  background: transparent !important; /* прозрачный фон */
+  border: none !important;           /* без рамок */
+  padding: 0;                         /* без внутренних отступов */
+  cursor: pointer;
+  font-size: 60px;                    /* тот же размер, что у вас был inline */
+  line-height: 1;                     /* чтобы вертикальное выравнивание не прыгало */
+}
+
+.impression-btn.selected {
+  transform: scale(1.3);    /* лёгкое увеличение выбранного смайла */
 }
 
 
 
 
 
+.step8-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;    /* центр по горизонтали */
+  text-align: center;
+}
 
+.step8-container h2 {
+  margin-bottom: 16px;
+}
+
+.step8-container .impression-container {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+
+@keyframes pulseMood {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+/* для option‑кнопок (step6 и step3 и т.п.) */
+@keyframes pulseOption {
+  0%   { box-shadow: 0 0 0 0 rgba(255,255,255,0); }
+  50%  { box-shadow: 0 0 8px 4px rgba(255,255,255,0.4); }
+  100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); }
+}
+
+.option-button.selected {
+  transform: none !important;
+}
+
+/* ============================================= */
+/* Шаг 9: Насколько вы готовы рекомендовать тренинг */
+/* ============================================= */
+.step9-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;    /* центр по горизонтали */
+  text-align: center;
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+.step9-container h2 {
+  margin-bottom: 12px;
+}
+
+.step9-subtitle {
+  font-size: 18px;        /* крупнее, чем был */
+  margin-bottom: 16px;
+}
+
+/* Стили слайдера */
+.rating-slider {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.2);  /* светлый трек */
+  background-image: linear-gradient( to right, #ffffff 0%, #ffffff var(--fill), transparent var(--fill), transparent 100% );
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  margin-bottom: 12px;
+  transition: background-image 0.3s ease;
+}
+
+/* Динамический fill: используем кастомную CSS-переменную */
+.rating-slider {
+  --fill: 0%;
+}
+.rating-slider[value] {
+  --fill: calc((attr(value number) - 1) / 4 * 100%);
+}
+
+
+
+/* Thumb по-нашему стилю */
+.rating-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #fbfbfc;
+  border: 2px solid #fff;
+  cursor: pointer;
+  -webkit-transition: transform 0.2s ease, box-shadow 0.3s ease;
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
+}
+.rating-slider::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2px solid #fff;
+  cursor: pointer;
+  -moz-transition: transform 0.2s ease, box-shadow 0.3s ease;
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
+}
+
+/* Hover/active эффекты для thumb */
+.rating-slider:hover::-webkit-slider-thumb,
+.rating-slider:active::-webkit-slider-thumb,
+.rating-slider:hover::-moz-range-thumb,
+.rating-slider:active::-moz-range-thumb {
+  transform: scale(1.2);
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
+}
+
+/* Трендовая фишка: трек «пульсирует» при фокусе */
+@keyframes pulseThumb {
+  0%   { transform: scale(1); opacity: 0.8; }
+  50%  { transform: scale(1.3); opacity: 0.4; }
+  100% { transform: scale(1); opacity: 0.8; }
+}
+
+.rating-slider:focus {
+  outline: none;
+  animation: trackPulse 1.5s ease-in-out forwards;
+}
+
+/* Значение под слайдером */
+.rating-value {
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+
+/* Комментарий под значением */
+.rating-comment {
+  font-size: 18px;        /* крупнее */
+  margin: 0;
+}
+
+/* ===== Увеличиваем шрифты на шаге 9 ===== */
+.step9-subtitle {
+  font-size: 16px !important;    /* крупнее подзаголовок */
+  margin-bottom: 20px;
+}
+
+.rating-value {
+  font-size: 32px !important;    /* крупнее цифра оценки */
+  margin-bottom: 12px;
+}
+
+.rating-comment {
+  font-size: 20px !important;    /* крупнее комментарий под цифрой */
+  margin-top: 0;
+}
+
+/* ===== Пульсация для выбранного смайлика (шаги 7 и 8) ===== */
+@keyframes pulseEmoji {
+  0%   { transform: scale(1.2); }
+  50%  { transform: scale(1.3); }
+  100% { transform: scale(1.2); }
+}
+
+.impression-btn.selected {
+  animation: pulseEmoji 1.5s ease-in-out infinite;
+}
+
+/* в конце FeedbackPage.css */
+.next-btn {
+  /* отменяем «скрытые» стили */
+  opacity: 1 !important;
+  transform: translateX(0) !important;
+  /* отключаем transition, чтобы при обычном отображении ничего не дергалось */
+  transition: none !important;
+}
+
+/* но оставляем выход (exit) — кнопка будет уезжать по нажатию */
+.next-btn.animate-next-exit {
+  opacity: 0 !important;
+  transform: translateX(20px) !important;
+  transition: opacity 0.4s ease, transform 0.4s ease !important;
+}
+
+/* анимация «въезда» теперь остаётся только при canGoNext() */
+.next-btn.animate-next {
+  opacity: 1 !important;
+  transform: translateX(0) !important;
+  /* если хотите, можно вернуть transition здесь */
+  transition: opacity 0.6s ease, transform 0.6s ease !important;
+}
+
+.thank-you-text {
+  color: #fff;
+  font-size: 24px;   /* или тот же размер, что и у заголовков шагов */
+  text-align: center;
+  margin-top: 20px;  /* отступ от логотипа */
+}
 body, h1, h2, h3, h4, h5, h6, button, input, textarea {
-  font-family: 'Montserrat', 'Arial', sans-serif !important;
+  font-family: 'Montserrat', sans-serif;
 }
 
+/* Подключение Montserrat (300 — лёгкое, 400 — обычное, 600 — полужирное) */
 
 
 
-/*# sourceMappingURL=main.df471f81.css.map*/
+
+/*# sourceMappingURL=main.6182b823.css.map*/
