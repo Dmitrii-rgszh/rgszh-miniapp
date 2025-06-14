@@ -1,0 +1,21 @@
+# Исключаем из контекста сборки Docker
+# — папку с Excel‑файлами и сами .xlsx
+src/LOS
+*.xlsx
+
+# IDE‑ и кеш‑файлы
+.vscode/
+__pycache__/
+
+# Большие двоичные файлы
+cloudflared.exe
+
+# Локальную сборку фронтенда (собирается внутри контейнера)
+build
+
+# Серверный код (не нужен в фронтенд‑образе)
+server.py
+excel_saver.py
+requirements.txt
+Dockerfile.backend
+docker-compose.yml
