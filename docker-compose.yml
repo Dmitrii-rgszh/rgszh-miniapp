@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   app:
     build:
@@ -5,5 +7,5 @@ services:
       dockerfile: Dockerfile
     image: zerotlt/rgszh-miniapp:prod
     ports:
-      - "80:80"
+      - "80:80"       # ← вот эта строка обязательно должна быть
     restart: unless-stopped
