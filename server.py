@@ -6,8 +6,8 @@ from flask_cors import CORS
 
 from excel_saver import append_feedback_to_excel  # <- импорт из excel_saver.py
 
-app = Flask(__name__, static_folder='build', static_url_path='')
-CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
+app = Flask(__name__)
+CORS(app, resources={r"/api/*": {"origins": "*"}}, methods=["GET", "POST", "OPTIONS"])
 
 @app.route('/api/feedback/save', methods=["POST", "OPTIONS"])
 def save_feedback():
