@@ -1,29 +1,30 @@
-# 1) Стадия сборки
+# 1) Stage: сборка фронта
 FROM node:18-alpine AS builder
 WORKDIR /usr/src/app
 
-# Копируем package-файлы и устанавливаем зависимости
+# Копируем package-файлы и устанавливаем зависимости,
+# игнорируя peerDeps-конфликты
 COPY package*.json ./
 RUN npm ci --legacy-peer-deps
 
-# Копируем весь проект и собираем production-билд
+# Копируем весь код и собираем production‑билд
 COPY . .
 RUN npm run build
 
-# 2) Стадия запуска на Nginx
+# 2) Stage: запуск через Nginx
 FROM nginx:stable-alpine
 
-# Очищаем дефолтный контент
+# Чистим дефолтный контент Nginx
 RUN rm -rf /usr/share/nginx/html/*
 
-# Копируем собранный билд
+# Копируем собранный билд из предыдущей стадии
 COPY --from=builder /usr/src/app/build /usr/share/nginx/html
 
-# Копируем свой конфиг вместо дефолтного
+# Подставляем собственный конфиг вместо default.conf
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Открываем порт 80
 EXPOSE 80
 
-# Запуск Nginx в форграунд-режиме
+# Запускаем Nginx в foreground
 CMD ["nginx", "-g", "daemon off;"]
