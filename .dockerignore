@@ -2,19 +2,12 @@
 .git
 node_modules
 
-# Excel‑файлы и папка LOS
+# Excel‑файлы и папка LOS (не нужны в образе)
 src/LOS
 *.xlsx
 
 # Локальные сборки фронтенда
 build
-
-# Серверный код (для nginx‑образа он не нужен)
-server.py
-excel_saver.py
-requirements.txt
-Dockerfile.backend
-docker-compose.yml
 
 # IDE‑ и кеш‑файлы
 .vscode/
