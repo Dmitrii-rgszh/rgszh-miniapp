@@ -10,6 +10,7 @@ from flask_cors import CORS
 from win32com.client import DispatchEx, constants
 from datetime import datetime
 
+
 # ====== Logging setup ======
 logging.basicConfig(
     level=logging.INFO,
@@ -17,13 +18,36 @@ logging.basicConfig(
 )
 
 app = Flask(__name__, static_folder='build', static_url_path='')
-CORS(app, resources={r"/api/*": {"origins": "*"}}, methods=["GET", "POST", "OPTIONS"])
+CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 excel_lock = Lock()
 
 # EXCEL_PATH по-прежнему лежит в src/LOS/…
 BASE_DIR   = os.path.dirname(os.path.abspath(__file__))
 EXCEL_PATH = os.path.join(BASE_DIR, 'src', 'LOS', 'Feedback-training.xlsx')
+
+# Утилита для CORS preflight
+def cors_preflight_response():
+    origin = request.headers.get('Origin', allowed_origins[-1])
+    resp = jsonify({'message': 'CORS preflight passed'})
+    if origin in allowed_origins:
+        resp.headers.update({
+            'Access-Control-Allow-Origin': origin,
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+            'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+            'Access-Control-Allow-Credentials': 'true'
+        })
+    return resp, 204
+
+
+@app.after_request
+def after_request(response):
+    origin = request.headers.get('Origin', allowed_origins[-1])
+    if origin in allowed_origins:
+        response.headers['Access-Control-Allow-Origin'] = origin
+        response.headers['Access-Control-Allow-Credentials'] = 'true'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+    return response
 
 def append_feedback_to_excel(data: dict):
     logger = logging.getLogger("excel_saver")
@@ -122,15 +146,14 @@ def save_feedback():
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def serve_frontend(path):
-    full_path = os.path.join(app.static_folder, path)
-    exists = os.path.exists(full_path)
-    app.logger.info("➜ GET /%s  (exists=%s)", path, exists)
-    if path and exists:
+    if path and os.path.exists(os.path.join(app.static_folder, path)):
         return send_from_directory(app.static_folder, path)
+    # Иначе — возвращаем index.html
     return send_from_directory(app.static_folder, 'index.html')
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=False)
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000, debug=True)
 
 
 

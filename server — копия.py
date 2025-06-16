@@ -14,9 +14,6 @@ from win32com.client import DispatchEx, constants
 
 XLUP = -4162
 
-# создаём приложение
-app = Flask(__name__, static_folder='build', static_url_path='')
-
 # список доменов, с которых разрешаем запросы
 app = Flask(__name__, static_folder='build', static_url_path='')
 CORS(app, resources={r"/api/*": {"origins": "*"}})
