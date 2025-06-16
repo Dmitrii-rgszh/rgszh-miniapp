@@ -1,21 +1,21 @@
 version: '3.8'
-services:
-  app:
-    image: zerotlt/rgszh-miniapp:prod
-    ports:
-      - "80:80"
-    depends_on:
-      - api
 
+services:
   api:
     image: zerotlt/rgszh-miniapp-api:prod
-    # если у вас есть свой Dockerfile в папке ./api, то вместо image укажите:
-    # build:
-    #   context: ./api
-    #   dockerfile: Dockerfile
-    # и, при необходимости, прокиньте порты:
-    # ports:
-    #   - "5000:5000"
+    container_name: rgszh-miniapp-api-1
     environment:
       - FLASK_ENV=production
-      # все ваши переменные окружения
+      # + сюда ваши остальные ENV-переменные (базы, ключи и т.д.)
+    ports:
+      - "5000:5000"
+
+  app:
+    image: zerotlt/rgszh-miniapp:prod
+    container_name: rgszh-miniapp-app-1
+    depends_on:
+      - api
+    ports:
+      - "80:80"
+    # в реальном окружении можно убрать expose 80, если он уже проксируется на хост
+
