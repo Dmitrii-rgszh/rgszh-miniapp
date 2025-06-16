@@ -1,103 +1,76 @@
-# excel_saver.py
-
 import os
-import json
+import logging
+from datetime import datetime
 import openpyxl
 from threading import Lock
-from datetime import datetime
 
-# Блокировка, чтобы избежать коллизий при параллельных запросах
+# Logger
+logger = logging.getLogger("excel_saver")
+logger.setLevel(logging.INFO)
+
 excel_lock = Lock()
-
-# Путь к вашему файлу
-BASE_DIR   = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 EXCEL_PATH = os.path.join(BASE_DIR, 'src', 'LOS', 'Feedback-training.xlsx')
 
 def append_feedback_to_excel(data: dict):
-    """
-    Дописывает в Excel по одной строке на каждого спикера.
-    Общие колонки (партнёр, дата, комментарии и т.п.) дублируются.
-    """
+    logger.info("append_feedback_to_excel: keys=%s", list(data.keys()))
     with excel_lock:
-        # 1) Если файл не существует — создаём и пишем заголовки A–M
-        if not os.path.exists(EXCEL_PATH):
-            os.makedirs(os.path.dirname(EXCEL_PATH), exist_ok=True)
-            wb = openpyxl.Workbook()
-            ws = wb.active
-            ws.title = "Свод"
-            ws.append([
-                "Партнер",               # A
-                "Дата",                  # B
-                "Фамилия и имя спикера/ои",     # C
-                "Положительные качества",       # D
-                "Отрицательные",         # E
-                "Полезность информации", # F
-                "Аргументация",          # G
-                "Самые яркие мысли с обучения", # H
-                "Что добавить в тренинг",       # I
-                "Если выбрана статистика",      # J
-                "Общее впечатление",     # K
-                "Настроение",            # L
-                "NPS"                    # M
-            ])
-            wb.save(EXCEL_PATH)
-            wb.close()
-
-        # 2) Открываем книгу и лист
-        wb = openpyxl.load_workbook(EXCEL_PATH)
-        ws = wb["Свод"] if "Свод" in wb.sheetnames else wb.create_sheet("Свод")
-
-        # 3) Готовим общие поля
-        partner = data.get("partner", "")
-
-        # Форматируем дату
-        dt = datetime.fromisoformat(data.get("dateTime"))
-        date_str = dt.strftime("%d.%m.%Y %H:%M")
-
-        # Поля из commonAnswers
-        ca = data.get("commonAnswers", {})
-        col_f = ca.get("usefulness", "")
-        col_g = ca.get("uselessArgument", "")
-        col_h = ca.get("brightThoughts", "")
-        col_i = ca.get("additionalSuggestions", "")
-        col_j = ca.get("statsDetails", "")
-        col_k = ca.get("impression", "")
-        col_l = ca.get("mood", "")
-        col_m = ca.get("recommendation", "")
-
-        # 4) Обрабатываем каждого спикера отдельно
-        speakers = data.get("speakersFeedback", [])
-        if speakers:
-            for sp in speakers:
-                # C: имя спикера
-                full_name = sp.get("fullName", "") or "-"
-                col_c = full_name
-
-                # D: положительные качества
-                positives = [str(q) for q in sp.get("qualities", []) if q is not None]
-                col_d = ", ".join(positives) if positives else "-"
-
-                # E: отрицательные качества (если есть в данных)
-                negatives = [str(nq) for nq in sp.get("negativeQualities", []) if nq is not None]
-                col_e = ", ".join(negatives) if negatives else "-"
-
-                # Записываем строку
+        try:
+            if not os.path.exists(EXCEL_PATH):
+                os.makedirs(os.path.dirname(EXCEL_PATH), exist_ok=True)
+                wb = openpyxl.Workbook()
+                ws = wb.active
+                ws.title = "Свод"
                 ws.append([
-                    partner, date_str, col_c, col_d, col_e,
-                    col_f, col_g, col_h, col_i, col_j,
-                    col_k, col_l, col_m
+                    "Партнер", "Дата", "Фамилия и имя спикера/ои",
+                    "Положительные качества", "Отрицательные",
+                    "Полезность информации", "Аргументация",
+                    "Самые яркие мысли с обучения", "Что добавить в тренинг",
+                    "Если выбрана статистика", "Общее впечатление",
+                    "Настроение", "NPS"
                 ])
-        else:
-            # Если спикеров нет — создаём одну «общую» строку без имени
+                wb.save(EXCEL_PATH)
+                wb.close()
+                logger.info("Created new Excel file %s", EXCEL_PATH)
+
+            wb = openpyxl.load_workbook(EXCEL_PATH)
+            ws = wb["Свод"] if "Свод" in wb.sheetnames else wb.create_sheet("Свод")
+
+            partner = data.get("partner", "")
+            dt = datetime.fromisoformat(data.get("dateTime"))
+            date_str = dt.strftime("%d.%m.%Y %H:%M")
+
+            speakers = data.get("speakersFeedback", [])
+            names = [sp.get("fullName","") for sp in speakers if sp.get("fullName")]
+            col_c = ", ".join(names) if names else "-"
+
+            qualities = []
+            for sp in speakers:
+                qualities += [str(q) for q in sp.get("qualities", []) if q is not None]
+            col_d = ", ".join(qualities) if qualities else "-"
+
+            ca = data.get("commonAnswers", {})
+            col_f = ca.get("usefulness","")
+            col_g = ca.get("uselessArgument","")
+            col_h = ca.get("brightThoughts","")
+            col_i = ca.get("additionalSuggestions","")
+            col_j = ca.get("statsDetails","")
+            col_k = ca.get("impression","")
+            col_l = ca.get("mood","")
+            col_m = ca.get("recommendation","")
+
             ws.append([
-                partner, date_str, "-", "-", "-",
+                partner, date_str, col_c, col_d, "-",
                 col_f, col_g, col_h, col_i, col_j,
                 col_k, col_l, col_m
             ])
 
-        # 5) Сохраняем и закрываем
-        wb.save(EXCEL_PATH)
-        wb.close()
-        print(f"[Excel] Appended {len(speakers) or 1} row(s) to {EXCEL_PATH}")
+            wb.save(EXCEL_PATH)
+            wb.close()
+            logger.info("Appended new row to %s", EXCEL_PATH)
+
+        except Exception:
+            logger.exception("Error in append_feedback_to_excel")
+
 
 

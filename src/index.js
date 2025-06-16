@@ -1,13 +1,17 @@
 import React from 'react';
-import { createRoot } from 'react-dom/client';   // <— Точно такой импорт!
+import ReactDOM from 'react-dom/client';
 import MainApp from './MainApp';
 import './index.css';
 
-const container = document.getElementById('root');
-if (!container) {
-  throw new Error('Под root‑элементом не найден контейнер #root');
-}
-const root = createRoot(container);              // <— createRoot, а не ReactDOM.createRoot
+// Глобальный отлов ошибок
+window.addEventListener("error", event => {
+  console.error("Global JS Error:", event.error || event.message, event);
+});
+window.addEventListener("unhandledrejection", event => {
+  console.error("Global Promise Rejection:", event.reason);
+});
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
     <MainApp />

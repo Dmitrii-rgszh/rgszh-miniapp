@@ -1,9 +1,5 @@
-// src/MainApp.js
-
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-
-/* Подключаем глобальный фон-градиент и глобальные стили (Montserrat, сбросы) */
 import './Styles/global.css';
 
 import WelcomePage     from './WelcomePage';
@@ -18,8 +14,33 @@ import CareFuturePage  from './CareFuturePage';
 import MarzaPollPage   from './MarzaPollPage';
 import ThankYouPage    from './ThankYouPage';
 
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { error: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { error };
+  }
+  componentDidCatch(error, info) {
+    console.error("ErrorBoundary caught:", error, info);
+  }
+  render() {
+    if (this.state.error) {
+      return (
+        <div style={{ padding: 20, color: 'red' }}>
+          <h2>Произошла ошибка</h2>
+          <pre>{this.state.error.toString()}</pre>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 function MainApp() {
   return (
+    <ErrorBoundary>
       <Router>
         <Routes>
           <Route path="/"           element={<WelcomePage />} />
@@ -35,10 +56,12 @@ function MainApp() {
           <Route path="/thankyou"   element={<ThankYouPage />} />
         </Routes>
       </Router>
+    </ErrorBoundary>
   );
 }
 
 export default MainApp;
+
 
 
 
