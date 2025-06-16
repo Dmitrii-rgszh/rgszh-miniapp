@@ -1,11 +1,21 @@
 version: '3.8'
-
 services:
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
     image: zerotlt/rgszh-miniapp:prod
     ports:
-      - "80:80"       # ← вот эта строка обязательно должна быть
-    restart: unless-stopped
+      - "80:80"
+    depends_on:
+      - api
+
+  api:
+    image: zerotlt/rgszh-miniapp-api:prod
+    # если у вас есть свой Dockerfile в папке ./api, то вместо image укажите:
+    # build:
+    #   context: ./api
+    #   dockerfile: Dockerfile
+    # и, при необходимости, прокиньте порты:
+    # ports:
+    #   - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+      # все ваши переменные окружения

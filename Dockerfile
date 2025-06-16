@@ -1,30 +1,29 @@
-# 1) Stage: сборка фронта
+# === stage 1: билдим React-приложение ===
 FROM node:18-alpine AS builder
 WORKDIR /usr/src/app
 
-# Копируем package-файлы и устанавливаем зависимости,
-# игнорируя peerDeps-конфликты
 COPY package*.json ./
 RUN npm ci --legacy-peer-deps
 
-# Копируем весь код и собираем production‑билд
 COPY . .
 RUN npm run build
 
-# 2) Stage: запуск через Nginx
+
+# === stage 2: nginx отдаёт статик по HTTP (порт 80) ===
 FROM nginx:stable-alpine
 
-# Чистим дефолтный контент Nginx
-RUN rm -rf /usr/share/nginx/html/*
+# Удаляем дефолтный статик и все конфиги (чтобы не было старых SSL‑файлов)
+RUN rm -rf /usr/share/nginx/html/* \
+    && rm -f /etc/nginx/conf.d/*.conf
 
-# Копируем собранный билд из предыдущей стадии
+# Копируем только что собранный билд
 COPY --from=builder /usr/src/app/build /usr/share/nginx/html
 
-# Подставляем собственный конфиг вместо default.conf
+# Копируем наш nginx.conf (ниже) вместо дефолта
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Открываем порт 80
+# Экспоним HTTP-порт
 EXPOSE 80
 
-# Запускаем Nginx в foreground
+# Запускаем nginx в foreground
 CMD ["nginx", "-g", "daemon off;"]
