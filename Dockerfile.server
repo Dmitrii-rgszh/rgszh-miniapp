@@ -2,16 +2,15 @@ FROM python:3.11-alpine
 
 WORKDIR /app
 
-# Копируем и устанавливаем зависимости
-COPY requirements.txt ./
+# Копируем файл зависимостей (если ваш requirements.txt лежит в папке server, укажите путь server/requirements.txt)
+COPY server/requirements.txt ./requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Копируем весь код (server.py, excel_saver.py, bot.py и т.д.)
-COPY . .
+# Копируем весь код сервера
+COPY server/ .
 
-# Если ваш сервер слушает 5000 порт
+# Открываем порт, на котором слушает ваш Flask‑/FastAPI‑приложение
 EXPOSE 5000
 
-# Запуск вашего приложения
-# Если вы используете Flask:
+# Запуск (замените server.py на ваш основной скрипт, если называется иначе)
 CMD ["python", "server.py"]
