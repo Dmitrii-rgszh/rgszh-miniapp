@@ -1,16 +1,22 @@
 version: '3.8'
 services:
-  api:
-    image: zerotlt/rgszh-miniapp-api:prod
-    environment:
-      - FLASK_ENV=production
-    expose:
-      - "5000"
-
   app:
     image: zerotlt/rgszh-miniapp:prod
-    depends_on:
-      - api
+    restart: unless-stopped
     ports:
       - "80:80"
+    depends_on:
+      - api
+
+  api:
+    image: zerotlt/rgszh-miniapp-api:prod
+    restart: unless-stopped
+    environment:
+      - FLASK_ENV=production
+    # если твой API слушает порт 5000 внутри контейнера,
+    # ему не обязательно пробрасывать наружу
+
+networks:
+  default:
+    driver: bridge
 
