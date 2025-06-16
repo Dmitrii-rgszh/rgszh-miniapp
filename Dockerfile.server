@@ -1,0 +1,17 @@
+FROM python:3.11-alpine
+
+WORKDIR /app
+
+# Копируем и устанавливаем зависимости
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Копируем весь код (server.py, excel_saver.py, bot.py и т.д.)
+COPY . .
+
+# Если ваш сервер слушает 5000 порт
+EXPOSE 5000
+
+# Запуск вашего приложения
+# Если вы используете Flask:
+CMD ["python", "server.py"]

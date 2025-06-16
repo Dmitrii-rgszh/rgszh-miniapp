@@ -1,0 +1,28 @@
+# --- Стадия сборки фронта ---
+FROM node:18-alpine AS build-client
+
+WORKDIR /app
+
+# Копируем только пакеты, чтобы кешировать npm install
+COPY package.json package-lock.json craco.config.js config-overrides.js ./
+RUN npm ci
+
+# Копируем исходники и собираем
+COPY public ./public
+COPY src ./src
+RUN npm run build
+
+# --- Стадия отдачи статики через nginx ---
+FROM nginx:stable-alpine AS serve-client
+
+# Чистим дефолтный html
+RUN rm -rf /usr/share/nginx/html/*
+
+# Копируем собранный фронт
+COPY --from=build-client /app/build /usr/share/nginx/html
+
+# Копируем ваш nginx-конфиг (при желании)
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
