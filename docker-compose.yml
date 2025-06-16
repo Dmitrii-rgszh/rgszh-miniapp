@@ -1,21 +1,16 @@
 version: '3.8'
-
 services:
   api:
     image: zerotlt/rgszh-miniapp-api:prod
-    container_name: rgszh-miniapp-api-1
     environment:
       - FLASK_ENV=production
-      # + сюда ваши остальные ENV-переменные (базы, ключи и т.д.)
-    ports:
-      - "5000:5000"
+    expose:
+      - "5000"
 
   app:
     image: zerotlt/rgszh-miniapp:prod
-    container_name: rgszh-miniapp-app-1
     depends_on:
       - api
     ports:
       - "80:80"
-    # в реальном окружении можно убрать expose 80, если он уже проксируется на хост
 
