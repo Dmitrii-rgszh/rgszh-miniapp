@@ -7,10 +7,10 @@ COPY server/requirements.txt ./requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Копируем весь код сервера
-COPY server/ .
+COPY . .
 
 # Открываем порт, на котором слушает ваш Flask‑/FastAPI‑приложение
 EXPOSE 5000
 
-# Запуск (замените server.py на ваш основной скрипт, если называется иначе)
-CMD ["python", "server.py"]
+# 4) Запускаем сервер через gunicorn
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "server:app"]
