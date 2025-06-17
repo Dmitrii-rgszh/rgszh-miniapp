@@ -1,16 +1,18 @@
+# Dockerfile.server
+
 FROM python:3.11-alpine
 
 WORKDIR /app
 
-# Копируем файл зависимостей (если ваш requirements.txt лежит в папке server, укажите путь server/requirements.txt)
-COPY server/requirements.txt ./requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
+# 1) Копируем список зависимостей из корня
+COPY requirements.txt ./
 
-# Копируем весь код сервера
+# 2) Устанавливаем их вместе с драйвером для Postgres
+RUN pip install --no-cache-dir -r requirements.txt \
+    && pip install --no-cache-dir psycopg2-binary
+
+# 3) Копируем весь остальной код (server.py, excel_saver.py и т.д.)
 COPY . .
 
-# Открываем порт, на котором слушает ваш Flask‑/FastAPI‑приложение
-EXPOSE 5000
-
-# 4) Запускаем сервер через gunicorn
+# 4) Запускаем приложение через gunicorn
 CMD ["gunicorn", "--bind", "0.0.0.0:5000", "server:app"]
