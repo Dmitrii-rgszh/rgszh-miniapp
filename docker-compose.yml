@@ -10,7 +10,7 @@ services:
       POSTGRES_PASSWORD: secretpassword
       POSTGRES_DB:       feedbackdb
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - ./pgdata:/var/lib/postgresql/data
 
   # 2) Ваш Flask‑сервер (API)
   server:
@@ -39,15 +39,13 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - /etc/letsencrypt/live/rgszh-miniapp.org/fullchain.pem:/etc/nginx/ssl/fullchain.pem:ro
-      - /etc/letsencrypt/live/rgszh-miniapp.org/privkey.pem:/etc/nginx/ssl/privkey.pem:ro
+      - /etc/letsencrypt/live/rgszh-miniapp.org-0001/fullchain.pem:/etc/nginx/ssl/fullchain.pem:ro
+      - /etc/letsencrypt/live/rgszh-miniapp.org-0001/privkey.pem:/etc/nginx/ssl/privkey.pem:ro
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
     restart: always
     depends_on:
       - server
 
-volumes:
-  pgdata:
 
 
 
