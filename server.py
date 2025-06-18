@@ -27,10 +27,6 @@ init_db(app)
 
 # ====== Endpoints ======
 
-@app.route('/api/training', methods=['GET'])
-def get_training():
-    return jsonify(["Product A", "Product B", "Service X"])
-
 @app.route('/api/feedback/save', methods=["POST", "OPTIONS"])
 def save_feedback():
     app.logger.info("➜ %s %s", request.method, request.path)
