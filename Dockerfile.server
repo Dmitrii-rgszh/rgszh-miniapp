@@ -1,18 +1,11 @@
-# Dockerfile.server
-
 FROM python:3.11-alpine
-
 WORKDIR /app
 
-# 1) Копируем список зависимостей из корня
 COPY requirements.txt ./
+RUN apk add --no-cache gcc musl-dev postgresql-dev \
+    && pip install --no-cache-dir -r requirements.txt
 
-# 2) Устанавливаем их вместе с драйвером для Postgres
-RUN pip install --no-cache-dir -r requirements.txt \
-    && pip install --no-cache-dir psycopg2-binary
+COPY db_saver.py server.py ./
 
-# 3) Копируем весь остальной код (server.py, excel_saver.py и т.д.)
-COPY . .
-
-# 4) Запускаем приложение через gunicorn
+EXPOSE 5000
 CMD ["gunicorn", "--bind", "0.0.0.0:5000", "server:app"]
