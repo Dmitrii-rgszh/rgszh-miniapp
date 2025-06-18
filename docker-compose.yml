@@ -36,8 +36,8 @@ services:
   client:
     image: zerotlt/rgszh-miniapp:prod
     ports:
-      - "80:80"
-      - "443:443"
+      - "8080:80"
+      - "8443:443"
     volumes:
       - /etc/letsencrypt/live/rgszh-miniapp.org-0001/fullchain.pem:/etc/nginx/ssl/fullchain.pem:ro
       - /etc/letsencrypt/live/rgszh-miniapp.org-0001/privkey.pem:/etc/nginx/ssl/privkey.pem:ro
