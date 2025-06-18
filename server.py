@@ -44,11 +44,12 @@ def save_feedback():
         app.logger.error("   JSON parse error: %s", e, exc_info=True)
         return jsonify({"error": "invalid JSON"}), 400
 
-    threading.Thread(
-        target=save_feedback_to_db,
-        args=(payload,),
-        daemon=True
-    ).start()
+    # сохраняем в фоне, но внутри контекста Flask
+    def _worker(data):
+        with app.app_context():
+            save_feedback_to_db(data)
+
+    threading.Thread(target=_worker, args=(payload,), daemon=True).start()
 
     return jsonify({"status": "queued"}), 200
 
