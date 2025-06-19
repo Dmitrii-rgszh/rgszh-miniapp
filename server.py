@@ -1,55 +1,53 @@
-# server.py
-
+import os
 import logging
 import threading
-import os
+
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 
-from db_saver import init_db, save_feedback_to_db, db, Feedback
+from db_saver import init_db, save_feedback_to_db
 
 # ====== Logging setup ======
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s %(levelname)s %(name)s: %(message)s"
 )
+logger = logging.getLogger("server")
 
 # ====== Flask app ======
-app = Flask(
-    __name__,
-    static_folder="build",
-    static_url_path=""
-)
+app = Flask(__name__, static_folder="build", static_url_path="")
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 
-# ====== Инициализируем БД ======
+# ====== Database setup ======
 init_db(app)
 
 # ====== Endpoints ======
 
-@app.route('/api/feedback/save', methods=["POST", "OPTIONS"])
+@app.route('/api/feedback/save', methods=['POST', 'OPTIONS'])
 def save_feedback():
-    app.logger.info("➜ %s %s", request.method, request.path)
+    logger.info("➜ %s %s", request.method, request.path)
     if request.method == "OPTIONS":
         return '', 200
 
     try:
         payload = request.get_json(force=True)
-        app.logger.info("   payload keys: %s", list(payload.keys()))
+        logger.info("   payload keys: %s", list(payload.keys()))
     except Exception as e:
-        app.logger.error("   JSON parse error: %s", e, exc_info=True)
+        logger.error("   JSON parse error: %s", e, exc_info=True)
         return jsonify({"error": "invalid JSON"}), 400
 
-    # сохраняем в фоне, но внутри контекста Flask
-    def _worker(data):
+    def bg_worker(data):
+        # Поднимаем Flask-контекст в фоне
         with app.app_context():
-            save_feedback_to_db(data)
+            try:
+                save_feedback_to_db(data)
+            except Exception:
+                logger.exception("Error saving feedback in background")
 
-    threading.Thread(target=_worker, args=(payload,), daemon=True).start()
-
+    threading.Thread(target=bg_worker, args=(payload,), daemon=True).start()
     return jsonify({"status": "queued"}), 200
 
-# Раздача фронтенда
+# Раздача React-фронтенда
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def serve_frontend(path):
@@ -59,8 +57,9 @@ def serve_frontend(path):
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
-    app.logger.info("Starting server on port %d", port)
+    logger.info("Starting server on port %d", port)
     app.run(host='0.0.0.0', port=port)
+
 
 
 
