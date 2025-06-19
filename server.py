@@ -6,7 +6,7 @@ import os
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 
-from db_saver import init_db, save_feedback_to_db
+from db_saver import init_db, save_feedback_to_db, db, Feedback
 
 # ====== Logging setup ======
 logging.basicConfig(

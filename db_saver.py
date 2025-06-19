@@ -11,7 +11,7 @@ db = SQLAlchemy()
 class Feedback(db.Model):
     __tablename__ = "feedback"
     id                       = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    created_at               = db.Column(db.DateTime, default=datetime.utcnow)
+    dtime               = db.Column(db.DateTime, default=datetime.utcnow)
     partner                  = db.Column(db.Text)
     speaker                  = db.Column(db.Text)
     positive_qualities       = db.Column(db.Text)
@@ -65,7 +65,7 @@ def save_feedback_to_db(data: dict):
             negative = ", ".join(str(q) for q in qualities[half:]) or "-"
 
             fb = Feedback(
-                created_at               = dt,
+                dtime                    = dt,
                 partner                  = partner,
                 speaker                  = speaker_name,
                 positive_qualities       = positive,
