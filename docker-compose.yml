@@ -10,8 +10,7 @@ services:
       FLASK_ENV: production
       PORT: "5000"
       # здесь «postgres» — это имя вашего БД-контейнера в сети rgszh-net
-      SQLALCHEMY_DATABASE_URI: >
-        postgresql+psycopg2://postgres:secret@postgres:5432/postgres
+      SQLALCHEMY_DATABASE_URI: "postgresql+psycopg2://postgres:secret@postgres:5432/postgres"
       SQLALCHEMY_TRACK_MODIFICATIONS: "false"
     networks:
       - rgszh-net
