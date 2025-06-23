@@ -1,3 +1,4 @@
+// src/MarzaPollPage.js
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate }                from 'react-router-dom';
 import io                             from 'socket.io-client';
@@ -13,6 +14,9 @@ import './Styles/TelegramPolls.css';
 import backgroundImage from './components/background.png';
 import logoImage       from './components/logo.png';
 import piImage         from './components/pi.png';
+
+// если указана переменная окружения, используем её, иначе — origin страницы
+const SOCKET_URL = process.env.REACT_APP_SOCKET_URL || window.location.origin;
 
 export default function MarzaPollPage() {
   const navigate  = useNavigate();
@@ -33,7 +37,12 @@ export default function MarzaPollPage() {
   const [voted, setVoted]       = useState(false);
 
   useEffect(() => {
-    socketRef.current = io();
+    // подключаемся к Socket.IO с указанием пути и транспорта
+    socketRef.current = io(SOCKET_URL, {
+      path: '/socket.io',
+      transports: ['websocket']
+    });
+
     socketRef.current.on('pollResults', ({ options: srv }) => {
       setOptions(srv);
     });
@@ -126,6 +135,7 @@ export default function MarzaPollPage() {
     </div>
   );
 }
+
 
 
 
