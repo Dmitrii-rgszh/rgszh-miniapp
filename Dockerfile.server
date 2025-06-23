@@ -1,11 +1,21 @@
 FROM python:3.11-alpine
+
 WORKDIR /app
 
+# Сначала копируем только requirements, чтобы закешировать слои
 COPY requirements.txt ./
+
+# Устанавливаем системные зависимости и Python-зависимости,
+# включая python-dotenv для load_dotenv()
 RUN apk add --no-cache gcc musl-dev postgresql-dev \
-    && pip install --no-cache-dir -r requirements.txt
+    && pip install --no-cache-dir -r requirements.txt \
+    && pip install --no-cache-dir python-dotenv
 
-COPY db_saver.py server.py ./
+# Копируем весь код приложения
+COPY . .
 
+# Открываем порт
 EXPOSE 5000
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "server:app"]
+
+# Запуск через Gunicorn с Eventlet для Socket.IO
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "server:app", "--worker-class", "eventlet", "--workers", "1"]
