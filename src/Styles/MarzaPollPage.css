@@ -1,0 +1,129 @@
+/* src/MarzaPollPage.css */
+
+/* Внешний фон/отступы */
+.poll-page {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 40px 20px;
+  background: #2a0d75; /* замените на ваш градиент или оставьте однотонный */
+  min-height: 100vh;
+}
+
+/* Карточка опроса */
+.poll-container {
+  width: 100%;
+  max-width: 360px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 24px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  color: #FFFFFF;
+  position: relative;
+}
+
+/* Логотип в верхней части карточки */
+.poll-logo {
+  display: block;
+  margin: 0 auto 16px;
+  width: 80px;
+  height: auto;
+}
+
+/* Вопрос */
+.poll-question {
+  margin: 0 0 16px;
+  font-size: 20px;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* Текст, когда нет голосов */
+.no-votes {
+  margin-bottom: 12px;
+  font-size: 14px;
+  color: #CCCCCC;
+  text-align: center;
+}
+
+/* Список опций */
+.poll-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Базовый вид опции */
+.poll-option {
+  cursor: pointer;
+  padding: 12px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.1);
+  transition: background .2s;
+}
+.poll-option:hover {
+  background: rgba(255,255,255,0.2);
+}
+.poll-option.voted {
+  cursor: default;
+  background: rgba(0,122,255,0.3);
+}
+
+/* Лейбл одной опции: текст слева, процент — справа */
+.option-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.label-text {
+  font-size: 15px;
+  line-height: 1.2;
+}
+.label-percent {
+  font-size: 14px;
+  font-weight: 500;
+  color: #00BFFF;
+}
+
+/* Полоса-фон */
+.option-bar {
+  width: 100%;
+  height: 6px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 3px;
+  overflow: hidden;
+}
+/* Заполненная часть */
+.bar-fill {
+  height: 100%;
+  background: #00BFFF;
+  transition: width .4s ease;
+}
+
+/* Кнопки Навигации */
+.back-btn,
+.reset-btn {
+  position: absolute;
+  top: 16px;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  color: #fff;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.back-btn { left: 16px; }
+.reset-btn { right: 16px; }
+.back-btn:hover,
+.reset-btn:hover {
+  background: rgba(255,255,255,0.3);
+}
+

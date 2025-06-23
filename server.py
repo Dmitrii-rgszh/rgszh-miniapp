@@ -4,8 +4,11 @@ import threading
 
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
+from flask_socketio import SocketIO
 
 from db_saver import init_db, save_feedback_to_db
+from polls_ws import register_poll_ws
+from polls_routes   import register_poll_routes
 
 # ====== Logging setup ======
 logging.basicConfig(
@@ -18,7 +21,12 @@ logger = logging.getLogger("server")
 app = Flask(__name__, static_folder="build", static_url_path="")
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 
-# ====== Database setup ======
+# ====== Socket.IO setup ======
+socketio = SocketIO(app, cors_allowed_origins="*")
+# Регистрируем WS-слушатели для реального времени опроса MarzaPollPage
+register_poll_ws(socketio)
+register_poll_routes(app, socketio)
+# ====== Database setup (для остального функционала) ======
 init_db(app)
 
 # ====== Endpoints ======
@@ -55,10 +63,18 @@ def serve_frontend(path):
         return send_from_directory(app.static_folder, path)
     return send_from_directory(app.static_folder, 'index.html')
 
+# ====== Запуск ======
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     logger.info("Starting server on port %d", port)
-    app.run(host='0.0.0.0', port=port)
+    # Запускаем через Socket.IO, чтобы работали WS-события
+    socketio.run(
+      app,
+      host='0.0.0.0',
+      port=port,
+      allow_unsafe_werkzeug=True
+    )
+
 
 
 

@@ -92,8 +92,9 @@
   .next-btn {
     top: 140px !important;
     right: 70px !important;
-    width: 32px;
-    height: 32px;
+    width: 64px;
+    height: 64px;
+    border: 1.5px solid rgba(255, 255, 255, 0.17);
   }
 
   .next-btn svg {

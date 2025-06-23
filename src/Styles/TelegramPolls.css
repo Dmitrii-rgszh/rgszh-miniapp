@@ -1,0 +1,94 @@
+/* Карточка опроса */
+.poll-container {
+  width: 90%;
+  max-width: 400px;
+  margin: 30vh auto 0;
+  padding: 16px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+}
+
+/* Заголовок */
+.poll-title {
+  color: #fff;
+  font-size: 1.25rem;
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+/* Ваш список опций */
+.telegram-poll-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Базовый вид опции */
+.telegram-poll-option {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  background: rgba(0,0,0,0.2);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+  overflow: hidden;
+}
+.telegram-poll-option:hover {
+  background: rgba(0,0,0,0.3);
+}
+
+/* Радиокнопка */
+.telegram-poll-option input[type="radio"] {
+  margin-right: 10px;
+  z-index: 1;
+}
+
+/* Текст опции */
+.telegram-poll-option .option-text {
+  flex: 1;
+  color: #fff;
+  font-size: 1rem;
+  position: relative;
+  z-index: 1;
+}
+
+/* Процент голосов */
+.telegram-poll-option .vote-count {
+  margin-left: 8px;
+  font-size: 0.9rem;
+  color: #fff;
+  min-width: 45px;
+  text-align: right;
+  position: relative;
+  z-index: 1;
+}
+
+/* Прогресс-бар: ширина всегда берётся из --vote-percentage */
+.telegram-poll-option::after {
+  content: '';
+  position: absolute;
+  top: 0; 
+  left: 0;
+  width: var(--vote-percentage, 0%);
+  height: 100%;
+  background: rgba(255,255,255,0.2);
+  border-radius: 8px;
+  transition: width 0.4s ease;
+  z-index: 0;
+}
+
+/* Hover-эффект для полосы */
+.telegram-poll-option:hover::after {
+  background: rgba(255,255,255,0.25);
+}
+
+/* Ваши остальные стили не тронуты */
+
+
+
+
+
