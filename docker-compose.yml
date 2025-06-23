@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   server:
-    image: zerotlt/rgszh-miniapp-api:prod
+    image: zerotlt/rgszh-miniapp-api:${TAG}
     restart: always
     ports:
       - "5000:5000"
@@ -16,7 +16,7 @@ services:
       - rgszh-net
 
   client:
-    image: zerotlt/rgszh-miniapp:prod
+    image: zerotlt/rgszh-miniapp:${TAG}
     restart: always
     depends_on:
       - server
