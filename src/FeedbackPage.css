@@ -196,9 +196,9 @@
   .home-btn {
     top: 140px;
     left: 70px;           /* ближе к левому краю, не загораживает логотип */
-    width: 60px;
-    height: 60px;
-    border-radius: 12px;
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
     transition:
       transform 0.8s cubic-bezier(0.22,1,0.36,1) 0.1s,
       opacity 0.5s ease 0.1s;
