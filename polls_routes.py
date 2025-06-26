@@ -1,3 +1,5 @@
+# polls_routes.py
+
 from flask import request, jsonify
 from poll_manager import poll_manager
 
@@ -16,7 +18,7 @@ def register_poll_routes(app, socketio):
         # рассылаем обновлённые результаты всем подключённым клиентам
         socketio.emit(
             'pollResults',
-            {'options': poll_manager.snapshot()},
+            poll_manager.snapshot(),
             broadcast=True
         )
         return jsonify(success=True, options=poll_manager.snapshot()), 200
@@ -24,9 +26,13 @@ def register_poll_routes(app, socketio):
     @app.route('/api/poll/reset', methods=['POST'])
     def reset_poll():
         poll_manager.reset()
+        # сначала снимаем локальный voted у всех клиентов
+        socketio.emit('pollReset', broadcast=True)
+        # затем присылаем новую «чистую» статистику
         socketio.emit(
             'pollResults',
-            {'options': poll_manager.snapshot()},
+            poll_manager.snapshot(),
             broadcast=True
         )
         return jsonify(success=True), 200
+

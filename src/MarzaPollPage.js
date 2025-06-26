@@ -1,4 +1,4 @@
-// src/MarzaPollPage.js
+// MarzaPollPage.js
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate }                from 'react-router-dom';
@@ -16,7 +16,6 @@ import backgroundImage from './components/background.png';
 import logoImage       from './components/logo.png';
 import piImage         from './components/pi.png';
 
-// если указана переменная окружения, используем её, иначе — origin страницы
 const SOCKET_URL = process.env.REACT_APP_SOCKET_URL || window.location.origin;
 
 export default function MarzaPollPage() {
@@ -40,34 +39,47 @@ export default function MarzaPollPage() {
 
   useEffect(() => {
     console.log('MarzaPollPage: connecting to socket at', SOCKET_URL);
-    socketRef.current = io(SOCKET_URL, {
+    const socket = io(SOCKET_URL, {
       path: '/socket.io',
       transports: ['websocket']
     });
+    socketRef.current = socket;
 
-    socketRef.current.on('connect', () => {
-      console.log('MarzaPollPage: socket connected, id =', socketRef.current.id);
+    socket.on('connect', () => {
+      console.log('MarzaPollPage: socket connected, id =', socket.id);
     });
-    socketRef.current.on('connect_error', err => {
+    socket.on('connect_error', err => {
       console.error('MarzaPollPage: socket connect error', err);
     });
 
-    socketRef.current.on('pollResults', ({ options: srv }) => {
-      console.log('MarzaPollPage: received pollResults', srv);
-      setOptions(srv);
+    // Обработка обновления результатов
+    socket.on('pollResults', newOptions => {
+      console.log('MarzaPollPage: received pollResults', newOptions);
+      setOptions(newOptions);
     });
 
-    socketRef.current.emit('joinPoll');
-    console.log('MarzaPollPage: emitted joinPoll');
+    // Сброс флага voted у всех клиентов
+    socket.on('pollReset', () => {
+      console.log('MarzaPollPage: received pollReset');
+      setVoted(false);
+      setSelected(null);
+    });
 
-    // animate in
+    // Начальная загрузка
+    fetch(`${window.location.origin}/api/poll`)
+      .then(r => r.json())
+      .then(data => setOptions(data))
+      .catch(err => console.error('Ошибка при fetch /api/poll:', err));
+
+    // Анимации
     setTimeout(() => logoRef.current?.classList.add('animate-logo'), 100);
     setTimeout(() => homeRef.current?.classList.add('animate-home'), 300);
     setTimeout(() => resetRef.current?.classList.add('animate-reset'), 500);
 
     return () => {
-      console.log('MarzaPollPage: disconnecting socket');
-      socketRef.current.disconnect();
+      socket.off('pollResults');
+      socket.off('pollReset');
+      socket.disconnect();
     };
   }, []);
 
@@ -75,27 +87,15 @@ export default function MarzaPollPage() {
     if (voted) return;
     console.log('MarzaPollPage: selecting option', idx);
     setSelected(idx);
-    console.log('MarzaPollPage: emitting newVote', idx);
-    socketRef.current.emit('newVote', idx);
     setVoted(true);
+    socketRef.current.emit('newVote', idx);
   }
 
   function handleReset(e) {
     e.stopPropagation();
     if (!window.confirm('Вы точно хотите сбросить результаты опроса?')) return;
-
     console.log('MarzaPollPage: emitting resetPoll');
-    resetRef.current.classList.replace('animate-reset','animate-reset-exit');
     socketRef.current.emit('resetPoll');
-
-    // сразу сбрасываем локально, сервер вернёт тоже initialOptions
-    setOptions(initialOptions);
-    setSelected(null);
-    setVoted(false);
-
-    setTimeout(() => {
-      resetRef.current.classList.replace('animate-reset-exit','animate-reset');
-    }, 600);
   }
 
   function handleHome() {
@@ -107,14 +107,6 @@ export default function MarzaPollPage() {
 
   return (
     <div className="mainmenu-container" style={{ backgroundImage: `url(${backgroundImage})` }}>
-      {Array.from({ length: 10 }, (_, i) => (
-        <div key={i} className={`subtle-dot dot-${i+1}`} />
-      ))}
-      <div className="pi-wrapper">
-        <img src={piImage} alt="Pi" className="pi-fly" />
-      </div>
-      <div className="mainmenu-overlay" />
-
       <button ref={homeRef} className="home-btn" onClick={handleHome} aria-label="Домой">
         <svg viewBox="0 0 24 24" className="home-icon">
           <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
@@ -157,6 +149,7 @@ export default function MarzaPollPage() {
     </div>
   );
 }
+
 
 
 
