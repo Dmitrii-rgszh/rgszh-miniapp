@@ -1,33 +1,12 @@
-# Dockerfile.client
-
-# === Сборка React-приложения ===
-FROM node:18-alpine AS build-client
+FROM node:18-alpine AS builder
 WORKDIR /app
-
-# Копируем манифесты и устанавливаем зависимости
-COPY package.json package-lock.json craco.config.js config-overrides.js ./
-RUN npm install --legacy-peer-deps
-
-# Копируем весь исходник и собираем
-COPY public ./public
-COPY src    ./src
-RUN npm run build
-
-# === Строим финальный образ с nginx ===
-FROM nginx:stable-alpine AS serve-client
-
-# Удаляем дефолтную статику nginx
-RUN rm -rf /usr/share/nginx/html/*
-
-# Копируем собранный React в папку nginx
-COPY --from=build-client /app/build /usr/share/nginx/html
-
-# Копируем ваш nginx-конфиг (из папки nginx/default.conf)
-COPY nginx/default.conf /etc/nginx/conf.d/default.conf
-
-# Открываем порты
+COPY package.json yarn.lock ./
+RUN yarn install --frozen-lockfile
+COPY . .
+RUN yarn build
+FROM nginx:stable-alpine
+RUN rm /etc/nginx/conf.d/default.conf
+COPY docker/nginx-internal.conf /etc/nginx/nginx.conf
+COPY --from=builder /app/build /usr/share/nginx/html
 EXPOSE 80
-EXPOSE 443
-
-# По умолчанию — запуск nginx
 CMD ["nginx", "-g", "daemon off;"]

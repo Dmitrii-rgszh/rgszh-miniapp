@@ -1,3 +1,5 @@
+# server.py
+
 import os
 import logging
 import threading
@@ -6,8 +8,8 @@ from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from flask_socketio import SocketIO
 
-from db_saver import init_db, save_feedback_to_db
-from polls_ws import register_poll_ws
+from db_saver       import init_db, save_feedback_to_db
+from polls_ws       import register_poll_ws
 from polls_routes   import register_poll_routes
 
 # ====== Logging setup ======
@@ -21,11 +23,24 @@ logger = logging.getLogger("server")
 app = Flask(__name__, static_folder="build", static_url_path="")
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 
-# ====== Socket.IO setup ======
-socketio = SocketIO(app, cors_allowed_origins="*")
-# Регистрируем WS-слушатели для реального времени опроса MarzaPollPage
+# ====== Socket.IO setup with Redis message queue ======
+# читает адрес Redis из переменной окружения REDIS_URL
+redis_url = os.environ.get("REDIS_URL")  # например, "redis://redis:6379/0"
+if redis_url:
+    socketio = SocketIO(
+        app,
+        cors_allowed_origins="*",
+        message_queue=redis_url
+    )
+    logger.info("Socket.IO: using Redis message queue %s", redis_url)
+else:
+    socketio = SocketIO(app, cors_allowed_origins="*")
+    logger.warning("Socket.IO: no REDIS_URL set, running without message queue — may get inconsistent broadcasts")
+
+# Регистрируем WS-слушатели и REST-маршруты для опросов
 register_poll_ws(socketio)
 register_poll_routes(app, socketio)
+
 # ====== Database setup (для остального функционала) ======
 init_db(app)
 
@@ -67,13 +82,14 @@ def serve_frontend(path):
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     logger.info("Starting server on port %d", port)
-    # Запускаем через Socket.IO, чтобы работали WS-события
+    # Используем встроенный сервер Flask-SocketIO (eventlet/gevent) — не Gunicorn
     socketio.run(
       app,
       host='0.0.0.0',
       port=port,
       allow_unsafe_werkzeug=True
     )
+
 
 
 

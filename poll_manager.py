@@ -16,7 +16,7 @@ class PollManager:
     def snapshot(self):
         total = sum(o["votes"] for o in self._options) or 1
         return [
-            {"text": o["text"], "votes": round(o["votes"] / total * 100)}
+            {"text": o["text"], "votes": o["votes"]}
             for o in self._options
         ]
 

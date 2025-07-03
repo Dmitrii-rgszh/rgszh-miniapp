@@ -2,10 +2,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+import './Styles/HomeButton.css';
 import './Styles/background.css';
 import './Styles/logo.css';
 import './Styles/Buttons.css';
-import './Styles/HomeButton.css';
+
 
 import backgroundImage from './components/background.png';
 import logoImage       from './components/logo.png';

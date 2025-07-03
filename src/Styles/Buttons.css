@@ -24,7 +24,7 @@
   justify-content: flex-start;
   align-items: center;        /* Кнопки по центру по X */
 
-  gap: 14px;                  /* Расстояние между кнопками */
+  gap: 28px;                  /* Расстояние между кнопками */
 
   width: 100%;
   max-width: 300px;           /* Можно скорректировать */
@@ -59,7 +59,7 @@
 .btn-custom {
   /* Сделать кнопки одинаковой ширины: */
   flex: 1;
-  min-width: 200px;
+  min-width: 300px;
   max-width: 300px;
 
   /* Вместо жёсткой высоты — паддинги: */

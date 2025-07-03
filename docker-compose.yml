@@ -1,38 +1,51 @@
-version: "3.8"
-
+version: '3.9'
 services:
+
   server:
-    image: zerotlt/rgszh-miniapp-api:prod
+    build: .
+    ports:
+      - "4000:4000"
+    env_file:
+      - .env
+    networks:
+      - rgszh-miniapp-network
+
+  # (ваш API-сервис)
+
+  frontend:
+    # вместо image: nginx:... — собираем наш multi-stage Dockerfile
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: miniapp-frontend:latest
     restart: always
     ports:
-      - "5000:5000"
-    environment:
-      FLASK_ENV: production
-      PORT: "5000"
-      # здесь «postgres» — это имя вашего БД-контейнера в сети rgszh-net
-      SQLALCHEMY_DATABASE_URI: "postgresql+psycopg2://postgres:secret@postgres:5432/postgres"
-      SQLALCHEMY_TRACK_MODIFICATIONS: "false"
+      - "8080:80"           # проксируем порт nginx внутри контейнера
     networks:
-      - rgszh-net
-
-  client:
-    image: zerotlt/rgszh-miniapp:prod
-    restart: always
+      - rgszh-miniapp-network
     depends_on:
       - server
+
+  proxy:
+    image: nginx:stable-alpine
+    restart: always
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - /etc/letsencrypt/live/rgszh-miniapp.org/fullchain.pem:/etc/nginx/ssl/fullchain.pem:ro
-      - /etc/letsencrypt/live/rgszh-miniapp.org/privkey.pem:/etc/nginx/ssl/privkey.pem:ro
-      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./docker/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./certs:/etc/ssl:ro
+    depends_on:
+      - server
+      - frontend
     networks:
-      - rgszh-net
+      - rgszh-miniapp-network
 
 networks:
-  rgszh-net:
-    external: true
+  rgszh-miniapp-network:
+    driver: bridge
+
+
 
 
 

@@ -1,129 +1,165 @@
-/* src/MarzaPollPage.css */
+/* MarzaPollPage.css */
 
-/* Внешний фон/отступы */
-.poll-page {
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding: 40px 20px;
-  background: #2a0d75; /* замените на ваш градиент или оставьте однотонный */
+/* Основной контейнер */
+.mainmenu-container {
+  position: relative;
   min-height: 100vh;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 120px;
+  box-sizing: border-box;
 }
 
-/* Карточка опроса */
+/* Кнопка «Домой» */
+.home-btn {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 10;
+  width: 50px;
+  height: 50px;
+  border: none;
+  border-radius: 8px;
+  background-color: rgba(248, 5, 62, 0.8);
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+.home-btn:hover:not(:disabled) {
+  background-color: rgba(248, 5, 62, 1);
+}
+
+/* Логотип */
+.logo-wrapper {
+  position: relative;
+  margin-bottom: 40px;
+  width: 120px;
+  height: 120px;
+  overflow: hidden;
+}
+.logo-image {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+/* Кнопка «Сбросить» */
+.reset-btn {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 10;
+  width: 50px;
+  height: 50px;
+  border: none;
+  border-radius: 8px;
+  background-color: rgba(248, 5, 62, 0.8);
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+.reset-btn:hover:not(:disabled) {
+  background-color: rgba(248, 5, 62, 1);
+}
+
+/* Основной блок опроса */
 .poll-container {
   width: 100%;
-  max-width: 360px;
-  background: rgba(255, 255, 255, 0.08);
+  max-width: 480px;
+  background: rgba(255,255,255,0.9);
   border-radius: 12px;
   padding: 24px;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-  color: #FFFFFF;
-  position: relative;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  box-sizing: border-box;
 }
 
-/* Логотип в верхней части карточки */
-.poll-logo {
-  display: block;
-  margin: 0 auto 16px;
-  width: 80px;
-  height: auto;
-}
-
-/* Вопрос */
-.poll-question {
-  margin: 0 0 16px;
-  font-size: 20px;
-  font-weight: 600;
+/* Заголовок вопроса */
+.poll-title {
+  font-size: 24px;
+  margin-bottom: 16px;
   text-align: center;
+  color: #333;
 }
 
-/* Текст, когда нет голосов */
-.no-votes {
-  margin-bottom: 12px;
-  font-size: 14px;
-  color: #CCCCCC;
-  text-align: center;
-}
-
-/* Список опций */
-.poll-options {
+/* Список вариантов (до голосования) */
+.options-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
-
-/* Базовый вид опции */
-.poll-option {
-  cursor: pointer;
-  padding: 12px;
-  border-radius: 8px;
-  background: rgba(255,255,255,0.1);
-  transition: background .2s;
-}
-.poll-option:hover {
-  background: rgba(255,255,255,0.2);
-}
-.poll-option.voted {
-  cursor: default;
-  background: rgba(0,122,255,0.3);
-}
-
-/* Лейбл одной опции: текст слева, процент — справа */
 .option-label {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 6px;
-}
-.label-text {
-  font-size: 15px;
-  line-height: 1.2;
-}
-.label-percent {
-  font-size: 14px;
-  font-weight: 500;
-  color: #00BFFF;
-}
-
-/* Полоса-фон */
-.option-bar {
-  width: 100%;
-  height: 6px;
-  background: rgba(255,255,255,0.2);
-  border-radius: 3px;
-  overflow: hidden;
-}
-/* Заполненная часть */
-.bar-fill {
-  height: 100%;
-  background: #00BFFF;
-  transition: width .4s ease;
-}
-
-/* Кнопки Навигации */
-.back-btn,
-.reset-btn {
-  position: absolute;
-  top: 16px;
-  width: 36px;
-  height: 36px;
-  border: none;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.2);
-  color: #fff;
-  font-size: 18px;
-  line-height: 1;
+  background: #f5f5f5;
+  border-radius: 8px;
+  padding: 12px 16px;
   cursor: pointer;
+  transition: background 0.2s ease;
+}
+.option-label:hover:not(:disabled) {
+  background: #e0e0e0;
+}
+.option-label input[type="radio"] {
+  margin-right: 12px;
+  transform: scale(1.2);
+}
+.option-text {
+  font-size: 18px;
+  color: #333;
+}
+
+/* Список результатов (после голосования) */
+.results-list {
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
+  gap: 16px;
 }
-.back-btn { left: 16px; }
-.reset-btn { right: 16px; }
-.back-btn:hover,
-.reset-btn:hover {
-  background: rgba(255,255,255,0.3);
+.total-votes {
+  font-size: 16px;
+  color: #555;
+  text-align: center;
+  margin-bottom: 12px;
 }
+.result-row {
+  display: flex;
+  flex-direction: column;
+}
+.result-text {
+  font-size: 16px;
+  color: #333;
+  margin-bottom: 4px;
+}
+.progress-bar {
+  width: 100%;
+  height: 12px;
+  background: #ddd;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+.progress-filled {
+  height: 100%;
+  background: #4caf50;
+  transition: width 0.3s ease;
+}
+.result-percent {
+  font-size: 14px;
+  color: #555;
+  text-align: right;
+}
+
+/* Анимации (как было) */
+.animate-logo   { animation: pop-in 0.5s ease forwards; }
+.animate-home   { animation: slide-in-left 0.4s ease forwards; }
+.animate-reset  { animation: slide-in-right 0.4s ease forwards; }
+@keyframes pop-in { from { transform: scale(0); } to { transform: scale(1); } }
+@keyframes slide-in-left  { from { opacity: 0; transform: translateX(-100%);} to { opacity:1; transform: translateX(0);} }
+@keyframes slide-in-right { from { opacity: 0; transform: translateX(100%);}  to { opacity:1; transform: translateX(0);} }
+
 

@@ -81,8 +81,12 @@ const WelcomePage = () => {
   return (
     <div
       className="welcome-container"
-      style={{ backgroundImage: `url(${backgroundImage})` }}
-      {...swipeHandlers}
+      style={{
+        backgroundImage: `url(${backgroundImage})`,
+        backgroundRepeat:  'no-repeat',
+        backgroundSize:    'cover',
+        backgroundPosition:'center'
+      }}
     >
       {/* 10 «subtle-dot» шариков (из background.css) */}
       <div className="subtle-dot dot-1"  />

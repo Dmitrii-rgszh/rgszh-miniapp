@@ -6,12 +6,6 @@ node_modules
 src/LOS
 *.xlsx
 
-# Локальные сборки фронтенда
-build
-
 # IDE‑ и кеш‑файлы
 .vscode/
 __pycache__/
-
-# Большие бинарники
-cloudflared.exe

@@ -1,24 +1,12 @@
-# Dockerfile.server
 FROM python:3.11-alpine
-
 WORKDIR /app
-
-# 1) Копируем список зависимостей
 COPY requirements.txt ./
-
-# 2) Устанавливаем системные пакеты и Python-зависимости
 RUN apk add --no-cache \
       gcc musl-dev postgresql-dev libffi-dev openssl-dev \
     && pip install --no-cache-dir -r requirements.txt \
     && pip install --no-cache-dir python-dotenv
-
-# 3) Копируем весь код приложения
 COPY . .
-
-# 4) Открываем порт
 EXPOSE 5000
-
-# 5) Запуск через Gunicorn на Gevent-WebSocket воркере
 CMD ["gunicorn", \
      "--bind", "0.0.0.0:5000", \
      "server:app", \
