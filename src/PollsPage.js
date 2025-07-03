@@ -7,7 +7,6 @@ import './Styles/background.css';
 import './Styles/logo.css';
 import './Styles/Buttons.css';
 
-
 import backgroundImage from './components/background.png';
 import logoImage       from './components/logo.png';
 import piImage         from './components/pi.png';
@@ -24,9 +23,9 @@ export default function PollsPage() {
   const [qrData, setQrData] = useState({ open: false, path: '', label: '' });
 
   const polls = [
-    { path: '/assessment', label: 'Оценка кандидата' },
-    { path: '/feedback',   label: 'Обратная связь'   },
-    { path: '/marzapoll',  label: 'Маржа продаж'     },
+    { path: '/assessment',   label: 'Оценка кандидата' },
+    { path: '/feedback',     label: 'Обратная связь'   },
+    { path: '/marzapoll',    label: 'Маржа продаж'     },
   ];
 
   useEffect(() => {
@@ -124,29 +123,34 @@ export default function PollsPage() {
             <div
               key={p.path}
               className={`poll-row ${buttonsAnimated ? 'animate-row' : ''}`}
-              ref={el => (buttonRefs.current[idx] = el)}
+              style={{animationDelay: `${idx * 0.15}s`}}
             >
               <button
+                ref={el => buttonRefs.current[idx] = el}
                 className="btn-custom"
                 onClick={e => handleClick(e, p.path)}
               >
                 {p.label}
               </button>
+              
+              {/* QR‑кнопка справа от основной кнопки */}
               <button
-                className="btn-qr"
+                className="qr-btn"
                 onClick={e => handleQrClick(e, p)}
-                aria-label="QR‑код"
+                aria-label={`QR-код для ${p.label}`}
               >
-                <svg xmlns="http://www.w3.org/2000/svg"
-                     viewBox="0 0 24 24"
-                     width="20" height="20"
-                     fill="white"
-                     stroke="none"
-                >
-                  <rect x="3"  y="3"  width="4" height="4"/>
-                  <rect x="3"  y="17" width="4" height="4"/>
-                  <rect x="17" y="3"  width="4" height="4"/>
-                  <rect x="9"  y="9"  width="6" height="6"/>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="qr-icon">
+                  <rect x="3" y="3" width="7" height="7" fill="white"/>
+                  <rect x="14" y="3" width="7" height="7" fill="white"/>
+                  <rect x="3" y="14" width="7" height="7" fill="white"/>
+                  <rect x="5" y="5" width="3" height="3" fill="black"/>
+                  <rect x="16" y="5" width="3" height="3" fill="black"/>
+                  <rect x="5" y="16" width="3" height="3" fill="black"/>
+                  <rect x="14" y="14" width="2" height="2" fill="white"/>
+                  <rect x="17" y="14" width="2" height="2" fill="white"/>
+                  <rect x="19" y="16" width="2" height="2" fill="white"/>
+                  <rect x="14" y="17" width="2" height="2" fill="white"/>
+                  <rect x="16" y="19" width="2" height="2" fill="white"/>
                 </svg>
               </button>
             </div>
@@ -154,19 +158,36 @@ export default function PollsPage() {
         </div>
       </div>
 
-      {/* Модальное окно с QR */}
+      {/* QR‑модалка */}
       {qrData.open && (
-        <div className="qr-modal">
-          <div className="qr-overlay" onClick={closeQr} />
-          <div className="qr-box">
-            <img
-              src={`https://api.qrserver.com/v1/create-qr-code?size=256x256&data=${encodeURIComponent(qrUrl)}`}
-              alt="QR‑code"
-            />
-            <div className="qr-label">{qrData.label}</div>
-            <button className="btn-custom btn-close" onClick={closeQr}>
-              Закрыть
-            </button>
+        <div className="qr-modal" onClick={closeQr}>
+          <div className="qr-modal-content" onClick={e => e.stopPropagation()}>
+            <button className="qr-close" onClick={closeQr}>×</button>
+            <h3>QR-код для опроса</h3>
+            <p>«{qrData.label}»</p>
+            
+            {/* QR-код (используем внешний сервис) */}
+            <div className="qr-code-container">
+              <img
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrUrl)}`}
+                alt="QR Code"
+                className="qr-code-image"
+              />
+            </div>
+            
+            <p className="qr-url">{qrUrl}</p>
+            
+            <div className="qr-actions">
+              <button
+                className="qr-copy-btn"
+                onClick={() => {
+                  navigator.clipboard.writeText(qrUrl);
+                  alert('Ссылка скопирована!');
+                }}
+              >
+                Копировать ссылку
+              </button>
+            </div>
           </div>
         </div>
       )}

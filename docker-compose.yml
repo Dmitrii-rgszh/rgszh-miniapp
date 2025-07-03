@@ -7,24 +7,43 @@ services:
       - "4000:4000"
     env_file:
       - .env
+    environment:
+      - SQLALCHEMY_DATABASE_URI=${SQLALCHEMY_DATABASE_URI}
+      - DATABASE_URL=${DATABASE_URL}
+      - FLASK_ENV=production
+      - PORT=4000
+      - REDIS_URL=redis://redis:6379/0
+    volumes:
+      - ./assessment_schema.sql:/app/assessment_schema.sql
+      - ./assessment_questions.sql:/app/assessment_questions.sql
     networks:
       - rgszh-miniapp-network
-
-  # (ваш API-сервис)
+    depends_on:
+      - redis
 
   frontend:
-    # вместо image: nginx:... — собираем наш multi-stage Dockerfile
     build:
       context: .
       dockerfile: Dockerfile
     image: miniapp-frontend:latest
     restart: always
     ports:
-      - "8080:80"           # проксируем порт nginx внутри контейнера
+      - "8080:80"
     networks:
       - rgszh-miniapp-network
     depends_on:
       - server
+
+  redis:
+    image: redis:7-alpine
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - rgszh-miniapp-network
+    command: redis-server --appendonly yes
 
   proxy:
     image: nginx:stable-alpine
@@ -40,6 +59,9 @@ services:
       - frontend
     networks:
       - rgszh-miniapp-network
+
+volumes:
+  redis_data:
 
 networks:
   rgszh-miniapp-network:

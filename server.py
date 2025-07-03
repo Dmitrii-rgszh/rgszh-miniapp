@@ -8,10 +8,10 @@ from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from flask_socketio import SocketIO
 
-from db_saver       import init_db, save_feedback_to_db
-from polls_ws       import register_poll_ws
-from polls_routes   import register_poll_routes
-from assessment_routes import register_assessment_routes
+from db_saver import init_db, save_feedback_to_db
+from polls_ws import register_poll_ws
+from polls_routes import register_poll_routes
+from assessment_routes import register_assessment_routes  # Новый импорт
 
 # ====== Logging setup ======
 logging.basicConfig(
@@ -24,39 +24,33 @@ logger = logging.getLogger("server")
 app = Flask(__name__, static_folder="build", static_url_path="")
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 
-# ====== Socket.IO setup with Redis message queue ======
-# читает адрес Redis из переменной окружения REDIS_URL
-redis_url = os.environ.get("REDIS_URL")  # например, "redis://redis:6379/0"
+# ====== Socket.IO setup with optional Redis ======
+redis_url = os.environ.get("REDIS_URL")
 if redis_url:
-    socketio = SocketIO(
-        app,
-        cors_allowed_origins="*",
-        message_queue=redis_url
-    )
-    logger.info("Socket.IO: using Redis message queue %s", redis_url)
+    try:
+        import redis
+        socketio = SocketIO(
+            app,
+            cors_allowed_origins="*",
+            message_queue=redis_url
+        )
+        logger.info("Socket.IO: using Redis message queue %s", redis_url)
+    except ImportError:
+        logger.warning("Redis not installed, running without message queue")
+        socketio = SocketIO(app, cors_allowed_origins="*")
 else:
     socketio = SocketIO(app, cors_allowed_origins="*")
-    logger.warning("Socket.IO: no REDIS_URL set, running without message queue — may get inconsistent broadcasts")
+    logger.info("Socket.IO: running without Redis message queue")
 
 # Регистрируем WS-слушатели и REST-маршруты для опросов
 register_poll_ws(socketio)
 register_poll_routes(app, socketio)
 
-# Регистрируем маршруты для оценки кандидатов
+# Регистрируем маршруты для assessment
 register_assessment_routes(app)
 
 # ====== Database setup (для остального функционала) ======
 init_db(app)
-
-# Создаем таблицы для Assessment после инициализации основной БД
-with app.app_context():
-    try:
-        from assessment_models import AssessmentCandidate, AssessmentAnswer
-        from db_saver import db
-        db.create_all()
-        logger.info("Assessment tables created successfully")
-    except Exception as e:
-        logger.error("Error creating assessment tables: %s", e)
 
 # ====== Endpoints ======
 
