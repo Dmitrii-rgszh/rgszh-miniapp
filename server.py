@@ -11,6 +11,7 @@ from flask_socketio import SocketIO
 from db_saver       import init_db, save_feedback_to_db
 from polls_ws       import register_poll_ws
 from polls_routes   import register_poll_routes
+from assessment_routes import register_assessment_routes
 
 # ====== Logging setup ======
 logging.basicConfig(
@@ -41,8 +42,21 @@ else:
 register_poll_ws(socketio)
 register_poll_routes(app, socketio)
 
+# Регистрируем маршруты для оценки кандидатов
+register_assessment_routes(app)
+
 # ====== Database setup (для остального функционала) ======
 init_db(app)
+
+# Создаем таблицы для Assessment после инициализации основной БД
+with app.app_context():
+    try:
+        from assessment_models import AssessmentCandidate, AssessmentAnswer
+        from db_saver import db
+        db.create_all()
+        logger.info("Assessment tables created successfully")
+    except Exception as e:
+        logger.error("Error creating assessment tables: %s", e)
 
 # ====== Endpoints ======
 
