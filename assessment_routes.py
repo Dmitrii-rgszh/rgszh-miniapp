@@ -1,4 +1,4 @@
-# assessment_routes.py - Исправленная версия для новой структуры БД
+# assessment_routes.py - Исправленная версия БЕЗ дублирующего эндпоинта
 import traceback
 import logging
 from datetime import datetime
@@ -272,37 +272,8 @@ def register_assessment_routes(app):
             logger.error(f"❌ Error saving assessment: {e}", exc_info=True)
             return jsonify({"error": "Internal server error"}), 500
 
-    # НОВЫЙ ЭНДПОИНТ ДЛЯ ОТПРАВКИ EMAIL
-    @app.route('/api/proxy/assessment/send_manager', methods=['POST', 'OPTIONS'])
-    def send_assessment_manager():
-        """Прокси для отправки уведомлений assessment менеджеру"""
-        logger.info("🌐 ➜ %s %s", request.method, request.path)
-
-        if request.method == "OPTIONS":
-            return '', 200
-
-        try:
-            data = request.get_json()
-            subject = data.get('subject', 'Assessment Notification')
-            body = data.get('body', '')
-            
-            logger.info(f"📧 Sending assessment email: {subject}")
-            
-            # Здесь вы можете добавить реальную логику отправки email
-            # Например, через SMTP или внешний API
-            
-            # Пока что просто логируем
-            logger.info("📮 EMAIL CONTENT:")
-            logger.info(f"Subject: {subject}")
-            logger.info(f"Body: {body[:200]}...")
-            
-            # Симулируем успешную отправку
-            # В реальном проекте здесь должна быть интеграция с почтовым сервисом
-            return jsonify({"success": True, "message": "Email sent successfully"}), 200
-            
-        except Exception as e:
-            logger.error(f"❌ Error sending assessment email: {e}")
-            return jsonify({"error": "Failed to send email"}), 500
+    # ❌ УДАЛЕН ДУБЛИРУЮЩИЙ ЭНДПОИНТ send_assessment_manager
+    # Он уже есть в server.py и создавал конфликт
 
 def calculate_total_score(answers):
     """Вычисляет общий балл на основе ответов (максимум 50 баллов)"""

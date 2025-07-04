@@ -1,4 +1,4 @@
-# email_sender.py - Модуль для отправки уведомлений о новых кандидатах (ИСПРАВЛЕННЫЙ)
+# email_sender.py - ИСПРАВЛЕННАЯ ВЕРСИЯ без бесконечного цикла
 
 import logging
 import requests
@@ -11,24 +11,13 @@ logger = logging.getLogger("email_sender")
 def process_new_candidate_notification(candidate_data: Dict[str, Any]) -> bool:
     """
     Отправляет уведомление о новом кандидате менеджеру
+    ИСПРАВЛЕНО: убран вызов через HTTP API, чтобы избежать бесконечного цикла
     
     Args:
-        candidate_data: Данные кандидата включая:
-            - full_name: полное имя
-            - surname: фамилия
-            - first_name: имя
-            - patronymic: отчество
-            - total_score: общий балл
-            - percentage: процент
-            - innovator_score: балл инноватора
-            - optimizer_score: балл оптимизатора
-            - executor_score: балл исполнителя
-            - transcription: расшифровка результата
-            - completion_time_minutes: время прохождения
-            - created_at: время создания
+        candidate_data: Данные кандидата
     
     Returns:
-        bool: True если уведомление отправлено успешно, False в противном случае
+        bool: True если уведомление обработано успешно
     """
     try:
         logger.info(f"📧 Preparing notification for candidate: {candidate_data.get('full_name', 'Unknown')}")
@@ -63,68 +52,27 @@ def process_new_candidate_notification(candidate_data: Dict[str, Any]) -> bool:
         
         body = "\r\n".join(body_lines)
         
-        # Подготавливаем payload для отправки
-        email_payload = {
-            "subject": subject,
-            "body": body
-        }
-        
-        # Отправляем через API
-        success = send_assessment_notification(email_payload)
-        
-        # Логируем результат
-        log_notification_attempt(candidate_data, success)
-        
-        # Если не получилось отправить - используем fallback
-        if not success:
-            fallback_notification_log(candidate_data)
-            return True  # Считаем что обработали, даже если просто залогировали
+        # ИСПОЛЬЗУЕМ ПРЯМОЙ ВЫЗОВ функции send_email из server.py
+        # вместо HTTP запроса который создавал бесконечный цикл
+        try:
+            # Импортируем функцию send_email из server.py
+            from server import send_email
+            success = send_email(subject, body)
             
-        return success
+            # Логируем результат ОДИН РАЗ
+            log_notification_attempt(candidate_data, success)
+            
+            return success
+            
+        except ImportError as e:
+            logger.error(f"❌ Cannot import send_email function: {e}")
+            # Fallback - просто логируем информацию
+            fallback_notification_log(candidate_data)
+            return True
         
     except Exception as e:
         logger.error(f"❌ Error in process_new_candidate_notification: {e}")
         fallback_notification_log(candidate_data)
-        return False
-
-def send_assessment_notification(payload: Dict[str, str]) -> bool:
-    """
-    Отправляет уведомление через API
-    
-    Args:
-        payload: Словарь с subject и body
-        
-    Returns:
-        bool: True если отправлено успешно
-    """
-    try:
-        # URL для отправки уведомлений assessment
-        api_url = "http://localhost:4000/api/proxy/assessment/send_manager"
-        
-        logger.info(f"📮 Sending assessment notification to: {api_url}")
-        
-        response = requests.post(
-            api_url,
-            headers={"Content-Type": "application/json"},
-            json=payload,
-            timeout=30
-        )
-        
-        if response.status_code == 200:
-            logger.info("✅ Assessment notification sent successfully")
-            return True
-        else:
-            logger.error(f"❌ Failed to send notification. Status: {response.status_code}, Response: {response.text}")
-            return False
-            
-    except requests.exceptions.Timeout:
-        logger.error("❌ Timeout while sending assessment notification")
-        return False
-    except requests.exceptions.ConnectionError:
-        logger.error("❌ Connection error while sending assessment notification")
-        return False
-    except Exception as e:
-        logger.error(f"❌ Unexpected error sending assessment notification: {e}")
         return False
 
 def format_candidate_for_email(candidate_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -163,7 +111,7 @@ def format_candidate_for_email(candidate_data: Dict[str, Any]) -> Dict[str, Any]
 
 def log_notification_attempt(candidate_data: Dict[str, Any], success: bool) -> None:
     """
-    Логирует попытку отправки уведомления
+    Логирует попытку отправки уведомления ОДИН РАЗ
     
     Args:
         candidate_data: Данные кандидата
@@ -224,3 +172,6 @@ def notify_new_candidate(candidate_data: Dict[str, Any]) -> bool:
     except Exception as e:
         logger.error(f"❌ Critical error in notify_new_candidate: {e}")
         return False
+
+# УДАЛЯЕМ ПРОБЛЕМНУЮ ФУНКЦИЮ send_assessment_notification 
+# которая создавала бесконечный цикл через HTTP запросы
