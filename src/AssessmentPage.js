@@ -108,7 +108,7 @@ export default function AssessmentPage() {
         // Предварительно перемешиваем ответы для каждого вопроса только один раз
         const questionsWithShuffledOptions = loadedQuestions.map(question => ({
           ...question,
-          shuffledOptions: question.options || [] // НЕ перемешиваем, оставляем правильный порядок
+          shuffledOptions: shuffleOptions(question.options || []) // НЕ перемешиваем, оставляем правильный порядок
         }));
         setShuffledQuestions(questionsWithShuffledOptions);
     
@@ -181,7 +181,7 @@ export default function AssessmentPage() {
         updatedAnswers[existingAnswerIndex] = {
           question_id: questions[currentQuestion].id,
           answer_text: selectedAnswer,
-          answer_index: questions[currentQuestion].options.findIndex(opt => opt.text === selectedAnswer)
+          answer_index: shuffledQuestions[currentQuestion].shuffledOptions.findIndex(opt => opt.text === selectedAnswer)
         };
       } else {
         // Добавляем новый ответ
