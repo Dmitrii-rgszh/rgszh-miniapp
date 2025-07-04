@@ -94,6 +94,10 @@ def register_assessment_routes(app):
       try:
           data = request.get_json()
           logger.info("   payload keys: %s", list(data.keys()))
+
+          logger.info(f"📥 Received data keys: {list(data.keys())}")
+          logger.info(f"📋 Answers count: {len(data.get('answers', []))}")
+          logger.info(f"👤 Name: {data.get('firstName')} {data.get('surname')}")
         
           # Валидация входных данных
           required_fields = ['surname', 'firstName', 'patronymic', 'answers']

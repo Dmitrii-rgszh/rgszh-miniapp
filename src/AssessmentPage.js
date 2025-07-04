@@ -86,24 +86,38 @@ export default function AssessmentPage() {
       try {
         setIsLoading(true);
         setErrorMessage('');
-        
+    
+        console.log('🔄 Loading questionnaire...', MAIN_QUESTIONNAIRE_ID);
+    
         const data = await apiCall(`/api/questionnaire/${MAIN_QUESTIONNAIRE_ID}?include_questions=true`);
-        
-        setQuestionnaire(data.questionnaire);
+    
+        console.log('📋 Received data:', data);
+    
+        // ИСПРАВЛЕНИЕ: правильное извлечение данных
+        setQuestionnaire(data); // data уже содержит questionnaire
         const loadedQuestions = data.questions || [];
+    
+        console.log('❓ Loaded questions:', loadedQuestions.length);
+    
+        if (loadedQuestions.length === 0) {
+          throw new Error('No questions found in questionnaire');
+        }
+    
         setQuestions(loadedQuestions);
-        
-        // Предварительно перемешиваем ответы для каждого вопроса только один раз (исправление пункта 5)
+    
+        // Предварительно перемешиваем ответы для каждого вопроса только один раз
         const questionsWithShuffledOptions = loadedQuestions.map(question => ({
           ...question,
-          shuffledOptions: shuffleOptions(question.options)
+          shuffledOptions: question.options || [] // НЕ перемешиваем, оставляем правильный порядок
         }));
         setShuffledQuestions(questionsWithShuffledOptions);
-        
-        console.log('✅ Questionnaire loaded:', data);
+    
+        console.log('✅ Questionnaire loaded successfully');
+        console.log('📊 Questions with options:', questionsWithShuffledOptions);
+    
       } catch (error) {
         console.error('❌ Error loading questionnaire:', error);
-        setErrorMessage('Ошибка загрузки опросника. Проверьте соединение.');
+        setErrorMessage(`Ошибка загрузки опросника: ${error.message}`);
       } finally {
         setIsLoading(false);
       }
@@ -213,13 +227,15 @@ export default function AssessmentPage() {
       const answersTextArray = answers.map(answer => answer.answer_text);
 
       const sessionData = {
-        questionnaireId: MAIN_QUESTIONNAIRE_ID,  
         surname: surname.trim(),                 
         firstName: firstName.trim(),             
         patronymic: patronymic.trim(),           
-        answers: answersTextArray,               // Массив строк вместо объектов
-        completionTimeMinutes: Math.round((Date.now() - startTimeRef.current) / 60000)
+        answers: answersTextArray,               
+        completionTime: Math.round((Date.now() - startTimeRef.current) / 60000) // в минутах
       };
+
+      console.log('📤 Sending session data:', sessionData);
+      console.log('📝 Answers array:', answersTextArray);
 
       console.log('📤 Sending session data:', sessionData);
       const response = await apiCall('/api/assessment/save', {  
@@ -419,7 +435,7 @@ export default function AssessmentPage() {
             </div>
 
             <div className="question-content">
-              <h2 className="question-title">{currentQuestionData.text}</h2>
+              <h2 className="question-title">{currentQuestionData.question_text || currentQuestionData.text || 'Вопрос'}</h2>
               {errorMessage && <div className="error-message">{errorMessage}</div>}
             </div>
 
