@@ -3,6 +3,9 @@
 import os
 import logging
 import threading
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
@@ -64,6 +67,51 @@ register_assessment_routes(app)
 # ====== Database setup (для остального функционала) ======
 init_db(app)
 
+# ====== Email Configuration ======
+SMTP_SERVER = os.environ.get("SMTP_SERVER", "smtp.yandex.ru")
+SMTP_PORT = int(os.environ.get("SMTP_PORT", "587"))
+SMTP_USER = os.environ.get("SMTP_USER", "rgszh-miniapp@yandex.ru")
+SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD", "")
+SMTP_FROM = os.environ.get("SMTP_FROM", "rgszh-miniapp@yandex.ru")
+SMTP_TO = os.environ.get("SMTP_TO", "zerotlt@mail.ru")
+
+def send_email(subject, body, to_email=None):
+    """
+    Отправляет email через SMTP
+    """
+    try:
+        if not SMTP_PASSWORD:
+            logger.warning("📧 SMTP password not configured, skipping email send")
+            return False
+            
+        # Используем переданный email или дефолтный
+        recipient = to_email or SMTP_TO
+        
+        logger.info(f"📧 Sending email to {recipient}: {subject}")
+        
+        # Создаем сообщение
+        msg = MIMEMultipart()
+        msg['From'] = SMTP_FROM
+        msg['To'] = recipient
+        msg['Subject'] = subject
+        
+        # Добавляем тело письма
+        msg.attach(MIMEText(body, 'plain', 'utf-8'))
+        
+        # Отправляем через SMTP
+        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+            server.starttls()  # Включаем шифрование
+            server.login(SMTP_USER, SMTP_PASSWORD)
+            text = msg.as_string()
+            server.sendmail(SMTP_FROM, recipient, text)
+        
+        logger.info(f"✅ Email sent successfully to {recipient}")
+        return True
+        
+    except Exception as e:
+        logger.error(f"❌ Failed to send email: {e}")
+        return False
+
 # ====== Endpoints ======
 
 @app.route('/api/feedback/save', methods=['POST', 'OPTIONS'])
@@ -76,41 +124,115 @@ def save_feedback():
         payload = request.get_json(force=True)
         logger.info("   payload keys: %s", list(payload.keys()))
     except Exception as e:
-        logger.error("   JSON parse error: %s", e, exc_info=True)
-        return jsonify({"error": "invalid JSON"}), 400
+        logger.error("   JSON parse error: %s", e)
+        return jsonify({"error": "Invalid JSON"}), 400
 
-    def bg_worker(data):
-        # Поднимаем Flask-контекст в фоне
-        with app.app_context():
-            try:
-                save_feedback_to_db(data)
-            except Exception:
-                logger.exception("Error saving feedback in background")
+    # Сохраняем в БД
+    try:
+        save_feedback_to_db(payload)
+        return jsonify({"success": True}), 200
+    except Exception as e:
+        logger.error("   DB save error: %s", e)
+        return jsonify({"error": "Database error"}), 500
 
-    threading.Thread(target=bg_worker, args=(payload,), daemon=True).start()
-    return jsonify({"status": "queued"}), 200
+# ====== EMAIL PROXY ENDPOINTS ======
 
-# Раздача React-фронтенда
+@app.route('/api/proxy/assessment/send_manager', methods=['POST', 'OPTIONS'])
+def send_assessment_email():
+    """Отправка email уведомлений для assessment"""
+    logger.info("🌐 ➜ %s %s", request.method, request.path)
+    
+    if request.method == "OPTIONS":
+        return '', 200
+    
+    try:
+        data = request.get_json()
+        subject = data.get('subject', 'Assessment Notification')
+        body = data.get('body', '')
+        
+        # Отправляем email
+        success = send_email(subject, body)
+        
+        if success:
+            return jsonify({"success": True, "message": "Email sent successfully"}), 200
+        else:
+            return jsonify({"success": False, "message": "Failed to send email"}), 500
+            
+    except Exception as e:
+        logger.error(f"❌ Error in assessment email endpoint: {e}")
+        return jsonify({"error": "Internal server error"}), 500
+
+@app.route('/api/proxy/snp/send_manager', methods=['POST', 'OPTIONS'])
+def send_snp_email():
+    """Отправка email уведомлений для SNP"""
+    logger.info("🌐 ➜ %s %s", request.method, request.path)
+    
+    if request.method == "OPTIONS":
+        return '', 200
+    
+    try:
+        data = request.get_json()
+        subject = data.get('subject', 'SNP Notification')
+        body = data.get('body', '')
+        
+        # Отправляем email
+        success = send_email(subject, body)
+        
+        if success:
+            return jsonify({"success": True, "message": "Email sent successfully"}), 200
+        else:
+            return jsonify({"success": False, "message": "Failed to send email"}), 500
+            
+    except Exception as e:
+        logger.error(f"❌ Error in SNP email endpoint: {e}")
+        return jsonify({"error": "Internal server error"}), 500
+
+@app.route('/api/proxy/carefuture/send_manager', methods=['POST', 'OPTIONS'])
+def send_carefuture_email():
+    """Отправка email уведомлений для Care Future"""
+    logger.info("🌐 ➜ %s %s", request.method, request.path)
+    
+    if request.method == "OPTIONS":
+        return '', 200
+    
+    try:
+        data = request.get_json()
+        subject = data.get('subject', 'Care Future Notification')
+        body = data.get('body', '')
+        
+        # Отправляем email
+        success = send_email(subject, body)
+        
+        if success:
+            return jsonify({"success": True, "message": "Email sent successfully"}), 200
+        else:
+            return jsonify({"success": False, "message": "Failed to send email"}), 500
+            
+    except Exception as e:
+        logger.error(f"❌ Error in Care Future email endpoint: {e}")
+        return jsonify({"error": "Internal server error"}), 500
+
+# ====== Static files ======
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
-def serve_frontend(path):
-    if path and os.path.exists(os.path.join(app.static_folder, path)):
+def serve_react_app(path):
+    if path != "" and os.path.exists(os.path.join(app.static_folder, path)):
         return send_from_directory(app.static_folder, path)
-    return send_from_directory(app.static_folder, 'index.html')
+    else:
+        return send_from_directory(app.static_folder, 'index.html')
 
-# ====== Запуск ======
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 4000))  # Изменили порт на 4000
-    logger.info("🚀 Starting Flask-SocketIO server on port %d", port)
+# ====== App startup ======
+if __name__ == '__main__':
+    logger.info("🚀 Starting MiniApp Server...")
     
-    # Запускаем через socketio.run для поддержки WebSocket
-    socketio.run(
-        app,
-        host='0.0.0.0',
-        port=port,
-        debug=True,  # Включаем debug режим
-        allow_unsafe_werkzeug=True
-    )
+    # Проверяем email конфигурацию
+    if SMTP_PASSWORD:
+        logger.info(f"📧 Email configured: {SMTP_FROM} -> {SMTP_TO}")
+    else:
+        logger.warning("📧 Email not configured (SMTP_PASSWORD missing)")
+    
+    port = int(os.environ.get("PORT", 4000))
+    socketio.run(app, host='0.0.0.0', port=port, debug=False)
 
 
 

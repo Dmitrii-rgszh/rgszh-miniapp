@@ -20,6 +20,7 @@ COPY db_saver.py .
 COPY polls_ws.py .
 COPY polls_routes.py .
 COPY assessment_routes.py .
+COPY email_sender.py .
 COPY poll_manager.py .
 COPY init_assessment_db.py .
 

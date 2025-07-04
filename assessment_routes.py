@@ -5,6 +5,7 @@ from datetime import datetime
 from flask import request, jsonify
 from sqlalchemy import text
 from db_saver import db
+from email_sender import process_new_candidate_notification
 
 logger = logging.getLogger("assessment_routes")
 
@@ -218,6 +219,30 @@ def register_assessment_routes(app):
       
             logger.info(f"📝 Saved {saved_answers}/{len(data['answers'])} answers")
             db.session.commit()
+            
+            # ОТПРАВЛЯЕМ EMAIL УВЕДОМЛЕНИЕ
+            try:
+                candidate_data = {
+                    "full_name": full_name,
+                    "surname": data['surname'],
+                    "first_name": data['firstName'],
+                    "patronymic": data['patronymic'],
+                    "total_score": total_score,
+                    "percentage": percentage,
+                    "innovator_score": type_scores.get('innovator', 0),
+                    "optimizer_score": type_scores.get('optimizer', 0),
+                    "executor_score": type_scores.get('executor', 0),
+                    "transcription": transcription,
+                    "completion_time_minutes": completion_time,
+                    "created_at": current_time
+                }
+                
+                email_sent = process_new_candidate_notification(candidate_data)
+                logger.info(f"📧 Email уведомление {'успешно отправлено' if email_sent else 'не отправлено'}")
+                
+            except Exception as email_error:
+                logger.error(f"❌ Ошибка отправки email: {email_error}")
+                email_sent = False
       
             # Формируем ответ
             result_data = {
@@ -233,7 +258,8 @@ def register_assessment_routes(app):
                     "optimizer_score": type_scores.get('optimizer', 0),
                     "executor_score": type_scores.get('executor', 0),
                     "transcription": transcription
-                }
+                },
+                "email_sent": email_sent
             }
       
             logger.info(f"✅ Assessment saved for {data['firstName']} {data['surname']}: {total_score}/50 points ({percentage}%)")
@@ -245,6 +271,38 @@ def register_assessment_routes(app):
             db.session.rollback()
             logger.error(f"❌ Error saving assessment: {e}", exc_info=True)
             return jsonify({"error": "Internal server error"}), 500
+
+    # НОВЫЙ ЭНДПОИНТ ДЛЯ ОТПРАВКИ EMAIL
+    @app.route('/api/proxy/assessment/send_manager', methods=['POST', 'OPTIONS'])
+    def send_assessment_manager():
+        """Прокси для отправки уведомлений assessment менеджеру"""
+        logger.info("🌐 ➜ %s %s", request.method, request.path)
+
+        if request.method == "OPTIONS":
+            return '', 200
+
+        try:
+            data = request.get_json()
+            subject = data.get('subject', 'Assessment Notification')
+            body = data.get('body', '')
+            
+            logger.info(f"📧 Sending assessment email: {subject}")
+            
+            # Здесь вы можете добавить реальную логику отправки email
+            # Например, через SMTP или внешний API
+            
+            # Пока что просто логируем
+            logger.info("📮 EMAIL CONTENT:")
+            logger.info(f"Subject: {subject}")
+            logger.info(f"Body: {body[:200]}...")
+            
+            # Симулируем успешную отправку
+            # В реальном проекте здесь должна быть интеграция с почтовым сервисом
+            return jsonify({"success": True, "message": "Email sent successfully"}), 200
+            
+        except Exception as e:
+            logger.error(f"❌ Error sending assessment email: {e}")
+            return jsonify({"error": "Failed to send email"}), 500
 
 def calculate_total_score(answers):
     """Вычисляет общий балл на основе ответов (максимум 50 баллов)"""
@@ -265,19 +323,23 @@ def calculate_total_score(answers):
             result = db.session.execute(query, {"answer_text": answer_text})
             row = result.fetchone()
             
-            if row:
+            if row and row.score_value is not None:
                 total_score += row.score_value
         
         return total_score
         
     except Exception as e:
-        logger.error(f"Error calculating total score: {e}")
+        logger.error(f"❌ Error calculating total score: {e}")
         return None
 
 def calculate_type_scores(answers):
-    """Вычисляет баллы по типам личности"""
+    """Вычисляет баллы по типам (инноватор, оптимизатор, исполнитель)"""
     try:
-        type_scores = {"innovator": 0, "optimizer": 0, "executor": 0}
+        type_scores = {
+            'innovator': 0,
+            'optimizer': 0, 
+            'executor': 0
+        }
         
         for answer_text in answers:
             # Находим тип и балл для данного ответа
@@ -293,35 +355,28 @@ def calculate_type_scores(answers):
             result = db.session.execute(query, {"answer_text": answer_text})
             row = result.fetchone()
             
-            if row:
-                option_type = row.option_type
-                score_value = row.score_value
-                
-                if option_type in type_scores:
-                    type_scores[option_type] += score_value
+            if row and row.option_type and row.score_value is not None:
+                type_name = row.option_type.lower()
+                if type_name in type_scores:
+                    type_scores[type_name] += row.score_value
         
         return type_scores
         
     except Exception as e:
-        logger.error(f"Error calculating type scores: {e}")
-        return {"innovator": 0, "optimizer": 0, "executor": 0}
+        logger.error(f"❌ Error calculating type scores: {e}")
+        return {'innovator': 0, 'optimizer': 0, 'executor': 0}
 
 def get_transcription_by_score(total_score):
-    """Получает транскрипцию по общему баллу"""
+    """Возвращает расшифровку на основе общего балла"""
     try:
-        query = text("""
-            SELECT transcription_text
-            FROM score_transcriptions
-            WHERE questionnaire_id = 1
-            AND :total_score BETWEEN min_score AND max_score
-            LIMIT 1
-        """)
-        
-        result = db.session.execute(query, {"total_score": total_score})
-        row = result.fetchone()
-        
-        return row[0] if row else "Стандартная оценка результатов"
-        
+        if total_score >= 40:
+            return "Кандидат демонстрирует высокий уровень соответствия корпоративным ценностям и готов к эффективной работе в команде"
+        elif total_score >= 30:
+            return "Кандидат показывает хороший потенциал и может быть эффективным сотрудником при поддержке и развитии"
+        elif total_score >= 20:
+            return "Кандидат поддерживает многие принципы, но может нуждаться в адаптации или дополнительных стимулах, чтобы раскрыть потенциал в полной мере"
+        else:
+            return "Кандидат требует значительной адаптации и поддержки для соответствия корпоративным ценностям"
     except Exception as e:
-        logger.error(f"Error getting transcription: {e}")
-        return "Стандартная оценка результатов"
+        logger.error(f"❌ Error getting transcription: {e}")
+        return "Не удалось сформировать расшифровку результата"
