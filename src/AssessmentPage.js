@@ -1,8 +1,9 @@
-// AssessmentPage.js - Упрощенная версия с загрузкой вопросов из БД
+// AssessmentPage.js - Исправленная версия с загрузкой вопросов из БД
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Autosuggest from 'react-autosuggest';
 import { useNavigate } from 'react-router-dom';
+import { apiCall } from './config';
 
 // Стили
 import './Styles/logo.css';
@@ -13,6 +14,7 @@ import './Styles/NextButton.css';
 import './Styles/OptionButton.css';
 import './FeedbackPage.css';
 import './AssessmentPage.css';
+import './Styles/mobile-responsive.css';
 
 // Ресурсы
 import backgroundImage from './components/background.png';
@@ -53,6 +55,9 @@ export default function AssessmentPage() {
   const [questionnaire, setQuestionnaire] = useState(null);
   const [questions, setQuestions] = useState([]);
 
+  // Статичный порядок ответов для каждого вопроса (исправление пункта 5)
+  const [shuffledQuestions, setShuffledQuestions] = useState([]);
+
   // ID опросника по умолчанию (основной Assessment опросник)
   const MAIN_QUESTIONNAIRE_ID = 1;
 
@@ -65,70 +70,80 @@ export default function AssessmentPage() {
     typeof item === 'string' ? item : (item.patronymic || item.name)
   );
 
-  // ===== Загрузка опросника из БД =====
-  useEffect(() => {
-    loadQuestionnaire();
-    startTimeRef.current = Date.now();
-    setTimeout(() => logoRef.current?.classList.add('animate-logo'), 100);
-  }, []);
-
-  const loadQuestionnaire = async () => {
-    try {
-      setIsLoading(true);
-      
-      const response = await fetch(`/api/questionnaire/${MAIN_QUESTIONNAIRE_ID}?include_questions=true`);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      
-      setQuestionnaire(data);
-      setQuestions(data.questions || []);
-      
-      console.log(`✅ Loaded questionnaire: ${data.title} with ${data.questions?.length || 0} questions`);
-      
-    } catch (error) {
-      console.error('❌ Error loading questionnaire:', error);
-      setErrorMessage('Не удалось загрузить опросник. Попробуйте перезагрузить страницу.');
-    } finally {
-      setIsLoading(false);
+  // Функция для рандомизации порядка ответов (исправление пункта 5)
+  const shuffleOptions = (options) => {
+    const shuffled = [...options];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
+    return shuffled;
   };
 
-  // ===== Функции для автосаджестов =====
-  const getSuggestions = useCallback((value, list) => {
-    const trimmed = value.trim().toLowerCase();
-    if (trimmed.length < 2) return [];
-    return list.filter(s => s.toLowerCase().startsWith(trimmed)).slice(0, 10);
+  // ===== Загрузка опросника при монтировании компонента =====
+  useEffect(() => {
+    const loadQuestionnaire = async () => {
+      try {
+        setIsLoading(true);
+        setErrorMessage('');
+        
+        const data = await apiCall(`/api/questionnaire/${MAIN_QUESTIONNAIRE_ID}?include_questions=true`);
+        
+        setQuestionnaire(data.questionnaire);
+        const loadedQuestions = data.questions || [];
+        setQuestions(loadedQuestions);
+        
+        // Предварительно перемешиваем ответы для каждого вопроса только один раз (исправление пункта 5)
+        const questionsWithShuffledOptions = loadedQuestions.map(question => ({
+          ...question,
+          shuffledOptions: shuffleOptions(question.options)
+        }));
+        setShuffledQuestions(questionsWithShuffledOptions);
+        
+        console.log('✅ Questionnaire loaded:', data);
+      } catch (error) {
+        console.error('❌ Error loading questionnaire:', error);
+        setErrorMessage('Ошибка загрузки опросника. Проверьте соединение.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadQuestionnaire();
+    startTimeRef.current = Date.now();
   }, []);
 
-  const renderAutosuggest = useCallback((value, setValue, suggestions, setSuggestions, list, placeholder) => (
+  // ===== Автосаджест функции =====
+  const getSuggestions = (value, list) => {
+    const inputValue = value.trim().toLowerCase();
+    const inputLength = inputValue.length;
+    return inputLength === 0 ? [] : list.filter(item => 
+      item.toLowerCase().slice(0, inputLength) === inputValue
+    );
+  };
+
+  const renderAutosuggest = (value, setValue, suggestions, setSuggestions, list, placeholder) => (
     <Autosuggest
       suggestions={suggestions}
       onSuggestionsFetchRequested={({ value }) => setSuggestions(getSuggestions(value, list))}
       onSuggestionsClearRequested={() => setSuggestions([])}
-      getSuggestionValue={s => s}
-      renderSuggestion={s => <div>{s}</div>}
+      getSuggestionValue={suggestion => suggestion}
+      renderSuggestion={suggestion => <div>{suggestion}</div>}
       inputProps={{
         placeholder,
         value,
-        onChange: (e, { newValue }) => setValue(newValue.charAt(0).toUpperCase() + newValue.slice(1).toLowerCase()),
-        autoComplete: 'off'
+        onChange: (_, { newValue }) => setValue(newValue)
       }}
     />
-  ), [getSuggestions]);
+  );
 
-  // ===== Обработчики =====
+  // ===== Обработчики навигации =====
   const handleNext = useCallback(() => {
     if (currentStep === 1) {
-      // Переход от инструкции к форме ФИО
       setCurrentStep(2);
     } else if (currentStep === 2) {
-      // Переход от формы ФИО к вопросам
       if (!surname.trim() || !firstName.trim() || !patronymic.trim()) {
-        setErrorMessage('Пожалуйста, заполните все поля.');
+        setErrorMessage('Заполните все поля ФИО');
         return;
       }
       setErrorMessage('');
@@ -136,74 +151,86 @@ export default function AssessmentPage() {
     } else if (currentStep === 3) {
       // Обработка ответа на вопрос
       if (!selectedAnswer) {
-        setErrorMessage('Выберите один из вариантов');
+        setErrorMessage('Выберите один из вариантов ответа');
         return;
       }
+
       setErrorMessage('');
       
-      const updatedAnswers = [...userAnswers, selectedAnswer];
-      setUserAnswers(updatedAnswers);
+      // Сохраняем ответ
+      const newAnswer = {
+        question_id: questions[currentQuestion].id,
+        answer_text: selectedAnswer,
+        answer_index: questions[currentQuestion].options.findIndex(opt => opt.text === selectedAnswer)
+      };
       
-      setFadeTransition(true);
-      setTimeout(() => {
-        if (currentQuestion < questions.length - 1) {
-          setCurrentQuestion(prev => prev + 1);
+      const updatedAnswers = [...userAnswers, newAnswer];
+      setUserAnswers(updatedAnswers);
+
+      // Проверяем, последний ли это вопрос
+      if (currentQuestion === questions.length - 1) {
+        // Завершаем тестирование
+        finishAssessment(updatedAnswers);
+      } else {
+        // Переходим к следующему вопросу
+        setFadeTransition(true);
+        setTimeout(() => {
+          setCurrentQuestion(currentQuestion + 1);
           setSelectedAnswer('');
-        } else {
-          handleFinish(updatedAnswers);
-        }
-        setFadeTransition(false);
-      }, 400);
+          setFadeTransition(false);
+        }, 300);
+      }
     }
-  }, [currentStep, surname, firstName, patronymic, selectedAnswer, userAnswers, currentQuestion, questions.length]);
+  }, [currentStep, surname, firstName, patronymic, selectedAnswer, currentQuestion, questions, userAnswers]);
 
   const handleBack = useCallback(() => {
-    if (currentStep === 3 && currentQuestion > 0) {
-      setCurrentQuestion(prev => prev - 1);
-      setUserAnswers(prev => prev.slice(0, -1));
-      setSelectedAnswer('');
-      setErrorMessage('');
-    } else if (currentStep === 3 && currentQuestion === 0) {
-      setCurrentStep(2);
-    } else if (currentStep === 2) {
+    if (currentStep === 2) {
       setCurrentStep(1);
+    } else if (currentStep === 3) {
+      if (currentQuestion > 0) {
+        setFadeTransition(true);
+        setTimeout(() => {
+          setCurrentQuestion(currentQuestion - 1);
+          // Восстанавливаем предыдущий ответ
+          if (userAnswers[currentQuestion - 1]) {
+            setSelectedAnswer(userAnswers[currentQuestion - 1].answer_text);
+          }
+          setFadeTransition(false);
+        }, 300);
+      } else {
+        setCurrentStep(2);
+      }
     }
-  }, [currentStep, currentQuestion]);
+  }, [currentStep, currentQuestion, userAnswers]);
 
-  const handleFinish = async (finalAnswers) => {
-    setIsProcessing(true);
-    
+  // ===== Завершение тестирования =====
+  const finishAssessment = async (answers) => {
     try {
-      const completionTime = Math.round((Date.now() - startTimeRef.current) / 60000); // в минутах
-      
-      const dataToSave = {
+      setIsProcessing(true);
+      setErrorMessage('');
+
+      const sessionData = {
+        questionnaire_id: MAIN_QUESTIONNAIRE_ID,
         surname: surname.trim(),
-        firstName: firstName.trim(),
+        first_name: firstName.trim(),
         patronymic: patronymic.trim(),
-        answers: finalAnswers,
-        completionTimeMinutes: completionTime,
-        sessionId: `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        questionnaireId: questionnaire?.id || MAIN_QUESTIONNAIRE_ID
+        answers: answers,
+        start_time: startTimeRef.current,
+        end_time: Date.now()
       };
 
-      const response = await fetch('/api/assessment/save', {
+      console.log('📤 Sending session data:', sessionData);
+      const response = await apiCall('/api/assessment/submit', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(dataToSave),
+        body: JSON.stringify(sessionData)
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-      setResult(result.candidate);
+      console.log('✅ Assessment completed:', response);
+      setResult(response.result);
       setIsFinished(true);
-      setCurrentStep(4);
-      
     } catch (error) {
-      console.error('Ошибка при сохранении данных:', error);
-      setErrorMessage('Произошла ошибка при сохранении данных. Попробуйте еще раз.');
+      console.error('❌ Error submitting assessment:', error);
+      setErrorMessage('Ошибка при отправке результатов. Попробуйте еще раз.');
     } finally {
       setIsProcessing(false);
     }
@@ -266,7 +293,7 @@ export default function AssessmentPage() {
     if (isFinished && result) {
       const typeNames = {
         'innovator': 'Новатор',
-        'optimizer': 'Оптимизатор',
+        'optimizer': 'Оптимизатор', 
         'executor': 'Исполнитель'
       };
 
@@ -279,51 +306,26 @@ export default function AssessmentPage() {
             <div className="dominant-type-card">
               <div className="type-badge">{typeNames[result.dominant_type]}</div>
               <div className="type-title">{typeNames[result.dominant_type]}</div>
-              <div className="type-percentage">{result.dominant_percentage.toFixed(1)}%</div>
+              <div className="type-percentage">{result.dominant_percentage?.toFixed(1) || '0.0'}%</div>
             </div>
             
             <div className="scores-summary">
               <div className={`score-card ${result.dominant_type === 'innovator' ? 'dominant' : ''}`}>
                 <span className="score-label">Новатор</span>
-                <span className="score-number">{result.scores.innovator}</span>
-                <span className="score-total">из {questions.length}</span>
+                <span className="score-number">{result.innovator_score?.toFixed(1) || '0.0'}</span>
+                <span className="score-total">из 100</span>
               </div>
               <div className={`score-card ${result.dominant_type === 'optimizer' ? 'dominant' : ''}`}>
                 <span className="score-label">Оптимизатор</span>
-                <span className="score-number">{result.scores.optimizer}</span>
-                <span className="score-total">из {questions.length}</span>
+                <span className="score-number">{result.optimizer_score?.toFixed(1) || '0.0'}</span>
+                <span className="score-total">из 100</span>
               </div>
               <div className={`score-card ${result.dominant_type === 'executor' ? 'dominant' : ''}`}>
                 <span className="score-label">Исполнитель</span>
-                <span className="score-number">{result.scores.executor}</span>
-                <span className="score-total">из {questions.length}</span>
+                <span className="score-number">{result.executor_score?.toFixed(1) || '0.0'}</span>
+                <span className="score-total">из 100</span>
               </div>
             </div>
-
-            {result.type_description && (
-              <div className="type-description">
-                <p className="type-description-text">{result.type_description.description}</p>
-                {result.type_description.traits && (
-                  <div className="traits-list">
-                    <h4 className="traits-title">Ключевые качества</h4>
-                    <div className="traits-grid">
-                      {result.type_description.traits.map((trait, idx) => (
-                        <div key={idx} className="trait-item">
-                          <div className="trait-icon">✓</div>
-                          <span className="trait-text">{trait}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-          
-          <div className="result-actions">
-            <button className="action-button primary" onClick={goHome}>
-              Вернуться в меню
-            </button>
           </div>
         </div>
       );
@@ -333,10 +335,14 @@ export default function AssessmentPage() {
       case 1:
         return (
           <div className="step-container fade-in-up">
-            <h2>Инструкция</h2>
-            <p className="instruction-text">
-              {questionnaire?.description || 
-                'Прочитайте вопросы и выберите вариант ответа, который кажется вам наиболее близким. Здесь нет «правильных» или «неправильных» ответов — важно лишь понять ваш естественный стиль работы и взаимодействия.'}
+            <h2>Психологическая оценка</h2>
+            <p className="instruction-text large-text">
+              Пройдите короткий тест для определения вашего типа личности.
+              {questionnaire?.description && ` ${questionnaire.description}`}
+            </p>
+            <p className="instruction-subtext large-text">
+              {questionnaire?.instructions || 
+               'Здесь нет «правильных» или «неправильных» ответов — важно лишь понять ваш естественный стиль работы и взаимодействия.'}
             </p>
             {questionnaire && (
               <div className="questionnaire-info">
@@ -388,7 +394,7 @@ export default function AssessmentPage() {
         );
 
       case 3:
-        if (!questions.length) {
+        if (!questions.length || !shuffledQuestions.length) {
           return (
             <div className="step-container">
               <div className="error-message">
@@ -398,7 +404,7 @@ export default function AssessmentPage() {
           );
         }
 
-        const currentQuestionData = questions[currentQuestion];
+        const currentQuestionData = shuffledQuestions[currentQuestion];
         return (
           <div className={`step-container ${fadeTransition ? 'fade-out' : 'fade-in'}`}>
             <div className="question-header">
@@ -413,19 +419,20 @@ export default function AssessmentPage() {
                   />
                 ))}
               </div>
-              <span className="question-counter">
+              <div className="question-counter">
                 {currentQuestion + 1} / {questions.length}
-              </span>
+              </div>
             </div>
-            
-            <h2 className="question-text">{currentQuestionData.text}</h2>
-            
-            {errorMessage && <div className="error-message">{errorMessage}</div>}
-            
-            <div className="answers-grid">
-              {currentQuestionData.options?.map((option, index) => (
+
+            <div className="question-content">
+              <h2 className="question-title">{currentQuestionData.text}</h2>
+              {errorMessage && <div className="error-message">{errorMessage}</div>}
+            </div>
+
+            <div className="options-container">
+              {currentQuestionData.shuffledOptions.map((option, idx) => (
                 <button
-                  key={option.id || index}
+                  key={idx}
                   className={`option-button ${selectedAnswer === option.text ? 'selected' : ''}`}
                   onClick={() => setSelectedAnswer(option.text)}
                 >
@@ -472,7 +479,7 @@ export default function AssessmentPage() {
       </div>
 
       {/* Кнопка "Назад" */}
-      {(currentStep > 1 && !isFinished && !isLoading) && (
+      {(currentStep > 1 || (currentStep === 3 && currentQuestion > 0)) && !isFinished && !isLoading && (
         <button className="back-btn" onClick={handleBack}>
           <svg viewBox="0 0 24 24" width="24" height="24">
             <path d="M19 12H5M12 19l-7-7 7-7" stroke="white" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
@@ -481,10 +488,10 @@ export default function AssessmentPage() {
       )}
 
       {/* Кнопка "Домой" (только на экране результатов) */}
-      {isFinished && (
+      {false && (
         <button className="back-btn" onClick={goHome}>
           <svg viewBox="0 0 24 24" width="24" height="24">
-            <path d="M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-7h-6v7H4a1 1 0 0 1-1-1V11z" stroke="white" strokeWidth="2" fill="none"/>
+            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" fill="white"/>
           </svg>
         </button>
       )}
@@ -509,13 +516,3 @@ export default function AssessmentPage() {
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-
