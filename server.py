@@ -22,7 +22,19 @@ logger = logging.getLogger("server")
 
 # ====== Flask app ======
 app = Flask(__name__, static_folder="build", static_url_path="")
-CORS(app, resources={r"/api/*": {"origins": ["http://localhost:3000", "http://127.0.0.1:3000"]}})
+CORS(app, resources={
+    r"/api/*": {
+        "origins": [
+            "http://localhost:3000",
+            "http://localhost:3001",  # ← Добавьте эту строку
+            "http://127.0.0.1:3000", 
+            "http://127.0.0.1:3001",  # ← И эту
+            "https://rgszh-miniapp.org"
+        ],
+        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization"]
+    }
+})
 
 # ====== Socket.IO setup with optional Redis ======
 redis_url = os.environ.get("REDIS_URL")
@@ -88,14 +100,16 @@ def serve_frontend(path):
 
 # ====== Запуск ======
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    logger.info("Starting server on port %d", port)
-    # Используем встроенный сервер Flask-SocketIO (eventlet/gevent) — не Gunicorn
+    port = int(os.environ.get("PORT", 4000))  # Изменили порт на 4000
+    logger.info("🚀 Starting Flask-SocketIO server on port %d", port)
+    
+    # Запускаем через socketio.run для поддержки WebSocket
     socketio.run(
-      app,
-      host='0.0.0.0',
-      port=port,
-      allow_unsafe_werkzeug=True
+        app,
+        host='0.0.0.0',
+        port=port,
+        debug=True,  # Включаем debug режим
+        allow_unsafe_werkzeug=True
     )
 
 
