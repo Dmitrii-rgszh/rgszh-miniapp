@@ -1,4 +1,4 @@
-// AssessmentPage.js - Исправленная версия с загрузкой вопросов из БД
+// AssessmentPage.js - Обновленная версия с простым сообщением благодарности
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Autosuggest from 'react-autosuggest';
@@ -213,37 +213,24 @@ export default function AssessmentPage() {
       const answersTextArray = answers.map(answer => answer.answer_text);
 
       const sessionData = {
-        questionnaireId: MAIN_QUESTIONNAIRE_ID,  // Изменено с questionnaire_id
-        surname: surname.trim(),                 // Остается surname
-        firstName: firstName.trim(),             // Изменено с first_name
-        patronymic: patronymic.trim(),           // Остается patronymic
+        questionnaireId: MAIN_QUESTIONNAIRE_ID,  
+        surname: surname.trim(),                 
+        firstName: firstName.trim(),             
+        patronymic: patronymic.trim(),           
         answers: answersTextArray,               // Массив строк вместо объектов
-        completionTimeMinutes: Math.round((Date.now() - startTimeRef.current) / 60000),
-        sessionId: `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+        completionTimeMinutes: Math.round((Date.now() - startTimeRef.current) / 60000)
       };
 
       console.log('📤 Sending session data:', sessionData);
-      const response = await apiCall('/api/assessment/save', {  // Изменено с submit на save
+      const response = await apiCall('/api/assessment/save', {  
         method: 'POST',
         body: JSON.stringify(sessionData)
       });
 
       console.log('✅ Assessment completed:', response);
       
-      // Извлекаем результат из response.candidate
-      if (response.candidate) {
-        const candidateResult = response.candidate;
-        setResult({
-          innovator_score: candidateResult.scores?.innovator || 0,
-          optimizer_score: candidateResult.scores?.optimizer || 0,
-          executor_score: candidateResult.scores?.executor || 0,
-          dominant_type: candidateResult.dominant_type,
-          dominant_percentage: candidateResult.dominant_percentage
-        });
-      } else {
-        throw new Error('Invalid response format from server');
-      }
-      
+      // Сохраняем результат для показа простого сообщения
+      setResult({ success: true });
       setIsFinished(true);
     } catch (error) {
       console.error('❌ Error submitting assessment:', error);
@@ -308,41 +295,31 @@ export default function AssessmentPage() {
     }
 
     if (isFinished && result) {
-      const typeNames = {
-        'innovator': 'Новатор',
-        'optimizer': 'Оптимизатор', 
-        'executor': 'Исполнитель'
-      };
-
       return (
         <div className="step-container result-appear">
-          <h2 className="result-title">Результаты оценки</h2>
-          <div className="result-card">
-            <h3>{firstName}, ваш тип личности:</h3>
-            
-            <div className="dominant-type-card">
-              <div className="type-badge">{typeNames[result.dominant_type]}</div>
-              <div className="type-title">{typeNames[result.dominant_type]}</div>
-              <div className="type-percentage">{result.dominant_percentage?.toFixed(1) || '0.0'}%</div>
-            </div>
-            
-            <div className="scores-summary">
-              <div className={`score-card ${result.dominant_type === 'innovator' ? 'dominant' : ''}`}>
-                <span className="score-label">Новатор</span>
-                <span className="score-number">{result.innovator_score?.toFixed(1) || '0.0'}</span>
-                <span className="score-total">из 100</span>
-              </div>
-              <div className={`score-card ${result.dominant_type === 'optimizer' ? 'dominant' : ''}`}>
-                <span className="score-label">Оптимизатор</span>
-                <span className="score-number">{result.optimizer_score?.toFixed(1) || '0.0'}</span>
-                <span className="score-total">из 100</span>
-              </div>
-              <div className={`score-card ${result.dominant_type === 'executor' ? 'dominant' : ''}`}>
-                <span className="score-label">Исполнитель</span>
-                <span className="score-number">{result.executor_score?.toFixed(1) || '0.0'}</span>
-                <span className="score-total">из 100</span>
-              </div>
-            </div>
+          <div className="completion-message">
+            <h2>Спасибо за прохождение!</h2>
+            <p>
+              {firstName}, благодарим за прохождение опроса.<br/>
+              Свяжемся с вами в ближайшее время.<br/>
+              Отличного дня!
+            </p>
+            <button 
+              className="home-button"
+              onClick={goHome}
+              style={{
+                marginTop: '30px',
+                padding: '12px 24px',
+                background: 'rgba(255, 255, 255, 0.2)',
+                border: '1px solid rgba(255, 255, 255, 0.4)',
+                borderRadius: '8px',
+                color: 'white',
+                cursor: 'pointer',
+                fontSize: '16px'
+              }}
+            >
+              На главную
+            </button>
           </div>
         </div>
       );
@@ -500,15 +477,6 @@ export default function AssessmentPage() {
         <button className="back-btn" onClick={handleBack}>
           <svg viewBox="0 0 24 24" width="24" height="24">
             <path d="M19 12H5M12 19l-7-7 7-7" stroke="white" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        </button>
-      )}
-
-      {/* Кнопка "Домой" (только на экране результатов) */}
-      {false && (
-        <button className="back-btn" onClick={goHome}>
-          <svg viewBox="0 0 24 24" width="24" height="24">
-            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" fill="white"/>
           </svg>
         </button>
       )}

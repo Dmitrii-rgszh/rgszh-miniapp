@@ -1,4 +1,4 @@
-# assessment_routes.py - API маршруты для работы с оценкой кандидатов
+# assessment_routes.py - Обновленные API маршруты с правильной системой баллов
 
 import logging
 from datetime import datetime
@@ -82,9 +82,9 @@ def register_assessment_routes(app):
             logger.error(f"Error getting questionnaire {questionnaire_id}: {e}")
             return jsonify({"error": "Internal server error"}), 500
     
-    @app.route('/api/assessment/submit', methods=['POST', 'OPTIONS'])  # НОВЫЙ МАРШРУТ
-    def submit_assessment():
-        """Сохранение результатов assessment (новый формат данных)"""
+    @app.route('/api/assessment/save', methods=['POST', 'OPTIONS'])
+    def save_assessment():
+        """Сохранение результатов оценки кандидата с обновленной системой баллов"""
         logger.info("➜ %s %s", request.method, request.path)
         
         if request.method == "OPTIONS":
@@ -94,83 +94,68 @@ def register_assessment_routes(app):
             data = request.get_json()
             logger.info("   payload keys: %s", list(data.keys()))
             
-            # Валидация входных данных (новый формат)
-            required_fields = ['questionnaire_id', 'surname', 'first_name', 'patronymic', 'answers', 'start_time', 'end_time']
+            # Валидация входных данных (убрали questionnaireId из обязательных)
+            required_fields = ['surname', 'firstName', 'patronymic', 'answers']
             for field in required_fields:
-                if field not in data:
+                if not data.get(field):
                     return jsonify({"error": f"Missing required field: {field}"}), 400
             
-            # Преобразуем данные в формат для сохранения
-            answers_text_list = []
-            for answer_data in data['answers']:
-                answers_text_list.append(answer_data['answer_text'])
-            
-            # Вычисляем баллы по типам личности
-            scores = calculate_personality_scores_new_format(data['answers'], data['questionnaire_id'])
-            if scores is None:
+            # Вычисляем баллы по новой системе (0-1-2 балла за ответ)
+            total_score = calculate_total_score(data['answers'])
+            if total_score is None:
                 return jsonify({"error": "Failed to calculate scores"}), 500
             
             # Определяем доминирующий тип
-            total_score = sum(scores.values())
-            if total_score > 0:
-                dominant_type = max(scores, key=scores.get)
-                dominant_percentage = (scores[dominant_type] / total_score * 100)
-            else:
-                dominant_type = 'executor'
-                dominant_percentage = 0
+            type_scores = calculate_type_scores(data['answers'])
+            dominant_type = max(type_scores, key=type_scores.get)
             
-            # Получаем транскрипцию
-            transcription = get_transcription(total_score, data['questionnaire_id'])
+            # Получаем транскрипцию по общему баллу
+            transcription = get_transcription_by_score(total_score)
             
-            # Сохраняем кандидата
+            # Сохраняем кандидата (БЕЗ questionnaireId, dominant_percentage, session_id)
             candidate_query = text("""
                 INSERT INTO assessment_candidates 
-                (questionnaire_id, surname, first_name, patronymic, total_score, percentage,
+                (surname, first_name, patronymic, total_score, percentage,
                  innovator_score, optimizer_score, executor_score, dominant_type, 
-                 dominant_percentage, transcription, completion_time_minutes, session_id)
-                VALUES (:questionnaire_id, :surname, :first_name, :patronymic, :total_score, 
+                 transcription, completion_time_minutes)
+                VALUES (:surname, :first_name, :patronymic, :total_score, 
                         :percentage, :innovator_score, :optimizer_score, :executor_score, 
-                        :dominant_type, :dominant_percentage, :transcription, 
-                        :completion_time_minutes, :session_id)
+                        :dominant_type, :transcription, :completion_time_minutes)
                 RETURNING id
             """)
             
-            completion_time = round((data['end_time'] - data['start_time']) / 60000)  # в минутах
-            session_id = f"session_{data['start_time']}_{data['surname']}"
-            percentage = (total_score / (len(data['answers']) * 3) * 100) if total_score > 0 else 0
+            # Процент от максимума (50 баллов)
+            percentage = (total_score / 50.0 * 100) if total_score > 0 else 0
             
             candidate_result = db.session.execute(candidate_query, {
-                "questionnaire_id": data['questionnaire_id'],
                 "surname": data['surname'],
-                "first_name": data['first_name'],
+                "first_name": data['firstName'],
                 "patronymic": data['patronymic'],
                 "total_score": total_score,
                 "percentage": percentage,
-                "innovator_score": scores['innovator'],
-                "optimizer_score": scores['optimizer'],
-                "executor_score": scores['executor'],
+                "innovator_score": type_scores['innovator'],
+                "optimizer_score": type_scores['optimizer'],
+                "executor_score": type_scores['executor'],
                 "dominant_type": dominant_type,
-                "dominant_percentage": dominant_percentage,
                 "transcription": transcription,
-                "completion_time_minutes": completion_time,
-                "session_id": session_id
+                "completion_time_minutes": data.get('completionTimeMinutes', 0)
             })
             
             candidate_id = candidate_result.fetchone()[0]
             
             # Сохраняем ответы
-            for answer_data in data['answers']:
-                # Находим option_id по question_id и тексту ответа
+            for answer_text in data['answers']:
+                # Находим option_id по тексту ответа
                 option_query = text("""
-                    SELECT qo.id FROM question_options qo
-                    WHERE qo.question_id = :question_id 
+                    SELECT qo.id, q.id as question_id FROM question_options qo
+                    JOIN questions q ON qo.question_id = q.id
+                    WHERE q.questionnaire_id = 1 
                     AND qo.option_text = :answer_text
                     LIMIT 1
                 """)
                 
                 option_result = db.session.execute(option_query, {
-                    "question_id": answer_data['question_id'],
-                    "answer_text": answer_data['answer_text']
+                    "answer_text": answer_text
                 })
                 
                 option_row = option_result.fetchone()
@@ -183,132 +168,14 @@ def register_assessment_routes(app):
                     
                     db.session.execute(answer_query, {
                         "candidate_id": candidate_id,
-                        "question_id": answer_data['question_id'],
-                        "selected_option_id": option_row[0],
-                        "answer_text": answer_data['answer_text']
+                        "question_id": option_row.question_id,
+                        "selected_option_id": option_row.id,
+                        "answer_text": answer_text
                     })
             
             db.session.commit()
             
-            # Получаем описания типов личности
-            type_descriptions = get_personality_type_description(dominant_type)
-            
-            # Формируем ответ (в том же формате, что ожидает клиент)
-            result = {
-                "innovator_score": scores['innovator'],
-                "optimizer_score": scores['optimizer'],
-                "executor_score": scores['executor'],
-                "dominant_type": dominant_type,
-                "dominant_percentage": dominant_percentage
-            }
-            
-            logger.info(f"✅ Assessment submitted for {data['first_name']} {data['surname']}: {total_score} points, {dominant_type}")
-            
-            return jsonify({
-                "status": "success",
-                "result": result
-            }), 200
-            
-        except Exception as e:
-            db.session.rollback()
-            logger.error(f"❌ Error submitting assessment: {e}", exc_info=True)
-            return jsonify({"error": "Failed to submit assessment"}), 500
-    
-    @app.route('/api/assessment/save', methods=['POST'])
-    def save_assessment():
-        """Сохранение результатов оценки кандидата (старый формат)"""
-        try:
-            data = request.get_json()
-            
-            # Валидация входных данных
-            required_fields = ['surname', 'firstName', 'patronymic', 'answers', 'questionnaireId']
-            for field in required_fields:
-                if not data.get(field):
-                    return jsonify({"error": f"Missing required field: {field}"}), 400
-            
-            # Вычисляем баллы по типам личности
-            scores = calculate_personality_scores(data['answers'], data['questionnaireId'])
-            if scores is None:
-                return jsonify({"error": "Failed to calculate scores"}), 500
-            
-            # Определяем доминирующий тип
-            dominant_type = max(scores, key=scores.get)
-            total_score = sum(scores.values())
-            dominant_percentage = (scores[dominant_type] / total_score * 100) if total_score > 0 else 0
-            
-            # Получаем транскрипцию
-            transcription = get_transcription(total_score, data['questionnaireId'])
-            
-            # Сохраняем кандидата
-            candidate_query = text("""
-                INSERT INTO assessment_candidates 
-                (questionnaire_id, surname, first_name, patronymic, total_score, percentage,
-                 innovator_score, optimizer_score, executor_score, dominant_type, 
-                 dominant_percentage, transcription, completion_time_minutes, session_id)
-                VALUES (:questionnaire_id, :surname, :first_name, :patronymic, :total_score, 
-                        :percentage, :innovator_score, :optimizer_score, :executor_score, 
-                        :dominant_type, :dominant_percentage, :transcription, 
-                        :completion_time_minutes, :session_id)
-                RETURNING id
-            """)
-            
-            percentage = (total_score / (25 * 3) * 100) if total_score > 0 else 0  # 25 вопросов, макс 3 балла
-            
-            candidate_result = db.session.execute(candidate_query, {
-                "questionnaire_id": data['questionnaireId'],
-                "surname": data['surname'],
-                "first_name": data['firstName'],
-                "patronymic": data['patronymic'],
-                "total_score": total_score,
-                "percentage": percentage,
-                "innovator_score": scores['innovator'],
-                "optimizer_score": scores['optimizer'],
-                "executor_score": scores['executor'],
-                "dominant_type": dominant_type,
-                "dominant_percentage": dominant_percentage,
-                "transcription": transcription,
-                "completion_time_minutes": data.get('completionTimeMinutes', 0),
-                "session_id": data.get('sessionId', '')
-            })
-            
-            candidate_id = candidate_result.fetchone()[0]
-            
-            # Сохраняем ответы
-            for answer in data['answers']:
-                # Находим option_id по тексту ответа
-                option_query = text("""
-                    SELECT qo.id FROM question_options qo
-                    JOIN questions q ON qo.question_id = q.id
-                    WHERE q.questionnaire_id = :questionnaire_id 
-                    AND qo.option_text = :answer_text
-                    LIMIT 1
-                """)
-                
-                option_result = db.session.execute(option_query, {
-                    "questionnaire_id": data['questionnaireId'],
-                    "answer_text": answer
-                })
-                
-                option_row = option_result.fetchone()
-                if option_row:
-                    answer_query = text("""
-                        INSERT INTO candidate_answers 
-                        (candidate_id, selected_option_id, answer_text)
-                        VALUES (:candidate_id, :selected_option_id, :answer_text)
-                    """)
-                    
-                    db.session.execute(answer_query, {
-                        "candidate_id": candidate_id,
-                        "selected_option_id": option_row[0],
-                        "answer_text": answer
-                    })
-            
-            db.session.commit()
-            
-            # Получаем описания типов личности
-            type_descriptions = get_personality_type_description(dominant_type)
-            
-            # Формируем ответ
+            # Формируем ответ (упрощенный, без детальных результатов)
             result = {
                 "candidate": {
                     "id": candidate_id,
@@ -317,61 +184,52 @@ def register_assessment_routes(app):
                     "patronymic": data['patronymic'],
                     "total_score": total_score,
                     "percentage": percentage,
-                    "scores": scores,
                     "dominant_type": dominant_type,
-                    "dominant_percentage": dominant_percentage,
-                    "transcription": transcription,
-                    "type_description": type_descriptions
+                    "transcription": transcription
                 }
             }
             
-            logger.info(f"✅ Assessment saved for {data['firstName']} {data['surname']}: {total_score} points, {dominant_type}")
+            logger.info(f"✅ Assessment saved for {data['firstName']} {data['surname']}: {total_score}/50 points, {dominant_type}")
             
             return jsonify(result), 201
             
         except Exception as e:
             db.session.rollback()
-            logger.error(f"❌ Error saving assessment: {e}")
+            logger.error(f"❌ Error saving assessment: {e}", exc_info=True)
             return jsonify({"error": "Internal server error"}), 500
 
-def calculate_personality_scores_new_format(answers, questionnaire_id):
-    """Вычисляет баллы по типам личности на основе ответов (новый формат)"""
+def calculate_total_score(answers):
+    """Вычисляет общий балл на основе ответов (максимум 50 баллов)"""
     try:
-        scores = {"innovator": 0, "optimizer": 0, "executor": 0}
+        total_score = 0
         
-        for answer_data in answers:
-            # Находим тип и балл для данного ответа
+        for answer_text in answers:
+            # Находим балл для данного ответа
             query = text("""
-                SELECT qo.option_type, qo.score_value
+                SELECT qo.score_value
                 FROM question_options qo
-                WHERE qo.question_id = :question_id 
+                JOIN questions q ON qo.question_id = q.id
+                WHERE q.questionnaire_id = 1 
                 AND qo.option_text = :answer_text
                 LIMIT 1
             """)
             
-            result = db.session.execute(query, {
-                "question_id": answer_data['question_id'],
-                "answer_text": answer_data['answer_text']
-            })
-            
+            result = db.session.execute(query, {"answer_text": answer_text})
             row = result.fetchone()
+            
             if row:
-                option_type = row.option_type
-                score_value = row.score_value
-                
-                if option_type in scores:
-                    scores[option_type] += score_value
+                total_score += row.score_value
         
-        return scores
+        return total_score
         
     except Exception as e:
-        logger.error(f"Error calculating scores: {e}")
+        logger.error(f"Error calculating total score: {e}")
         return None
 
-def calculate_personality_scores(answers, questionnaire_id):
-    """Вычисляет баллы по типам личности на основе ответов (старый формат)"""
+def calculate_type_scores(answers):
+    """Вычисляет баллы по типам личности"""
     try:
-        scores = {"innovator": 0, "optimizer": 0, "executor": 0}
+        type_scores = {"innovator": 0, "optimizer": 0, "executor": 0}
         
         for answer_text in answers:
             # Находим тип и балл для данного ответа
@@ -379,75 +237,43 @@ def calculate_personality_scores(answers, questionnaire_id):
                 SELECT qo.option_type, qo.score_value
                 FROM question_options qo
                 JOIN questions q ON qo.question_id = q.id
-                WHERE q.questionnaire_id = :questionnaire_id 
+                WHERE q.questionnaire_id = 1 
                 AND qo.option_text = :answer_text
                 LIMIT 1
             """)
             
-            result = db.session.execute(query, {
-                "questionnaire_id": questionnaire_id,
-                "answer_text": answer_text
-            })
-            
+            result = db.session.execute(query, {"answer_text": answer_text})
             row = result.fetchone()
+            
             if row:
                 option_type = row.option_type
                 score_value = row.score_value
                 
-                if option_type in scores:
-                    scores[option_type] += score_value
+                if option_type in type_scores:
+                    type_scores[option_type] += score_value
         
-        return scores
+        return type_scores
         
     except Exception as e:
-        logger.error(f"Error calculating scores: {e}")
-        return None
+        logger.error(f"Error calculating type scores: {e}")
+        return {"innovator": 0, "optimizer": 0, "executor": 0}
 
-def get_transcription(total_score, questionnaire_id):
+def get_transcription_by_score(total_score):
     """Получает транскрипцию по общему баллу"""
     try:
         query = text("""
             SELECT transcription_text
             FROM score_transcriptions
-            WHERE questionnaire_id = :questionnaire_id
+            WHERE questionnaire_id = 1
             AND :total_score BETWEEN min_score AND max_score
             LIMIT 1
         """)
         
-        result = db.session.execute(query, {
-            "questionnaire_id": questionnaire_id,
-            "total_score": total_score
-        })
-        
+        result = db.session.execute(query, {"total_score": total_score})
         row = result.fetchone()
+        
         return row[0] if row else "Стандартная оценка результатов"
         
     except Exception as e:
         logger.error(f"Error getting transcription: {e}")
         return "Стандартная оценка результатов"
-
-def get_personality_type_description(type_name):
-    """Получает описание типа личности"""
-    try:
-        query = text("""
-            SELECT display_name, description, traits
-            FROM personality_types
-            WHERE type_name = :type_name
-            LIMIT 1
-        """)
-        
-        result = db.session.execute(query, {"type_name": type_name})
-        row = result.fetchone()
-        
-        if row:
-            return {
-                "display_name": row.display_name,
-                "description": row.description,
-                "traits": row.traits
-            }
-        
-        return None
-        
-    except Exception as e:
-        logger.error(f"Error getting personality type description: {e}")
-        return None
