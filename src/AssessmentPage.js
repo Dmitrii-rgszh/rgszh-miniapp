@@ -172,13 +172,25 @@ export default function AssessmentPage() {
       setErrorMessage('');
       
       // Сохраняем ответ
-      const newAnswer = {
-        question_id: questions[currentQuestion].id,
-        answer_text: selectedAnswer,
-        answer_index: questions[currentQuestion].options.findIndex(opt => opt.text === selectedAnswer)
-      };
-      
-      const updatedAnswers = [...userAnswers, newAnswer];
+      const existingAnswerIndex = userAnswers.findIndex(ans => ans.question_id === questions[currentQuestion].id);
+
+      let updatedAnswers;
+      if (existingAnswerIndex >= 0) {
+        // Заменяем существующий ответ
+        updatedAnswers = [...userAnswers];
+        updatedAnswers[existingAnswerIndex] = {
+          question_id: questions[currentQuestion].id,
+          answer_text: selectedAnswer,
+          answer_index: questions[currentQuestion].options.findIndex(opt => opt.text === selectedAnswer)
+        };
+      } else {
+        // Добавляем новый ответ
+        updatedAnswers = [...userAnswers, {
+          question_id: questions[currentQuestion].id,
+          answer_text: selectedAnswer,
+          answer_index: questions[currentQuestion].options.findIndex(opt => opt.text === selectedAnswer)
+        }];
+      }
       setUserAnswers(updatedAnswers);
 
       // Проверяем, последний ли это вопрос
@@ -223,23 +235,43 @@ export default function AssessmentPage() {
       setIsProcessing(true);
       setErrorMessage('');
 
-      // Преобразуем ответы в формат, который ожидает сервер
-      const answersTextArray = answers.map(answer => answer.answer_text);
+      // Ограничиваем 25 ответами и убираем дубли
+      const uniqueAnswers = answers.slice(0, 25);
+      const answersTextArray = uniqueAnswers.map(answer => answer.answer_text);
+
+      // ПРОВЕРКА:
+      console.log('🔍 Final check before sending:');
+      console.log('  - Unique answers count:', uniqueAnswers.length);
+      console.log('  - Should be exactly 25:', uniqueAnswers.length === 25);
+    
+      if (uniqueAnswers.length !== 25) {
+        throw new Error(`Expected 25 answers, got ${uniqueAnswers.length}`);
+      }
 
       const sessionData = {
+        questionnaireId: 1,
         surname: surname.trim(),                 
         firstName: firstName.trim(),             
         patronymic: patronymic.trim(),           
         answers: answersTextArray,               
-        completionTime: Math.round((Date.now() - startTimeRef.current) / 60000) // в минутах
+        completionTime: Math.max(1, Math.round((Date.now() - startTimeRef.current) / 60000)) // минимум 1 минута
       };
 
       console.log('📤 Sending session data:', sessionData);
       console.log('📝 Answers array:', answersTextArray);
+      console.log('📊 Session data details:');
+      console.log('  - surname:', sessionData.surname);
+      console.log('  - firstName:', sessionData.firstName); 
+      console.log('  - patronymic:', sessionData.patronymic);
+      console.log('  - answers length:', sessionData.answers.length);
+      console.log('  - first few answers:', sessionData.answers.slice(0, 3));
 
       console.log('📤 Sending session data:', sessionData);
       const response = await apiCall('/api/assessment/save', {  
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify(sessionData)
       });
 

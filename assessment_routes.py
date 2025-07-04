@@ -1,5 +1,5 @@
 # assessment_routes.py - Исправленная версия для новой структуры БД
-
+import traceback
 import logging
 from datetime import datetime
 from flask import request, jsonify
@@ -92,18 +92,24 @@ def register_assessment_routes(app):
           return '', 200
     
       try:
-          data = request.get_json()
-          logger.info("   payload keys: %s", list(data.keys()))
-
-          logger.info(f"📥 Received data keys: {list(data.keys())}")
-          logger.info(f"📋 Answers count: {len(data.get('answers', []))}")
-          logger.info(f"👤 Name: {data.get('firstName')} {data.get('surname')}")
+          logger.info("📦 Request headers: %s", dict(request.headers))
+          logger.info("📋 Content-Type: %s", request.content_type)
+          logger.info("📄 Raw data length: %s", len(request.data) if request.data else 0)
         
-          # Валидация входных данных
-          required_fields = ['surname', 'firstName', 'patronymic', 'answers']
-          for field in required_fields:
-              if not data.get(field):
-                  return jsonify({"error": f"Missing required field: {field}"}), 400
+          data = request.get_json()
+        
+          # И ЭТИ ЛОГИ:
+          logger.info("📥 Parsed JSON successfully")
+          logger.info("📝 Data keys: %s", list(data.keys()) if data else "None")
+          logger.info("📊 Data details: surname='%s', firstName='%s', answers_count=%s", 
+                     data.get('surname', 'None'), 
+                     data.get('firstName', 'None'), 
+                     len(data.get('answers', [])))
+
+          # Проверяем каждое поле отдельно
+          for field in ['surname', 'firstName', 'patronymic', 'answers']:
+              value = data.get(field)
+              logger.info(f"🔍 Field '{field}': value='{value}', type={type(value)}, empty={not value}")
         
           # Вычисляем баллы по новой системе (0-1-2 балла за ответ)
           total_score = calculate_total_score(data['answers'])

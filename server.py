@@ -22,7 +22,7 @@ logger = logging.getLogger("server")
 
 # ====== Flask app ======
 app = Flask(__name__, static_folder="build", static_url_path="")
-CORS(app, resources={r"/api/*": {"origins": "*"}})
+CORS(app, resources={r"/api/*": {"origins": ["http://localhost:3000", "http://127.0.0.1:3000"]}})
 
 # ====== Socket.IO setup with optional Redis ======
 redis_url = os.environ.get("REDIS_URL")
