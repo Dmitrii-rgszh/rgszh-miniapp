@@ -108,7 +108,7 @@ export default function AssessmentPage() {
         // Предварительно перемешиваем ответы для каждого вопроса только один раз
         const questionsWithShuffledOptions = loadedQuestions.map(question => ({
           ...question,
-          shuffledOptions: shuffleOptions(question.options || []) // НЕ перемешиваем, оставляем правильный порядок
+          shuffledOptions: shuffleOptions(question.options || []) /// ИСПРАВЛЕНО: перемешиваем варианты ответов!
         }));
         setShuffledQuestions(questionsWithShuffledOptions);
     
@@ -161,6 +161,14 @@ export default function AssessmentPage() {
         return;
       }
       setErrorMessage('');
+
+      const freshShuffledQuestions = questions.map(question => ({
+        ...question,
+        shuffledOptions: shuffleOptions([...question.options])
+      }));
+      setShuffledQuestions(freshShuffledQuestions);
+      console.log('🎲 Reshuffled for new user:', freshShuffledQuestions);
+  
       setCurrentStep(3);
     } else if (currentStep === 3) {
       // Обработка ответа на вопрос
@@ -188,7 +196,7 @@ export default function AssessmentPage() {
         updatedAnswers = [...userAnswers, {
           question_id: questions[currentQuestion].id,
           answer_text: selectedAnswer,
-          answer_index: questions[currentQuestion].options.findIndex(opt => opt.text === selectedAnswer)
+          answer_index: shuffledQuestions[currentQuestion].shuffledOptions.findIndex(opt => opt.text === selectedAnswer)
         }];
       }
       setUserAnswers(updatedAnswers);
