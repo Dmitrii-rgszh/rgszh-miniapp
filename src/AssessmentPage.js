@@ -209,24 +209,41 @@ export default function AssessmentPage() {
       setIsProcessing(true);
       setErrorMessage('');
 
+      // Преобразуем ответы в формат, который ожидает сервер
+      const answersTextArray = answers.map(answer => answer.answer_text);
+
       const sessionData = {
-        questionnaire_id: MAIN_QUESTIONNAIRE_ID,
-        surname: surname.trim(),
-        first_name: firstName.trim(),
-        patronymic: patronymic.trim(),
-        answers: answers,
-        start_time: startTimeRef.current,
-        end_time: Date.now()
+        questionnaireId: MAIN_QUESTIONNAIRE_ID,  // Изменено с questionnaire_id
+        surname: surname.trim(),                 // Остается surname
+        firstName: firstName.trim(),             // Изменено с first_name
+        patronymic: patronymic.trim(),           // Остается patronymic
+        answers: answersTextArray,               // Массив строк вместо объектов
+        completionTimeMinutes: Math.round((Date.now() - startTimeRef.current) / 60000),
+        sessionId: `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
       };
 
       console.log('📤 Sending session data:', sessionData);
-      const response = await apiCall('/api/assessment/submit', {
+      const response = await apiCall('/api/assessment/save', {  // Изменено с submit на save
         method: 'POST',
         body: JSON.stringify(sessionData)
       });
 
       console.log('✅ Assessment completed:', response);
-      setResult(response.result);
+      
+      // Извлекаем результат из response.candidate
+      if (response.candidate) {
+        const candidateResult = response.candidate;
+        setResult({
+          innovator_score: candidateResult.scores?.innovator || 0,
+          optimizer_score: candidateResult.scores?.optimizer || 0,
+          executor_score: candidateResult.scores?.executor || 0,
+          dominant_type: candidateResult.dominant_type,
+          dominant_percentage: candidateResult.dominant_percentage
+        });
+      } else {
+        throw new Error('Invalid response format from server');
+      }
+      
       setIsFinished(true);
     } catch (error) {
       console.error('❌ Error submitting assessment:', error);
