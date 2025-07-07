@@ -6,6 +6,8 @@ import threading
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from email.mime.base import MIMEBase
+from email import encoders
 
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
@@ -77,7 +79,7 @@ SMTP_TO = os.environ.get("SMTP_TO", "zerotlt@mail.ru")
 
 def send_email(subject, body, to_email=None):
     """
-    Отправляет email через SMTP
+    Отправляет простой email через SMTP (без вложений)
     """
     try:
         if not SMTP_PASSWORD:
@@ -111,6 +113,70 @@ def send_email(subject, body, to_email=None):
     except Exception as e:
         logger.error(f"❌ Failed to send email: {e}")
         return False
+
+def send_email_with_attachment(subject, body, attachment_data, attachment_filename, to_email=None):
+    """
+    Отправляет email с вложением через SMTP
+    
+    Args:
+        subject: Тема письма
+        body: Тело письма
+        attachment_data: Данные вложения в байтах
+        attachment_filename: Имя файла вложения
+        to_email: Email получателя (опционально)
+    
+    Returns:
+        bool: True если отправлено успешно
+    """
+    try:
+        if not SMTP_PASSWORD:
+            logger.warning("📧 SMTP password not configured, skipping email send")
+            return False
+            
+        if not attachment_data:
+            logger.warning("📧 No attachment data provided, sending simple email")
+            return send_email(subject, body, to_email)
+            
+        # Используем переданный email или дефолтный
+        recipient = to_email or SMTP_TO
+        
+        logger.info(f"📧 Sending email with attachment to {recipient}: {subject}")
+        logger.info(f"📎 Attachment: {attachment_filename} ({len(attachment_data)} bytes)")
+        
+        # Создаем сообщение
+        msg = MIMEMultipart()
+        msg['From'] = SMTP_FROM
+        msg['To'] = recipient
+        msg['Subject'] = subject
+        
+        # Добавляем тело письма
+        msg.attach(MIMEText(body, 'plain', 'utf-8'))
+        
+        # Добавляем вложение
+        attachment = MIMEBase('application', 'octet-stream')
+        attachment.set_payload(attachment_data)
+        encoders.encode_base64(attachment)
+        attachment.add_header(
+            'Content-Disposition',
+            f'attachment; filename= {attachment_filename}'
+        )
+        msg.attach(attachment)
+        
+        # Отправляем через SMTP
+        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+            server.starttls()  # Включаем шифрование
+            server.login(SMTP_USER, SMTP_PASSWORD)
+            text = msg.as_string()
+            server.sendmail(SMTP_FROM, recipient, text)
+        
+        logger.info(f"✅ Email with attachment sent successfully to {recipient}")
+        return True
+        
+    except Exception as e:
+        logger.error(f"❌ Failed to send email with attachment: {e}")
+        # Fallback - пробуем отправить без вложения
+        logger.info("🔄 Trying to send email without attachment as fallback...")
+        return send_email(subject, body, to_email)
 
 # ====== Endpoints ======
 
