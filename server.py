@@ -8,6 +8,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 from email import encoders
+from datetime import datetime
 
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
@@ -17,6 +18,18 @@ from db_saver import init_db, save_feedback_to_db
 from polls_ws import register_poll_ws
 from polls_routes import register_poll_routes
 from assessment_routes import register_assessment_routes  # Новый импорт
+
+# ===== ИМПОРТЫ ДЛЯ КАЛЬКУЛЯТОРА НСЖ =====
+try:
+    from care_future_models import init_nsj_database, NSJDataManager
+    from care_future_routes import init_care_future_routes
+    CARE_FUTURE_AVAILABLE = True
+    logger = logging.getLogger("server")
+    logger.info("✅ Модули калькулятора НСЖ загружены")
+except ImportError as e:
+    CARE_FUTURE_AVAILABLE = False
+    logger = logging.getLogger("server")
+    logger.warning(f"⚠️ Калькулятор НСЖ не загружен: {e}")
 
 # ====== Logging setup ======
 logging.basicConfig(
@@ -68,6 +81,29 @@ register_assessment_routes(app)
 
 # ====== Database setup (для остального функционала) ======
 init_db(app)
+
+# Инициализация калькулятора НСЖ
+if CARE_FUTURE_AVAILABLE:
+    try:
+        # Инициализируем БД калькулятора
+        with app.app_context():
+            init_success = init_nsj_database()
+            if init_success:
+                logger.info("✅ БД калькулятора НСЖ инициализирована")
+            else:
+                logger.warning("⚠️ Ошибка инициализации БД калькулятора НСЖ")
+        
+        # Регистрируем routes
+        route_success = init_care_future_routes(app)
+        if route_success:
+            logger.info("✅ API калькулятора НСЖ зарегистрировано")
+        else:
+            logger.warning("⚠️ Ошибка регистрации API калькулятора НСЖ")
+            
+    except Exception as e:
+        logger.error(f"❌ Ошибка инициализации калькулятора НСЖ: {e}")
+else:
+    logger.info("ℹ️ Калькулятор НСЖ отключен")
 
 # ====== Email Configuration ======
 SMTP_SERVER = os.environ.get("SMTP_SERVER", "smtp.yandex.ru")
@@ -278,6 +314,51 @@ def send_carefuture_email():
         logger.error(f"❌ Error in Care Future email endpoint: {e}")
         return jsonify({"error": "Internal server error"}), 500
 
+@app.route('/api/contact-manager', methods=['POST', 'OPTIONS'])
+def contact_manager():
+    """Обработка заявок на связь с менеджером из Care Future"""
+    logger.info("🌐 ➜ %s %s", request.method, request.path)
+    
+    if request.method == "OPTIONS":
+        return '', 200
+    
+    try:
+        data = request.get_json()
+        
+        # Формируем email для менеджера
+        subject = f"Новая заявка с калькулятора НСЖ от {data.get('surname', '')} {data.get('name', '')}"
+        
+        body = f"""
+Новая заявка на консультацию по программе "Забота о будущем Ультра"
+
+Данные клиента:
+- Фамилия: {data.get('surname', 'Не указана')}
+- Имя: {data.get('name', 'Не указано')}
+- Город: {data.get('city', 'Не указан')}
+- Email: {data.get('email', 'Не указан')}
+
+Дополнительная информация:
+- Страница: {data.get('page', 'care-future')}
+- ID расчета: {data.get('calculationId', 'Нет')}
+- Дата заявки: {datetime.now().strftime('%d.%m.%Y %H:%M')}
+
+---
+Автоматическое уведомление из MiniApp
+        """
+        
+        # Отправляем email
+        success = send_email(subject, body)
+        
+        if success:
+            logger.info(f"✅ Заявка от {data.get('surname', '')} {data.get('name', '')} отправлена")
+            return jsonify({"success": True, "message": "Заявка отправлена успешно"}), 200
+        else:
+            return jsonify({"success": False, "message": "Ошибка отправки заявки"}), 500
+            
+    except Exception as e:
+        logger.error(f"❌ Ошибка обработки заявки менеджера: {e}")
+        return jsonify({"error": "Внутренняя ошибка сервера"}), 500
+
 # ====== Static files ======
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
@@ -297,8 +378,8 @@ if __name__ == '__main__':
     else:
         logger.warning("📧 Email not configured (SMTP_PASSWORD missing)")
     
-    port = int(os.environ.get("PORT", 4000))
-    socketio.run(app, host='0.0.0.0', port=port, debug=False)
+    port = int(os.environ.get("PORT", 5000))
+    socketio.run(app, host='0.0.0.0', port=5000, debug=False)
 
 
 

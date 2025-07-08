@@ -1,69 +1,138 @@
-// src/DateWheelPicker.js
+// src/DateWheelPicker.js - Простое решение с нативными select'ами
+
 import React from 'react';
 
 const DateWheelPicker = ({
-  // value — объект { day, month, year }, по умолчанию текущий год и 01/01
   value = {
-    day:   '01',
+    day: '01',
     month: '01',
-    year:  `${new Date().getFullYear()}`
+    year: `${new Date().getFullYear()}`
   },
   onChange
 }) => {
-  // Массивы дней, месяцев, лет
-  const days = Array.from({ length: 31 }, (_, i) =>
-    (i + 1).toString().padStart(2, '0')
-  );
-  const months = Array.from({ length: 12 }, (_, i) =>
-    (i + 1).toString().padStart(2, '0')
-  );
-  const currentYear = new Date().getFullYear();
-  const years = Array.from({ length: 100 }, (_, i) =>
-    (currentYear - i).toString()
-  );
+  const months = [
+    { value: '01', label: 'Янв' },
+    { value: '02', label: 'Фев' },
+    { value: '03', label: 'Мар' },
+    { value: '04', label: 'Апр' },
+    { value: '05', label: 'Май' },
+    { value: '06', label: 'Июн' },
+    { value: '07', label: 'Июл' },
+    { value: '08', label: 'Авг' },
+    { value: '09', label: 'Сен' },
+    { value: '10', label: 'Окт' },
+    { value: '11', label: 'Ноя' },
+    { value: '12', label: 'Дек' }
+  ];
 
-  const handleChange = () => {
-    const day   = document.getElementById('wheel-day').value;
-    const month = document.getElementById('wheel-month').value;
-    const year  = document.getElementById('wheel-year').value;
-    // Передаём объект с отдельными полями
-    onChange({ day, month, year });
+  const getDaysInMonth = (month, year) => {
+    return new Date(year, month, 0).getDate();
+  };
+
+  const currentMonth = parseInt(value.month) || 1;
+  const currentYearNum = parseInt(value.year) || new Date().getFullYear();
+  const daysInCurrentMonth = getDaysInMonth(currentMonth, currentYearNum);
+  
+  const days = Array.from({ length: daysInCurrentMonth }, (_, i) => {
+    const day = (i + 1).toString().padStart(2, '0');
+    return { value: day, label: day };
+  });
+
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: 100 }, (_, i) => {
+    const year = (currentYear - i).toString();
+    return { value: year, label: year };
+  });
+
+  const handleChange = (field) => (e) => {
+    const newValue = { ...value, [field]: e.target.value };
+    
+    // Если изменился месяц или год, проверяем корректность дня
+    if (field === 'month' || field === 'year') {
+      const daysInNewMonth = getDaysInMonth(
+        parseInt(newValue.month) || 1, 
+        parseInt(newValue.year) || new Date().getFullYear()
+      );
+      if (parseInt(newValue.day) > daysInNewMonth) {
+        newValue.day = daysInNewMonth.toString().padStart(2, '0');
+      }
+    }
+    
+    onChange(newValue);
+  };
+
+  const selectStyle = {
+    flex: '1',
+    padding: '12px 8px',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    border: '1px solid rgba(255, 255, 255, 0.3)',
+    borderRadius: '8px',
+    color: 'white',
+    fontSize: '14px',
+    cursor: 'pointer',
+    minHeight: '48px',
+    appearance: 'none',
+    WebkitAppearance: 'none',
+    MozAppearance: 'none',
+    backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e")`,
+    backgroundRepeat: 'no-repeat',
+    backgroundPosition: 'right 8px center',
+    backgroundSize: '12px',
+    paddingRight: '28px',
+    textAlign: 'center'
+  };
+
+  const optionStyle = {
+    backgroundColor: '#333',
+    color: 'white',
+    padding: '12px'
   };
 
   return (
-    <div className="date-wheel-picker">
+    <div 
+      className="date-wheel-picker"
+      style={{
+        display: 'flex',
+        flexDirection: 'row',
+        gap: '8px',
+        width: '100%'
+      }}
+    >
+      {/* День */}
       <select
-        id="wheel-day"
-        value={value.day}
-        onChange={handleChange}
+        value={value.day || '01'}
+        onChange={handleChange('day')}
+        style={selectStyle}
       >
-        {days.map(d => (
-          <option key={d} value={d}>
-            {d}
+        {days.map(day => (
+          <option key={day.value} value={day.value} style={optionStyle}>
+            {day.label}
           </option>
         ))}
       </select>
 
+      {/* Месяц */}
       <select
-        id="wheel-month"
-        value={value.month}
-        onChange={handleChange}
+        value={value.month || '01'}
+        onChange={handleChange('month')}
+        style={selectStyle}
       >
-        {months.map(m => (
-          <option key={m} value={m}>
-            {m}
+        {months.map(month => (
+          <option key={month.value} value={month.value} style={optionStyle}>
+            {month.label}
           </option>
         ))}
       </select>
 
+      {/* Год */}
       <select
-        id="wheel-year"
-        value={value.year}
-        onChange={handleChange}
+        value={value.year || currentYear.toString()}
+        onChange={handleChange('year')}
+        style={selectStyle}
       >
-        {years.map(y => (
-          <option key={y} value={y}>
-            {y}
+        {years.map(year => (
+          <option key={year.value} value={year.value} style={optionStyle}>
+            {year.label}
           </option>
         ))}
       </select>
