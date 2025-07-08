@@ -1,4 +1,5 @@
-// src/DateWheelPicker.js - Простое решение с нативными select'ами
+// ИСПРАВЛЕННЫЙ DateWheelPicker.js
+// Замените полностью содержимое файла src/DateWheelPicker.js
 
 import React from 'react';
 
@@ -61,30 +62,41 @@ const DateWheelPicker = ({
     onChange(newValue);
   };
 
+  // ИСПРАВЛЕННЫЕ СТИЛИ - теперь с темным текстом на светлом фоне
   const selectStyle = {
     flex: '1',
     padding: '12px 8px',
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    border: '1px solid rgba(255, 255, 255, 0.3)',
+    backgroundColor: 'white', // ✅ ИСПРАВЛЕНИЕ: белый фон вместо прозрачного
+    border: '2px solid #e1e5e9', // ✅ ИСПРАВЛЕНИЕ: такая же рамка как у других полей
     borderRadius: '8px',
-    color: 'white',
-    fontSize: '14px',
+    color: '#333', // ✅ ИСПРАВЛЕНИЕ: темный текст вместо белого
+    fontSize: '16px', // ✅ ИСПРАВЛЕНИЕ: увеличили размер шрифта
     cursor: 'pointer',
     minHeight: '48px',
     appearance: 'none',
     WebkitAppearance: 'none',
     MozAppearance: 'none',
-    backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e")`,
+    // ✅ ИСПРАВЛЕНИЕ: темная стрелка вместо белой
+    backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e")`,
     backgroundRepeat: 'no-repeat',
     backgroundPosition: 'right 8px center',
     backgroundSize: '12px',
     paddingRight: '28px',
-    textAlign: 'center'
+    textAlign: 'center',
+    outline: 'none', // ✅ ДОБАВЛЕНО: убираем outline при фокусе
+    transition: 'border-color 0.3s ease', // ✅ ДОБАВЛЕНО: плавная анимация
+    boxSizing: 'border-box'
   };
 
+  // ✅ ДОБАВЛЕНО: стиль для фокуса
+  const selectFocusStyle = {
+    borderColor: '#9370DB'
+  };
+
+  // ✅ ИСПРАВЛЕНИЕ: темные опции вместо светлых
   const optionStyle = {
-    backgroundColor: '#333',
-    color: 'white',
+    backgroundColor: 'white',
+    color: '#333',
     padding: '12px'
   };
 
@@ -103,6 +115,8 @@ const DateWheelPicker = ({
         value={value.day || '01'}
         onChange={handleChange('day')}
         style={selectStyle}
+        onFocus={(e) => e.target.style.borderColor = '#9370DB'}
+        onBlur={(e) => e.target.style.borderColor = '#e1e5e9'}
       >
         {days.map(day => (
           <option key={day.value} value={day.value} style={optionStyle}>
@@ -116,6 +130,8 @@ const DateWheelPicker = ({
         value={value.month || '01'}
         onChange={handleChange('month')}
         style={selectStyle}
+        onFocus={(e) => e.target.style.borderColor = '#9370DB'}
+        onBlur={(e) => e.target.style.borderColor = '#e1e5e9'}
       >
         {months.map(month => (
           <option key={month.value} value={month.value} style={optionStyle}>
@@ -129,6 +145,8 @@ const DateWheelPicker = ({
         value={value.year || currentYear.toString()}
         onChange={handleChange('year')}
         style={selectStyle}
+        onFocus={(e) => e.target.style.borderColor = '#9370DB'}
+        onBlur={(e) => e.target.style.borderColor = '#e1e5e9'}
       >
         {years.map(year => (
           <option key={year.value} value={year.value} style={optionStyle}>

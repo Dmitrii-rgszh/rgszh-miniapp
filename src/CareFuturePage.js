@@ -195,36 +195,46 @@ export default function CareFuturePage() {
 
   // Кнопки
   const primaryButtonStyle = {
-    background: 'linear-gradient(135deg, #9370DB 0%, #6A5ACD 100%)',
+    background: 'linear-gradient(135deg, #9370DB 0%, #7B68EE 100%)',
     color: 'white',
     border: 'none',
-    padding: '15px 30px',
+    padding: '15px 24px', // ✅ ИСПРАВЛЕНИЕ 3: Такой же padding
     borderRadius: '8px',
     fontSize: '16px',
     fontWeight: '600',
     cursor: 'pointer',
     transition: 'all 0.3s ease',
-    width: '100%',
-    marginTop: '15px'
+    minHeight: '54px', // ✅ ИСПРАВЛЕНИЕ 3: Одинаковая высота
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    boxSizing: 'border-box',
+    flex: '1'
   };
 
   const secondaryButtonStyle = {
     background: 'transparent',
     color: '#9370DB',
     border: '2px solid #9370DB',
-    padding: '12px 24px',
+    padding: '15px 24px', // ✅ ИСПРАВЛЕНИЕ 3: Увеличили padding
     borderRadius: '8px',
     fontSize: '16px',
     fontWeight: '600',
     cursor: 'pointer',
     transition: 'all 0.3s ease',
-    marginRight: '10px'
+    minHeight: '54px', // ✅ ИСПРАВЛЕНИЕ 3: Одинаковая высота
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    boxSizing: 'border-box',
+    flex: '0 0 auto'
   };
 
   const disabledButtonStyle = {
     ...primaryButtonStyle,
     opacity: 0.6,
-    cursor: 'not-allowed'
+    cursor: 'not-allowed',
+    background: 'linear-gradient(135deg, #cccccc 0%, #999999 100%)'
   };
 
   // Группы форм
@@ -249,14 +259,21 @@ export default function CareFuturePage() {
   };
 
   const optionButtonStyle = {
-    padding: '15px',
+    padding: '15px 12px',
     border: '2px solid #e1e5e9',
     borderRadius: '8px',
     background: 'white',
     cursor: 'pointer',
     textAlign: 'center',
     transition: 'all 0.3s ease',
-    fontWeight: '500'
+    fontWeight: '500',
+    fontSize: '16px',
+    color: '#333', // ✅ ИСПРАВЛЕНИЕ 1: Явно указываем цвет текста
+    minHeight: '54px', // ✅ ИСПРАВЛЕНИЕ 2: Одинаковая высота
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    boxSizing: 'border-box'
   };
 
   const optionButtonSelectedStyle = {
