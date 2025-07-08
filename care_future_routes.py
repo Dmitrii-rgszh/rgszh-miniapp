@@ -1,4 +1,4 @@
-# care_future_routes.py - API endpoints для калькулятора НСЖ "Забота о будущем Ультра"
+# care_future_routes.py - ИСПРАВЛЕННАЯ ВЕРСИЯ с правильной обработкой JSON
 
 import os
 import logging
@@ -22,10 +22,48 @@ logger = logging.getLogger("care_future_routes")
 care_future_bp = Blueprint('care_future', __name__, url_prefix='/api/care-future')
 
 # =============================================================================
+# ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
+# =============================================================================
+
+def safe_get_json():
+    """Безопасное получение JSON из запроса с правильной обработкой ошибок"""
+    try:
+        # Проверяем Content-Type
+        content_type = request.content_type
+        logger.info(f"📋 Content-Type: {content_type}")
+        
+        if not content_type or 'application/json' not in content_type:
+            logger.error(f"❌ Неверный Content-Type: {content_type}")
+            return None, "Content-Type должен быть application/json"
+        
+        # Проверяем наличие данных
+        if not request.data:
+            logger.error("❌ Пустое тело запроса")
+            return None, "Пустое тело запроса"
+        
+        # Пытаемся распарсить JSON
+        try:
+            data = request.get_json(force=True)
+            if data is None:
+                logger.error("❌ Невозможно распарсить JSON")
+                return None, "Невозможно распарсить JSON данные"
+            
+            logger.info(f"📥 JSON успешно распарсен: {list(data.keys()) if isinstance(data, dict) else type(data)}")
+            return data, None
+            
+        except Exception as json_error:
+            logger.error(f"❌ Ошибка парсинга JSON: {json_error}")
+            return None, f"Ошибка парсинга JSON: {str(json_error)}"
+            
+    except Exception as e:
+        logger.error(f"❌ Общая ошибка получения JSON: {e}")
+        return None, f"Ошибка обработки запроса: {str(e)}"
+
+# =============================================================================
 # ОСНОВНЫЕ API ENDPOINTS
 # =============================================================================
 
-@care_future_bp.route('/calculate', methods=['POST'])
+@care_future_bp.route('/calculate', methods=['POST', 'OPTIONS'])
 def calculate_insurance():
     """
     Основной endpoint для расчета НСЖ
@@ -40,13 +78,19 @@ def calculate_insurance():
         "inputAmount": 960000
     }
     """
+    logger.info("🌐 ➜ %s %s", request.method, request.path)
+    
+    # Обработка CORS preflight
+    if request.method == "OPTIONS":
+        return '', 200
+        
     try:
-        # Получаем данные из запроса
-        data = request.get_json()
-        if not data:
+        # Безопасно получаем JSON
+        data, error = safe_get_json()
+        if error:
             return jsonify({
                 'success': False,
-                'error': 'Отсутствуют данные в запросе'
+                'error': error
             }), 400
         
         # Валидация обязательных полей
@@ -107,86 +151,32 @@ def calculate_insurance():
             'calculatedAt': datetime.now().isoformat()
         }
         
-        logger.info(f"Расчет выполнен успешно: {result.calculation_uuid}")
+        logger.info(f"✅ Расчет выполнен успешно: {result.calculation_uuid}")
         return jsonify(response_data)
         
     except ValueError as e:
-        logger.warning(f"Ошибка валидации: {e}")
+        logger.warning(f"⚠️ Ошибка валидации: {e}")
         return jsonify({
             'success': False,
             'error': str(e)
         }), 400
         
     except Exception as e:
-        logger.error(f"Ошибка расчета: {e}")
+        logger.error(f"❌ Ошибка расчета: {e}")
         return jsonify({
             'success': False,
-            'error': 'Внутренняя ошибка сервера при выполнении расчета'
+            'error': 'Внутренняя ошибка сервера'
         }), 500
-
-@care_future_bp.route('/calculation/<calculation_id>', methods=['GET'])
-def get_calculation(calculation_id: str):
-    """Получить результат расчета по ID"""
-    try:
-        calculation = NSJCalculations.find_by_uuid(calculation_id)
-        
-        if not calculation:
-            return jsonify({
-                'success': False,
-                'error': 'Расчет не найден'
-            }), 404
-        
-        # Возвращаем данные расчета
-        response_data = {
-            'success': True,
-            'calculation': calculation.to_dict(include_redemption=True)
-        }
-        
-        return jsonify(response_data)
-        
-    except Exception as e:
-        logger.error(f"Ошибка получения расчета {calculation_id}: {e}")
-        return jsonify({
-            'success': False,
-            'error': 'Ошибка получения расчета'
-        }), 500
-
-@care_future_bp.route('/calculations/by-email/<email>', methods=['GET'])
-def get_calculations_by_email(email: str):
-    """Получить историю расчетов по email"""
-    try:
-        limit = request.args.get('limit', 10, type=int)
-        calculations = NSJCalculations.find_by_email(email, limit=limit)
-        
-        response_data = {
-            'success': True,
-            'email': email,
-            'count': len(calculations),
-            'calculations': [calc.to_dict(include_redemption=False) for calc in calculations]
-        }
-        
-        return jsonify(response_data)
-        
-    except Exception as e:
-        logger.error(f"Ошибка получения расчетов для {email}: {e}")
-        return jsonify({
-            'success': False,
-            'error': 'Ошибка получения истории расчетов'
-        }), 500
-
-# =============================================================================
-# ВСПОМОГАТЕЛЬНЫЕ ENDPOINTS
-# =============================================================================
 
 @care_future_bp.route('/config', methods=['GET'])
-def get_calculator_config():
-    """Получить конфигурацию калькулятора"""
+def get_config():
+    """Получение конфигурации калькулятора"""
     try:
-        config = NSJDataManager.get_calculator_info()
+        config_data = NSJDataManager.get_calculator_info()
         
         response_data = {
             'success': True,
-            'config': config
+            'config': config_data
         }
         
         return jsonify(response_data)
@@ -198,12 +188,25 @@ def get_calculator_config():
             'error': 'Ошибка получения конфигурации'
         }), 500
 
-@care_future_bp.route('/validate-age', methods=['POST'])
+@care_future_bp.route('/validate-age', methods=['POST', 'OPTIONS'])
 def validate_age():
     """Валидация возраста для расчета"""
+    logger.info("🌐 ➜ %s %s", request.method, request.path)
+    
+    # Обработка CORS preflight
+    if request.method == "OPTIONS":
+        return '', 200
+        
     try:
-        data = request.get_json()
-        if not data or 'birthDate' not in data:
+        # Безопасно получаем JSON
+        data, error = safe_get_json()
+        if error:
+            return jsonify({
+                'success': False,
+                'error': error
+            }), 400
+        
+        if 'birthDate' not in data:
             return jsonify({
                 'success': False,
                 'error': 'Не указана дата рождения'
@@ -237,60 +240,72 @@ def validate_age():
         if not is_valid:
             response_data['message'] = f"Возраст должен быть от {age_limits['min_age']} до {age_limits['max_age']} лет"
         
+        logger.info(f"✅ Валидация возраста: {age} лет, валиден: {is_valid}")
         return jsonify(response_data)
         
     except Exception as e:
-        logger.error(f"Ошибка валидации возраста: {e}")
+        logger.error(f"❌ Ошибка валидации возраста: {e}")
         return jsonify({
             'success': False,
             'error': 'Ошибка валидации возраста'
         }), 500
 
-@care_future_bp.route('/validate-amount', methods=['POST'])
+@care_future_bp.route('/validate-amount', methods=['POST', 'OPTIONS'])
 def validate_amount():
     """Валидация суммы для расчета"""
+    logger.info("🌐 ➜ %s %s", request.method, request.path)
+    
+    # Обработка CORS preflight
+    if request.method == "OPTIONS":
+        return '', 200
+        
     try:
-        data = request.get_json()
-        if not data or 'amount' not in data or 'type' not in data:
+        # Безопасно получаем JSON
+        data, error = safe_get_json()
+        if error:
             return jsonify({
                 'success': False,
-                'error': 'Не указана сумма или тип'
+                'error': error
+            }), 400
+        
+        if 'amount' not in data or 'type' not in data:
+            return jsonify({
+                'success': False,
+                'error': 'Не указана сумма или тип валидации'
             }), 400
         
         amount = int(data['amount'])
-        amount_type = data['type']  # 'premium' или 'sum'
+        validation_type = data['type']  # 'premium' или 'insurance_sum'
         
         # Получаем лимиты
-        limits = NSJDataManager.get_amount_limits()
+        amount_limits = NSJDataManager.get_amount_ranges()
         
-        if amount_type == 'premium':
-            min_amount = limits['min_premium']
-            max_amount = limits['max_premium']
-        elif amount_type == 'sum':
-            min_amount = limits['min_insurance_sum']
-            max_amount = limits['max_insurance_sum']
+        if validation_type == 'premium':
+            min_amount = amount_limits['min_premium']
+            max_amount = amount_limits['max_premium']
+            amount_name = 'страхового взноса'
         else:
-            return jsonify({
-                'success': False,
-                'error': 'Неверный тип суммы'
-            }), 400
+            min_amount = amount_limits['min_insurance_sum']
+            max_amount = amount_limits['max_insurance_sum']
+            amount_name = 'страховой суммы'
         
         is_valid = min_amount <= amount <= max_amount
         
         response_data = {
             'success': True,
             'amount': amount,
-            'type': amount_type,
             'isValid': is_valid,
             'limits': {
                 'min': min_amount,
-                'max': max_amount
+                'max': max_amount,
+                'type': validation_type
             }
         }
         
         if not is_valid:
-            response_data['message'] = f"Сумма должна быть от {min_amount:,} до {max_amount:,} рублей"
+            response_data['message'] = f"Сумма {amount_name} должна быть от {min_amount:,} до {max_amount:,} рублей"
         
+        logger.info(f"✅ Валидация суммы: {amount:,} руб., тип: {validation_type}, валиден: {is_valid}")
         return jsonify(response_data)
         
     except ValueError:
@@ -299,29 +314,95 @@ def validate_amount():
             'error': 'Неверный формат суммы'
         }), 400
     except Exception as e:
-        logger.error(f"Ошибка валидации суммы: {e}")
+        logger.error(f"❌ Ошибка валидации суммы: {e}")
         return jsonify({
             'success': False,
             'error': 'Ошибка валидации суммы'
         }), 500
 
-@care_future_bp.route('/redemption-preview', methods=['POST'])
-def get_redemption_preview():
-    """Предварительный расчет выкупных сумм"""
+# =============================================================================
+# ДОПОЛНИТЕЛЬНЫЕ ENDPOINTS
+# =============================================================================
+
+@care_future_bp.route('/calculation/<uuid:calculation_id>', methods=['GET'])
+def get_calculation(calculation_id):
+    """Получение расчета по ID"""
     try:
-        data = request.get_json()
-        if not data or 'contractTerm' not in data or 'premiumAmount' not in data:
+        calculation = NSJCalculations.query.filter_by(
+            calculation_uuid=str(calculation_id)
+        ).first()
+        
+        if not calculation:
             return jsonify({
                 'success': False,
-                'error': 'Не указаны срок договора или размер взноса'
+                'error': 'Расчет не найден'
+            }), 404
+        
+        response_data = {
+            'success': True,
+            'calculation': calculation.to_dict()
+        }
+        
+        return jsonify(response_data)
+        
+    except Exception as e:
+        logger.error(f"Ошибка получения расчета: {e}")
+        return jsonify({
+            'success': False,
+            'error': 'Ошибка получения расчета'
+        }), 500
+
+@care_future_bp.route('/calculations/by-email/<email>', methods=['GET'])
+def get_calculations_by_email(email):
+    """Получение истории расчетов по email"""
+    try:
+        limit = request.args.get('limit', 10, type=int)
+        
+        calculations = NSJCalculations.query.filter_by(
+            email=email
+        ).order_by(NSJCalculations.created_at.desc()).limit(limit).all()
+        
+        response_data = {
+            'success': True,
+            'calculations': [calc.to_dict() for calc in calculations],
+            'count': len(calculations)
+        }
+        
+        return jsonify(response_data)
+        
+    except Exception as e:
+        logger.error(f"Ошибка получения истории расчетов: {e}")
+        return jsonify({
+            'success': False,
+            'error': 'Ошибка получения истории расчетов'
+        }), 500
+
+@care_future_bp.route('/redemption-preview', methods=['POST', 'OPTIONS'])
+def get_redemption_preview():
+    """Предварительный расчет выкупных сумм"""
+    logger.info("🌐 ➜ %s %s", request.method, request.path)
+    
+    # Обработка CORS preflight
+    if request.method == "OPTIONS":
+        return '', 200
+        
+    try:
+        # Безопасно получаем JSON
+        data, error = safe_get_json()
+        if error:
+            return jsonify({
+                'success': False,
+                'error': error
             }), 400
         
         contract_term = int(data['contractTerm'])
         premium_amount = int(data['premiumAmount'])
         
-        # Получаем коэффициенты выкупа
-        redemption_rates = NSJRedemptionRates.get_all_for_term(contract_term)
-        
+        # Проверяем, что есть коэффициенты выкупа для этого срока
+        redemption_rates = NSJRedemptionRates.query.filter_by(
+            contract_term=contract_term
+        ).all()
+       
         if not redemption_rates:
             return jsonify({
                 'success': False,
@@ -394,9 +475,15 @@ def get_system_status():
             'error': 'Ошибка получения статуса системы'
         }), 500
 
-@care_future_bp.route('/admin/test-calculation', methods=['POST'])
+@care_future_bp.route('/admin/test-calculation', methods=['POST', 'OPTIONS'])
 def test_calculation():
     """Тестовый расчет для проверки системы"""
+    logger.info("🌐 ➜ %s %s", request.method, request.path)
+    
+    # Обработка CORS preflight
+    if request.method == "OPTIONS":
+        return '', 200
+        
     try:
         # Тестовые данные
         test_data = {
@@ -409,23 +496,29 @@ def test_calculation():
         }
         
         # Переопределяем данные из запроса, если они есть
-        if request.get_json():
-            test_data.update(request.get_json())
+        if request.content_length and request.content_length > 0:
+            data, error = safe_get_json()
+            if not error and data:
+                test_data.update(data)
         
-        # Выполняем тестовый расчет через основной endpoint
-        with current_app.test_request_context('/api/care-future/calculate', 
-                                            json=test_data, 
-                                            method='POST'):
-            from flask import request as test_request
+        # Выполняем тестовый расчет
+        logger.info(f"🧪 Выполняем тестовый расчет с данными: {test_data}")
+        
+        # Создаем тестовый запрос
+        with current_app.test_request_context(
+            '/api/care-future/calculate',
+            json=test_data,
+            method='POST',
+            content_type='application/json'
+        ):
             response = calculate_insurance()
-            
-        return response
+            return response
         
     except Exception as e:
-        logger.error(f"Ошибка тестового расчета: {e}")
+        logger.error(f"❌ Ошибка тестового расчета: {e}")
         return jsonify({
             'success': False,
-            'error': 'Ошибка тестового расчета'
+            'error': f'Ошибка тестового расчета: {str(e)}'
         }), 500
 
 # =============================================================================
@@ -467,20 +560,20 @@ def init_care_future_routes(app):
         # Регистрируем Blueprint
         app.register_blueprint(care_future_bp)
         
-        logger.info("Care Future routes зарегистрированы успешно")
+        logger.info("✅ Care Future routes зарегистрированы успешно")
         
         # Проверяем готовность системы
         with app.app_context():
             validation = NSJDataManager.validate_database()
             if validation['status'] == 'error':
-                logger.error(f"Ошибки в БД калькулятора: {validation['errors']}")
+                logger.error(f"❌ Ошибки в БД калькулятора: {validation['errors']}")
             else:
-                logger.info(f"Калькулятор НСЖ готов к работе: {validation['stats']}")
+                logger.info(f"✅ Калькулятор НСЖ готов к работе: {validation['stats']}")
         
         return True
         
     except Exception as e:
-        logger.error(f"Ошибка инициализации Care Future routes: {e}")
+        logger.error(f"❌ Ошибка инициализации Care Future routes: {e}")
         return False
 
 if __name__ == "__main__":

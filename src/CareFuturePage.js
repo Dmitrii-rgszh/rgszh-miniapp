@@ -1,18 +1,9 @@
-// CareFuturePage.js - Полная финальная версия с API интеграцией
+// CareFuturePage.js - ИСПРАВЛЕННАЯ ВЕРСИЯ с правильным синтаксисом
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-// Импортируем стили
-import './Styles/global.css';
-import './Styles/background.css';
-import './Styles/logo.css';
-import './Styles/Buttons.css';
-import './Styles/NextButton.css';
-import './Styles/BackButton.css';
-import './CareFuturePage.css';
-
-// Импортируем изображения
+// Импортируем только изображения
 import logoImage from './components/logo.png';
 import backgroundImage from './components/background.png';
 import piImage from './components/pi.png';
@@ -27,14 +18,14 @@ export default function CareFuturePage() {
   const [moveDuration] = useState('70s');
   const [rotateDuration] = useState('6s');
 
-  // Стадии
+  // Стадии: 'email' → 'form' → 'processing' → 'result' → 'manager' → 'manager-sent'
   const [stage, setStage] = useState('email');
 
-  // Email
+  // ===== Состояния для Email-шага =====
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState('');
 
-  // Форма расчёта
+  // ===== Состояния для формы расчёта =====
   const [birthParts, setBirthParts] = useState({ day: null, month: null, year: null });
   const [birthDate, setBirthDate] = useState(null);
   const [gender, setGender] = useState(null);
@@ -43,21 +34,398 @@ export default function CareFuturePage() {
   const [amountRaw, setAmountRaw] = useState('');
   const [amountDisplay, setAmountDisplay] = useState('');
 
-  // Результаты
+  // ===== Состояния Processing/Result =====
   const [resultData, setResultData] = useState(null);
   const [carouselIndex, setCarouselIndex] = useState(0);
   const [calculationId, setCalculationId] = useState(null);
 
-  // Менеджер
+  // ===== Состояния для «Связаться с менеджером» =====
   const [mgrSurname, setMgrSurname] = useState('');
   const [mgrName, setMgrName] = useState('');
   const [mgrCity, setMgrCity] = useState('');
   const [mgrError, setMgrError] = useState('');
   const [isSendingMgr, setIsSendingMgr] = useState(false);
 
-  // API
+  // ===== API и валидация =====
   const [apiConfig, setApiConfig] = useState(null);
   const [validationErrors, setValidationErrors] = useState({});
+
+  // ===== СТИЛИ =====
+  
+  // Основной контейнер
+  const mainContainerStyle = {
+    position: 'relative',
+    width: '100%',
+    height: '100vh',
+    backgroundImage: `url(${backgroundImage})`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundRepeat: 'no-repeat',
+    overflow: 'hidden',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+  };
+
+  // Оверлей с градиентом
+  const overlayStyle = {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    background: 'linear-gradient(135deg, rgba(147, 39, 143, 0.85) 0%, rgba(71, 125, 191, 0.85) 100%)',
+    zIndex: 1
+  };
+
+  // Логотип
+  const logoStyle = {
+    position: 'absolute',
+    top: logoAnimated ? '80px' : '-200px',
+    left: '50%',
+    transform: 'translateX(-50%)',
+    width: '160px',
+    height: '160px',
+    backgroundColor: 'rgba(255, 255, 255, 0.10)',
+    backdropFilter: 'blur(8px)',
+    borderRadius: '20px',
+    boxShadow: '0 10px 25px rgba(0, 0, 0, 0.25)',
+    opacity: logoAnimated ? 1 : 0,
+    zIndex: 3,
+    transition: 'all 0.8s ease-out',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
+  };
+
+  const logoImageStyle = {
+    width: '120px',
+    height: '120px',
+    objectFit: 'contain'
+  };
+
+  // Контейнер кнопок/контента - ПОДНИМАЕМ К ЛОГОТИПУ
+  const buttonsContainerStyle = {
+    position: 'absolute',
+    top: buttonsAnimated ? '280px' : '500px',
+    left: '50%',
+    transform: 'translateX(-50%)',
+    width: '90%',
+    maxWidth: '400px',
+    zIndex: 3,
+    textAlign: 'center',
+    opacity: buttonsAnimated ? 1 : 0,
+    transition: 'all 0.8s ease-out'
+  };
+
+  // Форма в центре экрана
+  const formContainerStyle = {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: '90%',
+    maxWidth: '500px',
+    maxHeight: '80vh',
+    overflowY: 'auto',
+    zIndex: 3,
+    background: 'rgba(255, 255, 255, 0.95)',
+    borderRadius: '16px',
+    padding: '30px',
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+    backdropFilter: 'blur(10px)',
+    border: '1px solid rgba(255, 255, 255, 0.2)'
+  };
+
+  // Заголовки - УБИРАЕМ ЛИШНИЙ ОТСТУП
+  const titleStyle = {
+    fontSize: '28px',
+    fontWeight: 'bold',
+    color: 'white',
+    margin: '0 0 15px 0',
+    textShadow: '2px 2px 4px rgba(0, 0, 0, 0.3)',
+    lineHeight: '1.2'
+  };
+
+  const subtitleStyle = {
+    fontSize: '16px',
+    color: 'rgba(255, 255, 255, 0.9)',
+    margin: '0 0 30px 0',
+    textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)',
+    lineHeight: '1.4'
+  };
+
+  const formTitleStyle = {
+    fontSize: '24px',
+    fontWeight: 'bold',
+    color: '#333',
+    margin: '0 0 20px 0',
+    textAlign: 'center'
+  };
+
+  // Email форма
+  const emailFormStyle = {
+    background: 'rgba(255, 255, 255, 0.95)',
+    borderRadius: '16px',
+    padding: '30px',
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+    backdropFilter: 'blur(10px)',
+    border: '1px solid rgba(255, 255, 255, 0.2)'
+  };
+
+  // Инпуты
+  const inputStyle = {
+    width: '100%',
+    padding: '15px',
+    fontSize: '16px',
+    borderRadius: '8px',
+    border: '2px solid #e1e5e9',
+    marginBottom: '10px',
+    outline: 'none',
+    transition: 'border-color 0.3s ease',
+    boxSizing: 'border-box'
+  };
+
+  const inputErrorStyle = {
+    ...inputStyle,
+    borderColor: '#ff4757'
+  };
+
+  // Кнопки
+  const primaryButtonStyle = {
+    background: 'linear-gradient(135deg, #9370DB 0%, #6A5ACD 100%)',
+    color: 'white',
+    border: 'none',
+    padding: '15px 30px',
+    borderRadius: '8px',
+    fontSize: '16px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.3s ease',
+    width: '100%',
+    marginTop: '15px'
+  };
+
+  const secondaryButtonStyle = {
+    background: 'transparent',
+    color: '#9370DB',
+    border: '2px solid #9370DB',
+    padding: '12px 24px',
+    borderRadius: '8px',
+    fontSize: '16px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.3s ease',
+    marginRight: '10px'
+  };
+
+  const disabledButtonStyle = {
+    ...primaryButtonStyle,
+    opacity: 0.6,
+    cursor: 'not-allowed'
+  };
+
+  // Группы форм
+  const formGroupStyle = {
+    marginBottom: '20px'
+  };
+
+  const labelStyle = {
+    display: 'block',
+    marginBottom: '8px',
+    fontWeight: '600',
+    color: '#333',
+    fontSize: '14px'
+  };
+
+  // Опции (радио-кнопки)
+  const optionGroupStyle = {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    gap: '12px',
+    marginBottom: '20px'
+  };
+
+  const optionButtonStyle = {
+    padding: '15px',
+    border: '2px solid #e1e5e9',
+    borderRadius: '8px',
+    background: 'white',
+    cursor: 'pointer',
+    textAlign: 'center',
+    transition: 'all 0.3s ease',
+    fontWeight: '500'
+  };
+
+  const optionButtonSelectedStyle = {
+    ...optionButtonStyle,
+    borderColor: '#9370DB',
+    background: 'rgba(147, 112, 219, 0.1)',
+    color: '#9370DB',
+    fontWeight: '600'
+  };
+
+  // Группа кнопок
+  const buttonGroupStyle = {
+    display: 'flex',
+    justifyContent: 'space-between',
+    gap: '15px',
+    marginTop: '25px'
+  };
+
+  // Ошибки
+  const errorMessageStyle = {
+    background: '#ff4757',
+    color: 'white',
+    padding: '12px 16px',
+    borderRadius: '8px',
+    marginBottom: '15px',
+    fontSize: '14px',
+    textAlign: 'center'
+  };
+
+  // Результаты
+  const resultsContainerStyle = {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: '90%',
+    maxWidth: '600px',
+    zIndex: 3
+  };
+
+  const resultCardStyle = {
+    background: 'rgba(255, 255, 255, 0.95)',
+    borderRadius: '16px',
+    padding: '30px',
+    marginBottom: '20px',
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+    backdropFilter: 'blur(10px)',
+    border: '1px solid rgba(255, 255, 255, 0.2)'
+  };
+
+  const resultItemStyle = {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '12px 0',
+    borderBottom: '1px solid #f0f0f0'
+  };
+
+  const resultLabelStyle = {
+    fontWeight: '500',
+    color: '#666'
+  };
+
+  const resultValueStyle = {
+    fontWeight: '600',
+    color: '#333',
+    fontSize: '16px'
+  };
+
+  const resultValueHighlightStyle = {
+    ...resultValueStyle,
+    color: '#9370DB',
+    fontSize: '18px'
+  };
+
+  // Процессинг
+  const processingContainerStyle = {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    textAlign: 'center',
+    zIndex: 3
+  };
+
+  const spinnerStyle = {
+    width: '60px',
+    height: '60px',
+    border: '4px solid rgba(255, 255, 255, 0.3)',
+    borderTop: '4px solid white',
+    borderRadius: '50%',
+    animation: 'spin 1s linear infinite',
+    margin: '0 auto 20px'
+  };
+
+  const processingTextStyle = {
+    color: 'white',
+    fontSize: '18px',
+    marginBottom: '10px'
+  };
+
+  const processingSubtextStyle = {
+    color: 'rgba(255, 255, 255, 0.8)',
+    fontSize: '14px'
+  };
+
+  // Успех
+  const successMessageStyle = {
+    textAlign: 'center',
+    color: 'white',
+    zIndex: 3,
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: '90%',
+    maxWidth: '500px'
+  };
+
+  const successIconStyle = {
+    fontSize: '64px',
+    color: '#2ecc71',
+    marginBottom: '20px'
+  };
+
+  const contactInfoStyle = {
+    background: 'rgba(255, 255, 255, 0.95)',
+    borderRadius: '12px',
+    padding: '20px',
+    margin: '20px 0',
+    color: '#333',
+    textAlign: 'left'
+  };
+
+  // Точки фона
+  const dotStyle = (index) => ({
+    position: 'absolute',
+    width: '8px',
+    height: '8px',
+    borderRadius: '50%',
+    background: 'rgba(255, 255, 255, 0.2)',
+    ...(index === 1 && { top: '10%', left: '10%' }),
+    ...(index === 2 && { top: '20%', right: '15%' }),
+    ...(index === 3 && { top: '30%', left: '25%' }),
+    ...(index === 4 && { bottom: '15%', left: '15%' }),
+    ...(index === 5 && { top: '5%', right: '20%' }),
+    ...(index === 6 && { bottom: '25%', right: '10%' }),
+    ...(index === 7 && { top: '45%', left: '5%' }),
+    ...(index === 8 && { bottom: '5%', right: '30%' }),
+    ...(index === 9 && { top: '60%', right: '25%' }),
+    ...(index === 10 && { bottom: '40%', left: '30%' })
+  });
+
+  // Pi элемент - НОВАЯ АНИМАЦИЯ ПОЛЕТА ПО ЭКРАНУ
+  const piWrapperStyle = {
+    position: 'absolute',
+    top: '0',
+    left: '0',
+    zIndex: 2,
+    opacity: 0.4,
+    animation: `piFloatAround ${moveDuration} ease-in-out infinite`
+  };
+
+  const piImageStyle = {
+    width: '40px',
+    height: '40px',
+    opacity: 0.8,
+    animation: `piRotate ${rotateDuration} linear infinite`
+  };
 
   // ===== HELPERS =====
 
@@ -66,7 +434,12 @@ export default function CareFuturePage() {
     if (day && month && year) {
       const d = Number(day), m = Number(month), y = Number(year);
       const dt = new Date(y, m - 1, d);
-      if (!isNaN(dt.getTime()) && dt.getDate() === d && dt.getMonth() + 1 === m && dt.getFullYear() === y) {
+      if (
+        !isNaN(dt.getTime()) &&
+        dt.getDate() === d &&
+        dt.getMonth() + 1 === m &&
+        dt.getFullYear() === y
+      ) {
         setBirthDate(dt);
       } else {
         setBirthDate(null);
@@ -78,9 +451,6 @@ export default function CareFuturePage() {
 
   useEffect(() => {
     loadApiConfig();
-  }, []);
-
-  useEffect(() => {
     const timer1 = setTimeout(() => setLogoAnimated(true), 100);
     const timer2 = setTimeout(() => setButtonsAnimated(true), 600);
     return () => {
@@ -100,7 +470,7 @@ export default function CareFuturePage() {
     return str.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
   }
 
-  // ===== API =====
+  // ===== API ФУНКЦИИ =====
 
   async function loadApiConfig() {
     try {
@@ -154,7 +524,7 @@ export default function CareFuturePage() {
     }
   }
 
-  // ===== HANDLERS =====
+  // ===== ОБРАБОТЧИКИ СОБЫТИЙ =====
 
   function validateEmail(value) {
     if (!value.trim()) return 'Введите email';
@@ -222,16 +592,35 @@ export default function CareFuturePage() {
     setMgrError('');
 
     try {
-      const response = await fetch('/api/contact-manager', {
+      const response = await fetch('/api/proxy/carefuture/send_manager', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          surname: mgrSurname,
-          name: mgrName,
-          city: mgrCity,
-          email: email,
-          calculationId: calculationId,
-          page: 'care-future'
+          subject: 'Заявка на консультацию - Калькулятор НСЖ',
+          body: `
+Новая заявка на консультацию по программе "Забота о будущем Ультра":
+
+👤 Контактные данные:
+• Фамилия: ${mgrSurname}
+• Имя: ${mgrName}  
+• Город: ${mgrCity}
+• Email: ${email}
+
+📊 Параметры расчета:
+• Возраст: ${resultData?.inputParams?.age || 'Не указан'}
+• Пол: ${resultData?.inputParams?.gender || 'Не указан'}
+• Срок программы: ${resultData?.inputParams?.term || 'Не указан'} лет
+
+💰 Результаты расчета:
+• Страховой взнос: ${resultData?.results?.premiumAmount ? formatSum(resultData.results.premiumAmount.toString()) + ' руб.' : 'Не рассчитан'}
+• Страховая сумма: ${resultData?.results?.insuranceSum ? formatSum(resultData.results.insuranceSum.toString()) + ' руб.' : 'Не рассчитана'}
+• Накопленный капитал: ${resultData?.results?.accumulatedCapital ? formatSum(resultData.results.accumulatedCapital.toString()) + ' руб.' : 'Не рассчитан'}
+• Доход по программе: ${resultData?.results?.programIncome ? formatSum(resultData.results.programIncome.toString()) + ' руб.' : 'Не рассчитан'}
+
+🆔 ID расчета: ${calculationId || 'Отсутствует'}
+
+Отправлено через калькулятор НСЖ на сайте.
+          `
         })
       });
 
@@ -247,40 +636,122 @@ export default function CareFuturePage() {
     }
   }
 
-  // ===== STYLES =====
-  const logoClass = logoAnimated ? 'logo-container logo-animated' : 'logo-container';
-  const buttonsClass = buttonsAnimated ? 'buttons-container buttons-animated' : 'buttons-container';
+  function handleAmountChange(value) {
+    const cleanValue = value.replace(/[^\d]/g, '');
+    setAmountRaw(cleanValue);
+    setAmountDisplay(formatSum(cleanValue));
+  }
 
-  // ===== RENDER =====
+  // ===== РЕНДЕРИНГ =====
 
+  // CSS анимации в стиле - ДОБАВЛЯЕМ НОВЫЕ АНИМАЦИИ ДЛЯ PI
+  const animations = (
+    <style>
+      {`
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes piRotate {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes piFloatAround {
+          0% { 
+            left: 10%; 
+            top: 10%; 
+            transform: scale(1); 
+          }
+          12.5% { 
+            left: 80%; 
+            top: 15%; 
+            transform: scale(1.2); 
+          }
+          25% { 
+            left: 85%; 
+            top: 40%; 
+            transform: scale(0.8); 
+          }
+          37.5% { 
+            left: 70%; 
+            top: 70%; 
+            transform: scale(1.1); 
+          }
+          50% { 
+            left: 40%; 
+            top: 80%; 
+            transform: scale(0.9); 
+          }
+          62.5% { 
+            left: 15%; 
+            top: 75%; 
+            transform: scale(1.3); 
+          }
+          75% { 
+            left: 5%; 
+            top: 50%; 
+            transform: scale(0.7); 
+          }
+          87.5% { 
+            left: 20%; 
+            top: 25%; 
+            transform: scale(1.1); 
+          }
+          100% { 
+            left: 10%; 
+            top: 10%; 
+            transform: scale(1); 
+          }
+        }
+      `}
+    </style>
+  );
+
+  // Страница ввода email
   if (stage === 'email') {
     return (
-      <div className="mainmenu-container" style={{ backgroundImage: `url(${backgroundImage})` }}>
-        {[1,2,3,4,5,6,7,8,9,10].map(n => <div key={n} className={`subtle-dot dot-${n}`} />)}
-        <div className="pi-wrapper" style={{ '--pi-move-duration': moveDuration }}>
-          <img src={piImage} className="pi-fly" alt="Pi" style={{ '--pi-rotate-duration': rotateDuration }} />
+      <div style={mainContainerStyle}>
+        {animations}
+        
+        {/* Фоновые точки */}
+        {[1,2,3,4,5,6,7,8,9,10].map(n => (
+          <div key={n} style={dotStyle(n)} />
+        ))}
+        
+        {/* Pi элемент - НОВАЯ АНИМАЦИЯ */}
+        <div style={piWrapperStyle}>
+          <img src={piImage} style={piImageStyle} alt="Pi" />
         </div>
-        <div className="mainmenu-overlay" />
-        <div className={logoClass}>
-          <img src={logoImage} alt="Логотип РГС Жизнь" className="logo-image" />
+        
+        <div style={overlayStyle} />
+        
+        {/* Логотип */}
+        <div style={logoStyle}>
+          <img src={logoImage} alt="Логотип РГС Жизнь" style={logoImageStyle} />
         </div>
-        <div className={buttonsClass}>
-          <h2 className="page-title">Калькулятор НСЖ<br />«Забота о будущем Ультра»</h2>
-          <p className="page-subtitle">Рассчитайте персональные условия накопительного страхования жизни</p>
-          <div className="email-form">
+        
+        {/* Контент */}
+        <div style={buttonsContainerStyle}>
+          <h2 style={titleStyle}>
+            Калькулятор НСЖ<br />
+            «Забота о будущем Ультра»
+          </h2>
+          <p style={subtitleStyle}>
+            Рассчитайте персональные условия накопительного страхования жизни
+          </p>
+          
+          <div style={emailFormStyle}>
             <input
               type="email"
               placeholder="Введите ваш email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              style={{
-                width: '100%', padding: '15px', fontSize: '16px', borderRadius: '8px',
-                border: emailError ? '2px solid #ff4444' : '1px solid #ccc',
-                marginBottom: '10px', outline: 'none'
-              }}
+              style={emailError ? inputErrorStyle : inputStyle}
             />
-            {emailError && <div className="error-message">{emailError}</div>}
-            <button className="next-button" onClick={handleEmailSubmit} style={{ width: '100%', marginTop: '15px' }}>
+            {emailError && <div style={errorMessageStyle}>{emailError}</div>}
+            <button style={primaryButtonStyle} onClick={handleEmailSubmit}>
               Продолжить
             </button>
           </div>
@@ -289,100 +760,131 @@ export default function CareFuturePage() {
     );
   }
 
+  // Форма параметров расчета
   if (stage === 'form') {
     return (
-      <div className="mainmenu-container" style={{ backgroundImage: `url(${backgroundImage})` }}>
-        {[1,2,3,4,5,6,7,8,9,10].map(n => <div key={n} className={`subtle-dot dot-${n}`} />)}
-        <div className="pi-wrapper" style={{ '--pi-move-duration': moveDuration }}>
-          <img src={piImage} className="pi-fly" alt="Pi" style={{ '--pi-rotate-duration': rotateDuration }} />
-        </div>
-        <div className="mainmenu-overlay" />
-        <div className={logoClass}>
-          <img src={logoImage} alt="Логотип РГС Жизнь" className="logo-image" />
+      <div style={mainContainerStyle}>
+        {animations}
+        
+        {[1,2,3,4,5,6,7,8,9,10].map(n => (
+          <div key={n} style={dotStyle(n)} />
+        ))}
+        
+        <div style={piWrapperStyle}>
+          <img src={piImage} style={piImageStyle} alt="Pi" />
         </div>
         
-        <div className="form-container">
-          <h2 className="page-title">Параметры расчёта</h2>
+        <div style={overlayStyle} />
+        
+        <div style={logoStyle}>
+          <img src={logoImage} alt="Логотип РГС Жизнь" style={logoImageStyle} />
+        </div>
+        
+        <div style={formContainerStyle}>
+          <h2 style={formTitleStyle}>Параметры расчёта</h2>
           
           {validationErrors.general && (
-            <div className="error-message" style={{ marginBottom: '20px', textAlign: 'center' }}>
-              {validationErrors.general}
-            </div>
+            <div style={errorMessageStyle}>{validationErrors.general}</div>
           )}
-
-          <div className="form-group">
-            <label>Дата рождения</label>
-            <DateWheelPicker value={birthParts} onChange={setBirthParts} />
-            {validationErrors.birthDate && <div className="error-message">{validationErrors.birthDate}</div>}
-            {birthDate && <div className="info-message">Возраст: {getAge(birthDate)} лет</div>}
+          
+          {/* Дата рождения */}
+          <div style={formGroupStyle}>
+            <label style={labelStyle}>Дата рождения</label>
+            <DateWheelPicker
+              onChange={(parts) => setBirthParts(parts)}
+              initialDay={birthParts.day}
+              initialMonth={birthParts.month}
+              initialYear={birthParts.year}
+            />
+            {validationErrors.birthDate && (
+              <div style={errorMessageStyle}>{validationErrors.birthDate}</div>
+            )}
           </div>
 
-          <div className="form-group">
-            <label>Пол</label>
-            <div className="radio-group">
-              {['мужской', 'женский'].map(option => (
-                <label key={option} className="radio-label">
-                  <input type="radio" name="gender" value={option} checked={gender === option} onChange={(e) => setGender(e.target.value)} />
-                  <span className="radio-custom"></span>
-                  {option}
-                </label>
-              ))}
+          {/* Пол */}
+          <div style={formGroupStyle}>
+            <label style={labelStyle}>Пол</label>
+            <div style={optionGroupStyle}>
+              <div 
+                style={gender === 'мужской' ? optionButtonSelectedStyle : optionButtonStyle}
+                onClick={() => setGender('мужской')}
+              >
+                Мужской
+              </div>
+              <div 
+                style={gender === 'женский' ? optionButtonSelectedStyle : optionButtonStyle}
+                onClick={() => setGender('женский')}
+              >
+                Женский
+              </div>
             </div>
-            {validationErrors.gender && <div className="error-message">{validationErrors.gender}</div>}
+            {validationErrors.gender && (
+              <div style={errorMessageStyle}>{validationErrors.gender}</div>
+            )}
           </div>
 
-          <div className="form-group">
-            <label>Срок программы</label>
-            <select value={programTerm} onChange={(e) => setProgramTerm(Number(e.target.value))} style={{ width: '100%', padding: '12px', fontSize: '16px', border: '1px solid #ccc', borderRadius: '8px' }}>
-              {(apiConfig?.available_terms || [5,6,7,8,9,10]).map(term => (
-                <option key={term} value={term}>{term} лет</option>
+          {/* Срок программы */}
+          <div style={formGroupStyle}>
+            <label style={labelStyle}>Срок программы (лет)</label>
+            <select 
+              value={programTerm} 
+              onChange={(e) => setProgramTerm(Number(e.target.value))}
+              style={inputStyle}
+            >
+              {[5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20].map(year => (
+                <option key={year} value={year}>{year} лет</option>
               ))}
             </select>
           </div>
 
-          <div className="form-group">
-            <label>Расчёт от</label>
-            <div className="radio-group">
-              <label className="radio-label">
-                <input type="radio" name="calcType" value="premium" checked={calcType === 'premium'} onChange={(e) => setCalcType(e.target.value)} />
-                <span className="radio-custom"></span>
-                Страхового взноса
-              </label>
-              <label className="radio-label">
-                <input type="radio" name="calcType" value="sum" checked={calcType === 'sum'} onChange={(e) => setCalcType(e.target.value)} />
-                <span className="radio-custom"></span>
-                Страховой суммы
-              </label>
+          {/* Тип расчета */}
+          <div style={formGroupStyle}>
+            <label style={labelStyle}>Тип расчета</label>
+            <div style={optionGroupStyle}>
+              <div 
+                style={calcType === 'premium' ? optionButtonSelectedStyle : optionButtonStyle}
+                onClick={() => setCalcType('premium')}
+              >
+                От взноса
+              </div>
+              <div 
+                style={calcType === 'sum' ? optionButtonSelectedStyle : optionButtonStyle}
+                onClick={() => setCalcType('sum')}
+              >
+                От страх. суммы
+              </div>
             </div>
-            {validationErrors.calcType && <div className="error-message">{validationErrors.calcType}</div>}
+            {validationErrors.calcType && (
+              <div style={errorMessageStyle}>{validationErrors.calcType}</div>
+            )}
           </div>
 
-          {calcType && (
-            <div className="form-group">
-              <label>{calcType === 'premium' ? 'Страховой взнос' : 'Страховая сумма'} (руб.)</label>
-              <input
-                type="text"
-                placeholder="Введите сумму"
-                value={amountDisplay}
-                onChange={(e) => {
-                  const value = e.target.value.replace(/\s/g, '');
-                  if (/^\d*$/.test(value)) {
-                    setAmountRaw(value);
-                    setAmountDisplay(formatSum(value));
-                  }
-                }}
-                style={{
-                  width: '100%', padding: '12px', fontSize: '16px', borderRadius: '8px',
-                  border: validationErrors.amount ? '2px solid #ff4444' : '1px solid #ccc', outline: 'none'
-                }}
-              />
-              {validationErrors.amount && <div className="error-message">{validationErrors.amount}</div>}
-            </div>
-          )}
+          {/* Сумма */}
+          <div style={formGroupStyle}>
+            <label style={labelStyle}>
+              {calcType === 'premium' ? 'Годовой страховой взнос (руб.)' : 'Страховая сумма (руб.)'}
+            </label>
+            <input
+              type="text"
+              placeholder={calcType === 'premium' ? 'Например: 960 000' : 'Например: 6 000 000'}
+              value={amountDisplay}
+              onChange={(e) => handleAmountChange(e.target.value)}
+              style={validationErrors.amount ? inputErrorStyle : inputStyle}
+            />
+            {validationErrors.amount && (
+              <div style={errorMessageStyle}>{validationErrors.amount}</div>
+            )}
+          </div>
 
-          <div className="button-group">
-            <button className="back-button" onClick={() => setStage('email')}>Назад</button>
-            <button className="next-button" onClick={handleCalculate} disabled={!birthDate || !gender || !calcType || !amountRaw.trim()}>
+          <div style={buttonGroupStyle}>
+            <button style={secondaryButtonStyle} onClick={() => setStage('email')}>
+              Назад
+            </button>
+            <button 
+              style={(!birthDate || !gender || !calcType || !amountRaw.trim()) ? disabledButtonStyle : primaryButtonStyle}
+              onClick={handleCalculate}
+              disabled={!birthDate || !gender || !calcType || !amountRaw.trim()}
+            >
               Рассчитать
             </button>
           </div>
@@ -391,153 +893,200 @@ export default function CareFuturePage() {
     );
   }
 
+  // Обработка расчета
   if (stage === 'processing') {
     return (
-      <div className="mainmenu-container" style={{ backgroundImage: `url(${backgroundImage})` }}>
-        {[1,2,3,4,5,6,7,8,9,10].map(n => <div key={n} className={`subtle-dot dot-${n}`} />)}
-        <div className="pi-wrapper" style={{ '--pi-move-duration': moveDuration }}>
-          <img src={piImage} className="pi-fly" alt="Pi" style={{ '--pi-rotate-duration': rotateDuration }} />
+      <div style={mainContainerStyle}>
+        {animations}
+        
+        {[1,2,3,4,5,6,7,8,9,10].map(n => (
+          <div key={n} style={dotStyle(n)} />
+        ))}
+        
+        <div style={piWrapperStyle}>
+          <img src={piImage} style={piImageStyle} alt="Pi" />
         </div>
-        <div className="mainmenu-overlay" />
-        <div className={logoClass}>
-          <img src={logoImage} alt="Логотип РГС Жизнь" className="logo-image" />
+        
+        <div style={overlayStyle} />
+        
+        <div style={logoStyle}>
+          <img src={logoImage} alt="Логотип РГС Жизнь" style={logoImageStyle} />
         </div>
-        <div className="loading-container">
-          <div className="loading-spinner"></div>
-          <h2 className="page-title">Выполняется расчет...</h2>
-          <p>Подождите, мы рассчитываем лучшие условия для вас</p>
+
+        <div style={processingContainerStyle}>
+          <div style={spinnerStyle}></div>
+          <div style={processingTextStyle}>Выполняется расчет...</div>
+          <div style={processingSubtextStyle}>Анализируем ваши параметры</div>
         </div>
       </div>
     );
   }
 
-  if (stage === 'result' && resultData) {
+  // Результаты расчета
+  if (stage === 'result') {
+    if (!resultData) {
+      return (
+        <div style={mainContainerStyle}>
+          <div style={errorMessageStyle}>Нет данных для отображения</div>
+        </div>
+      );
+    }
+
+    const carouselData = [
+      {
+        title: 'Основные результаты',
+        items: [
+          { label: 'Годовой взнос', value: `${formatSum(resultData.results.premiumAmount.toString())} руб.`, highlight: true },
+          { label: 'Страховая сумма', value: `${formatSum(resultData.results.insuranceSum.toString())} руб.`, highlight: true },
+          { label: 'Накопленный капитал', value: `${formatSum(resultData.results.accumulatedCapital.toString())} руб.` },
+          { label: 'Доход по программе', value: `${formatSum(resultData.results.programIncome.toString())} руб.` },
+          { label: 'Налоговый вычет', value: `${formatSum(resultData.results.taxDeduction.toString())} руб.` }
+        ]
+      },
+      {
+        title: 'Выкупные суммы',
+        items: resultData.redemptionValues.slice(0, 5).map(item => ({
+          label: `${item.year} год`,
+          value: `${formatSum(item.redemption_amount.toString())} руб.`
+        }))
+      }
+    ];
+
     return (
-      <div className="mainmenu-container" style={{ backgroundImage: `url(${backgroundImage})` }}>
-        {[1,2,3,4,5,6,7,8,9,10].map(n => <div key={n} className={`subtle-dot dot-${n}`} />)}
-        <div className="pi-wrapper" style={{ '--pi-move-duration': moveDuration }}>
-          <img src={piImage} className="pi-fly" alt="Pi" style={{ '--pi-rotate-duration': rotateDuration }} />
+      <div style={mainContainerStyle}>
+        {animations}
+        
+        {[1,2,3,4,5,6,7,8,9,10].map(n => (
+          <div key={n} style={dotStyle(n)} />
+        ))}
+        
+        <div style={piWrapperStyle}>
+          <img src={piImage} style={piImageStyle} alt="Pi" />
         </div>
-        <div className="mainmenu-overlay" />
-        <div className={logoClass}>
-          <img src={logoImage} alt="Логотип РГС Жизнь" className="logo-image" />
+        
+        <div style={overlayStyle} />
+        
+        <div style={logoStyle}>
+          <img src={logoImage} alt="Логотип РГС Жизнь" style={logoImageStyle} />
         </div>
 
-        <h2 className="page-title">Результаты расчёта</h2>
-        <div className="results-container">
-          <div className="params-block">
-            <h3>Параметры расчёта</h3>
-            <p>Возраст: {resultData.inputParams.age} лет</p>
-            <p>Пол: {resultData.inputParams.gender}</p>
-            <p>Срок: {resultData.inputParams.term} лет</p>
-            <p>Email: {email}</p>
+        <div style={resultsContainerStyle}>
+          <div style={resultCardStyle}>
+            <div style={formTitleStyle}>{carouselData[carouselIndex].title}</div>
+            
+            {carouselData[carouselIndex].items.map((item, idx) => (
+              <div key={idx} style={{...resultItemStyle, borderBottom: idx === carouselData[carouselIndex].items.length - 1 ? 'none' : '1px solid #f0f0f0'}}>
+                <div style={resultLabelStyle}>{item.label}</div>
+                <div style={item.highlight ? resultValueHighlightStyle : resultValueStyle}>
+                  {item.value}
+                </div>
+              </div>
+            ))}
           </div>
 
-          <div className="carousel-container">
-            <div className="carousel-indicators">
-              <span className={carouselIndex === 0 ? 'active' : ''}></span>
-              <span className={carouselIndex === 1 ? 'active' : ''}></span>
-              <span className={carouselIndex === 2 ? 'active' : ''}></span>
+          {carouselData.length > 1 && (
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginBottom: '20px' }}>
+              {carouselData.map((_, idx) => (
+                <div 
+                  key={idx}
+                  style={{
+                    width: '10px',
+                    height: '10px',
+                    borderRadius: '50%',
+                    background: carouselIndex === idx ? '#9370DB' : 'rgba(147, 112, 219, 0.3)',
+                    cursor: 'pointer',
+                    transition: 'background 0.3s ease'
+                  }}
+                  onClick={() => setCarouselIndex(idx)}
+                />
+              ))}
             </div>
+          )}
 
-            <div className="carousel-content">
-              {carouselIndex === 0 && (
-                <div className="result-card">
-                  <h3>Основные показатели</h3>
-                  <div className="result-item">
-                    <span>Страховой взнос:</span>
-                    <strong>{formatSum(resultData.results.premiumAmount.toString())} ₽</strong>
-                  </div>
-                  <div className="result-item">
-                    <span>Страховая сумма:</span>
-                    <strong>{formatSum(resultData.results.insuranceSum.toString())} ₽</strong>
-                  </div>
-                  <div className="result-item">
-                    <span>Накопленный капитал:</span>
-                    <strong>{formatSum(resultData.results.accumulatedCapital.toString())} ₽</strong>
-                  </div>
-                </div>
-              )}
-
-              {carouselIndex === 1 && (
-                <div className="result-card">
-                  <h3>Доходность программы</h3>
-                  <div className="result-item">
-                    <span>Доход по программе:</span>
-                    <strong>{formatSum(resultData.results.programIncome.toString())} ₽</strong>
-                  </div>
-                  <div className="result-item">
-                    <span>Налоговый вычет:</span>
-                    <strong>{formatSum(resultData.results.taxDeduction.toString())} ₽</strong>
-                  </div>
-                  <div className="result-item">
-                    <span>Общая выгода:</span>
-                    <strong>{formatSum((resultData.results.programIncome + resultData.results.taxDeduction).toString())} ₽</strong>
-                  </div>
-                </div>
-              )}
-
-              {carouselIndex === 2 && (
-                <div className="result-card">
-                  <h3>Выкупные суммы</h3>
-                  <div className="redemption-table">
-                    <div className="table-header">
-                      <span>Год</span>
-                      <span>Выкупная сумма</span>
-                    </div>
-                    {resultData.redemptionValues?.slice(0, 5).map((item, index) => (
-                      <div key={index} className="table-row">
-                        <span>{item.year}</span>
-                        <span>{formatSum(item.redemption_amount?.toString() || '0')} ₽</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="carousel-nav">
-              <button onClick={() => setCarouselIndex(Math.max(0, carouselIndex - 1))} disabled={carouselIndex === 0} className="carousel-btn">‹</button>
-              <button onClick={() => setCarouselIndex(Math.min(2, carouselIndex + 1))} disabled={carouselIndex === 2} className="carousel-btn">›</button>
-            </div>
-          </div>
-
-          <div className="action-buttons">
-            <button className="secondary-button" onClick={() => setStage('form')}>Новый расчёт</button>
-            <button className="primary-button" onClick={() => setStage('manager')}>Связаться с менеджером</button>
+          <div style={buttonGroupStyle}>
+            <button style={secondaryButtonStyle} onClick={() => setStage('form')}>
+              Изменить параметры
+            </button>
+            <button style={primaryButtonStyle} onClick={() => setStage('manager')}>
+              Связаться с менеджером
+            </button>
           </div>
         </div>
       </div>
     );
   }
 
+  // Форма связи с менеджером
   if (stage === 'manager') {
     return (
-      <div className="mainmenu-container" style={{ backgroundImage: `url(${backgroundImage})` }}>
-        {[1,2,3,4,5,6,7,8,9,10].map(n => <div key={n} className={`subtle-dot dot-${n}`} />)}
-        <div className="pi-wrapper" style={{ '--pi-move-duration': moveDuration }}>
-          <img src={piImage} className="pi-fly" alt="Pi" style={{ '--pi-rotate-duration': rotateDuration }} />
+      <div style={mainContainerStyle}>
+        {animations}
+        
+        {[1,2,3,4,5,6,7,8,9,10].map(n => (
+          <div key={n} style={dotStyle(n)} />
+        ))}
+        
+        <div style={piWrapperStyle}>
+          <img src={piImage} style={piImageStyle} alt="Pi" />
         </div>
-        <div className="mainmenu-overlay" />
-        <div className={logoClass}>
-          <img src={logoImage} alt="Логотип РГС Жизнь" className="logo-image" />
+        
+        <div style={overlayStyle} />
+        
+        <div style={logoStyle}>
+          <img src={logoImage} alt="Логотип РГС Жизнь" style={logoImageStyle} />
         </div>
 
-        <div className="manager-form">
-          <h2 className="page-title">Связаться с менеджером</h2>
-          <p className="page-subtitle">Наш специалист свяжется с вами для консультации</p>
+        <div style={formContainerStyle}>
+          <h2 style={formTitleStyle}>Связаться с менеджером</h2>
+          <p style={{ ...subtitleStyle, color: '#666', textShadow: 'none' }}>
+            Наш специалист свяжется с вами для консультации
+          </p>
 
-          <div className="form-group">
-            <input type="text" placeholder="Фамилия" value={mgrSurname} onChange={(e) => setMgrSurname(e.target.value)} style={{ width: '100%', padding: '15px', fontSize: '16px', borderRadius: '8px', border: '1px solid #ccc', marginBottom: '15px', outline: 'none' }} />
-            <input type="text" placeholder="Имя" value={mgrName} onChange={(e) => setMgrName(e.target.value)} style={{ width: '100%', padding: '15px', fontSize: '16px', borderRadius: '8px', border: '1px solid #ccc', marginBottom: '15px', outline: 'none' }} />
-            <input type="text" placeholder="Город" value={mgrCity} onChange={(e) => setMgrCity(e.target.value)} style={{ width: '100%', padding: '15px', fontSize: '16px', borderRadius: '8px', border: '1px solid #ccc', marginBottom: '15px', outline: 'none' }} />
+          <div style={formGroupStyle}>
+            <input 
+              type="text" 
+              placeholder="Фамилия" 
+              value={mgrSurname} 
+              onChange={(e) => setMgrSurname(e.target.value)}
+              style={inputStyle}
+            />
+          </div>
+          
+          <div style={formGroupStyle}>
+            <input 
+              type="text" 
+              placeholder="Имя" 
+              value={mgrName} 
+              onChange={(e) => setMgrName(e.target.value)}
+              style={inputStyle}
+            />
+          </div>
+          
+          <div style={formGroupStyle}>
+            <input 
+              type="text" 
+              placeholder="Город" 
+              value={mgrCity} 
+              onChange={(e) => setMgrCity(e.target.value)}
+              style={inputStyle}
+            />
           </div>
 
-          {mgrError && <div className="error-message">{mgrError}</div>}
+          {mgrError && <div style={errorMessageStyle}>{mgrError}</div>}
 
-          <div className="button-group">
-            <button className="back-button" onClick={() => setStage('result')} disabled={isSendingMgr}>Назад</button>
-            <button className="next-button" onClick={handleManagerSubmit} disabled={isSendingMgr || !mgrSurname.trim() || !mgrName.trim() || !mgrCity.trim()}>
+          <div style={buttonGroupStyle}>
+            <button 
+              style={isSendingMgr ? disabledButtonStyle : secondaryButtonStyle} 
+              onClick={() => setStage('result')} 
+              disabled={isSendingMgr}
+            >
+              Назад
+            </button>
+            <button 
+              style={(isSendingMgr || !mgrSurname.trim() || !mgrName.trim() || !mgrCity.trim()) ? disabledButtonStyle : primaryButtonStyle}
+              onClick={handleManagerSubmit} 
+              disabled={isSendingMgr || !mgrSurname.trim() || !mgrName.trim() || !mgrCity.trim()}
+            >
               {isSendingMgr ? 'Отправляем...' : 'Отправить'}
             </button>
           </div>
@@ -546,24 +1095,35 @@ export default function CareFuturePage() {
     );
   }
 
+  // Успешная отправка заявки
   if (stage === 'manager-sent') {
     return (
-      <div className="mainmenu-container" style={{ backgroundImage: `url(${backgroundImage})` }}>
-        {[1,2,3,4,5,6,7,8,9,10].map(n => <div key={n} className={`subtle-dot dot-${n}`} />)}
-        <div className="pi-wrapper" style={{ '--pi-move-duration': moveDuration }}>
-          <img src={piImage} className="pi-fly" alt="Pi" style={{ '--pi-rotate-duration': rotateDuration }} />
+      <div style={mainContainerStyle}>
+        {animations}
+        
+        {[1,2,3,4,5,6,7,8,9,10].map(n => (
+          <div key={n} style={dotStyle(n)} />
+        ))}
+        
+        <div style={piWrapperStyle}>
+          <img src={piImage} style={piImageStyle} alt="Pi" />
         </div>
-        <div className="mainmenu-overlay" />
-        <div className={logoClass}>
-          <img src={logoImage} alt="Логотип РГС Жизнь" className="logo-image" />
+        
+        <div style={overlayStyle} />
+        
+        <div style={logoStyle}>
+          <img src={logoImage} alt="Логотип РГС Жизнь" style={logoImageStyle} />
         </div>
 
-        <div className="success-message">
-          <div className="success-icon">✓</div>
-          <h2 className="page-title">Заявка отправлена!</h2>
-          <p className="page-subtitle">Наш менеджер свяжется с вами в ближайшее время для консультации по программе «Забота о будущем Ультра»</p>
+        <div style={successMessageStyle}>
+          <div style={successIconStyle}>✓</div>
+          <h2 style={titleStyle}>Заявка отправлена!</h2>
+          <p style={subtitleStyle}>
+            Наш менеджер свяжется с вами в ближайшее время для консультации по программе 
+            «Забота о будущем Ультра»
+          </p>
           
-          <div className="contact-info">
+          <div style={contactInfoStyle}>
             <p><strong>Ваши данные:</strong></p>
             <p>{mgrSurname} {mgrName}</p>
             <p>Город: {mgrCity}</p>
@@ -571,9 +1131,12 @@ export default function CareFuturePage() {
             {calculationId && <p>ID расчёта: {calculationId.slice(0, 8)}...</p>}
           </div>
 
-          <div className="final-buttons">
-            <button className="primary-button" onClick={() => navigate('/')}>На главную</button>
-            <button className="secondary-button" onClick={() => {
+          <div style={{ display: 'flex', gap: '15px', marginTop: '30px' }}>
+            <button style={primaryButtonStyle} onClick={() => navigate('/')}>
+              На главную
+            </button>
+            <button style={secondaryButtonStyle} onClick={() => {
+              // Сброс всех состояний для нового расчета
               setStage('email');
               setEmail('');
               setBirthParts({ day: null, month: null, year: null });
@@ -587,16 +1150,23 @@ export default function CareFuturePage() {
               setMgrName('');
               setMgrCity('');
               setValidationErrors({});
-            }}>Новый расчёт</button>
+              setEmailError('');
+              setMgrError('');
+            }}>
+              Новый расчёт
+            </button>
           </div>
         </div>
       </div>
     );
   }
 
+  // Fallback на случай ошибки
   return (
-    <div className="mainmenu-container" style={{ backgroundImage: `url(${backgroundImage})` }}>
-      <div className="error-message">Произошла ошибка. Попробуйте обновить страницу.</div>
+    <div style={mainContainerStyle}>
+      <div style={errorMessageStyle}>
+        Произошла ошибка. Попробуйте обновить страницу.
+      </div>
     </div>
   );
 }

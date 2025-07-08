@@ -1,133 +1,380 @@
+// MainMenu.js - ВЕРСИЯ С ПОЛНЫМИ ИНЛАЙН СТИЛЯМИ
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import './Styles/global.css';     // Монстерат, сбросы
-import './Styles/background.css'; // Градиент, шум, subtle-dot и pi
-import './Styles/logo.css';       // Лого, анимации (уезжает наверх)
-import './Styles/Buttons.css';    // Стили кнопок (включая exit-анимации)
-
 import backgroundImage from './components/background.png';
-import logoImage       from './components/logo.png';
-import piImage         from './components/pi.png';
+import logoImage from './components/logo.png';
+import piImage from './components/pi.png';
 
 export default function MainMenu() {
   const navigate = useNavigate();
+  
+  // Состояния анимаций
   const [logoAnimated, setLogoAnimated] = useState(false);
   const [buttonsAnimated, setButtonsAnimated] = useState(false);
+  const [isExiting, setIsExiting] = useState(false);
+  
+  // Длительности анимаций Pi
+  const [moveDuration] = useState('70s');
+  const [rotateDuration] = useState('6s');
 
-  // Генерация случайных длительностей для π-иконки
-  const [moveDuration, setMoveDuration]     = useState('70s');
-  const [rotateDuration, setRotateDuration] = useState('6s');
+  // ===== СТИЛИ =====
+
+  // Основной контейнер
+  const mainContainerStyle = {
+    position: 'relative',
+    width: '100%',
+    height: '100vh',
+    backgroundImage: `url(${backgroundImage})`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundRepeat: 'no-repeat',
+    overflow: 'hidden',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+  };
+
+  // Оверлей с градиентом
+  const overlayStyle = {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    background: 'linear-gradient(135deg, rgba(147, 39, 143, 0.85) 0%, rgba(71, 125, 191, 0.85) 100%)',
+    zIndex: 1
+  };
+
+  // Логотип с анимацией
+  const logoStyle = {
+    position: 'absolute',
+    top: logoAnimated && !isExiting ? '110px' : isExiting ? '-200px' : '-200px',
+    left: '50%',
+    transform: 'translateX(-50%)',
+    width: '160px',
+    height: '160px',
+    backgroundColor: 'rgba(255, 255, 255, 0.10)',
+    backdropFilter: 'blur(8px)',
+    borderRadius: '20px',
+    boxShadow: '0 10px 25px rgba(0, 0, 0, 0.25)',
+    opacity: logoAnimated && !isExiting ? 1 : 0,
+    zIndex: 3,
+    transition: 'all 0.8s ease-out',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
+  };
+
+  const logoImageStyle = {
+    width: '120px',
+    height: '120px',
+    objectFit: 'contain'
+  };
+
+  // Контейнер кнопок - ПОЗИЦИОНИРУЕМ ПОД ЛОГОТИПОМ
+  const buttonContainerStyle = {
+    position: 'absolute',
+    top: buttonsAnimated ? '300px' : '400px', // Под логотипом (логотип на 110px + высота 160px + отступ 30px = 300px)
+    left: '50%',
+    transform: 'translateX(-50%)',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '20px',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+    maxWidth: '400px',
+    zIndex: 3,
+    paddingLeft: '20px',
+    paddingRight: '20px',
+    boxSizing: 'border-box',
+    opacity: buttonsAnimated ? 1 : 0,
+    transition: 'all 0.8s ease-out'
+  };
+
+  // Базовый стиль кнопки - УБИРАЕМ АНИМАЦИЮ ИЗ СТИЛЕЙ (ДЕЛАЕМ ЧЕРЕЗ КОНТЕЙНЕР)
+  const getButtonStyle = (index, isAnimated) => ({
+    background: 'linear-gradient(135deg, #9370DB 0%, #6A5ACD 100%)',
+    color: 'white',
+    padding: '18px 40px',
+    borderRadius: '12px',
+    border: 'none',
+    fontSize: '18px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    position: 'relative',
+    overflow: 'hidden',
+    minWidth: '280px',
+    maxWidth: '400px',
+    width: '100%',
+    boxShadow: '0 4px 15px rgba(147, 112, 219, 0.3)',
+    transition: 'transform 0.3s ease, box-shadow 0.3s ease'
+  });
+
+  // Стиль кнопки при выходе
+  const getExitButtonStyle = (index) => ({
+    opacity: 0,
+    transform: 'translateY(100px)',
+    transition: `all 0.6s ease ${index * 0.1}s`
+  });
+
+  // Точки фона
+  const dotStyle = (index) => ({
+    position: 'absolute',
+    width: '8px',
+    height: '8px',
+    borderRadius: '50%',
+    background: 'rgba(255, 255, 255, 0.2)',
+    zIndex: 1,
+    animation: `dotPulse${(index % 3) + 1} ${4 + (index % 3)}s ease-in-out infinite`,
+    ...(index === 1 && { top: '10%', left: '10%' }),
+    ...(index === 2 && { top: '20%', right: '15%' }),
+    ...(index === 3 && { top: '30%', left: '25%' }),
+    ...(index === 4 && { bottom: '15%', left: '15%' }),
+    ...(index === 5 && { top: '5%', right: '20%' }),
+    ...(index === 6 && { bottom: '25%', right: '10%' }),
+    ...(index === 7 && { top: '45%', left: '5%' }),
+    ...(index === 8 && { bottom: '5%', right: '30%' }),
+    ...(index === 9 && { top: '60%', right: '25%' }),
+    ...(index === 10 && { bottom: '40%', left: '30%' })
+  });
+
+  // Pi элемент с космической анимацией
+  const piWrapperStyle = {
+    position: 'absolute',
+    top: '0',
+    left: '0',
+    zIndex: 2,
+    opacity: 0.4,
+    animation: `piFloatAround ${moveDuration} ease-in-out infinite`
+  };
+
+  const piImageStyle = {
+    width: '40px',
+    height: '40px',
+    opacity: 0.8,
+    animation: `piRotate ${rotateDuration} linear infinite`
+  };
+
+  // ===== ЛОГИКА =====
 
   useEffect(() => {
-    // Запускаем анимацию появления логотипа через 100ms (чтобы background уже был рендерен)
+    // Запускаем анимации появления
     const logoTimer = setTimeout(() => setLogoAnimated(true), 100);
-
-    // После того как логотип «съедет» вниз (около 800ms), запускаем появление кнопок
-    const btnTimer = setTimeout(() => setButtonsAnimated(true), 900);
-
-    // Генерация длительностей для π-иконки (движение и вращение)
-    const rndMove = Math.random() * (90 - 50) + 50; // диапазон [50,90]
-    const rndRot  = Math.random() * (8 - 4)  + 4;  // диапазон [4,8]
-    setMoveDuration(`${rndMove.toFixed(2)}s`);
-    setRotateDuration(`${rndRot.toFixed(2)}s`);
+    const buttonsTimer = setTimeout(() => setButtonsAnimated(true), 900);
 
     return () => {
       clearTimeout(logoTimer);
-      clearTimeout(btnTimer);
+      clearTimeout(buttonsTimer);
     };
   }, []);
 
+  // Обработчик клика с риппл-эффектом и анимацией выхода
   const handleClick = (e, route) => {
     const btn = e.currentTarget;
-    // Риппл-эффект (оставляем без изменений)
+    
+    // Риппл-эффект
     const circle = document.createElement('span');
     const diameter = Math.max(btn.clientWidth, btn.clientHeight);
     const radius = diameter / 2;
-    circle.style.width  = circle.style.height = `${diameter}px`;
-    circle.style.left   = `${e.clientX - btn.offsetLeft  - radius}px`;
-    circle.style.top    = `${e.clientY - btn.offsetTop   - radius}px`;
-    circle.classList.add('ripple');
-    const oldRipple = btn.getElementsByClassName('ripple')[0];
+    
+    circle.style.cssText = `
+      position: absolute;
+      width: ${diameter}px;
+      height: ${diameter}px;
+      left: ${e.clientX - btn.offsetLeft - radius}px;
+      top: ${e.clientY - btn.offsetTop - radius}px;
+      background: rgba(255, 255, 255, 0.6);
+      border-radius: 50%;
+      transform: scale(0);
+      animation: ripple 0.6s linear;
+      pointer-events: none;
+    `;
+    
+    // Удаляем предыдущий риппл
+    const oldRipple = btn.querySelector('.ripple');
     if (oldRipple) oldRipple.remove();
+    
+    circle.className = 'ripple';
     btn.appendChild(circle);
 
-    // 1. Запускаем exit-анимацию логотипа: добавляем класс animate-logo-exit (если нужно)
-    const logoElem = document.querySelector('.logo-wrapper');
-    if (logoElem) {
-      logoElem.classList.add('animate-logo-exit');
-    }
+    // Запускаем анимацию выхода
+    setIsExiting(true);
 
-    // 2. Запускаем exit-анимацию **только у кнопок**:
-    //    добавляем каждому элементу .btn-custom классы animate-exit и btn-exit{index}
-    const allButtons = document.querySelectorAll('.btn-custom');
-    allButtons.forEach((buttonElem, index) => {
-      // index начинается с 0, нам нужен порядковый номер с 1
-      const exitClass = `btn-exit${index + 1}`;
-      buttonElem.classList.add('animate-exit', exitClass);
-    });
-
-    // 3. Ждём 0.8–1 секунду (чтобы exit-анимации отработали) и переходим по route
+    // Переходим на новую страницу
     setTimeout(() => navigate(route), 1000);
   };
 
+  // Кнопки меню - УБИРАЕМ "Калькулятор НСЖ"
   const buttons = [
-    { to: '/polls',    label: 'Опросы'    },
-    { to: '/employee', label: 'Сотруднику' },
-    // Добавьте при необходимости ещё
+    { to: '/polls', label: 'Опросы' },
+    { to: '/employee', label: 'Сотруднику' }
   ];
 
-  // Если logoAnimated=true, то добавляем класс animate-logo (появление)
-  const logoClass = logoAnimated ? 'logo-wrapper animate-logo' : 'logo-wrapper';
+  // ===== РЕНДЕРИНГ =====
+
+  // CSS анимации
+  const animations = (
+    <style>
+      {`
+        @keyframes piRotate {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes piFloatAround {
+          0% { 
+            left: 10%; 
+            top: 10%; 
+            transform: scale(1); 
+          }
+          12.5% { 
+            left: 80%; 
+            top: 15%; 
+            transform: scale(1.2); 
+          }
+          25% { 
+            left: 85%; 
+            top: 40%; 
+            transform: scale(0.8); 
+          }
+          37.5% { 
+            left: 70%; 
+            top: 70%; 
+            transform: scale(1.1); 
+          }
+          50% { 
+            left: 40%; 
+            top: 80%; 
+            transform: scale(0.9); 
+          }
+          62.5% { 
+            left: 15%; 
+            top: 75%; 
+            transform: scale(1.3); 
+          }
+          75% { 
+            left: 5%; 
+            top: 50%; 
+            transform: scale(0.7); 
+          }
+          87.5% { 
+            left: 20%; 
+            top: 25%; 
+            transform: scale(1.1); 
+          }
+          100% { 
+            left: 10%; 
+            top: 10%; 
+            transform: scale(1); 
+          }
+        }
+
+        @keyframes ripple {
+          to {
+            transform: scale(4);
+            opacity: 0;
+          }
+        }
+
+        @keyframes dotPulse1 {
+          0%, 100% { opacity: 0.2; transform: scale(1); }
+          50% { opacity: 0.6; transform: scale(1.5); }
+        }
+        @keyframes dotPulse2 {
+          0%, 100% { opacity: 0.3; transform: scale(1); }
+          50% { opacity: 0.7; transform: scale(1.3); }
+        }
+        @keyframes dotPulse3 {
+          0%, 100% { opacity: 0.1; transform: scale(1); }
+          50% { opacity: 0.5; transform: scale(1.8); }
+        }
+
+        /* Hover эффекты для кнопок */
+        .menu-button:hover {
+          transform: translateY(-3px) !important;
+          box-shadow: 0 8px 25px rgba(147, 112, 219, 0.4) !important;
+        }
+
+        .menu-button:active {
+          transform: translateY(0) scale(0.98) !important;
+        }
+
+        .menu-button:focus {
+          outline: none;
+          box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+        }
+
+        /* Адаптивность */
+        @media (max-width: 768px) {
+          .menu-button {
+            min-width: 260px !important;
+            padding: 16px 32px !important;
+            font-size: 16px !important;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .menu-button {
+            min-width: 240px !important;
+            padding: 14px 28px !important;
+            font-size: 15px !important;
+          }
+        }
+      `}
+    </style>
+  );
 
   return (
-    <div
-      className="mainmenu-container"
-      style={{ backgroundImage: `url(${backgroundImage})` }}
-    >
-      {/* 10 «едва заметных» шариков — задаются через background.css */}
-      <div className="subtle-dot dot-1" />
-      <div className="subtle-dot dot-2" />
-      <div className="subtle-dot dot-3" />
-      <div className="subtle-dot dot-4" />
-      <div className="subtle-dot dot-5" />
-      <div className="subtle-dot dot-6" />
-      <div className="subtle-dot dot-7" />
-      <div className="subtle-dot dot-8" />
-      <div className="subtle-dot dot-9" />
-      <div className="subtle-dot dot-10" />
+    <div style={mainContainerStyle}>
+      {animations}
 
-      {/* π-иконка в фоне, плывёт и покачивается */}
-      <div
-        className="pi-wrapper"
-        style={{ '--pi-move-duration': moveDuration }}
-      >
-        <img
-          src={piImage}
-          className="pi-fly"
-          alt="Pi"
-          style={{ '--pi-rotate-duration': rotateDuration }}
-        />
+      {/* Фоновые точки с пульсирующими анимациями */}
+      {[1,2,3,4,5,6,7,8,9,10].map(n => (
+        <div key={n} style={dotStyle(n)} />
+      ))}
+
+      {/* Pi элемент с космической анимацией */}
+      <div style={piWrapperStyle}>
+        <img src={piImage} style={piImageStyle} alt="Pi" />
       </div>
 
-      <div className="mainmenu-overlay" />
+      {/* Оверлей */}
+      <div style={overlayStyle} />
 
-      {/* Логотип (появляется плавным «скольжением вниз» и скрывается при exit) */}
-      <div className={logoClass}>
+      {/* Логотип */}
+      <div style={logoStyle}>
         <img
           src={logoImage}
           alt="Логотип РГС Жизнь"
-          className="logo-image"
+          style={logoImageStyle}
         />
       </div>
 
-      {/* Кнопки (выезжают изнизу при загрузке и уезжают вниз при exit) */}
-      <div className="button-container">
-        {buttons.map((btn, idx) => (
+      {/* Кнопки меню */}
+      <div style={buttonContainerStyle}>
+        {buttons.map((btn, index) => (
           <button
             key={btn.to}
-            className={`btn-custom ${buttonsAnimated ? 'animate-btn' : ''}`}
+            className="menu-button"
+            style={getButtonStyle(index, buttonsAnimated)}
             onClick={(e) => handleClick(e, btn.to)}
+            onMouseEnter={(e) => {
+              if (!isExiting) {
+                e.currentTarget.style.transform = 'translateY(-3px)';
+                e.currentTarget.style.boxShadow = '0 8px 25px rgba(147, 112, 219, 0.4)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!isExiting) {
+                e.currentTarget.style.transform = buttonsAnimated ? 'translateY(0)' : 'translateY(50px)';
+                e.currentTarget.style.boxShadow = '0 4px 15px rgba(147, 112, 219, 0.3)';
+              }
+            }}
           >
             {btn.label}
           </button>
