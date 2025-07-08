@@ -629,3 +629,65 @@
     font-size: 20px;
   }
 }
+
+/* =======================================================
+   ДОПОЛНЕНИЕ К CareFuturePage.css - кнопки выбора пола и типа расчета в строку
+   Добавить в КОНЕЦ файла src/CareFuturePage.css
+   ======================================================= */
+
+/* ВАЖНО: Эти стили должны быть в CareFuturePage.css, а не в global.css!
+   Потому что CareFuturePage.css загружается после global.css */
+
+/* 1. Кнопки выбора пола в строку */
+.mainmenu-container .gender-section .option-buttons {
+  display: flex !important;
+  flex-direction: row !important;
+  gap: 12px !important;
+  justify-content: center !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  margin: 16px 0 !important;
+}
+
+/* 2. Кнопки расчета от страхового взноса/суммы в строку */
+.mainmenu-container .calc-section .option-buttons {
+  display: flex !important;
+  flex-direction: row !important;
+  gap: 12px !important;
+  justify-content: center !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  margin: 16px 0 !important;
+}
+
+/* 3. Все контейнеры .option-buttons в строку для CareFuturePage */
+.mainmenu-container .option-buttons {
+  display: flex !important;
+  flex-direction: row !important;
+  gap: 12px !important;
+  justify-content: center !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  margin: 16px 0 !important;
+}
+
+/* 4. Кнопки имеют правильные размеры */
+.mainmenu-container .option-buttons .option-btn {
+  flex: 1 !important;
+  min-width: 120px !important;
+  max-width: 160px !important;
+  text-align: center !important;
+}
+
+/* 5. Адаптивность для мобильных устройств */
+@media (max-width: 480px) {
+  .mainmenu-container .option-buttons {
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+  
+  .mainmenu-container .option-buttons .option-btn {
+    min-width: 100% !important;
+    max-width: 100% !important;
+  }
+}

@@ -365,17 +365,37 @@ export default function CareFuturePage() {
           {/* Выбор пола */}
           <div className="gender-section">
             <div className="section-subtitle">Выберите пол:</div>
-            <div className="option-buttons">
-              <button
+            <div className="option-buttons" style={{
+              display: 'flex',
+              flexDirection: 'row',
+              gap: '12px',
+              justifyContent: 'center',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              margin: '16px 0'
+            }}>
+              <button 
                 className={`option-btn ${gender === 'мужской' ? 'selected' : ''}`}
                 onClick={() => setGender('мужской')}
+                style={{
+                  flex: '1',
+                  minWidth: '120px',
+                  maxWidth: '160px',
+                  textAlign: 'center'
+                }}
               >
                 <div>Мужской</div>
                 <div className="emoji">👨</div>
               </button>
-              <button
+              <button 
                 className={`option-btn ${gender === 'женский' ? 'selected' : ''}`}
                 onClick={() => setGender('женский')}
+                style={{
+                  flex: '1',
+                  minWidth: '120px',
+                  maxWidth: '160px',
+                  textAlign: 'center'
+                }}
               >
                 <div>Женский</div>
                 <div className="emoji">👩</div>
@@ -386,8 +406,16 @@ export default function CareFuturePage() {
           {/* Тип расчета */}
           <div className="calc-section">
             <div className="section-subtitle">Расчёт от:</div>
-            <div className="option-buttons">
-              <button
+            <div className="option-buttons" style={{
+              display: 'flex',
+              flexDirection: 'row',
+              gap: '12px',
+              justifyContent: 'center',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              margin: '16px 0'
+            }}>
+              <button 
                 className={`option-btn ${calcType === 'premium' ? 'selected' : ''}`}
                 onClick={() => {
                   setCalcType('premium');
@@ -395,17 +423,29 @@ export default function CareFuturePage() {
                   setAmountDisplay('');
                   setAmountError('');
                 }}
+                style={{
+                  flex: '1',
+                  minWidth: '120px',
+                  maxWidth: '160px',
+                  textAlign: 'center'
+                }}
               >
                 <div>Страхового</div>
                 <div>взноса</div>
               </button>
-              <button
+              <button 
                 className={`option-btn ${calcType === 'sum' ? 'selected' : ''}`}
                 onClick={() => {
                   setCalcType('sum');
                   setAmountRaw('');
                   setAmountDisplay('');
                   setAmountError('');
+                }}
+                style={{
+                  flex: '1',
+                  minWidth: '120px',
+                  maxWidth: '160px',
+                  textAlign: 'center'
                 }}
               >
                 <div>Страховой</div>
