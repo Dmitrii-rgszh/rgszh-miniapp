@@ -233,7 +233,7 @@ const EmployeePage = () => {
   const products = [
     { to: '/justincase', label: 'На всякий случай' },
     { to: '/snp', label: 'Стратегия на пять. Гарант' },
-    { to: '/care-future', label: 'Забота о будущем' }
+    { to: '/carefuture', label: 'Забота о будущем' }
   ];
 
   // ===== РЕНДЕРИНГ =====
