@@ -1,12 +1,11 @@
-// PollsPage.js - Исправленная версия с QR кнопками
+// PollsPage.js - Точная копия стилей MainMenu с классами
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import './Styles/HomeButton.css';
-import './Styles/background.css';
-import './Styles/logo.css';
-import './Styles/Buttons.css';
-import './Styles/QRStyles.css';
+import './Styles/global.css';     // Монстерат, сбросы
+import './Styles/background.css'; // Градиент, шум, subtle-dot и pi
+import './Styles/logo.css';       // Лого, анимации (уезжает наверх)
+import './Styles/Buttons.css';    // Стили кнопок (включая exit-анимации)
 
 import backgroundImage from './components/background.png';
 import logoImage       from './components/logo.png';
@@ -18,8 +17,13 @@ export default function PollsPage() {
   const homeRef     = useRef(null);
   const buttonRefs  = useRef([]);
 
+  const [logoAnimated, setLogoAnimated] = useState(false);
   const [buttonsAnimated, setButtonsAnimated] = useState(false);
   const [qrData, setQrData] = useState({ open: false, path: '', label: '' });
+
+  // Генерация случайных длительностей для π-иконки
+  const [moveDuration, setMoveDuration] = useState('70s');
+  const [rotateDuration, setRotateDuration] = useState('6s');
 
   const polls = [
     { path: '/assessment',   label: 'Оценка кандидата' },
@@ -28,59 +32,99 @@ export default function PollsPage() {
   ];
 
   useEffect(() => {
-    const logoTimer    = setTimeout(() => logoRef.current?.classList.add('animate-logo'), 100);
-    const homeTimer    = setTimeout(() => homeRef.current?.classList.add('animate-home'), 300);
-    const buttonsTimer = setTimeout(() => setButtonsAnimated(true), 900);
+    // Запускаем анимацию появления логотипа через 100ms (чтобы background уже был рендерен)
+    const logoTimer = setTimeout(() => setLogoAnimated(true), 100);
+
+    // После того как логотип «съедет» вниз (около 800ms), запускаем появление кнопок
+    const btnTimer = setTimeout(() => setButtonsAnimated(true), 900);
+
+    // Генерация длительностей для π-иконки (движение и вращение)
+    const rndMove = Math.random() * (90 - 50) + 50; // диапазон [50,90]
+    const rndRot  = Math.random() * (8 - 4)  + 4;  // диапазон [4,8]
+    setMoveDuration(`${rndMove.toFixed(2)}s`);
+    setRotateDuration(`${rndRot.toFixed(2)}s`);
+
     return () => {
       clearTimeout(logoTimer);
-      clearTimeout(homeTimer);
-      clearTimeout(buttonsTimer);
+      clearTimeout(btnTimer);
     };
   }, []);
 
   // Обработчик клика по основной кнопке опроса
   const handleClick = (e, path) => {
     const btn = e.currentTarget;
+    // Риппл-эффект (точно как в MainMenu)
     const circle = document.createElement('span');
-    const d = Math.max(btn.clientWidth, btn.clientHeight), r = d/2;
-    circle.style.width = circle.style.height = `${d}px`;
-    circle.style.left  = `${e.clientX - btn.offsetLeft  - r}px`;
-    circle.style.top   = `${e.clientY - btn.offsetTop   - r}px`;
-    circle.className = 'ripple';
-    btn.querySelector('.ripple')?.remove();
+    const diameter = Math.max(btn.clientWidth, btn.clientHeight);
+    const radius = diameter / 2;
+    circle.style.width  = circle.style.height = `${diameter}px`;
+    circle.style.left   = `${e.clientX - btn.offsetLeft  - radius}px`;
+    circle.style.top    = `${e.clientY - btn.offsetTop   - radius}px`;
+    circle.classList.add('ripple');
+    const oldRipple = btn.getElementsByClassName('ripple')[0];
+    if (oldRipple) oldRipple.remove();
     btn.appendChild(circle);
 
-    logoRef.current?.classList.replace('animate-logo', 'animate-logo-exit');
-    homeRef.current?.classList.replace('animate-home', 'animate-home-exit');
-    buttonRefs.current.forEach((el,i) => el?.classList.add('animate-exit', `btn-exit${i+1}`));
+    // 1. Запускаем exit-анимацию логотипа: добавляем класс animate-logo-exit
+    const logoElem = document.querySelector('.logo-wrapper');
+    if (logoElem) {
+      logoElem.classList.add('animate-logo-exit');
+    }
 
-    setTimeout(() => navigate(path), 800);
+    // 2. Запускаем exit-анимацию **только у кнопок**:
+    //    добавляем каждому элементу .btn-custom классы animate-exit и btn-exit{index}
+    const allButtons = document.querySelectorAll('.btn-custom');
+    allButtons.forEach((buttonElem, index) => {
+      // index начинается с 0, нам нужен порядковый номер с 1
+      const exitClass = `btn-exit${index + 1}`;
+      buttonElem.classList.add('animate-exit', exitClass);
+    });
+
+    // 3. Ждём 0.8–1 секунду (чтобы exit-анимации отработали) и переходим по route
+    setTimeout(() => navigate(path), 1000);
   };
 
   // Обработчик клика по QR кнопке
   const handleQrClick = (e, poll) => {
     e.stopPropagation();
-    
-    // Ripple эффект для QR кнопки
-    const btn = e.currentTarget;
-    const circle = document.createElement('span');
-    const d = Math.max(btn.clientWidth, btn.clientHeight), r = d/2;
-    circle.style.width = circle.style.height = `${d}px`;
-    circle.style.left  = `${e.clientX - btn.offsetLeft  - r}px`;
-    circle.style.top   = `${e.clientY - btn.offsetTop   - r}px`;
-    circle.className = 'ripple';
-    btn.querySelector('.ripple')?.remove();
-    btn.appendChild(circle);
-
-    // Открываем модальное окно
     setQrData({ open: true, path: poll.path, label: poll.label });
   };
 
-  // Закрытие модального окна
   const closeQr = () => setQrData({ open: false, path: '', label: '' });
 
-  // URL для QR кода
-  const qrUrl = qrData.open ? `${window.location.origin}${qrData.path}` : '';
+  const qrUrl = qrData.path ? `${window.location.origin}${qrData.path}` : '';
+
+  const handleHomeClick = (e) => {
+    const btn = e.currentTarget;
+    // Риппл-эффект
+    const circle = document.createElement('span');
+    const diameter = Math.max(btn.clientWidth, btn.clientHeight);
+    const radius = diameter / 2;
+    circle.style.width  = circle.style.height = `${diameter}px`;
+    circle.style.left   = `${e.clientX - btn.offsetLeft  - radius}px`;
+    circle.style.top    = `${e.clientY - btn.offsetTop   - radius}px`;
+    circle.classList.add('ripple');
+    const oldRipple = btn.getElementsByClassName('ripple')[0];
+    if (oldRipple) oldRipple.remove();
+    btn.appendChild(circle);
+
+    // Exit анимации
+    const logoElem = document.querySelector('.logo-wrapper');
+    if (logoElem) {
+      logoElem.classList.add('animate-logo-exit');
+    }
+
+    const allButtons = document.querySelectorAll('.btn-custom');
+    allButtons.forEach((buttonElem, index) => {
+      const exitClass = `btn-exit${index + 1}`;
+      buttonElem.classList.add('animate-exit', exitClass);
+    });
+
+    setTimeout(() => navigate('/main-menu'), 1000);
+  };
+
+  // Если logoAnimated=true, то добавляем класс animate-logo (появление)
+  const logoClass = logoAnimated ? 'logo-wrapper animate-logo' : 'logo-wrapper';
 
   return (
     <>
@@ -88,65 +132,123 @@ export default function PollsPage() {
         className="mainmenu-container"
         style={{ backgroundImage: `url(${backgroundImage})` }}
       >
-        {/* Фоновые элементы */}
-        {Array.from({ length: 10 }, (_, i) => (
-          <div key={i} className={`subtle-dot dot-${i+1}`} />
-        ))}
-        
-        {/* π символ */}
-        <div className="pi-wrapper">
-          <img src={piImage} className="pi-fly" alt="Pi" />
-        </div>
-        <div className="mainmenu-overlay"/>
+        {/* 10 «едва заметных» шариков — задаются через background.css */}
+        <div className="subtle-dot dot-1" />
+        <div className="subtle-dot dot-2" />
+        <div className="subtle-dot dot-3" />
+        <div className="subtle-dot dot-4" />
+        <div className="subtle-dot dot-5" />
+        <div className="subtle-dot dot-6" />
+        <div className="subtle-dot dot-7" />
+        <div className="subtle-dot dot-8" />
+        <div className="subtle-dot dot-9" />
+        <div className="subtle-dot dot-10" />
 
-        {/* Кнопка "Домой" */}
+        {/* π-иконка в фоне, плывёт и покачивается */}
+        <div
+          className="pi-wrapper"
+          style={{ '--pi-move-duration': moveDuration }}
+        >
+          <img
+            src={piImage}
+            className="pi-fly"
+            alt="Pi"
+            style={{ '--pi-rotate-duration': rotateDuration }}
+          />
+        </div>
+
+        <div className="mainmenu-overlay" />
+
+        {/* Логотип (появляется плавным «скольжением вниз» и скрывается при exit) */}
+        <div className={logoClass}>
+          <img
+            src={logoImage}
+            alt="Логотип РГС Жизнь"
+            className="logo-image"
+          />
+        </div>
+
+        {/* Кнопка "Домой" с правильным стилем */}
         <button
           ref={homeRef}
-          className="home-btn"
-          onClick={e => handleClick(e, '/main-menu')}
-          aria-label="Домой"
+          onClick={handleHomeClick}
+          className="home-btn animate-home"
+          style={{
+            position: 'absolute',
+            top: '20px',
+            left: '20px',
+            width: '50px',
+            height: '50px',
+            borderRadius: '50%',
+            border: 'none',
+            background: 'rgba(255, 255, 255, 0.2)',
+            backdropFilter: 'blur(10px)',
+            color: 'white',
+            fontSize: '20px',
+            cursor: 'pointer',
+            zIndex: 15,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'all 0.3s ease'
+          }}
         >
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="home-icon">
-            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
-          </svg>
+          🏠
         </button>
 
-        {/* Логотип */}
-        <div ref={logoRef} className="logo-wrapper">
-          <img src={logoImage} alt="Логотип" className="logo-image" />
-        </div>
-
-        {/* Контейнер кнопок опросов */}
+        {/* Кнопки (выезжают изнизу при загрузке и уезжают вниз при exit) */}
         <div className="button-container">
           {polls.map((poll, idx) => (
             <div
               key={poll.path}
-              className={`poll-row ${buttonsAnimated ? 'animate-row' : ''}`}
-              style={{animationDelay: `${idx * 0.15}s`}}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                width: '100%',
+                maxWidth: '400px',
+                margin: '0 auto 20px auto'
+              }}
             >
               {/* Основная кнопка опроса */}
               <button
                 ref={el => buttonRefs.current[idx] = el}
-                className="btn-custom"
-                onClick={e => handleClick(e, poll.path)}
+                className={`btn-custom ${buttonsAnimated ? 'animate-btn' : ''}`}
+                onClick={(e) => handleClick(e, poll.path)}
+                style={{
+                  flex: 1,
+                  position: 'relative',
+                  overflow: 'hidden'
+                }}
               >
                 {poll.label}
               </button>
               
               {/* QR кнопка */}
               <button
-                className="qr-btn"
                 onClick={e => handleQrClick(e, poll)}
-                aria-label={`QR-код для ${poll.label}`}
+                style={{
+                  width: '50px',
+                  height: '50px',
+                  minWidth: '50px',
+                  background: 'rgba(33, 150, 243, 0.8)',
+                  border: 'none',
+                  borderRadius: '12px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'all 0.3s ease',
+                  backdropFilter: 'blur(10px)'
+                }}
                 title={`Получить QR-код для ${poll.label}`}
               >
                 <svg 
                   xmlns="http://www.w3.org/2000/svg" 
                   viewBox="0 0 24 24" 
-                  className="qr-icon"
+                  style={{ width: '24px', height: '24px' }}
                   fill="white"
                 >
-                  {/* QR код иконка */}
                   <rect x="3" y="3" width="7" height="7" />
                   <rect x="14" y="3" width="7" height="7" />
                   <rect x="3" y="14" width="7" height="7" />
@@ -167,224 +269,148 @@ export default function PollsPage() {
 
       {/* QR модальное окно */}
       {qrData.open && (
-        <div className="qr-modal" onClick={closeQr}>
-          <div className="qr-modal-content" onClick={e => e.stopPropagation()}>
-            <button className="qr-close" onClick={closeQr} aria-label="Закрыть">
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            background: 'rgba(0, 0, 0, 0.8)',
+            backdropFilter: 'blur(5px)',
+            zIndex: 1000,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            animation: 'modal-fade-in 0.3s ease-out',
+            padding: '20px'
+          }}
+          onClick={closeQr}
+        >
+          <div
+            style={{
+              background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%)',
+              backdropFilter: 'blur(20px)',
+              borderRadius: '16px',
+              padding: '30px',
+              maxWidth: '90vw',
+              maxHeight: '90vh',
+              textAlign: 'center',
+              position: 'relative',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              animation: 'modal-slide-up 0.3s ease-out',
+              color: 'white',
+              fontFamily: '"Montserrat", sans-serif'
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            <button
+              onClick={closeQr}
+              style={{
+                position: 'absolute',
+                top: '15px',
+                right: '15px',
+                background: 'none',
+                border: 'none',
+                color: 'rgba(255, 255, 255, 0.7)',
+                fontSize: '24px',
+                cursor: 'pointer',
+                padding: '5px',
+                lineHeight: 1
+              }}
+            >
               ×
             </button>
             
-            <h3>QR-код для опроса</h3>
-            <p>«{qrData.label}»</p>
+            <h3 style={{ margin: '0 0 10px 0', fontSize: '20px', fontWeight: '600' }}>
+              QR-код для опроса
+            </h3>
+            <p style={{ margin: '0 0 20px 0', fontSize: '16px', opacity: 0.8 }}>
+              «{qrData.label}»
+            </p>
             
             {/* QR код */}
-            <div className="qr-code-container">
+            <div
+              style={{
+                background: 'white',
+                borderRadius: '12px',
+                width: '200px',
+                height: '200px',
+                padding: '16px',
+                margin: '20px auto',
+                display: 'inline-block',
+                boxShadow: '0 4px 16px rgba(0, 0, 0, 0.2)'
+              }}
+            >
               <img
                 src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrUrl)}`}
                 alt="QR Code"
-                className="qr-code-image"
+                style={{
+                  display: 'block',
+                  width: '168px',
+                  height: '168px',
+                  borderRadius: '8px'
+                }}
                 loading="lazy"
               />
             </div>
             
-            <div className="qr-url">{qrUrl}</div>
+            <div
+              style={{
+                color: 'rgba(255, 255, 255, 0.7)',
+                fontSize: '12px',
+                wordBreak: 'break-all',
+                background: 'rgba(255, 255, 255, 0.1)',
+                padding: '8px 12px',
+                borderRadius: '6px',
+                margin: '16px 0',
+                fontFamily: 'monospace'
+              }}
+            >
+              {qrUrl}
+            </div>
             
-            <div className="qr-actions">
+            <div>
               <button
-                className="qr-copy-btn"
                 onClick={(e) => {
                   navigator.clipboard.writeText(qrUrl).then(() => {
-                    // Показываем уведомление
                     const btn = e.target;
                     const originalText = btn.textContent;
                     btn.textContent = '✓ Скопировано!';
+                    btn.style.background = 'rgba(76, 175, 80, 0.8)';
                     setTimeout(() => {
                       btn.textContent = originalText;
-                    }, 1500);
+                      btn.style.background = 'rgba(33, 150, 243, 0.8)';
+                    }, 2000);
                   });
                 }}
+                style={{
+                  background: 'rgba(33, 150, 243, 0.8)',
+                  color: 'white',
+                  border: 'none',
+                  padding: '10px 20px',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  fontFamily: '"Montserrat", sans-serif',
+                  fontWeight: '500'
+                }}
               >
-                Копировать ссылку
+                Скопировать ссылку
               </button>
             </div>
           </div>
         </div>
       )}
 
-      <style jsx>{`
-        /* Встроенные стили для QR функциональности */
-        .poll-row {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          width: 100%;
-          margin-bottom: 16px;
-          opacity: 0;
-          transform: translateY(20px);
-          transition: opacity 0.6s ease, transform 0.6s ease;
-          gap: 12px;
-        }
-        
-        .poll-row.animate-row {
-          opacity: 1;
-          transform: translateY(0);
-        }
-        
-        .poll-row .btn-custom {
-          flex: 1;
-          min-width: auto;
-          max-width: none;
-        }
-        
-        .qr-btn {
-          width: 48px;
-          height: 48px;
-          min-width: 48px;
-          background: linear-gradient(120deg, var(--bg-dark-start), var(--bg-dark-end));
-          border: 1px solid rgba(255, 255, 255, 0.2);
-          border-radius: 8px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          position: relative;
-          overflow: hidden;
-        }
-        
-        .qr-btn:hover {
-          background: linear-gradient(120deg, #1a3a8a, #b91c7c);
-          border-color: rgba(255, 255, 255, 0.4);
-          transform: translateY(-2px);
-          box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-        }
-        
-        .qr-icon {
-          width: 24px;
-          height: 24px;
-          transition: all 0.3s ease;
-        }
-        
-        .qr-btn:hover .qr-icon {
-          transform: scale(1.1);
-        }
-        
-        .qr-modal {
-          position: fixed;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          background: rgba(0, 0, 0, 0.8);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          z-index: 1000;
-          animation: modal-fade-in 0.3s ease;
-        }
-        
-        .qr-modal-content {
-          background: linear-gradient(135deg, var(--bg-dark-start), var(--bg-dark-end));
-          border-radius: 16px;
-          padding: 24px;
-          max-width: 400px;
-          width: 90%;
-          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          position: relative;
-          animation: modal-slide-up 0.3s ease;
-          text-align: center;
-        }
-        
-        .qr-close {
-          position: absolute;
-          top: 12px;
-          right: 16px;
-          background: none;
-          border: none;
-          color: rgba(255, 255, 255, 0.7);
-          font-size: 24px;
-          cursor: pointer;
-          width: 32px;
-          height: 32px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          border-radius: 50%;
-          transition: all 0.3s ease;
-        }
-        
-        .qr-close:hover {
-          background: rgba(255, 255, 255, 0.1);
-          color: white;
-          transform: scale(1.1);
-        }
-        
-        .qr-modal h3 {
-          color: white;
-          font-size: 20px;
-          font-weight: 600;
-          margin: 0 0 8px 0;
-          font-family: 'Montserrat', sans-serif;
-        }
-        
-        .qr-modal p {
-          color: rgba(255, 255, 255, 0.8);
-          font-size: 16px;
-          margin: 0 0 20px 0;
-          font-weight: 300;
-        }
-        
-        .qr-code-container {
-          background: white;
-          border-radius: 12px;
-          padding: 16px;
-          margin: 20px 0;
-          display: inline-block;
-          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-        }
-        
-        .qr-code-image {
-          display: block;
-          width: 200px;
-          height: 200px;
-          border-radius: 8px;
-        }
-        
-        .qr-url {
-          color: rgba(255, 255, 255, 0.7);
-          font-size: 12px;
-          word-break: break-all;
-          background: rgba(255, 255, 255, 0.1);
-          padding: 8px 12px;
-          border-radius: 6px;
-          margin: 16px 0;
-          font-family: monospace;
-        }
-        
-        .qr-copy-btn {
-          background: rgba(33, 150, 243, 0.8);
-          color: white;
-          border: none;
-          padding: 10px 20px;
-          border-radius: 8px;
-          font-size: 14px;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          font-family: 'Montserrat', sans-serif;
-          font-weight: 500;
-        }
-        
-        .qr-copy-btn:hover {
-          background: rgba(33, 150, 243, 1);
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(33, 150, 243, 0.4);
-        }
-        
+      {/* Минимальные стили для анимаций модального окна */}
+      <style>{`
         @keyframes modal-fade-in {
           from { opacity: 0; }
           to { opacity: 1; }
         }
-        
+
         @keyframes modal-slide-up {
           from {
             opacity: 0;
@@ -395,58 +421,18 @@ export default function PollsPage() {
             transform: translateY(0) scale(1);
           }
         }
-        
-        @media (max-width: 768px) {
-          .poll-row { gap: 8px; }
-          .qr-btn { width: 40px; height: 40px; min-width: 40px; }
-          .qr-icon { width: 20px; height: 20px; }
-          .qr-modal-content { padding: 20px; margin: 20px; }
-          .qr-code-image { width: 180px; height: 180px; }
+
+        .animate-home {
+          opacity: 1 !important;
+          transform: translateX(0) !important;
+        }
+
+        .home-btn {
+          opacity: 0;
+          transform: translateX(-100px);
+          transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
       `}</style>
     </>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
