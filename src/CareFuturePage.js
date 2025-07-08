@@ -32,7 +32,6 @@ export default function CareFuturePage() {
   // ===== Состояния для Email-шага =====
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState('');
-  const emailValid = email.toLowerCase().endsWith('@vtb.ru');
 
   // ===== Состояния для формы расчёта =====
   const [birthParts, setBirthParts] = useState({
@@ -135,8 +134,8 @@ export default function CareFuturePage() {
 
   // Логика для email валидации
   const handleEmailSubmit = () => {
-    if (!emailValid) {
-      setEmailError('Введите корректный email с доменом @vtb.ru');
+    if (!canGoNext()) {
+      setEmailError('Введите корректный email с доменом @vtb.ru (минимум 5 символов до @)');
       return;
     }
     setEmailError('');
@@ -146,6 +145,26 @@ export default function CareFuturePage() {
   // Обработчик возврата домой
   const handleHomeClick = () => {
     navigate('/employee');
+  };
+
+  // Функция проверки возможности перехода далее (как в FeedbackPage)
+  const canGoNext = () => {
+    switch (stage) {
+      case 'email':
+        // Проверяем: минимум 5 символов до @vtb.ru + сам @vtb.ru
+        const emailParts = email.split('@');
+        return emailParts.length === 2 && 
+               emailParts[0].length >= 5 && 
+               emailParts[1] === 'vtb.ru';
+      case 'form':
+        return birthDate && gender && calcType && amountRaw;
+      case 'result':
+        return true;
+      case 'manager':
+        return mgrSurname.trim() && mgrName.trim() && mgrCity.trim();
+      default:
+        return false;
+    }
   };
 
   // Логика расчета (упрощенная)
@@ -222,10 +241,33 @@ export default function CareFuturePage() {
           <img src={logoImage} alt="Логотип РГС Жизнь" className="logo-image" />
         </div>
 
+        {/* Кнопка "Продолжить" - вне form-container */}
+        <button
+          className={`next-btn ${canGoNext() ? 'animate-next' : ''}`}
+          onClick={(e) => handleButtonClick(e, handleEmailSubmit)}
+          disabled={!canGoNext()}
+        >
+          <div className={`shaker ${canGoNext() ? 'shake-btn' : ''}`}>
+            <svg viewBox="0 0 24 24">
+              <path d="M5 12h14M12 5l7 7-7 7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </div>
+        </button>
+
+        {/* Кнопка "Назад" - вне form-container */}
+        <button
+          className={`back-btn ${buttonsAnimated ? 'animate-home' : ''}`}
+          onClick={(e) => handleButtonClick(e, handleHomeClick)}
+        >
+          <svg className="home-icon" viewBox="0 0 24 24">
+            <path d="M19 12H5M12 5l-7 7 7 7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </button>
+
         {/* Заголовок */}
         <h2 className="page-title">Забота о будущем</h2>
 
-        {/* Форма email */}
+        {/* Форма email - без button-container внутри */}
         <div className="form-container">
           <div className="email-section">
             <label className="section-label">Введите ваш корпоративный email:</label>
@@ -237,28 +279,6 @@ export default function CareFuturePage() {
               onChange={e => setEmail(e.target.value)}
             />
             {emailError && <div className="error-message">{emailError}</div>}
-          </div>
-
-          <div className="button-container">
-            <button
-              className={`next-btn ${buttonsAnimated ? 'animate-next' : ''}`}
-              onClick={(e) => handleButtonClick(e, handleEmailSubmit)}
-              disabled={!email}
-            >
-              <div className="shaker">
-                <svg viewBox="0 0 24 24">
-                  <path d="M5 12h14M12 5l7 7-7 7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </div>
-            </button>
-            <button
-              className={`back-btn ${buttonsAnimated ? 'animate-home' : ''}`}
-              onClick={(e) => handleButtonClick(e, handleHomeClick)}
-            >
-              <svg className="home-icon" viewBox="0 0 24 24">
-                <path d="M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-7h-6v7H4a1 1 0 0 1-1-1V11z" />
-              </svg>
-            </button>
           </div>
         </div>
       </div>
@@ -285,10 +305,32 @@ export default function CareFuturePage() {
           <img src={logoImage} alt="Логотип РГС Жизнь" className="logo-image" />
         </div>
 
+        {/* Кнопки навигации - вне form-container */}
+        <button
+          className={`next-btn ${canGoNext() ? 'animate-next' : ''}`}
+          onClick={(e) => handleButtonClick(e, handleCalculate)}
+          disabled={!canGoNext()}
+        >
+          <div className={`shaker ${canGoNext() ? 'shake-btn' : ''}`}>
+            <svg viewBox="0 0 24 24">
+              <path d="M5 12h14M12 5l7 7-7 7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </div>
+        </button>
+
+        <button
+          className={`back-btn ${buttonsAnimated ? 'animate-home' : ''}`}
+          onClick={(e) => handleButtonClick(e, () => setStage('email'))}
+        >
+          <svg className="home-icon" viewBox="0 0 24 24">
+            <path d="M19 12H5M12 5l-7 7 7 7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </button>
+
         {/* Заголовок */}
         <h2 className="page-title">Расчет программы</h2>
 
-        {/* Форма */}
+        {/* Форма - без button-container внутри */}
         <div className="form-container">
           {/* Дата рождения */}
           <div className="date-section">
@@ -390,28 +432,6 @@ export default function CareFuturePage() {
               {amountError && <div className="error-message">{amountError}</div>}
             </div>
           )}
-
-          <div className="button-container">
-            <button
-              className={`next-btn ${buttonsAnimated ? 'animate-next' : ''}`}
-              onClick={(e) => handleButtonClick(e, handleCalculate)}
-              disabled={!birthDate || !gender || !calcType || !amountRaw}
-            >
-              <div className="shaker">
-                <svg viewBox="0 0 24 24">
-                  <path d="M5 12h14M12 5l7 7-7 7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </div>
-            </button>
-            <button
-              className={`back-btn ${buttonsAnimated ? 'animate-home' : ''}`}
-              onClick={(e) => handleButtonClick(e, () => setStage('email'))}
-            >
-              <svg className="home-icon" viewBox="0 0 24 24">
-                <path d="M15 18l-6-6 6-6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </button>
-          </div>
         </div>
       </div>
     );
@@ -573,7 +593,7 @@ export default function CareFuturePage() {
               })}
             >
               <svg className="home-icon" viewBox="0 0 24 24">
-                <path d="M15 18l-6-6 6-6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M19 12H5M12 5l-7 7 7 7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </button>
           </div>
@@ -656,7 +676,7 @@ export default function CareFuturePage() {
               onClick={(e) => handleButtonClick(e, () => setStage('result'))}
             >
               <svg className="home-icon" viewBox="0 0 24 24">
-                <path d="M15 18l-6-6 6-6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M19 12H5M12 5l-7 7 7 7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </button>
           </div>
