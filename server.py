@@ -20,16 +20,32 @@ from polls_routes import register_poll_routes
 from assessment_routes import register_assessment_routes  # Новый импорт
 
 # ===== ИМПОРТЫ ДЛЯ КАЛЬКУЛЯТОРА НСЖ =====
+CARE_FUTURE_AVAILABLE = False
+CARE_FUTURE_ERROR = None
+
+print("🔄 Загрузка модулей калькулятора НСЖ...")
+
 try:
+    # Сначала проверяем зависимости
+    import sqlalchemy
+    import psycopg2
+    print("  ✅ Зависимости найдены")
+    
+    # Затем импортируем наши модули
     from care_future_models import init_nsj_database, NSJDataManager
     from care_future_routes import init_care_future_routes
+    
     CARE_FUTURE_AVAILABLE = True
-    logger = logging.getLogger("server")
-    logger.info("✅ Модули калькулятора НСЖ загружены")
+    print("  ✅ Модули калькулятора НСЖ загружены успешно")
+    
 except ImportError as e:
-    CARE_FUTURE_AVAILABLE = False
-    logger = logging.getLogger("server")
-    logger.warning(f"⚠️ Калькулятор НСЖ не загружен: {e}")
+    CARE_FUTURE_ERROR = f"ImportError: {e}"
+    print(f"  ❌ Ошибка импорта: {e}")
+    print(f"  💡 Установите зависимости: pip install psycopg2-binary sqlalchemy flask-sqlalchemy")
+    
+except Exception as e:
+    CARE_FUTURE_ERROR = f"Error: {e}"
+    print(f"  ❌ Другая ошибка: {e}")
 
 # ====== Logging setup ======
 logging.basicConfig(
@@ -47,6 +63,17 @@ CORS(app, resources={
             "http://localhost:3001",  # ← Добавьте эту строку
             "http://127.0.0.1:3000", 
             "http://127.0.0.1:3001",  # ← И эту
+            "https://rgszh-miniapp.org"
+        ],
+        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization"]
+    },
+    r"/care-future/*": {  # ✅ ДОБАВЛЕНО: CORS для care-future endpoints
+        "origins": [
+            "http://localhost:3000",
+            "http://localhost:3001",
+            "http://127.0.0.1:3000", 
+            "http://127.0.0.1:3001",
             "https://rgszh-miniapp.org"
         ],
         "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
@@ -82,28 +109,38 @@ register_assessment_routes(app)
 # ====== Database setup (для остального функционала) ======
 init_db(app)
 
-# Инициализация калькулятора НСЖ
+# ===== ИНИЦИАЛИЗАЦИЯ КАЛЬКУЛЯТОРА НСЖ =====
+print("🚀 Инициализация калькулятора НСЖ...")
+
 if CARE_FUTURE_AVAILABLE:
     try:
         # Инициализируем БД калькулятора
+        print("  🗄️ Инициализация базы данных...")
         with app.app_context():
             init_success = init_nsj_database()
             if init_success:
-                logger.info("✅ БД калькулятора НСЖ инициализирована")
+                print("  ✅ БД калькулятора НСЖ инициализирована")
             else:
-                logger.warning("⚠️ Ошибка инициализации БД калькулятора НСЖ")
+                print("  ⚠️ Предупреждения при инициализации БД")
         
         # Регистрируем routes
+        print("  🔗 Регистрация API endpoints...")
         route_success = init_care_future_routes(app)
         if route_success:
-            logger.info("✅ API калькулятора НСЖ зарегистрировано")
+            print("  ✅ API калькулятора НСЖ зарегистрировано")
+            print("  📍 Доступные endpoints:")
+            print("    - POST /api/care-future/calculate")
+            print("    - GET  /api/care-future/test")
+            print("    - GET  /api/care-future/admin/status")
         else:
-            logger.warning("⚠️ Ошибка регистрации API калькулятора НСЖ")
+            print("  ❌ Ошибка регистрации API калькулятора НСЖ")
             
     except Exception as e:
-        logger.error(f"❌ Ошибка инициализации калькулятора НСЖ: {e}")
+        print(f"  ❌ Ошибка инициализации калькулятора НСЖ: {e}")
+        CARE_FUTURE_AVAILABLE = False
+        CARE_FUTURE_ERROR = str(e)
 else:
-    logger.info("ℹ️ Калькулятор НСЖ отключен")
+    print(f"  ℹ️ Калькулятор НСЖ отключен. Причина: {CARE_FUTURE_ERROR}")
 
 # ====== Email Configuration ======
 SMTP_SERVER = os.environ.get("SMTP_SERVER", "smtp.yandex.ru")
@@ -236,6 +273,276 @@ def save_feedback():
     except Exception as e:
         logger.error("   DB save error: %s", e)
         return jsonify({"error": "Database error"}), 500
+
+# ===== CARE FUTURE ENDPOINTS =====
+
+@app.route('/api/care-future/status', methods=['GET'])
+def care_future_status():
+    """Статус калькулятора НСЖ"""
+    return jsonify({
+        'available': CARE_FUTURE_AVAILABLE,
+        'error': CARE_FUTURE_ERROR,
+        'files_exist': {
+            'care_future_models.py': os.path.exists('care_future_models.py'),
+            'care_future_routes.py': os.path.exists('care_future_routes.py'),
+            'care_future_schema.sql': os.path.exists('care_future_schema.sql'),
+            'care_future_data.sql': os.path.exists('care_future_data.sql')
+        }
+    })
+
+@app.route('/api/care-future/test', methods=['GET'])
+def care_future_test():
+    """Тестовый endpoint калькулятора НСЖ"""
+    try:
+        if not CARE_FUTURE_AVAILABLE:
+            return jsonify({
+                'status': 'error',
+                'message': 'Калькулятор НСЖ недоступен',
+                'error': CARE_FUTURE_ERROR
+            }), 503
+        
+        # Простой тест расчета
+        from care_future_models import NSJCalculator, CalculationInput
+        from datetime import date
+        
+        test_input = CalculationInput(
+            birth_date=date(1990, 1, 1),
+            gender='male',
+            contract_term=5,
+            calculation_type='from_premium',
+            input_amount=960000,
+            email='test@example.com'
+        )
+        
+        calculator = NSJCalculator()
+        result = calculator.calculate(test_input)
+        
+        return jsonify({
+            'status': 'success',
+            'message': 'Калькулятор НСЖ работает корректно!',
+            'test_result': {
+                'calculation_id': result.calculation_uuid,
+                'premium_amount': result.premium_amount,
+                'insurance_sum': result.insurance_sum,
+                'accumulated_capital': result.accumulated_capital,
+                'program_income': result.program_income,
+                'tax_deduction': result.tax_deduction
+            },
+            'timestamp': datetime.now().isoformat()
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': f'Ошибка теста калькулятора: {str(e)}'
+        }), 500
+
+@app.route('/api/care-future/calculate', methods=['POST', 'OPTIONS'])
+def care_future_calculate():
+    """Основной endpoint для расчета НСЖ"""
+    if request.method == "OPTIONS":
+        return '', 200
+    
+    if not CARE_FUTURE_AVAILABLE:
+        return jsonify({
+            'success': False,
+            'error': f'Калькулятор НСЖ недоступен: {CARE_FUTURE_ERROR}'
+        }), 503
+    
+    try:
+        # Получаем данные запроса
+        data = request.get_json()
+        if not data:
+            return jsonify({
+                'success': False,
+                'error': 'Отсутствуют данные запроса'
+            }), 400
+        
+        logger.info(f"📊 Выполняем расчет: {data.get('calculationType', 'unknown')} для {data.get('gender', 'unknown')}")
+        
+        # Импортируем модули
+        from care_future_models import NSJCalculator, CalculationInput
+        from datetime import datetime, date
+        
+        # Преобразуем и валидируем данные
+        try:
+            birth_date = datetime.strptime(data['birthDate'], '%Y-%m-%d').date()
+        except (KeyError, ValueError) as e:
+            return jsonify({
+                'success': False,
+                'error': 'Неверный формат даты рождения. Используйте YYYY-MM-DD'
+            }), 400
+        
+        # Валидация обязательных полей
+        required_fields = ['gender', 'contractTerm', 'calculationType', 'inputAmount']
+        missing_fields = [field for field in required_fields if field not in data]
+        if missing_fields:
+            return jsonify({
+                'success': False,
+                'error': f'Отсутствуют обязательные поля: {", ".join(missing_fields)}'
+            }), 400
+        
+        # Создаем объект входных данных
+        calculation_input = CalculationInput(
+            birth_date=birth_date,
+            gender=data['gender'],
+            contract_term=int(data['contractTerm']),
+            calculation_type=data['calculationType'],
+            input_amount=int(data['inputAmount']),
+            email=data.get('email'),
+            calculation_date=date.today()
+        )
+        
+        # Выполняем расчет
+        calculator = NSJCalculator()
+        result = calculator.calculate(calculation_input)
+        
+        # Формируем ответ
+        response_data = {
+            'success': True,
+            'calculationId': result.calculation_uuid,
+            'inputParameters': {
+                'birthDate': calculation_input.birth_date.isoformat(),
+                'gender': calculation_input.gender,
+                'contractTerm': calculation_input.contract_term,
+                'calculationType': calculation_input.calculation_type,
+                'inputAmount': calculation_input.input_amount,
+                'email': calculation_input.email,
+                'ageAtStart': result.age_at_start,
+                'ageAtEnd': result.age_at_end
+            },
+            'results': {
+                'premiumAmount': result.premium_amount,
+                'insuranceSum': result.insurance_sum,
+                'accumulatedCapital': result.accumulated_capital,
+                'programIncome': result.program_income,
+                'taxDeduction': result.tax_deduction
+            },
+            'redemptionValues': result.redemption_values,
+            'calculatedAt': datetime.now().isoformat()
+        }
+        
+        logger.info(f"✅ Расчет выполнен успешно: {result.calculation_uuid}")
+        return jsonify(response_data)
+        
+    except ValueError as e:
+        logger.warning(f"⚠️ Ошибка валидации: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 400
+        
+    except Exception as e:
+        logger.error(f"❌ Ошибка расчета: {e}")
+        return jsonify({
+            'success': False,
+            'error': f'Внутренняя ошибка сервера: {str(e)}'
+        }), 500
+
+@app.route('/care-future/calculate', methods=['POST', 'OPTIONS'])
+def care_future_proxy():
+    """✅ ИСПРАВЛЕНО: Проксирующий endpoint для фронтенда (без конфликта имен)"""
+    logger.info("🌐 ➜ %s %s (PROXY)", request.method, request.path)
+    
+    if request.method == "OPTIONS":
+        return '', 200
+    
+    if not CARE_FUTURE_AVAILABLE:
+        logger.error("❌ Калькулятор НСЖ недоступен")
+        return jsonify({
+            'success': False,
+            'error': f'Калькулятор НСЖ временно недоступен: {CARE_FUTURE_ERROR}'
+        }), 503
+    
+    try:
+        # Получаем данные запроса
+        data = request.get_json()
+        if not data:
+            return jsonify({
+                'success': False,
+                'error': 'Отсутствуют данные запроса'
+            }), 400
+        
+        logger.info(f"📊 Проксирование расчета: {data.get('calculationType', 'unknown')} для возраста {data.get('birthDate', 'unknown')}")
+        
+        # Импортируем модули локально для безопасности
+        from care_future_models import NSJCalculator, CalculationInput
+        from datetime import datetime, date
+        
+        # Преобразуем данные
+        try:
+            birth_date = datetime.strptime(data['birthDate'], '%Y-%m-%d').date()
+        except (KeyError, ValueError) as e:
+            return jsonify({
+                'success': False,
+                'error': 'Неверный формат даты рождения. Используйте YYYY-MM-DD'
+            }), 400
+        
+        # Валидация обязательных полей
+        required_fields = ['gender', 'contractTerm', 'calculationType', 'inputAmount']
+        missing_fields = [field for field in required_fields if field not in data]
+        if missing_fields:
+            return jsonify({
+                'success': False,
+                'error': f'Отсутствуют обязательные поля: {", ".join(missing_fields)}'
+            }), 400
+        
+        # Создаем объект входных данных
+        calculation_input = CalculationInput(
+            birth_date=birth_date,
+            gender=data['gender'],
+            contract_term=int(data['contractTerm']),
+            calculation_type=data['calculationType'],
+            input_amount=int(data['inputAmount']),
+            email=data.get('email'),
+            calculation_date=date.today()
+        )
+        
+        # Выполняем расчет
+        calculator = NSJCalculator()
+        result = calculator.calculate(calculation_input)
+        
+        # Формируем ответ
+        response_data = {
+            'success': True,
+            'calculationId': result.calculation_uuid,
+            'inputParameters': {
+                'birthDate': calculation_input.birth_date.isoformat(),
+                'gender': calculation_input.gender,
+                'contractTerm': calculation_input.contract_term,
+                'calculationType': calculation_input.calculation_type,
+                'inputAmount': calculation_input.input_amount,
+                'email': calculation_input.email,
+                'ageAtStart': result.age_at_start,
+                'ageAtEnd': result.age_at_end
+            },
+            'results': {
+                'premiumAmount': result.premium_amount,
+                'insuranceSum': result.insurance_sum,
+                'accumulatedCapital': result.accumulated_capital,
+                'programIncome': result.program_income,
+                'taxDeduction': result.tax_deduction
+            },
+            'redemptionValues': result.redemption_values,
+            'calculatedAt': datetime.now().isoformat()
+        }
+        
+        logger.info(f"✅ Расчет выполнен успешно: {result.calculation_uuid}")
+        return jsonify(response_data)
+        
+    except ValueError as e:
+        logger.warning(f"⚠️ Ошибка валидации в прокси: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 400
+        
+    except Exception as e:
+        logger.error(f"❌ Ошибка расчета в прокси: {e}")
+        return jsonify({
+            'success': False,
+            'error': 'Внутренняя ошибка сервера'
+        }), 500
 
 # ====== EMAIL PROXY ENDPOINTS ======
 
@@ -378,9 +685,17 @@ if __name__ == '__main__':
     else:
         logger.warning("📧 Email not configured (SMTP_PASSWORD missing)")
     
+    # Проверяем статус калькулятора при запуске
+    if CARE_FUTURE_AVAILABLE:
+        logger.info("🧮 Care Future калькулятор НСЖ: ДОСТУПЕН")
+        logger.info("📍 Endpoints: /api/care-future/* и /care-future/calculate")
+    else:
+        logger.warning("🧮 Care Future калькулятор НСЖ: НЕДОСТУПЕН")
+        logger.info("📍 Доступные тестовые endpoints:")
+        logger.info("   - GET /api/care-future/status")
+    
     port = int(os.environ.get("PORT", 5000))
     socketio.run(app, host='0.0.0.0', port=5000, debug=False)
-
 
 
 
