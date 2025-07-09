@@ -56,30 +56,26 @@ logger = logging.getLogger("server")
 
 # ====== Flask app ======
 app = Flask(__name__, static_folder="build", static_url_path="")
+
 CORS(app, resources={
-    r"/api/*": {
+    r"/*": {
         "origins": [
             "http://localhost:3000",
-            "http://localhost:3001",  # ← Добавьте эту строку
-            "http://127.0.0.1:3000", 
-            "http://127.0.0.1:3001",  # ← И эту
+            "http://localhost:3001", 
+            "http://localhost:4000",
+            "http://localhost:4001",  # Добавить
+            "http://127.0.0.1:*",
             "https://rgszh-miniapp.org"
         ],
         "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        "allow_headers": ["Content-Type", "Authorization"]
-    },
-    r"/care-future/*": {  # ✅ ДОБАВЛЕНО: CORS для care-future endpoints
-        "origins": [
-            "http://localhost:3000",
-            "http://localhost:3001",
-            "http://127.0.0.1:3000", 
-            "http://127.0.0.1:3001",
-            "https://rgszh-miniapp.org"
-        ],
-        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        "allow_headers": ["Content-Type", "Authorization"]
+        "allow_headers": ["Content-Type", "Authorization"],
+        "supports_credentials": True
     }
 })
+
+@app.before_request
+def log_request():
+    logger.info(f"🔍 Incoming request: {request.method} {request.path}")
 
 # ====== Socket.IO setup with optional Redis ======
 redis_url = os.environ.get("REDIS_URL")
@@ -666,18 +662,39 @@ def contact_manager():
         logger.error(f"❌ Ошибка обработки заявки менеджера: {e}")
         return jsonify({"error": "Внутренняя ошибка сервера"}), 500
 
-# ====== Static files ======
+# ====== Static files ====== 
+# ВАЖНО: Эти маршруты должны быть ПОСЛЕДНИМИ, после всех API маршрутов
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def serve_react_app(path):
-    if path != "" and os.path.exists(os.path.join(app.static_folder, path)):
+    logger.info(f"📁 Requested path: '{path}'")
+    logger.info(f"📁 Static folder: {app.static_folder}")
+    logger.info(f"📁 Current directory: {os.getcwd()}")
+    
+    # Проверяем, существует ли запрошенный файл
+    file_path = os.path.join(app.static_folder, path)
+    
+    if path and os.path.exists(file_path) and os.path.isfile(file_path):
+        logger.info(f"📁 Serving static file: {path}")
         return send_from_directory(app.static_folder, path)
     else:
-        return send_from_directory(app.static_folder, 'index.html')
+        # Для всех остальных маршрутов возвращаем index.html (SPA)
+        logger.info(f"📁 Serving index.html for SPA route: {path}")
+        try:
+            return send_from_directory(app.static_folder, 'index.html')
+        except Exception as e:
+            logger.error(f"❌ Error serving index.html: {e}")
+            return "Build folder or index.html not found", 404
 
 # ====== App startup ======
 if __name__ == '__main__':
     logger.info("🚀 Starting MiniApp Server...")
+    
+    # Проверяем наличие build папки
+    if not os.path.exists('build'):
+        logger.error("❌ Build folder not found! Run 'npm run build' first")
+    else:
+        logger.info(f"✅ Build folder found with {len(os.listdir('build'))} items")
     
     # Проверяем email конфигурацию
     if SMTP_PASSWORD:
@@ -694,7 +711,10 @@ if __name__ == '__main__':
         logger.info("📍 Доступные тестовые endpoints:")
         logger.info("   - GET /api/care-future/status")
     
-    port = int(os.environ.get("FLASK_PORT", 4000))  # Используем FLASK_PORT
+    port = int(os.environ.get("FLASK_PORT", 4000))
+    logger.info(f"📍 Server will run on port {port}")
+    logger.info(f"📍 Open http://localhost:{port}/ in your browser")
+    
     socketio.run(app, host='0.0.0.0', port=port, debug=False)
 
 
