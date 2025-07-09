@@ -358,7 +358,7 @@ export default function MarzaPollPage() {
     const loadCurrentPoll = async () => {
       try {
         console.log('📥 Загрузка текущего состояния опроса...');
-        const response = await fetch(`${window.location.origin}/api/poll`);
+        const response = await fetch('/api/poll');
         
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}`);
@@ -435,7 +435,7 @@ export default function MarzaPollPage() {
       // ✅ FALLBACK: Отправляем через HTTP API
       console.log('🔄 Socket недоступен, пробуем HTTP API...');
       
-      fetch(`${window.location.origin}/api/poll/vote`, {
+      fetch('/api/poll/vote', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -481,7 +481,7 @@ export default function MarzaPollPage() {
       // ✅ FALLBACK: Отправляем через HTTP API
       console.log('🔄 Socket недоступен, пробуем HTTP API...');
       
-      fetch(`${window.location.origin}/api/poll/reset`, {
+      fetch('/api/poll/reset', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
