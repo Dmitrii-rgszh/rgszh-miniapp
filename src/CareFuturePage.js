@@ -26,7 +26,11 @@ export default function CareFuturePage() {
   const [emailError, setEmailError] = useState('');
 
   // ===== Состояния для формы расчёта =====
-  const [birthParts, setBirthParts] = useState({ day: null, month: null, year: null });
+  const [birthParts, setBirthParts] = useState({ 
+    day: '01', 
+    month: '01', 
+    year: new Date().getFullYear().toString() 
+  });
   const [birthDate, setBirthDate] = useState(null);
   const [gender, setGender] = useState(null);
   const [programTerm, setProgramTerm] = useState(5);
@@ -808,10 +812,8 @@ export default function CareFuturePage() {
           <div style={formGroupStyle}>
             <label style={labelStyle}>Дата рождения</label>
             <DateWheelPicker
+              value={birthParts}
               onChange={(parts) => setBirthParts(parts)}
-              initialDay={birthParts.day}
-              initialMonth={birthParts.month}
-              initialYear={birthParts.year}
             />
             {validationErrors.birthDate && (
               <div style={errorMessageStyle}>{validationErrors.birthDate}</div>
