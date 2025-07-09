@@ -2,20 +2,20 @@
 const { createProxyMiddleware } = require('http-proxy-middleware');
 
 module.exports = function(app) {
+  // Для версии 3.x используем один middleware для всех путей
   app.use(
-    '/api',
     createProxyMiddleware({
-      target: 'http://localhost:4000', // ← Изменено на 4000
+      context: ['/api', '/socket.io'],
+      target: 'http://localhost:4000',
       changeOrigin: true,
-    })
-  );
-
-  app.use(
-    '/socket.io',
-    createProxyMiddleware({
-      target: 'http://localhost:4000', // ← Изменено на 4000
-      ws: true,
-      changeOrigin: true,
+      ws: true, // Включаем поддержку WebSocket
+      logLevel: 'debug',
+      onProxyReq: (proxyReq, req, res) => {
+        console.log('[Proxy]', req.method, req.url, '→', 'http://localhost:4000' + req.url);
+      },
+      onError: (err, req, res) => {
+        console.error('[Proxy Error]', err);
+      }
     })
   );
 };
