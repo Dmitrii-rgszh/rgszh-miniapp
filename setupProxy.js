@@ -6,18 +6,26 @@ module.exports = function(app) {
   app.use(
     '/api',
     createProxyMiddleware({
-      target: 'http://localhost:5000',
+      target: 'http://localhost:5000', // ← Убедитесь что Flask работает на порту 5000
       changeOrigin: true,
+      logLevel: 'debug',
+      onProxyReq: (proxyReq, req, res) => {
+        console.log('Proxying API:', req.method, req.url);
+      }
     })
   );
 
-  // Прокси для socket.io (WebSocket + polling)
+  // Прокси для Socket.IO
   app.use(
     '/socket.io',
     createProxyMiddleware({
-      target: 'http://localhost:5000',
+      target: 'http://localhost:5000', // ← Убедитесь что Flask работает на порту 5000
       ws: true,
       changeOrigin: true,
+      logLevel: 'debug',
+      onProxyReq: (proxyReq, req, res) => {
+        console.log('Proxying Socket.IO:', req.method, req.url);
+      }
     })
   );
 };

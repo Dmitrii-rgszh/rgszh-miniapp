@@ -1,10 +1,11 @@
+// src/setupProxy.js
 const { createProxyMiddleware } = require('http-proxy-middleware');
 
 module.exports = function(app) {
   app.use(
     '/api',
     createProxyMiddleware({
-      target: 'http://localhost:5000',
+      target: 'http://localhost:4000', // ← Изменено на 4000
       changeOrigin: true,
     })
   );
@@ -12,7 +13,7 @@ module.exports = function(app) {
   app.use(
     '/socket.io',
     createProxyMiddleware({
-      target: 'http://localhost:5000',
+      target: 'http://localhost:4000', // ← Изменено на 4000
       ws: true,
       changeOrigin: true,
     })

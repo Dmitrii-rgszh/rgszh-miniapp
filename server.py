@@ -694,8 +694,8 @@ if __name__ == '__main__':
         logger.info("📍 Доступные тестовые endpoints:")
         logger.info("   - GET /api/care-future/status")
     
-    port = int(os.environ.get("PORT", 5000))
-    socketio.run(app, host='0.0.0.0', port=5000, debug=False)
+    port = int(os.environ.get("PORT", 4000))
+    socketio.run(app, host='0.0.0.0', port=4000, debug=False)
 
 
 
