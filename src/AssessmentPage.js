@@ -479,17 +479,28 @@ export default function AssessmentPage() {
               {errorMessage && <div className="error-message">{errorMessage}</div>}
             </div>
 
-            <div className="options-container">
+            <div className="options-container" style={{ overflow: 'visible', padding: '15px 10px' }}>
               {currentQuestionData.shuffledOptions.map((option, idx) => (
                 <button
                   key={idx}
                   className={`option-button ${selectedAnswer === option.text ? 'selected' : ''}`}
                   onClick={() => setSelectedAnswer(option.text)}
+                  style={{
+                    margin: '8px 0',
+                    overflow: 'visible',
+                    ...(selectedAnswer === option.text ? {
+                      animation: 'selectedPulse 1.5s ease-in-out infinite',
+                      background: 'rgba(255, 255, 255, 0.35)',
+                      border: '2px solid rgba(255, 255, 255, 0.9)',
+                      boxShadow: '0 0 10px rgba(255, 255, 255, 0.7)',
+                      filter: 'brightness(1.2)'
+                    } : {})
+                  }}
                 >
                   {option.text}
                 </button>
               ))}
-            </div>
+           </div>
 
             {currentQuestionData.description && (
               <div className="question-description">
