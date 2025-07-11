@@ -25,7 +25,8 @@ export default function MainMenu() {
   const mainContainerStyle = {
     position: 'relative',
     width: '100%',
-    height: '100vh',
+    height: window.innerHeight + 'px',
+    minHeight: '100vh',
     backgroundImage: `url(${backgroundImage})`,
     backgroundSize: 'cover',
     backgroundPosition: 'center',

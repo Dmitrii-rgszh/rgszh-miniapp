@@ -21,6 +21,21 @@ import speakersData  from './components/autosuggest/speakers.json';
 
 export default function FeedbackPage() {
   // ---------------------------------------------
+  // ДОБАВЛЕНО: Функция определения Safari и получения высоты
+  // ---------------------------------------------
+  const isSafari = () => {
+    return /^((?!chrome|android).)*safari/i.test(navigator.userAgent) ||
+           /iPad|iPhone|iPod/.test(navigator.userAgent);
+  };
+
+  const getViewportHeight = () => {
+    if (isSafari()) {
+      return window.innerHeight;
+    }
+    return '100vh';
+  };
+
+  // ---------------------------------------------
   // 1) useRef для логотипа и кнопки «Далее»
   // ---------------------------------------------
   const logoRef = useRef(null);
@@ -125,6 +140,32 @@ const API_BASE_URL = getApiBase();
 
   // Шаг 8: общее впечатление
   const [impression, setImpression] = useState('');
+
+  // ---------------------------------------------
+  // ДОБАВЛЕНО: useEffect для обработки изменения размера окна в Safari
+  // ---------------------------------------------
+  useEffect(() => {
+    const handleResize = () => {
+      if (isSafari()) {
+        // Обновляем высоту контейнера при изменении размера окна
+        const containers = document.querySelectorAll('.mainmenu-container, .feedback-container');
+        containers.forEach(container => {
+          if (container) {
+            container.style.height = `${getViewportHeight()}px`;
+            container.style.minHeight = `${getViewportHeight()}px`;
+          }
+        });
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', handleResize);
+    
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('orientationchange', handleResize);
+    };
+  }, []);
 
   // ---------------------------------------------
   // 5) При изменении списка спикеров пересоздаём качества
@@ -270,7 +311,7 @@ const API_BASE_URL = getApiBase();
       case 5:
         return brightThoughts.trim().length >= 5;
       case 6:
-        // Если выбрали «Статистических данных» — требуется ввод ≥ 5 символов
+        // Если выбрали «Статистических данных» — требуется ввод ≥ 5 символов
         if (additionalSelections.includes('Статистических данных')) {
           return statsDetails.trim().length >= 5;
         }
@@ -439,7 +480,7 @@ const API_BASE_URL = getApiBase();
   const titleRef = useRef(null);
   const inputRef = useRef(null);
   
-  // Шаг 9: рекомендация
+  // Шаг 9: рекомендация
   const [recommendation, setRecommendation] = useState(3);
 const [hasChangedRating, setHasChangedRating] = useState(false);
 
@@ -584,7 +625,7 @@ useEffect(() => {
             </div>
 
             {countSelectedQualities() < 3 && (
-              <p className="quality-warning">Выберите минимум 3 качества</p>
+              <p className="quality-warning">Выберите минимум 3 качества</p>
             )}
           </div>
         );
@@ -755,7 +796,7 @@ useEffect(() => {
         return (
           <div className="step9-container">
             <h2>Насколько вы готовы рекомендовать тренинг?</h2>
-            <p className="step9-subtitle">Оцените по шкале от 1 до 5</p>
+            <p className="step9-subtitle">Оцените по шкале от 1 до 5</p>
 
             <input
               type="range"
@@ -785,7 +826,12 @@ useEffect(() => {
     return (
       <div
         className="mainmenu-container feedback-container"
-        style={{ backgroundImage: `url(${backgroundImage})` }}
+        style={{ 
+          backgroundImage: `url(${backgroundImage})`,
+          // ИЗМЕНЕНО: Safari-совместимая высота
+          height: isSafari() ? `${getViewportHeight()}px` : '100vh',
+          minHeight: '100vh'
+        }}
       >
         {/* фоновые точки и π */}
         <div className="subtle-dot dot-1" />
@@ -821,7 +867,12 @@ useEffect(() => {
   return (
     <div
       className="mainmenu-container feedback-container"
-      style={{ backgroundImage: `url(${backgroundImage})` }}
+      style={{ 
+        backgroundImage: `url(${backgroundImage})`,
+        // ИЗМЕНЕНО: Safari-совместимая высота
+        height: isSafari() ? `${getViewportHeight()}px` : '100vh',
+        minHeight: '100vh'
+      }}
     >
       {/* Фоновые точки, Pi, overlay */}
       <div className="subtle-dot dot-1" />
@@ -948,108 +999,3 @@ useEffect(() => {
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

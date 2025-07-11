@@ -1,4 +1,4 @@
-// WelcomePage.js - ВЕРСИЯ С ПОЛНЫМИ ИНЛАЙН СТИЛЯМИ
+// WelcomePage.js - ВЕРСИЯ С ПОЛНЫМИ ИНЛАЙН СТИЛЯМИ + SAFARI FIX
 
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -23,13 +23,27 @@ const WelcomePage = () => {
   const [moveDuration] = useState('70s');
   const [rotateDuration] = useState('6s');
 
+  // ===== ДОБАВЛЕНО: SAFARI DETECTION =====
+  const isSafari = () => {
+    return /^((?!chrome|android).)*safari/i.test(navigator.userAgent) ||
+           /iPad|iPhone|iPod/.test(navigator.userAgent);
+  };
+
+  const getViewportHeight = () => {
+    if (isSafari()) {
+      return window.innerHeight;
+    }
+    return '100vh';
+  };
+
   // ===== СТИЛИ =====
 
-  // Основной контейнер
+  // Основной контейнер - ИСПРАВЛЕНО для Safari
   const welcomeContainerStyle = {
     position: 'relative',
     width: '100%',
-    height: '100vh',
+    height: isSafari() ? `${getViewportHeight()}px` : '100vh',
+    minHeight: '100vh',
     backgroundImage: `url(${backgroundImage})`,
     backgroundSize: 'cover',
     backgroundPosition: 'center',
@@ -39,10 +53,15 @@ const WelcomePage = () => {
     flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    // Дополнительные свойства для Safari
+    ...(isSafari() && {
+      WebkitOverflowScrolling: 'touch',
+      overscrollBehavior: 'none'
+    })
   };
 
-  // Оверлей с градиентом
+  // Оверлей с градиентом - ИСПРАВЛЕНО для Safari
   const overlayStyle = {
     position: 'absolute',
     top: 0,
@@ -50,7 +69,12 @@ const WelcomePage = () => {
     width: '100%',
     height: '100%',
     background: 'linear-gradient(135deg, rgba(147, 39, 143, 0.85) 0%, rgba(71, 125, 191, 0.85) 100%)',
-    zIndex: 1
+    zIndex: 1,
+    // Для Safari фиксируем размеры
+    ...(isSafari() && {
+      minHeight: '100%',
+      backgroundAttachment: 'local'
+    })
   };
 
   // Логотип с анимацией
@@ -140,6 +164,28 @@ const WelcomePage = () => {
     opacity: 0.8,
     animation: `piRotate ${rotateDuration} linear infinite`
   };
+
+  // ===== ДОБАВЛЕНО: useEffect для обработки изменения размера окна в Safari =====
+  useEffect(() => {
+    const handleResize = () => {
+      if (isSafari()) {
+        // Обновляем высоту контейнера при изменении размера окна
+        const container = document.querySelector('.welcome-container-safari');
+        if (container) {
+          container.style.height = `${getViewportHeight()}px`;
+          container.style.minHeight = `${getViewportHeight()}px`;
+        }
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', handleResize);
+    
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('orientationchange', handleResize);
+    };
+  }, []);
 
   // ===== ЛОГИКА =====
 
@@ -262,6 +308,7 @@ const WelcomePage = () => {
   return (
     <div
       style={welcomeContainerStyle}
+      className="welcome-container-safari"
       {...swipeHandlers}
     >
       {animations}
