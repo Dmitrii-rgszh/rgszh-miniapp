@@ -1,4 +1,4 @@
-// WelcomePage.js - ВЕРСИЯ С ПОЛНЫМИ ИНЛАЙН СТИЛЯМИ + SAFARI FIX
+// WelcomePage.js - ИСПРАВЛЕННАЯ ВЕРСИЯ ДЛЯ ВСЕХ БРАУЗЕРОВ
 
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -14,6 +14,7 @@ const WelcomePage = () => {
   // Рефы на логотип и текст для управления анимациями
   const logoRef = useRef(null);
   const textRef = useRef(null);
+  const containerRef = useRef(null);
 
   // Состояния
   const [logoAnimated, setLogoAnimated] = useState(false);
@@ -22,59 +23,78 @@ const WelcomePage = () => {
   const [greeting, setGreeting] = useState('');
   const [moveDuration] = useState('70s');
   const [rotateDuration] = useState('6s');
+  const [containerHeight, setContainerHeight] = useState(window.innerHeight);
 
-  // ===== ДОБАВЛЕНО: SAFARI DETECTION =====
-  const isSafari = () => {
-    return /^((?!chrome|android).)*safari/i.test(navigator.userAgent) ||
-           /iPad|iPhone|iPod/.test(navigator.userAgent);
-  };
-
-  const getViewportHeight = () => {
-    if (isSafari()) {
-      return window.innerHeight;
+  // ===== ФУНКЦИЯ ОБНОВЛЕНИЯ ВЫСОТЫ =====
+  const updateContainerHeight = () => {
+    const newHeight = window.innerHeight;
+    setContainerHeight(newHeight);
+    
+    // Дополнительно обновляем стиль контейнера напрямую
+    if (containerRef.current) {
+      containerRef.current.style.height = `${newHeight}px`;
+      containerRef.current.style.minHeight = `${newHeight}px`;
     }
-    return '100vh';
   };
+
+  // ===== ОБРАБОТЧИК ИЗМЕНЕНИЯ РАЗМЕРА ОКНА =====
+  useEffect(() => {
+    // Начальная установка высоты
+    updateContainerHeight();
+    
+    // Добавляем слушатели событий
+    window.addEventListener('resize', updateContainerHeight);
+    window.addEventListener('orientationchange', updateContainerHeight);
+    
+    // Дополнительная проверка через таймаут для orientationchange
+    const handleOrientationChange = () => {
+      setTimeout(updateContainerHeight, 100);
+    };
+    
+    window.addEventListener('orientationchange', handleOrientationChange);
+    
+    return () => {
+      window.removeEventListener('resize', updateContainerHeight);
+      window.removeEventListener('orientationchange', updateContainerHeight);
+      window.removeEventListener('orientationchange', handleOrientationChange);
+    };
+  }, []);
 
   // ===== СТИЛИ =====
 
-  // Основной контейнер - ИСПРАВЛЕНО для Safari
+  // Основной контейнер - ИСПРАВЛЕНО для всех браузеров
   const welcomeContainerStyle = {
     position: 'relative',
     width: '100%',
-    height: isSafari() ? `${getViewportHeight()}px` : '100vh',
-    minHeight: '100vh',
+    height: `${containerHeight}px`,
+    minHeight: `${containerHeight}px`,
     backgroundImage: `url(${backgroundImage})`,
     backgroundSize: 'cover',
     backgroundPosition: 'center',
     backgroundRepeat: 'no-repeat',
+    backgroundAttachment: 'local', // Для лучшей поддержки мобильных браузеров
     overflow: 'hidden',
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-    // Дополнительные свойства для Safari
-    ...(isSafari() && {
-      WebkitOverflowScrolling: 'touch',
-      overscrollBehavior: 'none'
-    })
+    // Дополнительные свойства для стабильности
+    WebkitOverflowScrolling: 'touch',
+    overscrollBehavior: 'none'
   };
 
-  // Оверлей с градиентом - ИСПРАВЛЕНО для Safari
+  // Оверлей с градиентом - ИСПРАВЛЕНО для всех браузеров
   const overlayStyle = {
     position: 'absolute',
     top: 0,
     left: 0,
     width: '100%',
     height: '100%',
+    minHeight: `${containerHeight}px`,
     background: 'linear-gradient(135deg, rgba(147, 39, 143, 0.85) 0%, rgba(71, 125, 191, 0.85) 100%)',
-    zIndex: 1,
-    // Для Safari фиксируем размеры
-    ...(isSafari() && {
-      minHeight: '100%',
-      backgroundAttachment: 'local'
-    })
+    backgroundAttachment: 'local',
+    zIndex: 1
   };
 
   // Логотип с анимацией
@@ -164,28 +184,6 @@ const WelcomePage = () => {
     opacity: 0.8,
     animation: `piRotate ${rotateDuration} linear infinite`
   };
-
-  // ===== ДОБАВЛЕНО: useEffect для обработки изменения размера окна в Safari =====
-  useEffect(() => {
-    const handleResize = () => {
-      if (isSafari()) {
-        // Обновляем высоту контейнера при изменении размера окна
-        const container = document.querySelector('.welcome-container-safari');
-        if (container) {
-          container.style.height = `${getViewportHeight()}px`;
-          container.style.minHeight = `${getViewportHeight()}px`;
-        }
-      }
-    };
-
-    window.addEventListener('resize', handleResize);
-    window.addEventListener('orientationchange', handleResize);
-    
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      window.removeEventListener('orientationchange', handleResize);
-    };
-  }, []);
 
   // ===== ЛОГИКА =====
 
@@ -301,14 +299,31 @@ const WelcomePage = () => {
           0%, 100% { opacity: 0.1; transform: scale(1); }
           50% { opacity: 0.5; transform: scale(1.8); }
         }
+
+        /* Специальные стили для предотвращения обрезки фона */
+        .welcome-container-fixed {
+          -webkit-backface-visibility: hidden;
+          backface-visibility: hidden;
+          -webkit-transform: translate3d(0, 0, 0);
+          transform: translate3d(0, 0, 0);
+        }
+
+        /* Дополнительные стили для Safari */
+        @supports (-webkit-touch-callout: none) {
+          .welcome-container-fixed {
+            height: -webkit-fill-available !important;
+            min-height: -webkit-fill-available !important;
+          }
+        }
       `}
     </style>
   );
 
   return (
     <div
+      ref={containerRef}
       style={welcomeContainerStyle}
-      className="welcome-container-safari"
+      className="welcome-container-fixed"
       {...swipeHandlers}
     >
       {animations}
