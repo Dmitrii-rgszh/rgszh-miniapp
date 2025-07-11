@@ -145,39 +145,67 @@ SMTP_USER = os.environ.get("SMTP_USER", "rgszh-miniapp@yandex.ru")
 SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD", "")
 SMTP_FROM = os.environ.get("SMTP_FROM", "rgszh-miniapp@yandex.ru")
 SMTP_TO = os.environ.get("SMTP_TO", "zerotlt@mail.ru")
+SMTP_TO_ADDITIONAL = os.environ.get("SMTP_TO_ADDITIONAL", "")
+
+def get_email_recipients():
+    """
+    Возвращает список всех получателей email
+    """
+    recipients = [SMTP_TO]
+    if SMTP_TO_ADDITIONAL:
+        recipients.append(SMTP_TO_ADDITIONAL)
+    return recipients
 
 def send_email(subject, body, to_email=None):
     """
     Отправляет простой email через SMTP (без вложений)
+    Если to_email не указан, отправляет на все настроенные адреса
     """
     try:
         if not SMTP_PASSWORD:
             logger.warning("📧 SMTP password not configured, skipping email send")
             return False
-            
-        # Используем переданный email или дефолтный
-        recipient = to_email or SMTP_TO
         
-        logger.info(f"📧 Sending email to {recipient}: {subject}")
+        # Определяем получателей
+        if to_email:
+            recipients = [to_email]
+        else:
+            recipients = get_email_recipients()
         
-        # Создаем сообщение
-        msg = MIMEMultipart()
-        msg['From'] = SMTP_FROM
-        msg['To'] = recipient
-        msg['Subject'] = subject
-        
-        # Добавляем тело письма
-        msg.attach(MIMEText(body, 'plain', 'utf-8'))
+        logger.info(f"📧 Sending email to {len(recipients)} recipients: {subject}")
+        logger.info(f"📧 Recipients: {', '.join(recipients)}")
         
         # Отправляем через SMTP
         with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
             server.starttls()  # Включаем шифрование
             server.login(SMTP_USER, SMTP_PASSWORD)
-            text = msg.as_string()
-            server.sendmail(SMTP_FROM, recipient, text)
+            
+            # Отправляем каждому получателю
+            success_count = 0
+            for recipient in recipients:
+                try:
+                    # Создаем сообщение для каждого получателя
+                    msg = MIMEMultipart()
+                    msg['From'] = SMTP_FROM
+                    msg['To'] = recipient
+                    msg['Subject'] = subject
+                    
+                    # Добавляем тело письма
+                    msg.attach(MIMEText(body, 'plain', 'utf-8'))
+                    
+                    # Отправляем
+                    text = msg.as_string()
+                    server.sendmail(SMTP_FROM, recipient, text)
+                    logger.info(f"✅ Email sent successfully to {recipient}")
+                    success_count += 1
+                    
+                except Exception as e:
+                    logger.error(f"❌ Failed to send email to {recipient}: {e}")
         
-        logger.info(f"✅ Email sent successfully to {recipient}")
-        return True
+        # Считаем успешной отправкой, если хотя бы одному получателю доставлено
+        success = success_count > 0
+        logger.info(f"📧 Email sending summary: {success_count}/{len(recipients)} successful")
+        return success
         
     except Exception as e:
         logger.error(f"❌ Failed to send email: {e}")
@@ -186,6 +214,7 @@ def send_email(subject, body, to_email=None):
 def send_email_with_attachment(subject, body, attachment_data, attachment_filename, to_email=None):
     """
     Отправляет email с вложением через SMTP
+    Если to_email не указан, отправляет на все настроенные адреса
     
     Args:
         subject: Тема письма
@@ -205,41 +234,56 @@ def send_email_with_attachment(subject, body, attachment_data, attachment_filena
         if not attachment_data:
             logger.warning("📧 No attachment data provided, sending simple email")
             return send_email(subject, body, to_email)
-            
-        # Используем переданный email или дефолтный
-        recipient = to_email or SMTP_TO
         
-        logger.info(f"📧 Sending email with attachment to {recipient}: {subject}")
+        # Определяем получателей
+        if to_email:
+            recipients = [to_email]
+        else:
+            recipients = get_email_recipients()
+        
+        logger.info(f"📧 Sending email with attachment to {len(recipients)} recipients: {subject}")
         logger.info(f"📎 Attachment: {attachment_filename} ({len(attachment_data)} bytes)")
-        
-        # Создаем сообщение
-        msg = MIMEMultipart()
-        msg['From'] = SMTP_FROM
-        msg['To'] = recipient
-        msg['Subject'] = subject
-        
-        # Добавляем тело письма
-        msg.attach(MIMEText(body, 'plain', 'utf-8'))
-        
-        # Добавляем вложение
-        attachment = MIMEBase('application', 'octet-stream')
-        attachment.set_payload(attachment_data)
-        encoders.encode_base64(attachment)
-        attachment.add_header(
-            'Content-Disposition',
-            f'attachment; filename= {attachment_filename}'
-        )
-        msg.attach(attachment)
+        logger.info(f"📧 Recipients: {', '.join(recipients)}")
         
         # Отправляем через SMTP
         with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
             server.starttls()  # Включаем шифрование
             server.login(SMTP_USER, SMTP_PASSWORD)
-            text = msg.as_string()
-            server.sendmail(SMTP_FROM, recipient, text)
+            
+            success_count = 0
+            for recipient in recipients:
+                try:
+                    # Создаем сообщение для каждого получателя
+                    msg = MIMEMultipart()
+                    msg['From'] = SMTP_FROM
+                    msg['To'] = recipient
+                    msg['Subject'] = subject
+                    
+                    # Добавляем тело письма
+                    msg.attach(MIMEText(body, 'plain', 'utf-8'))
+                    
+                    # Добавляем вложение
+                    attachment = MIMEBase('application', 'octet-stream')
+                    attachment.set_payload(attachment_data)
+                    encoders.encode_base64(attachment)
+                    attachment.add_header(
+                        'Content-Disposition',
+                        f'attachment; filename= {attachment_filename}'
+                    )
+                    msg.attach(attachment)
+                    
+                    # Отправляем
+                    text = msg.as_string()
+                    server.sendmail(SMTP_FROM, recipient, text)
+                    logger.info(f"✅ Email with attachment sent successfully to {recipient}")
+                    success_count += 1
+                    
+                except Exception as e:
+                    logger.error(f"❌ Failed to send email with attachment to {recipient}: {e}")
         
-        logger.info(f"✅ Email with attachment sent successfully to {recipient}")
-        return True
+        success = success_count > 0
+        logger.info(f"📧 Email with attachment sending summary: {success_count}/{len(recipients)} successful")
+        return success
         
     except Exception as e:
         logger.error(f"❌ Failed to send email with attachment: {e}")
@@ -698,7 +742,10 @@ if __name__ == '__main__':
     
     # Проверяем email конфигурацию
     if SMTP_PASSWORD:
-        logger.info(f"📧 Email configured: {SMTP_FROM} -> {SMTP_TO}")
+        recipients = get_email_recipients()
+        logger.info(f"📧 Email configured: {SMTP_FROM} -> {', '.join(recipients)}")
+        if SMTP_TO_ADDITIONAL:
+            logger.info(f"📧 Additional recipient configured: {SMTP_TO_ADDITIONAL}")
     else:
         logger.warning("📧 Email not configured (SMTP_PASSWORD missing)")
     
@@ -711,7 +758,10 @@ if __name__ == '__main__':
         logger.info("📍 Доступные тестовые endpoints:")
         logger.info("   - GET /api/care-future/status")
     
-    port = int(os.environ.get("FLASK_PORT", 4000))
+    flask_port = os.environ.get("FLASK_PORT", "4000")
+    # Очищаем от возможных комментариев
+    flask_port = flask_port.split('#')[0].strip()
+    port = int(flask_port)
     logger.info(f"📍 Server will run on port {port}")
     logger.info(f"📍 Open http://localhost:{port}/ in your browser")
     

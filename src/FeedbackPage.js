@@ -33,7 +33,7 @@ export default function FeedbackPage() {
     const { hostname, port, protocol } = window.location;
     // если мы в React‑dev‑server (localhost:3000) — зовём бэкенд на 5000
     if ((hostname === 'localhost' || hostname === '127.0.0.1') && port === '3000') {
-      return `${protocol}//${hostname}:5000`;
+      return `${protocol}//${hostname}:4000`;
     }
     // во всех остальных случаях (prod‑сборка, когда Flask раздаёт статику)
     // оставляем относительный путь:
