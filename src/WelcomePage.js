@@ -1,4 +1,4 @@
-// WelcomePage.js - ИСПРАВЛЕННАЯ ВЕРСИЯ ДЛЯ ВСЕХ БРАУЗЕРОВ
+// WelcomePage.js - УПРОЩЕННАЯ ВЕРСИЯ БЕЗ ОБРЕЗКИ
 
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -14,7 +14,6 @@ const WelcomePage = () => {
   // Рефы на логотип и текст для управления анимациями
   const logoRef = useRef(null);
   const textRef = useRef(null);
-  const containerRef = useRef(null);
 
   // Состояния
   const [logoAnimated, setLogoAnimated] = useState(false);
@@ -23,77 +22,35 @@ const WelcomePage = () => {
   const [greeting, setGreeting] = useState('');
   const [moveDuration] = useState('70s');
   const [rotateDuration] = useState('6s');
-  const [containerHeight, setContainerHeight] = useState(window.innerHeight);
 
-  // ===== ФУНКЦИЯ ОБНОВЛЕНИЯ ВЫСОТЫ =====
-  const updateContainerHeight = () => {
-    const newHeight = window.innerHeight;
-    setContainerHeight(newHeight);
-    
-    // Дополнительно обновляем стиль контейнера напрямую
-    if (containerRef.current) {
-      containerRef.current.style.height = `${newHeight}px`;
-      containerRef.current.style.minHeight = `${newHeight}px`;
-    }
-  };
+  // ===== СТИЛИ - УПРОЩЕННЫЕ =====
 
-  // ===== ОБРАБОТЧИК ИЗМЕНЕНИЯ РАЗМЕРА ОКНА =====
-  useEffect(() => {
-    // Начальная установка высоты
-    updateContainerHeight();
-    
-    // Добавляем слушатели событий
-    window.addEventListener('resize', updateContainerHeight);
-    window.addEventListener('orientationchange', updateContainerHeight);
-    
-    // Дополнительная проверка через таймаут для orientationchange
-    const handleOrientationChange = () => {
-      setTimeout(updateContainerHeight, 100);
-    };
-    
-    window.addEventListener('orientationchange', handleOrientationChange);
-    
-    return () => {
-      window.removeEventListener('resize', updateContainerHeight);
-      window.removeEventListener('orientationchange', updateContainerHeight);
-      window.removeEventListener('orientationchange', handleOrientationChange);
-    };
-  }, []);
-
-  // ===== СТИЛИ =====
-
-  // Основной контейнер - ИСПРАВЛЕНО для всех браузеров
+  // Основной контейнер - ПРОСТАЯ ВЕРСИЯ
   const welcomeContainerStyle = {
     position: 'relative',
     width: '100%',
-    height: `${containerHeight}px`,
-    minHeight: `${containerHeight}px`,
+    height: '100%', // ← УПРОЩЕНО
+    minHeight: '100%', // ← УПРОЩЕНО
     backgroundImage: `url(${backgroundImage})`,
     backgroundSize: 'cover',
     backgroundPosition: 'center',
     backgroundRepeat: 'no-repeat',
-    backgroundAttachment: 'local', // Для лучшей поддержки мобильных браузеров
     overflow: 'hidden',
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-    // Дополнительные свойства для стабильности
-    WebkitOverflowScrolling: 'touch',
-    overscrollBehavior: 'none'
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
   };
 
-  // Оверлей с градиентом - ИСПРАВЛЕНО для всех браузеров
+  // Оверлей с градиентом - ПРОСТАЯ ВЕРСИЯ
   const overlayStyle = {
     position: 'absolute',
     top: 0,
     left: 0,
     width: '100%',
     height: '100%',
-    minHeight: `${containerHeight}px`,
     background: 'linear-gradient(135deg, rgba(147, 39, 143, 0.85) 0%, rgba(71, 125, 191, 0.85) 100%)',
-    backgroundAttachment: 'local',
     zIndex: 1
   };
 
@@ -147,26 +104,6 @@ const WelcomePage = () => {
     textShadow: '2px 2px 8px rgba(0, 0, 0, 0.5)',
     letterSpacing: '2px'
   };
-
-  // Точки фона
-  const dotStyle = (index) => ({
-    position: 'absolute',
-    width: '8px',
-    height: '8px',
-    borderRadius: '50%',
-    background: 'rgba(255, 255, 255, 0.2)',
-    zIndex: 1,
-    ...(index === 1 && { top: '10%', left: '10%' }),
-    ...(index === 2 && { top: '20%', right: '15%' }),
-    ...(index === 3 && { top: '30%', left: '25%' }),
-    ...(index === 4 && { bottom: '15%', left: '15%' }),
-    ...(index === 5 && { top: '5%', right: '20%' }),
-    ...(index === 6 && { bottom: '25%', right: '10%' }),
-    ...(index === 7 && { top: '45%', left: '5%' }),
-    ...(index === 8 && { bottom: '5%', right: '30%' }),
-    ...(index === 9 && { top: '60%', right: '25%' }),
-    ...(index === 10 && { bottom: '40%', left: '30%' })
-  });
 
   // Pi элемент с анимацией полета
   const piWrapperStyle = {
@@ -299,49 +236,33 @@ const WelcomePage = () => {
           0%, 100% { opacity: 0.1; transform: scale(1); }
           50% { opacity: 0.5; transform: scale(1.8); }
         }
-
-        /* Специальные стили для предотвращения обрезки фона */
-        .welcome-container-fixed {
-          -webkit-backface-visibility: hidden;
-          backface-visibility: hidden;
-          -webkit-transform: translate3d(0, 0, 0);
-          transform: translate3d(0, 0, 0);
-        }
-
-        /* Дополнительные стили для Safari */
-        @supports (-webkit-touch-callout: none) {
-          .welcome-container-fixed {
-            height: -webkit-fill-available !important;
-            min-height: -webkit-fill-available !important;
-          }
-        }
       `}
     </style>
   );
 
   return (
     <div
-      ref={containerRef}
       style={welcomeContainerStyle}
-      className="welcome-container-fixed"
+      className="welcome-container" // ← ИСПОЛЬЗУЕМ КЛАСС ИЗ CSS
       {...swipeHandlers}
     >
       {animations}
 
-      {/* Фоновые точки с дополнительными анимациями */}
-      {[1,2,3,4,5,6,7,8,9,10].map(n => (
-        <div 
-          key={n} 
-          style={{
-            ...dotStyle(n),
-            animation: `dotPulse${(n % 3) + 1} ${4 + (n % 3)}s ease-in-out infinite`
-          }} 
-        />
-      ))}
+      {/* Точки фона - ИСПОЛЬЗУЕМ КЛАССЫ ИЗ CSS */}
+      <div className="subtle-dot dot-1" />
+      <div className="subtle-dot dot-2" />
+      <div className="subtle-dot dot-3" />
+      <div className="subtle-dot dot-4" />
+      <div className="subtle-dot dot-5" />
+      <div className="subtle-dot dot-6" />
+      <div className="subtle-dot dot-7" />
+      <div className="subtle-dot dot-8" />
+      <div className="subtle-dot dot-9" />
+      <div className="subtle-dot dot-10" />
 
-      {/* Pi элемент с космической анимацией */}
-      <div style={piWrapperStyle}>
-        <img src={piImage} style={piImageStyle} alt="Pi" />
+      {/* Pi элемент - ИСПОЛЬЗУЕМ КЛАССЫ ИЗ CSS */}
+      <div className="pi-wrapper">
+        <img src={piImage} className="pi-fly" alt="Pi" />
       </div>
 
       {/* Оверлей */}

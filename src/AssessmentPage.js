@@ -1,4 +1,4 @@
-// AssessmentPage.js - ИСПРАВЛЕННАЯ ВЕРСИЯ ДЛЯ ВСЕХ БРАУЗЕРОВ
+// AssessmentPage.js - УПРОЩЕННАЯ ВЕРСИЯ БЕЗ ОБРЕЗКИ
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Autosuggest from 'react-autosuggest';
@@ -30,45 +30,6 @@ export default function AssessmentPage() {
   const navigate = useNavigate();
   const logoRef = useRef(null);
   const startTimeRef = useRef(null);
-  const containerRef = useRef(null);
-
-  // ===== СОСТОЯНИЕ ДЛЯ ВЫСОТЫ КОНТЕЙНЕРА =====
-  const [containerHeight, setContainerHeight] = useState(window.innerHeight);
-
-  // ===== ФУНКЦИЯ ОБНОВЛЕНИЯ ВЫСОТЫ =====
-  const updateContainerHeight = useCallback(() => {
-    const newHeight = window.innerHeight;
-    setContainerHeight(newHeight);
-    
-    // Дополнительно обновляем стиль контейнера напрямую
-    if (containerRef.current) {
-      containerRef.current.style.height = `${newHeight}px`;
-      containerRef.current.style.minHeight = `${newHeight}px`;
-    }
-  }, []);
-
-  // ===== ОБРАБОТЧИК ИЗМЕНЕНИЯ РАЗМЕРА ОКНА =====
-  useEffect(() => {
-    // Начальная установка высоты
-    updateContainerHeight();
-    
-    // Добавляем слушатели событий
-    window.addEventListener('resize', updateContainerHeight);
-    window.addEventListener('orientationchange', updateContainerHeight);
-    
-    // Дополнительная проверка через таймаут для orientationchange
-    const handleOrientationChange = () => {
-      setTimeout(updateContainerHeight, 100);
-    };
-    
-    window.addEventListener('orientationchange', handleOrientationChange);
-    
-    return () => {
-      window.removeEventListener('resize', updateContainerHeight);
-      window.removeEventListener('orientationchange', updateContainerHeight);
-      window.removeEventListener('orientationchange', handleOrientationChange);
-    };
-  }, [updateContainerHeight]);
 
   // ===== Состояния =====
   const [currentStep, setCurrentStep] = useState(1); // 1: инструкция, 2: ФИО, 3: вопросы, 4: результат
@@ -363,21 +324,17 @@ export default function AssessmentPage() {
     );
   };
 
-  // ===== ИСПРАВЛЕННЫЕ ИНЛАЙН СТИЛИ ДЛЯ КОНТЕЙНЕРА =====
+  // ===== УПРОЩЕННЫЕ ИНЛАЙН СТИЛИ ДЛЯ КОНТЕЙНЕРА =====
   const containerStyle = {
     backgroundImage: `url(${backgroundImage})`,
     backgroundSize: 'cover',
     backgroundPosition: 'center',
     backgroundRepeat: 'no-repeat',
-    backgroundAttachment: 'local', // Для лучшей поддержки мобильных браузеров
-    height: `${containerHeight}px`,
-    minHeight: `${containerHeight}px`,
+    height: '100%', // ← УПРОЩЕНО
+    minHeight: '100%', // ← УПРОЩЕНО
     width: '100%',
     position: 'relative',
-    overflow: 'hidden',
-    // Дополнительные свойства для стабильности
-    WebkitOverflowScrolling: 'touch',
-    overscrollBehavior: 'none'
+    overflow: 'hidden'
   };
 
   // ===== Рендер контента =====
@@ -574,40 +531,10 @@ export default function AssessmentPage() {
   // ===== Основной рендер =====
   return (
     <div 
-      ref={containerRef}
-      className="mainmenu-container feedback-container assessment-container-fixed" 
+      className="mainmenu-container feedback-container" // ← ИСПОЛЬЗУЕМ КЛАССЫ ИЗ CSS
       style={containerStyle}
     >
-      {/* Встроенные CSS стили для дополнительной поддержки браузеров */}
-      <style>
-        {`
-          /* Специальные стили для предотвращения обрезки фона */
-          .assessment-container-fixed {
-            -webkit-backface-visibility: hidden;
-            backface-visibility: hidden;
-            -webkit-transform: translate3d(0, 0, 0);
-            transform: translate3d(0, 0, 0);
-          }
-
-          /* Дополнительные стили для Safari */
-          @supports (-webkit-touch-callout: none) {
-            .assessment-container-fixed {
-              height: -webkit-fill-available !important;
-              min-height: -webkit-fill-available !important;
-            }
-          }
-
-          /* Фиксация для старых версий браузеров */
-          @supports not (height: 100vh) {
-            .assessment-container-fixed {
-              height: ${containerHeight}px !important;
-              min-height: ${containerHeight}px !important;
-            }
-          }
-        `}
-      </style>
-
-      {/* Фоновые элементы */}
+      {/* Фоновые элементы - ИСПОЛЬЗУЕМ КЛАССЫ ИЗ CSS */}
       <div className="subtle-dot dot-1" />
       <div className="subtle-dot dot-2" />
       <div className="subtle-dot dot-3" />
