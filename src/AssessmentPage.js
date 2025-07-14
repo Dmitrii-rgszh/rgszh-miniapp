@@ -1,4 +1,4 @@
-// AssessmentPage.js - УПРОЩЕННАЯ ВЕРСИЯ БЕЗ ОБРЕЗКИ
+// AssessmentPage.js - ТОЧНАЯ ЦВЕТОВАЯ ГАММА КАК В WELCOMEPAGE + ОТСТУП ОТ ЛОГОТИПА
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Autosuggest from 'react-autosuggest';
@@ -30,9 +30,56 @@ export default function AssessmentPage() {
   const navigate = useNavigate();
   const logoRef = useRef(null);
   const startTimeRef = useRef(null);
+  const containerRef = useRef(null);
+  const scrollableContentRef = useRef(null);
+
+  // ===== СОСТОЯНИЕ ДЛЯ ВЫСОТЫ КОНТЕЙНЕРА =====
+  const [containerHeight, setContainerHeight] = useState(window.innerHeight);
+
+  // ===== ФУНКЦИЯ ОБНОВЛЕНИЯ ВЫСОТЫ =====
+  const updateContainerHeight = useCallback(() => {
+    const newHeight = window.innerHeight;
+    setContainerHeight(newHeight);
+    
+    // Дополнительно обновляем стиль контейнера напрямую
+    if (containerRef.current) {
+      containerRef.current.style.height = `${newHeight}px`;
+      containerRef.current.style.minHeight = `${newHeight}px`;
+    }
+  }, []);
+
+  // ===== ОБРАБОТЧИК ИЗМЕНЕНИЯ РАЗМЕРА ОКНА =====
+  useEffect(() => {
+    // Начальная установка высоты
+    updateContainerHeight();
+    
+    // Добавляем слушатели событий
+    window.addEventListener('resize', updateContainerHeight);
+    window.addEventListener('orientationchange', updateContainerHeight);
+    
+    // Дополнительная проверка через таймаут для orientationchange
+    const handleOrientationChange = () => {
+      setTimeout(updateContainerHeight, 100);
+    };
+    
+    window.addEventListener('orientationchange', handleOrientationChange);
+    
+    return () => {
+      window.removeEventListener('resize', updateContainerHeight);
+      window.removeEventListener('orientationchange', updateContainerHeight);
+      window.removeEventListener('orientationchange', handleOrientationChange);
+    };
+  }, [updateContainerHeight]);
+
+  // ===== СКРОЛЛ В НАЧАЛО ПРИ СМЕНЕ ШАГА =====
+  useEffect(() => {
+    if (scrollableContentRef.current) {
+      scrollableContentRef.current.scrollTop = 0;
+    }
+  }, [currentStep, currentQuestion]);
 
   // ===== Состояния =====
-  const [currentStep, setCurrentStep] = useState(1); // 1: инструкция, 2: ФИО, 3: вопросы, 4: результат
+  const [currentStep, setCurrentStep] = useState(1);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState('');
   const [userAnswers, setUserAnswers] = useState([]);
@@ -51,14 +98,11 @@ export default function AssessmentPage() {
   const [firstNameSuggestions, setFirstNameSuggestions] = useState([]);
   const [patronymicSuggestions, setPatronymicSuggestions] = useState([]);
 
-  // Данные опросника (загружаются из БД)
+  // Данные опросника
   const [questionnaire, setQuestionnaire] = useState(null);
   const [questions, setQuestions] = useState([]);
-
-  // Статичный порядок ответов для каждого вопроса (исправление пункта 5)
   const [shuffledQuestions, setShuffledQuestions] = useState([]);
 
-  // ID опросника по умолчанию (основной Assessment опросник)
   const MAIN_QUESTIONNAIRE_ID = 1;
 
   // Обработанные данные для автосаджестов
@@ -70,7 +114,7 @@ export default function AssessmentPage() {
     typeof item === 'string' ? item : (item.patronymic || item.name)
   );
 
-  // Функция для рандомизации порядка ответов (исправление пункта 5)
+  // Функция для рандомизации порядка ответов
   const shuffleOptions = (options) => {
     const shuffled = [...options];
     for (let i = shuffled.length - 1; i > 0; i--) {
@@ -80,41 +124,30 @@ export default function AssessmentPage() {
     return shuffled;
   };
 
-  // ===== Загрузка опросника при монтировании компонента =====
+  // ===== Загрузка опросника =====
   useEffect(() => {
     const loadQuestionnaire = async () => {
       try {
         setIsLoading(true);
         setErrorMessage('');
-    
-        console.log('🔄 Loading questionnaire...', MAIN_QUESTIONNAIRE_ID);
-    
+        
         const data = await apiCall(`/api/questionnaire/${MAIN_QUESTIONNAIRE_ID}?include_questions=true`);
-    
-        console.log('📋 Received data:', data);
-    
-        // ИСПРАВЛЕНИЕ: правильное извлечение данных
-        setQuestionnaire(data); // data уже содержит questionnaire
+        
+        setQuestionnaire(data);
         const loadedQuestions = data.questions || [];
-    
-        console.log('❓ Loaded questions:', loadedQuestions.length);
-    
+        
         if (loadedQuestions.length === 0) {
           throw new Error('No questions found in questionnaire');
         }
-    
+        
         setQuestions(loadedQuestions);
-    
-        // Предварительно перемешиваем ответы для каждого вопроса только один раз
+        
         const questionsWithShuffledOptions = loadedQuestions.map(question => ({
           ...question,
-          shuffledOptions: shuffleOptions(question.options || []) /// ИСПРАВЛЕНО: перемешиваем варианты ответов!
+          shuffledOptions: shuffleOptions(question.options || [])
         }));
         setShuffledQuestions(questionsWithShuffledOptions);
-    
-        console.log('✅ Questionnaire loaded successfully');
-        console.log('📊 Questions with options:', questionsWithShuffledOptions);
-    
+        
       } catch (error) {
         console.error('❌ Error loading questionnaire:', error);
         setErrorMessage(`Ошибка загрузки опросника: ${error.message}`);
@@ -167,11 +200,9 @@ export default function AssessmentPage() {
         shuffledOptions: shuffleOptions([...question.options])
       }));
       setShuffledQuestions(freshShuffledQuestions);
-      console.log('🎲 Reshuffled for new user:', freshShuffledQuestions);
-  
+      
       setCurrentStep(3);
     } else if (currentStep === 3) {
-      // Обработка ответа на вопрос
       if (!selectedAnswer) {
         setErrorMessage('Выберите один из вариантов ответа');
         return;
@@ -184,7 +215,6 @@ export default function AssessmentPage() {
 
       let updatedAnswers;
       if (existingAnswerIndex >= 0) {
-        // Заменяем существующий ответ
         updatedAnswers = [...userAnswers];
         updatedAnswers[existingAnswerIndex] = {
           question_id: questions[currentQuestion].id,
@@ -192,7 +222,6 @@ export default function AssessmentPage() {
           answer_index: shuffledQuestions[currentQuestion].shuffledOptions.findIndex(opt => opt.text === selectedAnswer)
         };
       } else {
-        // Добавляем новый ответ
         updatedAnswers = [...userAnswers, {
           question_id: questions[currentQuestion].id,
           answer_text: selectedAnswer,
@@ -201,12 +230,9 @@ export default function AssessmentPage() {
       }
       setUserAnswers(updatedAnswers);
 
-      // Проверяем, последний ли это вопрос
       if (currentQuestion === questions.length - 1) {
-        // Завершаем тестирование
         finishAssessment(updatedAnswers);
       } else {
-        // Переходим к следующему вопросу
         setFadeTransition(true);
         setTimeout(() => {
           setCurrentQuestion(currentQuestion + 1);
@@ -225,7 +251,6 @@ export default function AssessmentPage() {
         setFadeTransition(true);
         setTimeout(() => {
           setCurrentQuestion(currentQuestion - 1);
-          // Восстанавливаем предыдущий ответ
           if (userAnswers[currentQuestion - 1]) {
             setSelectedAnswer(userAnswers[currentQuestion - 1].answer_text);
           }
@@ -243,39 +268,23 @@ export default function AssessmentPage() {
       setIsProcessing(true);
       setErrorMessage('');
 
-      // Ограничиваем 25 ответами и убираем дубли
       const uniqueAnswers = answers.slice(0, 25);
       const answersTextArray = uniqueAnswers.map(answer => answer.answer_text);
-
-      // ПРОВЕРКА:
-      console.log('🔍 Final check before sending:');
-      console.log('  - Unique answers count:', uniqueAnswers.length);
-      console.log('  - Should be exactly 25:', uniqueAnswers.length === 25);
-    
+      
       if (uniqueAnswers.length !== 25) {
         throw new Error(`Expected 25 answers, got ${uniqueAnswers.length}`);
       }
 
       const sessionData = {
         questionnaireId: 1,
-        surname: surname.trim(),                 
-        firstName: firstName.trim(),             
-        patronymic: patronymic.trim(),           
-        answers: answersTextArray,               
-        completionTime: Math.max(1, Math.round((Date.now() - startTimeRef.current) / 60000)) // минимум 1 минута
+        surname: surname.trim(),
+        firstName: firstName.trim(),
+        patronymic: patronymic.trim(),
+        answers: answersTextArray,
+        completionTime: Math.max(1, Math.round((Date.now() - startTimeRef.current) / 60000))
       };
 
-      console.log('📤 Sending session data:', sessionData);
-      console.log('📝 Answers array:', answersTextArray);
-      console.log('📊 Session data details:');
-      console.log('  - surname:', sessionData.surname);
-      console.log('  - firstName:', sessionData.firstName); 
-      console.log('  - patronymic:', sessionData.patronymic);
-      console.log('  - answers length:', sessionData.answers.length);
-      console.log('  - first few answers:', sessionData.answers.slice(0, 3));
-
-      console.log('📤 Sending session data:', sessionData);
-      const response = await apiCall('/api/assessment/save', {  
+      const response = await apiCall('/api/assessment/save', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -283,9 +292,6 @@ export default function AssessmentPage() {
         body: JSON.stringify(sessionData)
       });
 
-      console.log('✅ Assessment completed:', response);
-      
-      // Сохраняем результат для показа простого сообщения
       setResult({ success: true });
       setIsFinished(true);
     } catch (error) {
@@ -324,17 +330,66 @@ export default function AssessmentPage() {
     );
   };
 
-  // ===== УПРОЩЕННЫЕ ИНЛАЙН СТИЛИ ДЛЯ КОНТЕЙНЕРА =====
+  // ===== СТИЛИ КАК В WELCOMEPAGE =====
   const containerStyle = {
+    position: 'relative',
+    width: '100%',
+    height: `${containerHeight}px`,
+    minHeight: `${containerHeight}px`,
+    // ТОЧНО ТАКАЯ ЖЕ ЦВЕТОВАЯ ГАММА КАК В WELCOMEPAGE
     backgroundImage: `url(${backgroundImage})`,
     backgroundSize: 'cover',
     backgroundPosition: 'center',
     backgroundRepeat: 'no-repeat',
-    height: '100%', // ← УПРОЩЕНО
-    minHeight: '100%', // ← УПРОЩЕНО
+    overflow: 'hidden',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    WebkitOverflowScrolling: 'touch',
+    overscrollBehavior: 'none'
+  };
+
+  // Оверлей с ТОЧНО ТАКИМ ЖЕ градиентом как в WelcomePage
+  const overlayStyle = {
+    position: 'absolute',
+    top: 0,
+    left: 0,
     width: '100%',
-    position: 'relative',
-    overflow: 'hidden'
+    height: '100%',
+    // ТОЧНО ТАКОЙ ЖЕ ГРАДИЕНТ КАК В WELCOMEPAGE
+    background: 'linear-gradient(135deg, rgba(147, 39, 143, 0.85) 0%, rgba(71, 125, 191, 0.85) 100%)',
+    zIndex: 1
+  };
+
+  // Фиксированный логотип
+  const logoContainerStyle = {
+    position: 'absolute',
+    top: '0',
+    left: '0',
+    right: '0',
+    zIndex: 1000,
+    display: 'flex',
+    justifyContent: 'center',
+    paddingTop: '40px',
+    paddingBottom: '20px',
+    background: 'transparent'
+  };
+
+  // Скроллируемый контент ниже логотипа + ДОПОЛНИТЕЛЬНЫЙ ОТСТУП 25px
+  const scrollableContentStyle = {
+    position: 'absolute',
+    top: '205px', // Увеличено на 25px: было 180px, стало 205px
+    left: '0',
+    right: '0',
+    bottom: '0',
+    overflowY: 'auto',
+    overflowX: 'hidden',
+    paddingLeft: '15px',
+    paddingRight: '15px',
+    paddingBottom: '100px', // Отступ для кнопки "Далее"
+    zIndex: 2
   };
 
   // ===== Рендер контента =====
@@ -531,10 +586,45 @@ export default function AssessmentPage() {
   // ===== Основной рендер =====
   return (
     <div 
-      className="mainmenu-container feedback-container" // ← ИСПОЛЬЗУЕМ КЛАССЫ ИЗ CSS
+      ref={containerRef}
       style={containerStyle}
     >
-      {/* Фоновые элементы - ИСПОЛЬЗУЕМ КЛАССЫ ИЗ CSS */}
+      {/* Встроенные CSS стили */}
+      <style>
+        {`
+          .assessment-container-fixed {
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            -webkit-transform: translate3d(0, 0, 0);
+            transform: translate3d(0, 0, 0);
+          }
+
+          @supports (-webkit-touch-callout: none) {
+            .assessment-container-fixed {
+              height: -webkit-fill-available !important;
+              min-height: -webkit-fill-available !important;
+            }
+          }
+
+          /* Кастомизация скроллбара */
+          .scrollable-content::-webkit-scrollbar {
+            width: 4px;
+          }
+          .scrollable-content::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+          }
+          .scrollable-content::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 2px;
+          }
+          .scrollable-content::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+          }
+        `}
+      </style>
+
+      {/* Фоновые элементы - ТОЧНО КАК В WELCOMEPAGE */}
       <div className="subtle-dot dot-1" />
       <div className="subtle-dot dot-2" />
       <div className="subtle-dot dot-3" />
@@ -548,11 +638,15 @@ export default function AssessmentPage() {
       <div className="pi-wrapper">
         <img src={piImage} className="pi-fly" alt="Pi" />
       </div>
-      <div className="mainmenu-overlay" />
 
-      {/* Логотип */}
-      <div ref={logoRef} className="logo-wrapper">
-        <img src={logoImage} alt="Логотип" className="logo-image" />
+      {/* ОВЕРЛЕЙ С ГРАДИЕНТОМ КАК В WELCOMEPAGE */}
+      <div style={overlayStyle} />
+
+      {/* ФИКСИРОВАННЫЙ ЛОГОТИП ВВЕРХУ */}
+      <div style={logoContainerStyle}>
+        <div ref={logoRef} className="logo-wrapper">
+          <img src={logoImage} alt="Логотип" className="logo-image" />
+        </div>
       </div>
 
       {/* Кнопка "Назад" */}
@@ -577,8 +671,12 @@ export default function AssessmentPage() {
         </button>
       )}
 
-      {/* Основной контент */}
-      <div className="content-wrapper">
+      {/* СКРОЛЛИРУЕМЫЙ КОНТЕНТ НИЖЕ ЛОГОТИПА + 25px ОТСТУП */}
+      <div 
+        ref={scrollableContentRef}
+        className="scrollable-content"
+        style={scrollableContentStyle}
+      >
         {renderStepContent()}
       </div>
     </div>
