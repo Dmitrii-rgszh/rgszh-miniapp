@@ -1,4 +1,4 @@
-// CareFuturePage.js - ИСПРАВЛЕННАЯ ВЕРСИЯ с правильным синтаксисом
+// CareFuturePage.js - ОБНОВЛЕННАЯ ВЕРСИЯ с логикой программы сотрудников
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -33,15 +33,17 @@ export default function CareFuturePage() {
   });
   const [birthDate, setBirthDate] = useState(null);
   const [gender, setGender] = useState(null);
-  const [programTerm, setProgramTerm] = useState(5);
+  const [programTerm, setProgramTerm] = useState(9); // ✅ По умолчанию 9 лет (из Excel)
   const [calcType, setCalcType] = useState(null);
   const [amountRaw, setAmountRaw] = useState('');
   const [amountDisplay, setAmountDisplay] = useState('');
+  const [incomeLevel, setIncomeLevel] = useState('low'); // ✅ НОВОЕ: Уровень дохода
 
   // ===== Состояния Processing/Result =====
   const [resultData, setResultData] = useState(null);
   const [carouselIndex, setCarouselIndex] = useState(0);
   const [calculationId, setCalculationId] = useState(null);
+  const [availableTerms, setAvailableTerms] = useState([]); // ✅ НОВОЕ: Доступные сроки
 
   // ===== Состояния для «Связаться с менеджером» =====
   const [mgrSurname, setMgrSurname] = useState('');
@@ -54,7 +56,7 @@ export default function CareFuturePage() {
   const [apiConfig, setApiConfig] = useState(null);
   const [validationErrors, setValidationErrors] = useState({});
 
-  // ===== СТИЛИ =====
+  // ===== СТИЛИ (сохраняем оригинальный дизайн) =====
   
   // Основной контейнер
   const mainContainerStyle = {
@@ -111,7 +113,7 @@ export default function CareFuturePage() {
     objectFit: 'contain'
   };
 
-  // Контейнер кнопок/контента - ПОДНИМАЕМ К ЛОГОТИПУ
+  // Контейнер кнопок/контента
   const buttonsContainerStyle = {
     position: 'absolute',
     top: buttonsAnimated ? '280px' : '500px',
@@ -144,7 +146,7 @@ export default function CareFuturePage() {
     border: '1px solid rgba(255, 255, 255, 0.2)'
   };
 
-  // Заголовки - УБИРАЕМ ЛИШНИЙ ОТСТУП
+  // Заголовки
   const titleStyle = {
     fontSize: '28px',
     fontWeight: 'bold',
@@ -203,13 +205,13 @@ export default function CareFuturePage() {
     background: 'linear-gradient(135deg, #9370DB 0%, #7B68EE 100%)',
     color: 'white',
     border: 'none',
-    padding: '15px 24px', // ✅ ИСПРАВЛЕНИЕ 3: Такой же padding
+    padding: '15px 24px',
     borderRadius: '8px',
     fontSize: '16px',
     fontWeight: '600',
     cursor: 'pointer',
     transition: 'all 0.3s ease',
-    minHeight: '54px', // ✅ ИСПРАВЛЕНИЕ 3: Одинаковая высота
+    minHeight: '54px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -221,13 +223,13 @@ export default function CareFuturePage() {
     background: 'transparent',
     color: '#9370DB',
     border: '2px solid #9370DB',
-    padding: '15px 24px', // ✅ ИСПРАВЛЕНИЕ 3: Увеличили padding
+    padding: '15px 24px',
     borderRadius: '8px',
     fontSize: '16px',
     fontWeight: '600',
     cursor: 'pointer',
     transition: 'all 0.3s ease',
-    minHeight: '54px', // ✅ ИСПРАВЛЕНИЕ 3: Одинаковая высота
+    minHeight: '54px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -273,8 +275,8 @@ export default function CareFuturePage() {
     transition: 'all 0.3s ease',
     fontWeight: '500',
     fontSize: '16px',
-    color: '#333', // ✅ ИСПРАВЛЕНИЕ 1: Явно указываем цвет текста
-    minHeight: '54px', // ✅ ИСПРАВЛЕНИЕ 2: Одинаковая высота
+    color: '#333',
+    minHeight: '54px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -432,7 +434,7 @@ export default function CareFuturePage() {
     ...(index === 10 && { bottom: '40%', left: '30%' })
   });
 
-  // Pi элемент - НОВАЯ АНИМАЦИЯ ПОЛЕТА ПО ЭКРАНУ
+  // Pi элемент
   const piWrapperStyle = {
     position: 'absolute',
     top: '0',
@@ -492,34 +494,43 @@ export default function CareFuturePage() {
     return str.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
   }
 
-  // ===== API ФУНКЦИИ =====
+  // ===== API ФУНКЦИИ (ОБНОВЛЕННЫЕ) =====
 
   async function loadApiConfig() {
     try {
-      const response = await fetch('/api/care-future/config');
+      // ✅ ИЗМЕНЕНО: Используем новый endpoint для программы сотрудников
+      const response = await fetch('/api/care-future-employees/config');
       if (response.ok) {
         const data = await response.json();
         if (data.success) {
-          setApiConfig(data.config);
+          setApiConfig(data);
+          setAvailableTerms(data.constraints.availableTerms || [5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]);
         }
+      } else {
+        // Fallback к старому API если новый недоступен
+        setAvailableTerms([5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]);
       }
     } catch (error) {
       console.error('Ошибка загрузки конфигурации:', error);
+      setAvailableTerms([5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]);
     }
   }
 
   async function performCalculation() {
     try {
+      // ✅ ИЗМЕНЕНО: Данные для новой программы сотрудников
       const calculationData = {
-        email: email,
         birthDate: birthDate.toISOString().split('T')[0],
         gender: gender === 'мужской' ? 'male' : 'female',
         contractTerm: programTerm,
         calculationType: calcType === 'premium' ? 'from_premium' : 'from_sum',
-        inputAmount: parseInt(amountRaw.replace(/\s/g, ''))
+        inputAmount: parseInt(amountRaw.replace(/\s/g, '')),
+        email: email,
+        incomeLevel: incomeLevel // ✅ НОВОЕ: Уровень дохода
       };
 
-      const response = await fetch('/api/care-future/calculate', {
+      // ✅ ИЗМЕНЕНО: Используем новый endpoint
+      const response = await fetch('/api/care-future-employees/calculate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(calculationData)
@@ -530,13 +541,24 @@ export default function CareFuturePage() {
 
       if (data.success) {
         setCalculationId(data.calculationId);
+        
+        // ✅ ОБНОВЛЕНО: Новая структура результатов
         setResultData({
           inputParams: {
             age: data.inputParameters.ageAtStart,
             gender: gender,
-            term: data.inputParameters.contractTerm
+            term: data.inputParameters.contractTerm,
+            incomeLevel: incomeLevel
           },
-          results: data.results,
+          results: {
+            premiumAmount: data.results.premiumAmount,
+            insuranceSum: data.results.insuranceSum,
+            formedCapital: data.results.formedCapital || data.results.accumulatedCapital,
+            accumulatedCapital: data.results.accumulatedCapital || data.results.formedCapital,
+            programIncome: data.results.programIncome,
+            taxDeduction: data.results.taxDeduction,
+            cashbackCoefficient: data.results.cashbackCoefficient || 0
+          },
           redemptionValues: data.redemptionValues || []
         });
         return true;
@@ -618,9 +640,9 @@ export default function CareFuturePage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          subject: 'Заявка на консультацию - Калькулятор НСЖ',
+          subject: 'Заявка на консультацию - Программа для сотрудников',
           body: `
-Новая заявка на консультацию по программе "Забота о будущем Ультра":
+Новая заявка на консультацию по программе "Забота о будущем сотрудники":
 
 👤 Контактные данные:
 • Фамилия: ${mgrSurname}
@@ -632,16 +654,18 @@ export default function CareFuturePage() {
 • Возраст: ${resultData?.inputParams?.age || 'Не указан'}
 • Пол: ${resultData?.inputParams?.gender || 'Не указан'}
 • Срок программы: ${resultData?.inputParams?.term || 'Не указан'} лет
+• Уровень дохода: ${resultData?.inputParams?.incomeLevel === 'high' ? 'Свыше 5 млн/год' : 'До 5 млн/год'}
 
 💰 Результаты расчета:
 • Страховой взнос: ${resultData?.results?.premiumAmount ? formatSum(resultData.results.premiumAmount.toString()) + ' руб.' : 'Не рассчитан'}
 • Страховая сумма: ${resultData?.results?.insuranceSum ? formatSum(resultData.results.insuranceSum.toString()) + ' руб.' : 'Не рассчитана'}
-• Накопленный капитал: ${resultData?.results?.accumulatedCapital ? formatSum(resultData.results.accumulatedCapital.toString()) + ' руб.' : 'Не рассчитан'}
+• Сформированный капитал: ${resultData?.results?.formedCapital ? formatSum(resultData.results.formedCapital.toString()) + ' руб.' : 'Не рассчитан'}
 • Доход по программе: ${resultData?.results?.programIncome ? formatSum(resultData.results.programIncome.toString()) + ' руб.' : 'Не рассчитан'}
+• Налоговый вычет: ${resultData?.results?.taxDeduction ? formatSum(resultData.results.taxDeduction.toString()) + ' руб.' : 'Не рассчитан'}
 
 🆔 ID расчета: ${calculationId || 'Отсутствует'}
 
-Отправлено через калькулятор НСЖ на сайте.
+Отправлено через калькулятор для сотрудников.
           `
         })
       });
@@ -666,7 +690,7 @@ export default function CareFuturePage() {
 
   // ===== РЕНДЕРИНГ =====
 
-  // CSS анимации в стиле - ДОБАВЛЯЕМ НОВЫЕ АНИМАЦИИ ДЛЯ PI
+  // CSS анимации в стиле
   const animations = (
     <style>
       {`
@@ -737,31 +761,27 @@ export default function CareFuturePage() {
       <div style={mainContainerStyle}>
         {animations}
         
-        {/* Фоновые точки */}
         {[1,2,3,4,5,6,7,8,9,10].map(n => (
           <div key={n} style={dotStyle(n)} />
         ))}
         
-        {/* Pi элемент - НОВАЯ АНИМАЦИЯ */}
         <div style={piWrapperStyle}>
           <img src={piImage} style={piImageStyle} alt="Pi" />
         </div>
         
         <div style={overlayStyle} />
         
-        {/* Логотип */}
         <div style={logoStyle}>
           <img src={logoImage} alt="Логотип РГС Жизнь" style={logoImageStyle} />
         </div>
         
-        {/* Контент */}
         <div style={buttonsContainerStyle}>
           <h2 style={titleStyle}>
             Калькулятор НСЖ<br />
-            «Забота о будущем Ультра»
+            «Забота о будущем сотрудники»
           </h2>
           <p style={subtitleStyle}>
-            Рассчитайте персональные условия накопительного страхования жизни
+            Рассчитайте персональные условия накопительного страхования жизни для сотрудников
           </p>
           
           <div style={emailFormStyle}>
@@ -843,7 +863,26 @@ export default function CareFuturePage() {
             )}
           </div>
 
-          {/* Срок программы */}
+          {/* ✅ НОВОЕ: Уровень дохода */}
+          <div style={formGroupStyle}>
+            <label style={labelStyle}>Уровень дохода</label>
+            <div style={{...optionGroupStyle, gridTemplateColumns: '1fr'}}>
+              <div 
+                style={incomeLevel === 'low' ? optionButtonSelectedStyle : optionButtonStyle}
+                onClick={() => setIncomeLevel('low')}
+              >
+                До 5 млн руб/год (налог 13%)
+              </div>
+              <div 
+                style={incomeLevel === 'high' ? optionButtonSelectedStyle : optionButtonStyle}
+                onClick={() => setIncomeLevel('high')}
+              >
+                Свыше 5 млн руб/год (налог 15%)
+              </div>
+            </div>
+          </div>
+
+          {/* Срок программы - обновленный список */}
           <div style={formGroupStyle}>
             <label style={labelStyle}>Срок программы (лет)</label>
             <select 
@@ -851,7 +890,7 @@ export default function CareFuturePage() {
               onChange={(e) => setProgramTerm(Number(e.target.value))}
               style={inputStyle}
             >
-              {[5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20].map(year => (
+              {availableTerms.map(year => (
                 <option key={year} value={year}>{year} лет</option>
               ))}
             </select>
@@ -886,7 +925,7 @@ export default function CareFuturePage() {
             </label>
             <input
               type="text"
-              placeholder={calcType === 'premium' ? 'Например: 960 000' : 'Например: 6 000 000'}
+              placeholder={calcType === 'premium' ? 'Например: 100 000' : 'Например: 500 000'}
               value={amountDisplay}
               onChange={(e) => handleAmountChange(e.target.value)}
               style={validationErrors.amount ? inputErrorStyle : inputStyle}
@@ -936,13 +975,13 @@ export default function CareFuturePage() {
         <div style={processingContainerStyle}>
           <div style={spinnerStyle}></div>
           <div style={processingTextStyle}>Выполняется расчет...</div>
-          <div style={processingSubtextStyle}>Анализируем ваши параметры</div>
+          <div style={processingSubtextStyle}>Анализируем параметры для программы сотрудников</div>
         </div>
       </div>
     );
   }
 
-  // Результаты расчета
+  // Результаты расчета (ОБНОВЛЕННЫЕ)
   if (stage === 'result') {
     if (!resultData) {
       return (
@@ -958,16 +997,17 @@ export default function CareFuturePage() {
         items: [
           { label: 'Годовой взнос', value: `${formatSum(resultData.results.premiumAmount.toString())} руб.`, highlight: true },
           { label: 'Страховая сумма', value: `${formatSum(resultData.results.insuranceSum.toString())} руб.`, highlight: true },
-          { label: 'Накопленный капитал', value: `${formatSum(resultData.results.accumulatedCapital.toString())} руб.` },
+          { label: 'Сформированный капитал', value: `${formatSum(resultData.results.formedCapital.toString())} руб.` },
           { label: 'Доход по программе', value: `${formatSum(resultData.results.programIncome.toString())} руб.` },
-          { label: 'Налоговый вычет', value: `${formatSum(resultData.results.taxDeduction.toString())} руб.` }
+          { label: 'Налоговый вычет', value: `${formatSum(resultData.results.taxDeduction.toString())} руб.` },
+          { label: 'Коэффициент кэшбэка', value: `${(resultData.results.cashbackCoefficient * 100).toFixed(1)}%` }
         ]
       },
       {
         title: 'Выкупные суммы',
         items: resultData.redemptionValues.slice(0, 5).map(item => ({
           label: `${item.year} год`,
-          value: `${formatSum(item.redemption_amount.toString())} руб.`
+          value: `${formatSum(item.redemptionAmount.toString())} руб.`
         }))
       }
     ];
@@ -1059,7 +1099,7 @@ export default function CareFuturePage() {
         <div style={formContainerStyle}>
           <h2 style={formTitleStyle}>Связаться с менеджером</h2>
           <p style={{ ...subtitleStyle, color: '#666', textShadow: 'none' }}>
-            Наш специалист свяжется с вами для консультации
+            Наш специалист свяжется с вами для консультации по программе для сотрудников
           </p>
 
           <div style={formGroupStyle}>
@@ -1140,7 +1180,7 @@ export default function CareFuturePage() {
           <h2 style={titleStyle}>Заявка отправлена!</h2>
           <p style={subtitleStyle}>
             Наш менеджер свяжется с вами в ближайшее время для консультации по программе 
-            «Забота о будущем Ультра»
+            «Забота о будущем сотрудники»
           </p>
           
           <div style={contactInfoStyle}>
@@ -1148,6 +1188,7 @@ export default function CareFuturePage() {
             <p>{mgrSurname} {mgrName}</p>
             <p>Город: {mgrCity}</p>
             <p>Email: {email}</p>
+            <p>Уровень дохода: {incomeLevel === 'high' ? 'Свыше 5 млн/год' : 'До 5 млн/год'}</p>
             {calculationId && <p>ID расчёта: {calculationId.slice(0, 8)}...</p>}
           </div>
 
@@ -1159,11 +1200,12 @@ export default function CareFuturePage() {
               // Сброс всех состояний для нового расчета
               setStage('email');
               setEmail('');
-              setBirthParts({ day: null, month: null, year: null });
+              setBirthParts({ day: '01', month: '01', year: new Date().getFullYear().toString() });
               setGender(null);
               setCalcType(null);
               setAmountRaw('');
               setAmountDisplay('');
+              setIncomeLevel('low');
               setResultData(null);
               setCalculationId(null);
               setMgrSurname('');
