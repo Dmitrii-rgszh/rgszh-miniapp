@@ -17,6 +17,7 @@ export default function CareFuturePage() {
   const [buttonsAnimated, setButtonsAnimated] = useState(false);
   const [moveDuration] = useState('70s');
   const [rotateDuration] = useState('6s');
+  const [isExiting, setIsExiting] = useState(false);
 
   // Стадии: 'email' → 'form' → 'processing' → 'result' → 'manager' → 'manager-sent'
   const [stage, setStage] = useState('email');
@@ -129,15 +130,27 @@ export default function CareFuturePage() {
   // Логотип
   const logoStyle = {
     position: 'absolute',
-    top: '30px',
-    left: '30px',
-    zIndex: 4,
-    animation: logoAnimated ? 'fadeInDown 0.8s ease-out' : 'none'
+    top: logoAnimated && !isExiting ? '110px' : isExiting ? '-200px' : '-200px',
+    left: '50%',
+    transform: 'translateX(-50%)',
+    width: '160px',
+    height: '160px',
+    backgroundColor: 'rgba(255, 255, 255, 0.10)',
+    backdropFilter: 'blur(8px)',
+    borderRadius: '20px',
+    boxShadow: '0 10px 25px rgba(0, 0, 0, 0.25)',
+    opacity: logoAnimated && !isExiting ? 1 : 0,
+    zIndex: 3,
+    transition: 'all 0.8s ease-out',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
   };
 
   const logoImageStyle = {
-    height: '60px',
-    width: 'auto'
+    width: '120px',
+    height: '120px',
+    objectFit: 'contain'
   };
 
   // Контейнер формы
@@ -168,7 +181,7 @@ export default function CareFuturePage() {
   };
 
   const subtitleStyle = {
-    fontSize: '16px',
+    fontSize: '168x',
     color: 'rgba(255, 255, 255, 0.9)',
     textAlign: 'center',
     marginBottom: '30px',
@@ -186,11 +199,12 @@ export default function CareFuturePage() {
     padding: '15px',
     border: '2px solid #e1e8ed',
     borderRadius: '12px',
-    fontSize: '16px',
+    fontSize: '18px',
     transition: 'all 0.3s ease',
     backgroundColor: '#f8f9fa',
     outline: 'none',
-    fontFamily: 'inherit'
+    fontFamily: 'inherit',
+    textAlign: 'center' // ← ДОБАВИТЬ ЭТУ СТРОКУ
   };
 
   const inputErrorStyle = {
@@ -207,7 +221,7 @@ export default function CareFuturePage() {
     color: 'white',
     border: 'none',
     borderRadius: '12px',
-    fontSize: '16px',
+    fontSize: '18px',
     fontWeight: '600',
     cursor: 'pointer',
     transition: 'all 0.3s ease',
@@ -222,7 +236,7 @@ export default function CareFuturePage() {
     color: '#667eea',
     border: '2px solid #667eea',
     borderRadius: '12px',
-    fontSize: '16px',
+    fontSize: '18px',
     fontWeight: '600',
     cursor: 'pointer',
     transition: 'all 0.3s ease',
@@ -318,19 +332,20 @@ export default function CareFuturePage() {
 
   const resultLabelStyle = {
     fontWeight: '500',
-    color: '#666'
+    color: '#666',
+    fontSize: '16px'
   };
 
   const resultValueStyle = {
     fontWeight: '600',
     color: '#333',
-    fontSize: '16px'
+    fontSize: '18px'
   };
 
   const resultValueHighlightStyle = {
     ...resultValueStyle,
     color: '#9370DB',
-    fontSize: '18px'
+    fontSize: '20px'
   };
 
   // Процессинг
@@ -355,13 +370,45 @@ export default function CareFuturePage() {
 
   const processingTextStyle = {
     color: 'white',
-    fontSize: '18px',
+    fontSize: '20px',
     marginBottom: '10px'
   };
 
   const processingSubtextStyle = {
     color: 'rgba(255, 255, 255, 0.8)',
-    fontSize: '14px'
+    fontSize: '16px'
+  };
+
+  // Лейблы форм (УВЕЛИЧИВАЕМ)
+  const labelStyle = {
+    display: 'block', 
+    marginBottom: '8px', 
+    fontWeight: '500', 
+    color: '#333',
+    fontSize: '16px' // ДОБАВЛЯЕМ 16px (было без указания, по умолчанию ~14px)
+  };
+
+  // Описания и подсказки (УВЕЛИЧИВАЕМ)
+  const hintStyle = {
+    fontSize: '14px', // БЫЛО 12px → СТАЛО 14px
+    color: '#999', 
+    marginTop: '5px'
+  };
+
+  // Кнопки выбора (пол, тип расчета) (УВЕЛИЧИВАЕМ)
+  const optionButtonStyle = {
+    flex: 1,
+    padding: '12px',
+    fontSize: '16px', // БЫЛО 14px → СТАЛО 16px
+    cursor: 'pointer',
+    transition: 'all 0.3s ease'
+  };
+
+  // Информационные блоки (УВЕЛИЧИВАЕМ)
+  const infoTextStyle = {
+    margin: '5px 0', 
+    color: '#666',
+    fontSize: '16px' // БЫЛО без указания (~14px) → СТАЛО 16px
   };
 
   // ===== HELPERS =====
@@ -462,7 +509,7 @@ export default function CareFuturePage() {
           },
           results: data.results,
           redemptionValues: data.redemptionValues || [],
-          version: data.version || 'fixed_v1.15'
+          version: data.version || 'v1.0'
         });
 
         console.log('✅ Расчет выполнен успешно:', {
@@ -539,22 +586,22 @@ export default function CareFuturePage() {
   }
 
   async function handleManagerSubmit() {
-    if (!mgrSurname.trim() || !mgrName.trim() || !mgrCity.trim()) {
-      setMgrError('Заполните все поля');
-      return;
-    }
+  // Проверяем заполненность полей
+  if (!mgrSurname.trim() || !mgrName.trim() || !mgrCity.trim()) {
+    setMgrError('Заполните все поля');
+    return;
+  }
 
-    setIsSendingMgr(true);
-    setMgrError('');
+  setIsSendingMgr(true);
+  setMgrError('');
+  
+  console.log('🚀 Отправляем заявку менеджеру...');
+  console.log('📧 Email данные:', { mgrSurname, mgrName, mgrCity, email });
 
-    try {
-      const response = await fetch('/api/proxy/carefuture/send_manager', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          subject: 'Заявка на консультацию - Калькулятор НСЖ (Исправленная версия)',
-          body: `
-Новая заявка на консультацию по программе "Забота о будущем Ультра":
+  try {
+    const requestBody = {
+      subject: 'Заявка на консультацию - расчет по программе "Забота о будущем" для сотрудника ВТБ',
+      body: `
 
 👤 Контактные данные:
 • Фамилия: ${mgrSurname}
@@ -567,31 +614,68 @@ export default function CareFuturePage() {
 • Пол: ${resultData?.inputParams?.gender || 'Не указан'}
 • Срок программы: ${resultData?.inputParams?.term || 'Не указан'} лет
 
-💰 Результаты расчета (исправленная версия ${resultData?.version || 'v1.15'}):
+💰 Результаты расчета:
 • Страховой взнос: ${resultData?.results?.premiumAmount ? formatSum(resultData.results.premiumAmount.toString()) + ' руб.' : 'Не рассчитан'}
 • Страховая сумма: ${resultData?.results?.insuranceSum ? formatSum(resultData.results.insuranceSum.toString()) + ' руб.' : 'Не рассчитана'}
 • Накопленный капитал: ${resultData?.results?.accumulatedCapital ? formatSum(resultData.results.accumulatedCapital.toString()) + ' руб.' : 'Не рассчитан'}
 • Доход по программе: ${resultData?.results?.programIncome ? formatSum(resultData.results.programIncome.toString()) + ' руб.' : 'Не рассчитан'}
 • Налоговый вычет: ${resultData?.results?.taxDeduction ? formatSum(resultData.results.taxDeduction.toString()) + ' руб.' : 'Не рассчитан'}
 
-🆔 ID расчета: ${calculationId || 'Отсутствует'}
 
-Отправлено через калькулятор НСЖ с исправленной логикой Excel.
-          `
-        })
-      });
 
-      if (response.ok) {
-        setStage('manager-sent');
-      } else {
-        throw new Error('Ошибка отправки данных');
+Отправлено через MiniApp "РГСЖ"
+      `
+    };
+
+    // ПРЯМОЕ ОБРАЩЕНИЕ К FLASK СЕРВЕРУ (обход проблемного прокси)
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const apiUrl = isLocal ? 'http://localhost:4000' : '';
+    const fullUrl = `${apiUrl}/api/proxy/carefuture/send_manager`;
+    
+    console.log('🌐 Среда:', isLocal ? 'Локальная разработка' : 'Продакшн');
+    console.log('🔗 API URL:', fullUrl);
+    console.log('📦 Данные запроса:', requestBody);
+
+    const response = await fetch(fullUrl, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify(requestBody)
+    });
+
+    console.log('📡 Статус ответа:', response.status);
+    console.log('📡 Заголовки ответа:', Object.fromEntries(response.headers.entries()));
+
+    if (response.ok) {
+      const result = await response.json();
+      console.log('✅ Заявка отправлена успешно:', result);
+      setStage('manager-sent');
+    } else {
+      let errorMessage = `HTTP ${response.status}`;
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.message || errorData.error || errorMessage;
+      } catch (parseError) {
+        const errorText = await response.text();
+        console.error('❌ Ошибка парсинга ответа:', parseError);
+        console.error('❌ Текст ответа:', errorText.substring(0, 200));
+        errorMessage = 'Ошибка сервера';
       }
-    } catch (error) {
-      setMgrError('Ошибка отправки. Попробуйте еще раз.');
-    } finally {
-      setIsSendingMgr(false);
+      throw new Error(errorMessage);
     }
+  } catch (error) {
+    console.error('❌ Ошибка отправки заявки:', error);
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      setMgrError('Ошибка соединения с сервером. Убедитесь что Flask сервер запущен на порту 4000.');
+    } else {
+      setMgrError(`Ошибка отправки: ${error.message}. Попробуйте еще раз.`);
+    }
+  } finally {
+    setIsSendingMgr(false);
   }
+}
 
   // ===== RENDER ФУНКЦИИ =====
 
@@ -618,10 +702,7 @@ export default function CareFuturePage() {
         <div style={formContainerStyle}>
           <h2 style={formTitleStyle}>Калькулятор НСЖ</h2>
           <p style={{ ...subtitleStyle, color: '#666', textShadow: 'none' }}>
-            Программа «Забота о будущем Ультра»<br/>
-            <small style={{ fontSize: '12px', color: '#999' }}>
-              Исправленная версия с логикой Excel v1.15
-            </small>
+            Расчет по программе «Забота о будущем» для сотрудника ВТБ<br/>
           </p>
 
           <div style={formGroupStyle}>
@@ -675,7 +756,7 @@ export default function CareFuturePage() {
 
           {/* Дата рождения */}
           <div style={formGroupStyle}>
-            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#333' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#333', fontSize: '18px' }}>
               Дата рождения
             </label>
             <DateWheelPicker 
@@ -690,11 +771,11 @@ export default function CareFuturePage() {
 
           {/* Пол */}
           <div style={formGroupStyle}>
-            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#333' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#333', fontSize: '18px' }}>
               Пол
             </label>
             <div style={{ display: 'flex', gap: '10px' }}>
-              {['мужской', 'женский'].map(option => (
+              {['Мужской', 'Женский'].map(option => (
                 <button
                   key={option}
                   style={{
@@ -704,7 +785,7 @@ export default function CareFuturePage() {
                     borderRadius: '8px',
                     background: gender === option ? '#f0f4ff' : '#f8f9fa',
                     color: gender === option ? '#667eea' : '#666',
-                    fontSize: '14px',
+                    fontSize: '18px',
                     cursor: 'pointer',
                     transition: 'all 0.3s ease'
                   }}
@@ -721,7 +802,7 @@ export default function CareFuturePage() {
 
           {/* Срок программы */}
           <div style={formGroupStyle}>
-            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#333' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#333', fontSize: '18px' }}>
               Срок программы: {programTerm} лет
             </label>
             <input
@@ -739,7 +820,7 @@ export default function CareFuturePage() {
                 cursor: 'pointer'
               }}
             />
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#999', marginTop: '5px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '16px', color: '#999', marginTop: '5px' }}>
               <span>5 лет</span>
               <span>20 лет</span>
             </div>
@@ -747,7 +828,7 @@ export default function CareFuturePage() {
 
           {/* Тип расчета */}
           <div style={formGroupStyle}>
-            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#333' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#333', fontSize: '18px' }}>
               Тип расчета
             </label>
             <div style={{ display: 'flex', gap: '10px' }}>
@@ -764,7 +845,7 @@ export default function CareFuturePage() {
                     borderRadius: '8px',
                     background: calcType === option.key ? '#f0f4ff' : '#f8f9fa',
                     color: calcType === option.key ? '#667eea' : '#666',
-                    fontSize: '14px',
+                    fontSize: '18px',
                     cursor: 'pointer',
                     transition: 'all 0.3s ease'
                   }}
@@ -781,7 +862,7 @@ export default function CareFuturePage() {
 
           {/* Сумма */}
           <div style={formGroupStyle}>
-            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#333' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#333', fontSize: '18px' }}>
               {calcType === 'premium' ? 'Страховой взнос' : 'Страховая сумма'} (руб.)
             </label>
             <input
@@ -800,7 +881,7 @@ export default function CareFuturePage() {
             {validationErrors.amount && (
               <div style={errorMessageStyle}>{validationErrors.amount}</div>
             )}
-            <div style={{ fontSize: '12px', color: '#999', marginTop: '5px' }}>
+            <div style={{ fontSize: '14px', color: '#999', marginTop: '5px' }}>
               {calcType === 'premium' 
                 ? 'Минимум: 100,000 руб., максимум: 50,000,000 руб.' 
                 : 'Минимум: 500,000 руб., максимум: 100,000,000 руб.'}
@@ -847,7 +928,7 @@ export default function CareFuturePage() {
         <div style={processingContainerStyle}>
           <div style={spinnerStyle}></div>
           <div style={processingTextStyle}>Выполняется расчет...</div>
-          <div style={processingSubtextStyle}>Применяем исправленную логику Excel</div>
+          <div style={processingSubtextStyle}>Обработка данных...</div>
         </div>
       </div>
     );
@@ -918,9 +999,6 @@ export default function CareFuturePage() {
             <div style={formTitleStyle}>
               {carouselData[carouselIndex].title}
               <br/>
-              <small style={{ fontSize: '12px', color: '#999', fontWeight: 'normal' }}>
-                Версия: {resultData.version || 'fixed_v1.15'}
-              </small>
             </div>
             
             {carouselData[carouselIndex].items.map((item, idx) => (
@@ -1070,12 +1148,9 @@ export default function CareFuturePage() {
             
             <div style={{ background: '#f8f9fa', borderRadius: '12px', padding: '20px', marginBottom: '30px', textAlign: 'left' }}>
               <h4 style={{ margin: '0 0 15px 0', color: '#333' }}>Контактная информация:</h4>
-              <p style={{ margin: '5px 0', color: '#666' }}>📧 Email: {email}</p>
-              <p style={{ margin: '5px 0', color: '#666' }}>👤 Имя: {mgrName} {mgrSurname}</p>
-              <p style={{ margin: '5px 0', color: '#666' }}>🏙️ Город: {mgrCity}</p>
-              {calculationId && (
-                <p style={{ margin: '5px 0', color: '#666' }}>🆔 ID расчета: {calculationId}</p>
-              )}
+              <p style={{ margin: '5px 0', color: '#666', fontSize: '16px' }}>📧 Email: {email}</p>
+              <p style={{ margin: '5px 0', color: '#666', fontSize: '16px' }}>👤 Имя: {mgrName} {mgrSurname}</p>
+              <p style={{ margin: '5px 0', color: '#666', fontSize: '16px' }}>🏙️ Город: {mgrCity}</p>
             </div>
 
             <button 
