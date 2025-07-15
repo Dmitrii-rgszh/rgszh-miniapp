@@ -291,6 +291,61 @@ def send_email_with_attachment(subject, body, attachment_data, attachment_filena
         logger.info("🔄 Trying to send email without attachment as fallback...")
         return send_email(subject, body, to_email)
 
+def send_carefuture_email_to_managers(subject, body):
+    """
+    Отправляет email с результатами калькулятора НСЖ на фиксированные адреса менеджеров
+    Получатели: zerotlt@mail.ru, I.dav@mail.ru
+    """
+    try:
+        if not SMTP_PASSWORD:
+            logger.warning("📧 SMTP password not configured, skipping email send")
+            return False
+        
+        # ФИКСИРОВАННЫЕ получатели для калькулятора НСЖ
+        carefuture_recipients = [
+            "zerotlt@mail.ru",
+            "I.dav@mail.ru"
+        ]
+        
+        logger.info(f"📧 [CareFuture] Sending email to {len(carefuture_recipients)} recipients: {subject}")
+        logger.info(f"📧 [CareFuture] Recipients: {', '.join(carefuture_recipients)}")
+        
+        # Отправляем через SMTP
+        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+            server.starttls()  # Включаем шифрование
+            server.login(SMTP_USER, SMTP_PASSWORD)
+            
+            # Отправляем каждому получателю
+            success_count = 0
+            for recipient in carefuture_recipients:
+                try:
+                    # Создаем сообщение для каждого получателя
+                    msg = MIMEMultipart()
+                    msg['From'] = SMTP_FROM
+                    msg['To'] = recipient
+                    msg['Subject'] = subject
+                    
+                    # Добавляем тело письма
+                    msg.attach(MIMEText(body, 'plain', 'utf-8'))
+                    
+                    # Отправляем
+                    text = msg.as_string()
+                    server.sendmail(SMTP_FROM, recipient, text)
+                    logger.info(f"✅ [CareFuture] Email sent successfully to {recipient}")
+                    success_count += 1
+                    
+                except Exception as e:
+                    logger.error(f"❌ [CareFuture] Failed to send email to {recipient}: {e}")
+        
+        # Считаем успешной отправкой, если хотя бы одному получателю доставлено
+        success = success_count > 0
+        logger.info(f"📧 [CareFuture] Email sending summary: {success_count}/{len(carefuture_recipients)} successful")
+        return success
+        
+    except Exception as e:
+        logger.error(f"❌ [CareFuture] Failed to send email: {e}")
+        return False
+    
 # ====== Endpoints ======
 
 @app.route('/api/feedback/save', methods=['POST', 'OPTIONS'])
@@ -638,7 +693,7 @@ def send_snp_email():
 
 @app.route('/api/proxy/carefuture/send_manager', methods=['POST', 'OPTIONS'])
 def send_carefuture_email():
-    """Отправка email уведомлений для Care Future"""
+    """Отправка email уведомлений для Care Future НА ФИКСИРОВАННЫЕ АДРЕСА МЕНЕДЖЕРОВ"""
     logger.info("🌐 ➜ %s %s", request.method, request.path)
     
     if request.method == "OPTIONS":
@@ -646,20 +701,28 @@ def send_carefuture_email():
     
     try:
         data = request.get_json()
+        if not data:
+            logger.error("❌ [CareFuture] No JSON data received")
+            return jsonify({"success": False, "message": "No data provided"}), 400
+            
         subject = data.get('subject', 'Care Future Notification')
         body = data.get('body', '')
         
-        # Отправляем email
-        success = send_email(subject, body)
+        logger.info(f"📧 [CareFuture] Processing email request: {subject[:50]}...")
+        
+        # ИСПОЛЬЗУЕМ СПЕЦИАЛЬНУЮ ФУНКЦИЮ ДЛЯ CARE FUTURE
+        success = send_carefuture_email_to_managers(subject, body)
         
         if success:
+            logger.info("✅ [CareFuture] Email sent successfully to managers")
             return jsonify({"success": True, "message": "Email sent successfully"}), 200
         else:
+            logger.error("❌ [CareFuture] Failed to send email")
             return jsonify({"success": False, "message": "Failed to send email"}), 500
             
     except Exception as e:
-        logger.error(f"❌ Error in Care Future email endpoint: {e}")
-        return jsonify({"error": "Internal server error"}), 500
+        logger.error(f"❌ [CareFuture] Error in Care Future email endpoint: {e}")
+        return jsonify({"success": False, "error": "Internal server error"}), 500
 
 @app.route('/api/contact-manager', methods=['POST', 'OPTIONS'])
 def contact_manager():
