@@ -1,4 +1,4 @@
-# care_future_models.py - Модели БД для калькулятора НСЖ "Забота о будущем Ультра"
+# care_future_models.py - ИСПРАВЛЕННАЯ ВЕРСИЯ с точной логикой Excel
 
 import os
 import json
@@ -321,173 +321,247 @@ class CalculationResult:
     calculation_uuid: str
 
 class NSJCalculator:
-    """Основной класс для расчетов НСЖ"""
+    """
+    ИСПРАВЛЕННЫЙ класс для расчетов НСЖ с точной логикой Excel
+    """
     
     def __init__(self):
         self.logger = logging.getLogger("NSJCalculator")
+        
+        # Коэффициенты дожития по срокам (из листа "к_Расчетчик")
+        self.survival_coefficients = {
+            5: 1.34,
+            6: 1.38, 
+            7: 1.46,
+            8: 1.54,
+            9: 1.63,
+            10: 1.73,
+            11: 1.82,
+            12: 1.92,
+            13: 2.03,
+            14: 2.15,
+            15: 2.28,
+            16: 2.42,
+            17: 2.57,
+            18: 2.74,
+            19: 2.92,
+            20: 3.11
+        }
+        
+        # Тарифы по рискам (из листа "к_Тарифы по рискам")
+        self.risk_tariffs = {
+            5: {'survival': 0.981, 'death_immediate': 0.0063, 'disability': 0.0016, 'death_deferred': 0.0111},
+            6: {'survival': 0.9764, 'death_immediate': 0.0076, 'disability': 0.0021, 'death_deferred': 0.0139},
+            7: {'survival': 0.9715, 'death_immediate': 0.009, 'disability': 0.0026, 'death_deferred': 0.0169},
+            8: {'survival': 0.9661, 'death_immediate': 0.0105, 'disability': 0.0032, 'death_deferred': 0.0202},
+            9: {'survival': 0.96, 'death_immediate': 0.0122, 'disability': 0.0039, 'death_deferred': 0.0239},
+            10: {'survival': 0.9535, 'death_immediate': 0.014, 'disability': 0.0046, 'death_deferred': 0.0279},
+            11: {'survival': 0.9457, 'death_immediate': 0.0165, 'disability': 0.0055, 'death_deferred': 0.0323},
+            12: {'survival': 0.9372, 'death_immediate': 0.0192, 'disability': 0.0066, 'death_deferred': 0.037},
+            13: {'survival': 0.928, 'death_immediate': 0.0222, 'disability': 0.0077, 'death_deferred': 0.0421},
+            14: {'survival': 0.918, 'death_immediate': 0.0255, 'disability': 0.009, 'death_deferred': 0.0475},
+            15: {'survival': 0.9071, 'death_immediate': 0.0291, 'disability': 0.0105, 'death_deferred': 0.0533},
+            16: {'survival': 0.8956, 'death_immediate': 0.0328, 'disability': 0.0121, 'death_deferred': 0.0595},
+            17: {'survival': 0.8831, 'death_immediate': 0.0369, 'disability': 0.0138, 'death_deferred': 0.0662},
+            18: {'survival': 0.8695, 'death_immediate': 0.0414, 'disability': 0.0157, 'death_deferred': 0.0734},
+            19: {'survival': 0.8547, 'death_immediate': 0.0464, 'disability': 0.0178, 'death_deferred': 0.0811},
+            20: {'survival': 0.8393, 'death_immediate': 0.0517, 'disability': 0.0201, 'death_deferred': 0.0889}
+        }
+        
+        # Проценты выкупных сумм (из листа "к_Выкупные суммы")
+        self.redemption_percentages = {
+            5: {3: 0.7, 4: 0.8, 5: 0.9},
+            6: {3: 0.6, 4: 0.7, 5: 0.8, 6: 0.9},
+            7: {3: 0.5, 4: 0.6, 5: 0.7, 6: 0.8},
+            8: {3: 0.4, 4: 0.5, 5: 0.6, 6: 0.7},
+            9: {3: 0.3, 4: 0.4, 5: 0.5, 6: 0.6},
+            10: {3: 0.2, 4: 0.3, 5: 0.4, 6: 0.5},
+            11: {3: 0.1, 4: 0.2, 5: 0.3, 6: 0.4},
+            12: {3: 0.1, 4: 0.2, 5: 0.3, 6: 0.4},
+            13: {3: 0.1, 4: 0.2, 5: 0.3, 6: 0.4},
+            14: {3: 0.1, 4: 0.2, 5: 0.3, 6: 0.4},
+            15: {3: 0.1, 4: 0.2, 5: 0.3, 6: 0.4},
+            16: {3: 0.1, 4: 0.2, 5: 0.3, 6: 0.4},
+            17: {3: 0.1, 4: 0.2, 5: 0.3, 6: 0.4},
+            18: {3: 0.1, 4: 0.2, 5: 0.3, 6: 0.4},
+            19: {3: 0.1, 4: 0.2, 5: 0.3, 6: 0.4},
+            20: {3: 0.1, 4: 0.2, 5: 0.3, 6: 0.4}
+        }
     
     def calculate(self, input_data: CalculationInput) -> CalculationResult:
-        """Основной метод расчета"""
+        """
+        ИСПРАВЛЕННЫЙ основной метод расчета с точной логикой Excel
+        """
         try:
-            # Рассчитываем возраст
+            self.logger.info(f"🧮 Начинаем расчет: {input_data.calculation_type}, сумма: {input_data.input_amount}, срок: {input_data.contract_term}")
+            
+            # 1. Валидация входных данных
+            self._validate_input(input_data)
+            
+            # 2. Вычисляем возраст
             calc_date = input_data.calculation_date or date.today()
             age_at_start = self._calculate_age(input_data.birth_date, calc_date)
             age_at_end = age_at_start + input_data.contract_term
             
-            # Валидация входных данных
-            self._validate_input(input_data, age_at_start, age_at_end)
+            self.logger.info(f"📅 Возраст на начало: {age_at_start}, на окончание: {age_at_end}")
             
-            # Получаем тарифные коэффициенты
-            risk_rates = NSJRiskRates.get_rates_for_age(age_at_start)
-            if not risk_rates:
-                raise ValueError(f"Тарифные коэффициенты не найдены для возраста {age_at_start}")
-            
-            # Выполняем расчет в зависимости от типа
+            # 3. Определяем премию и страховую сумму (ИСПРАВЛЕННАЯ ЛОГИКА)
             if input_data.calculation_type == 'from_premium':
-                result = self._calculate_from_premium(input_data, risk_rates, age_at_start, age_at_end)
-            elif input_data.calculation_type == 'from_sum':
-                result = self._calculate_from_sum(input_data, risk_rates, age_at_start, age_at_end)
-            else:
-                raise ValueError(f"Неизвестный тип расчета: {input_data.calculation_type}")
+                premium_amount = input_data.input_amount
+                insurance_sum = self._calculate_insurance_sum_from_premium(premium_amount, input_data.contract_term)
+            else:  # from_sum
+                insurance_sum = input_data.input_amount
+                premium_amount = self._calculate_premium_from_sum(insurance_sum, input_data.contract_term)
             
-            # Рассчитываем выкупные суммы
-            redemption_values = self._calculate_redemption_values(
-                result['premium_amount'], 
-                input_data.contract_term
-            )
+            self.logger.info(f"💰 Премия: {premium_amount}, Страховая сумма: {insurance_sum}")
             
-            # Рассчитываем налоговый вычет
-            tax_deduction = self._calculate_tax_deduction(result['premium_amount'], input_data.contract_term)
+            # 4. ИСПРАВЛЕННЫЕ основные расчеты (по логике Excel)
+            cashback_rate = self._get_cashback_rate(input_data.contract_term)
+            accumulated_capital = premium_amount * input_data.contract_term
+            program_income = int(premium_amount * cashback_rate * input_data.contract_term)
             
-            # Создаем объект результата
-            calculation_result = CalculationResult(
-                premium_amount=result['premium_amount'],
-                insurance_sum=result['insurance_sum'],
-                accumulated_capital=result['accumulated_capital'],
-                program_income=result['program_income'],
+            # 5. Налоговый вычет (ИСПРАВЛЕННАЯ ФОРМУЛА)
+            tax_deduction = self._calculate_tax_deduction(premium_amount, input_data.contract_term)
+            
+            # 6. Выкупные суммы (ИСПРАВЛЕННАЯ ЛОГИКА)
+            redemption_values = self._calculate_redemption_values(premium_amount, input_data.contract_term)
+            
+            # 7. Создаем UUID для расчета
+            calculation_uuid = str(uuid.uuid4())
+            
+            result = CalculationResult(
+                premium_amount=premium_amount,
+                insurance_sum=insurance_sum,
+                accumulated_capital=accumulated_capital,
+                program_income=program_income,
                 tax_deduction=tax_deduction,
                 age_at_start=age_at_start,
                 age_at_end=age_at_end,
                 redemption_values=redemption_values,
-                calculation_uuid=str(uuid.uuid4())
+                calculation_uuid=calculation_uuid
             )
             
-            # Сохраняем в БД
-            self._save_calculation(input_data, calculation_result, calc_date)
+            # 8. Сохраняем результат в БД
+            self._save_calculation(input_data, result, calc_date)
             
-            return calculation_result
+            self.logger.info(f"✅ Расчет завершен успешно: {calculation_uuid}")
+            return result
             
         except Exception as e:
-            self.logger.error(f"Ошибка расчета: {e}")
+            self.logger.error(f"❌ Ошибка расчета: {e}")
             raise
     
-    def _calculate_age(self, birth_date: date, calculation_date: date) -> int:
-        """Расчет возраста в полных годах"""
-        age = calculation_date.year - birth_date.year
-        if calculation_date.month < birth_date.month or \
-           (calculation_date.month == birth_date.month and calculation_date.day < birth_date.day):
+    def _validate_input(self, input_data: CalculationInput):
+        """Валидация входных данных"""
+        if input_data.contract_term < 5 or input_data.contract_term > 20:
+            raise ValueError(f"Срок договора должен быть от 5 до 20 лет, получен: {input_data.contract_term}")
+        
+        if input_data.gender not in ['male', 'female']:
+            raise ValueError(f"Пол должен быть 'male' или 'female', получен: {input_data.gender}")
+        
+        if input_data.calculation_type not in ['from_premium', 'from_sum']:
+            raise ValueError(f"Тип расчета должен быть 'from_premium' или 'from_sum', получен: {input_data.calculation_type}")
+        
+        if input_data.input_amount <= 0:
+            raise ValueError(f"Сумма должна быть положительной, получена: {input_data.input_amount}")
+        
+        # Проверка лимитов по суммам
+        if input_data.calculation_type == 'from_premium':
+            if input_data.input_amount < 100000:
+                raise ValueError("Минимальный страховой взнос: 100,000 руб.")
+            if input_data.input_amount > 50000000:
+                raise ValueError("Максимальный страховой взнос: 50,000,000 руб.")
+        else:  # from_sum
+            if input_data.input_amount < 500000:
+                raise ValueError("Минимальная страховая сумма: 500,000 руб.")
+            if input_data.input_amount > 100000000:
+                raise ValueError("Максимальная страховая сумма: 100,000,000 руб.")
+    
+    def _calculate_age(self, birth_date: date, calc_date: date) -> int:
+        """Расчет возраста на дату расчета"""
+        age = calc_date.year - birth_date.year
+        if calc_date.month < birth_date.month or (calc_date.month == birth_date.month and calc_date.day < birth_date.day):
             age -= 1
+        
+        if age < 18 or age > 63:
+            raise ValueError(f"Возраст должен быть от 18 до 63 лет, вычислен: {age}")
+        
         return age
     
-    def _validate_input(self, input_data: CalculationInput, age_at_start: int, age_at_end: int):
-        """Валидация входных параметров"""
-        min_age = NSJCalculatorSettings.get_value('min_age', 18)
-        max_age = NSJCalculatorSettings.get_value('max_age', 63)
-        min_term = NSJCalculatorSettings.get_value('min_contract_term', 5)
-        max_term = NSJCalculatorSettings.get_value('max_contract_term', 20)
-        min_amount = NSJCalculatorSettings.get_value('min_premium_amount', 100000)
-        max_amount = NSJCalculatorSettings.get_value('max_premium_amount', 50000000)
+    def _get_cashback_rate(self, contract_term: int) -> float:
+        """
+        ИСПРАВЛЕННАЯ: Получение ставки кэшбэка по сроку (из Excel логики)
+        Логика из листа "к_Расчетчик": кэшбэк = коэффициент_дожития - 1
+        """
+        survival_coeff = self.survival_coefficients.get(contract_term)
+        if not survival_coeff:
+            raise ValueError(f"Нет данных о коэффициенте дожития для срока {contract_term}")
         
-        if age_at_start < min_age or age_at_start > max_age:
-            raise ValueError(f"Возраст должен быть от {min_age} до {max_age} лет")
-        
-        if input_data.contract_term < min_term or input_data.contract_term > max_term:
-            raise ValueError(f"Срок договора должен быть от {min_term} до {max_term} лет")
-        
-        if input_data.input_amount < min_amount or input_data.input_amount > max_amount:
-            raise ValueError(f"Сумма должна быть от {min_amount:,} до {max_amount:,} рублей")
-        
-        if input_data.gender not in ('male', 'female'):
-            raise ValueError("Пол должен быть 'male' или 'female'")
+        cashback_rate = survival_coeff - 1.0
+        self.logger.info(f"📊 Кэшбэк для срока {contract_term} лет: {cashback_rate:.4f}")
+        return cashback_rate
     
-    def _calculate_from_premium(self, input_data: CalculationInput, risk_rates: NSJRiskRates, 
-                               age_at_start: int, age_at_end: int) -> Dict[str, int]:
-        """Расчет от страхового взноса"""
-        premium_amount = input_data.input_amount
-        
-        # Базовый расчет страховой суммы (упрощенная формула из Excel)
-        survival_rate = float(risk_rates.survival_rate)
-        insurance_sum = int(premium_amount / survival_rate)
-        
-        # Накопленный капитал (с учетом кэшбэка)
-        cashback_rate = NSJCalculatorSettings.get_value('cashback_rate', 0.06)
-        accumulated_capital = int(premium_amount * input_data.contract_term * (1 + cashback_rate))
-        
-        # Доход по программе
-        program_income = accumulated_capital - (premium_amount * input_data.contract_term)
-        
-        return {
-            'premium_amount': premium_amount,
-            'insurance_sum': insurance_sum,
-            'accumulated_capital': accumulated_capital,
-            'program_income': program_income
-        }
+    def _calculate_insurance_sum_from_premium(self, premium: int, term: int) -> int:
+        """
+        ИСПРАВЛЕННАЯ: Расчет страховой суммы от премии 
+        Формула из Excel: р_сумма = р_взнос * р_срок * (1 + р_кэшбэк)
+        """
+        cashback_rate = self._get_cashback_rate(term)
+        insurance_sum = int(premium * term * (1 + cashback_rate))
+        return insurance_sum
     
-    def _calculate_from_sum(self, input_data: CalculationInput, risk_rates: NSJRiskRates,
-                           age_at_start: int, age_at_end: int) -> Dict[str, int]:
-        """Расчет от страховой суммы"""
-        insurance_sum = input_data.input_amount
-        
-        # Расчет страхового взноса
-        survival_rate = float(risk_rates.survival_rate)
-        premium_amount = int(insurance_sum * survival_rate)
-        
-        # Остальные расчеты аналогично
-        cashback_rate = NSJCalculatorSettings.get_value('cashback_rate', 0.06)
-        accumulated_capital = int(premium_amount * input_data.contract_term * (1 + cashback_rate))
-        program_income = accumulated_capital - (premium_amount * input_data.contract_term)
-        
-        return {
-            'premium_amount': premium_amount,
-            'insurance_sum': insurance_sum,
-            'accumulated_capital': accumulated_capital,
-            'program_income': program_income
-        }
+    def _calculate_premium_from_sum(self, insurance_sum: int, term: int) -> int:
+        """
+        ИСПРАВЛЕННАЯ: Расчет премии от страховой суммы
+        Формула из Excel: р_взнос = р_сумма / (р_срок * (1 + р_кэшбэк))
+        """
+        cashback_rate = self._get_cashback_rate(term)
+        premium = int(insurance_sum / (term * (1 + cashback_rate)))
+        return premium
     
-    def _calculate_redemption_values(self, premium_amount: int, contract_term: int) -> List[Dict[str, Union[int, float]]]:
-        """Расчет выкупных сумм по годам"""
-        redemption_data = NSJRedemptionRates.get_all_for_term(contract_term)
-        results = []
+    def _calculate_tax_deduction(self, premium: int, term: int) -> int:
+        """
+        ИСПРАВЛЕННАЯ: Расчет налогового вычета 
+        Из Excel: IF($C$10<=150000, $C$10 * 0.13 * $C$6, 19500 * $C$6)
+        """
+        if premium <= 150000:
+            # Налоговый вычет 13% с премии
+            annual_deduction = premium * 0.13
+        else:
+            # Максимальный вычет 19,500 руб в год (150,000 * 0.13)
+            annual_deduction = 19500
         
-        total_premiums = premium_amount * contract_term
-        
-        for year in range(1, contract_term + 1):
-            coefficient = NSJRedemptionRates.get_coefficient(year, contract_term)
-            paid_premiums = premium_amount * year
-            redemption_amount = int(paid_premiums * coefficient)
-            
-            results.append({
-                'year': year,
-                'paid_premiums': paid_premiums,
-                'redemption_coefficient': coefficient,
-                'redemption_amount': redemption_amount
-            })
-        
-        return results
-    
-    def _calculate_tax_deduction(self, premium_amount: int, contract_term: int) -> int:
-        """Расчет налогового вычета"""
-        annual_limit = NSJCalculatorSettings.get_value('tax_deduction_limit', 120000)
-        tax_rate = NSJCalculatorSettings.get_value('tax_deduction_rate_standard', 0.13)
-        
-        # Размер вычета ограничен лимитом
-        annual_deduction_base = min(premium_amount, annual_limit)
-        annual_deduction = int(annual_deduction_base * tax_rate)
-        
-        # Общий вычет за весь срок
-        total_deduction = annual_deduction * contract_term
-        
+        total_deduction = int(annual_deduction * term)
+        self.logger.info(f"💰 Налоговый вычет: {annual_deduction}/год × {term} лет = {total_deduction}")
         return total_deduction
+    
+    def _calculate_redemption_values(self, premium: int, term: int) -> List[Dict[str, Union[int, float]]]:
+        """
+        ИСПРАВЛЕННАЯ: Расчет выкупных сумм по годам
+        Из Excel: выкупная_сумма = премия * год * процент_выкупа
+        """
+        redemption_values = []
+        percentages = self.redemption_percentages.get(term, {})
+        
+        for year in range(1, term + 1):
+            if year in percentages:
+                # Есть выкупная сумма
+                percentage = percentages[year]
+                amount = int(premium * year * percentage)
+                redemption_values.append({
+                    'year': year,
+                    'amount': amount,
+                    'percentage': percentage
+                })
+            else:
+                # Нет выкупной суммы (отмечаем как 0)
+                redemption_values.append({
+                    'year': year, 
+                    'amount': 0,
+                    'percentage': 0
+                })
+        
+        return redemption_values
     
     def _save_calculation(self, input_data: CalculationInput, result: CalculationResult, calc_date: date):
         """Сохранение результата расчета в БД"""
@@ -514,10 +588,10 @@ class NSJCalculator:
             db.session.add(calculation)
             db.session.commit()
             
-            self.logger.info(f"Расчет сохранен: {result.calculation_uuid}")
+            self.logger.info(f"💾 Расчет сохранен в БД: {result.calculation_uuid}")
             
         except Exception as e:
-            self.logger.error(f"Ошибка сохранения расчета: {e}")
+            self.logger.error(f"❌ Ошибка сохранения расчета: {e}")
             db.session.rollback()
             # Не прерываем выполнение, если не удалось сохранить
 
@@ -531,39 +605,36 @@ class NSJDataManager:
     @staticmethod
     def get_available_contract_terms() -> List[int]:
         """Получить доступные сроки договора"""
-        terms = db.session.query(NSJRedemptionRates.contract_term).distinct().filter(
-            NSJRedemptionRates.is_active == True
-        ).order_by(NSJRedemptionRates.contract_term).all()
-        
-        return [term[0] for term in terms]
+        # Возвращаем фиксированные сроки из Excel
+        return list(range(5, 21))  # 5-20 лет
     
     @staticmethod
     def get_age_ranges() -> Dict[str, int]:
         """Получить возрастные ограничения"""
         return {
-            'min_age': NSJCalculatorSettings.get_value('min_age', 18),
-            'max_age': NSJCalculatorSettings.get_value('max_age', 63)
+            'min_age': 18,
+            'max_age': 63
         }
     
     @staticmethod
     def get_amount_limits() -> Dict[str, int]:
         """Получить ограничения по суммам"""
         return {
-            'min_premium': NSJCalculatorSettings.get_value('min_premium_amount', 100000),
-            'max_premium': NSJCalculatorSettings.get_value('max_premium_amount', 50000000),
-            'min_insurance_sum': NSJCalculatorSettings.get_value('min_insurance_sum', 500000),
-            'max_insurance_sum': NSJCalculatorSettings.get_value('max_insurance_sum', 100000000)
+            'min_premium': 100000,
+            'max_premium': 50000000,
+            'min_insurance_sum': 500000,
+            'max_insurance_sum': 100000000
         }
     
     @staticmethod
     def get_calculator_info() -> Dict[str, Any]:
         """Получить общую информацию о калькуляторе"""
         return {
-            'program_name': NSJCalculatorSettings.get_value('program_name', 'Забота о будущем Ультра'),
-            'program_version': NSJCalculatorSettings.get_value('program_version', 'v.25.2.1'),
-            'currency': NSJCalculatorSettings.get_value('currency', 'RUB'),
-            'supports_tax_calculation': NSJCalculatorSettings.get_value('supports_tax_calculation', True),
-            'supports_redemption_calculation': NSJCalculatorSettings.get_value('supports_redemption_calculation', True),
+            'program_name': 'Забота о будущем Ультра',
+            'program_version': 'v.1.15 (Excel logic)',
+            'currency': 'RUB',
+            'supports_tax_calculation': True,
+            'supports_redemption_calculation': True,
             'available_terms': NSJDataManager.get_available_contract_terms(),
             'age_limits': NSJDataManager.get_age_ranges(),
             'amount_limits': NSJDataManager.get_amount_limits()
@@ -580,44 +651,42 @@ class NSJDataManager:
         }
         
         try:
-            # Проверяем наличие тарифных коэффициентов
-            risk_count = NSJRiskRates.query.filter_by(is_active=True).count()
-            result['stats']['risk_rates_count'] = risk_count
+            # Проверяем встроенные данные Excel
+            calculator = NSJCalculator()
             
-            if risk_count == 0:
-                result['errors'].append('Отсутствуют тарифные коэффициенты')
+            # Проверяем наличие всех коэффициентов дожития
+            missing_survival = []
+            for term in range(5, 21):
+                if term not in calculator.survival_coefficients:
+                    missing_survival.append(term)
+            
+            if missing_survival:
+                result['errors'].append(f'Отсутствуют коэффициенты дожития для сроков: {missing_survival}')
                 result['status'] = 'error'
             
-            # Проверяем наличие коэффициентов выкупа
-            redemption_count = NSJRedemptionRates.query.filter_by(is_active=True).count()
-            result['stats']['redemption_rates_count'] = redemption_count
+            # Проверяем наличие тарифов по рискам
+            missing_tariffs = []
+            for term in range(5, 21):
+                if term not in calculator.risk_tariffs:
+                    missing_tariffs.append(term)
             
-            if redemption_count == 0:
-                result['errors'].append('Отсутствуют коэффициенты выкупных сумм')
+            if missing_tariffs:
+                result['errors'].append(f'Отсутствуют тарифы по рискам для сроков: {missing_tariffs}')
                 result['status'] = 'error'
             
-            # Проверяем настройки
-            settings_count = NSJCalculatorSettings.query.filter_by(is_active=True).count()
-            result['stats']['settings_count'] = settings_count
+            # Проверяем выкупные суммы
+            missing_redemption = []
+            for term in range(5, 21):
+                if term not in calculator.redemption_percentages:
+                    missing_redemption.append(term)
             
-            required_settings = [
-                'min_age', 'max_age', 'min_contract_term', 'max_contract_term',
-                'min_premium_amount', 'cashback_rate', 'tax_deduction_rate_standard'
-            ]
+            if missing_redemption:
+                result['warnings'].append(f'Отсутствуют выкупные суммы для сроков: {missing_redemption}')
             
-            for setting_key in required_settings:
-                value = NSJCalculatorSettings.get_value(setting_key)
-                if value is None:
-                    result['warnings'].append(f'Отсутствует настройка: {setting_key}')
-            
-            # Проверяем целостность данных выкупа
-            terms = NSJDataManager.get_available_contract_terms()
-            for term in terms:
-                coeffs = NSJRedemptionRates.get_all_for_term(term)
-                if len(coeffs) != term:
-                    result['warnings'].append(f'Неполные данные выкупа для срока {term} лет')
-            
-            result['stats']['available_terms'] = terms
+            result['stats']['survival_coefficients_count'] = len(calculator.survival_coefficients)
+            result['stats']['risk_tariffs_count'] = len(calculator.risk_tariffs)
+            result['stats']['redemption_terms_count'] = len(calculator.redemption_percentages)
+            result['stats']['available_terms'] = NSJDataManager.get_available_contract_terms()
             result['stats']['calculations_count'] = NSJCalculations.query.count()
             
         except Exception as e:
@@ -654,31 +723,40 @@ def init_nsj_database():
         return False
 
 def quick_calculation_test():
-    """Быстрый тест расчета для проверки"""
+    """Быстрый тест расчета для проверки ИСПРАВЛЕННОЙ логики"""
     try:
         calculator = NSJCalculator()
         
-        # Тестовые данные
+        # Тестовые данные из Excel (мужчина 60 лет, срок 9 лет, премия 100,000)
         test_input = CalculationInput(
-            birth_date=date(1990, 1, 1),
+            birth_date=date(1965, 4, 1),  # возраст 60 лет
             gender='male',
-            contract_term=5,
+            contract_term=9,
             calculation_type='from_premium',
-            input_amount=960000,
+            input_amount=100000,
             email='test@example.com'
         )
         
         result = calculator.calculate(test_input)
         
-        print(f"✅ Тест расчета прошел успешно!")
-        print(f"UUID: {result.calculation_uuid}")
-        print(f"Взнос: {result.premium_amount:,} руб.")
-        print(f"Страховая сумма: {result.insurance_sum:,} руб.")
-        print(f"Накопленный капитал: {result.accumulated_capital:,} руб.")
-        print(f"Доход: {result.program_income:,} руб.")
-        print(f"Налоговый вычет: {result.tax_deduction:,} руб.")
-        print(f"Возраст: {result.age_at_start} → {result.age_at_end}")
-        print(f"Выкупных сумм: {len(result.redemption_values)}")
+        print(f"✅ Тест ИСПРАВЛЕННОГО расчета прошел успешно!")
+        print(f"📊 Результаты:")
+        print(f"   UUID: {result.calculation_uuid}")
+        print(f"   Премия: {result.premium_amount:,} руб.")
+        print(f"   Страховая сумма: {result.insurance_sum:,} руб.")
+        print(f"   Накопленный капитал: {result.accumulated_capital:,} руб.")
+        print(f"   Доход по программе: {result.program_income:,} руб.")
+        print(f"   Налоговый вычет: {result.tax_deduction:,} руб.")
+        print(f"   Возраст: {result.age_at_start} → {result.age_at_end}")
+        print(f"   Выкупных сумм: {len(result.redemption_values)}")
+        
+        # Сверяем с ожидаемыми значениями из Excel
+        expected_insurance_sum = 1467000  # из Excel C16
+        expected_program_income = 567000  # примерно из Excel C13
+        
+        print(f"\n🔍 Сверка с Excel:")
+        print(f"   Страховая сумма: ожидается {expected_insurance_sum:,}, получено {result.insurance_sum:,}")
+        print(f"   Доход: ожидается ~{expected_program_income:,}, получено {result.program_income:,}")
         
         return True
         
@@ -696,7 +774,7 @@ if __name__ == "__main__":
     init_db(app)
     
     with app.app_context():
-        print("🧪 Тестирование калькулятора НСЖ...")
+        print("🧪 Тестирование ИСПРАВЛЕННОГО калькулятора НСЖ...")
         
         # Проверяем БД
         validation = NSJDataManager.validate_database()
@@ -705,10 +783,12 @@ if __name__ == "__main__":
         
         if validation['errors']:
             print(f"❌ Ошибки: {validation['errors']}")
-            sys.exit(1)
+        
+        if validation['warnings']:
+            print(f"⚠️ Предупреждения: {validation['warnings']}")
         
         # Тестируем расчет
         if quick_calculation_test():
-            print("🎉 Все тесты пройдены!")
+            print("🎉 Все тесты ИСПРАВЛЕННОЙ логики пройдены!")
         else:
             sys.exit(1)

@@ -1,4 +1,4 @@
-// CareFuturePage.js - ОБНОВЛЕННАЯ ВЕРСИЯ с логикой программы сотрудников
+// CareFuturePage_updated.js - ОБНОВЛЕННАЯ ВЕРСИЯ с исправленной логикой расчетов НСЖ
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -33,17 +33,16 @@ export default function CareFuturePage() {
   });
   const [birthDate, setBirthDate] = useState(null);
   const [gender, setGender] = useState(null);
-  const [programTerm, setProgramTerm] = useState(9); // ✅ По умолчанию 9 лет (из Excel)
+  const [programTerm, setProgramTerm] = useState(5);
   const [calcType, setCalcType] = useState(null);
   const [amountRaw, setAmountRaw] = useState('');
   const [amountDisplay, setAmountDisplay] = useState('');
-  const [incomeLevel, setIncomeLevel] = useState('low'); // ✅ НОВОЕ: Уровень дохода
 
   // ===== Состояния Processing/Result =====
   const [resultData, setResultData] = useState(null);
   const [carouselIndex, setCarouselIndex] = useState(0);
   const [calculationId, setCalculationId] = useState(null);
-  const [availableTerms, setAvailableTerms] = useState([]); // ✅ НОВОЕ: Доступные сроки
+  const [validationErrors, setValidationErrors] = useState({});
 
   // ===== Состояния для «Связаться с менеджером» =====
   const [mgrSurname, setMgrSurname] = useState('');
@@ -52,265 +51,243 @@ export default function CareFuturePage() {
   const [mgrError, setMgrError] = useState('');
   const [isSendingMgr, setIsSendingMgr] = useState(false);
 
-  // ===== API и валидация =====
+  // ===== Конфигурация и настройки =====
   const [apiConfig, setApiConfig] = useState(null);
-  const [validationErrors, setValidationErrors] = useState({});
 
-  // ===== СТИЛИ (сохраняем оригинальный дизайн) =====
-  
+  // CSS-анимации как строки
+  const animationsStyle = `
+    @keyframes fadeInDown {
+      from {
+        opacity: 0;
+        transform: translate3d(0, -100%, 0);
+      }
+      to {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+      }
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translate3d(0, 100%, 0);
+      }
+      to {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+      }
+    }
+
+    @keyframes piFloatAround {
+      0% { transform: translate(0px, 0px) rotate(0deg); }
+      25% { transform: translate(150px, 50px) rotate(90deg); }
+      50% { transform: translate(50px, 150px) rotate(180deg); }
+      75% { transform: translate(-50px, 100px) rotate(270deg); }
+      100% { transform: translate(0px, 0px) rotate(360deg); }
+    }
+
+    @keyframes piRotate {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  `;
+
+  const animations = (
+    <style>{animationsStyle}</style>
+  );
+
+  // ===== СТИЛИ =====
+
   // Основной контейнер
   const mainContainerStyle = {
-    position: 'relative',
-    width: '100%',
-    height: window.innerHeight + 'px',
     minHeight: '100vh',
-    backgroundImage: `url(${backgroundImage})`,
+    background: `linear-gradient(135deg, #667eea 0%, #764ba2 100%), url(${backgroundImage})`,
     backgroundSize: 'cover',
     backgroundPosition: 'center',
-    backgroundRepeat: 'no-repeat',
+    backgroundBlendMode: 'overlay',
+    position: 'relative',
     overflow: 'hidden',
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'center',
-    alignItems: 'center',
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+    fontFamily: '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif'
   };
 
-  // Оверлей с градиентом
+  // Оверлей
   const overlayStyle = {
     position: 'absolute',
     top: 0,
     left: 0,
-    width: '100%',
-    height: '100%',
-    background: 'linear-gradient(135deg, rgba(147, 39, 143, 0.85) 0%, rgba(71, 125, 191, 0.85) 100%)',
+    right: 0,
+    bottom: 0,
+    background: 'rgba(102, 126, 234, 0.7)',
     zIndex: 1
   };
 
   // Логотип
   const logoStyle = {
     position: 'absolute',
-    top: logoAnimated ? '80px' : '-200px',
-    left: '50%',
-    transform: 'translateX(-50%)',
-    width: '160px',
-    height: '160px',
-    backgroundColor: 'rgba(255, 255, 255, 0.10)',
-    backdropFilter: 'blur(8px)',
-    borderRadius: '20px',
-    boxShadow: '0 10px 25px rgba(0, 0, 0, 0.25)',
-    opacity: logoAnimated ? 1 : 0,
-    zIndex: 3,
-    transition: 'all 0.8s ease-out',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center'
+    top: '30px',
+    left: '30px',
+    zIndex: 4,
+    animation: logoAnimated ? 'fadeInDown 0.8s ease-out' : 'none'
   };
 
   const logoImageStyle = {
-    width: '120px',
-    height: '120px',
-    objectFit: 'contain'
+    height: '60px',
+    width: 'auto'
   };
 
-  // Контейнер кнопок/контента
-  const buttonsContainerStyle = {
-    position: 'absolute',
-    top: buttonsAnimated ? '280px' : '500px',
-    left: '50%',
-    transform: 'translateX(-50%)',
-    width: '90%',
-    maxWidth: '400px',
-    zIndex: 3,
-    textAlign: 'center',
-    opacity: buttonsAnimated ? 1 : 0,
-    transition: 'all 0.8s ease-out'
-  };
-
-  // Форма в центре экрана
+  // Контейнер формы
   const formContainerStyle = {
     position: 'absolute',
     top: '50%',
     left: '50%',
     transform: 'translate(-50%, -50%)',
+    background: 'rgba(255, 255, 255, 0.95)',
+    borderRadius: '20px',
+    padding: '40px',
     width: '90%',
     maxWidth: '500px',
-    maxHeight: '80vh',
-    overflowY: 'auto',
-    zIndex: 3,
-    background: 'rgba(255, 255, 255, 0.95)',
-    borderRadius: '16px',
-    padding: '30px',
-    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+    boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
     backdropFilter: 'blur(10px)',
-    border: '1px solid rgba(255, 255, 255, 0.2)'
+    border: '1px solid rgba(255, 255, 255, 0.2)',
+    zIndex: 3,
+    animation: buttonsAnimated ? 'fadeInUp 0.8s ease-out' : 'none'
   };
 
   // Заголовки
-  const titleStyle = {
+  const formTitleStyle = {
     fontSize: '28px',
-    fontWeight: 'bold',
-    color: 'white',
-    margin: '0 0 15px 0',
-    textShadow: '2px 2px 4px rgba(0, 0, 0, 0.3)',
-    lineHeight: '1.2'
+    fontWeight: '700',
+    color: '#333',
+    marginBottom: '10px',
+    textAlign: 'center'
   };
 
   const subtitleStyle = {
     fontSize: '16px',
     color: 'rgba(255, 255, 255, 0.9)',
-    margin: '0 0 30px 0',
-    textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)',
-    lineHeight: '1.4'
+    textAlign: 'center',
+    marginBottom: '30px',
+    textShadow: '0 1px 2px rgba(0, 0, 0, 0.3)'
   };
 
-  const formTitleStyle = {
-    fontSize: '24px',
-    fontWeight: 'bold',
-    color: '#333',
-    margin: '0 0 20px 0',
-    textAlign: 'center'
-  };
-
-  // Email форма
-  const emailFormStyle = {
-    background: 'rgba(255, 255, 255, 0.95)',
-    borderRadius: '16px',
-    padding: '30px',
-    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
-    backdropFilter: 'blur(10px)',
-    border: '1px solid rgba(255, 255, 255, 0.2)'
-  };
-
-  // Инпуты
-  const inputStyle = {
-    width: '100%',
-    padding: '15px',
-    fontSize: '16px',
-    borderRadius: '8px',
-    border: '2px solid #e1e5e9',
-    marginBottom: '10px',
-    outline: 'none',
-    transition: 'border-color 0.3s ease',
-    boxSizing: 'border-box'
-  };
-
-  const inputErrorStyle = {
-    ...inputStyle,
-    borderColor: '#ff4757'
-  };
-
-  // Кнопки
-  const primaryButtonStyle = {
-    background: 'linear-gradient(135deg, #9370DB 0%, #7B68EE 100%)',
-    color: 'white',
-    border: 'none',
-    padding: '15px 24px',
-    borderRadius: '8px',
-    fontSize: '16px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    transition: 'all 0.3s ease',
-    minHeight: '54px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    boxSizing: 'border-box',
-    flex: '1'
-  };
-
-  const secondaryButtonStyle = {
-    background: 'transparent',
-    color: '#9370DB',
-    border: '2px solid #9370DB',
-    padding: '15px 24px',
-    borderRadius: '8px',
-    fontSize: '16px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    transition: 'all 0.3s ease',
-    minHeight: '54px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    boxSizing: 'border-box',
-    flex: '0 0 auto'
-  };
-
-  const disabledButtonStyle = {
-    ...primaryButtonStyle,
-    opacity: 0.6,
-    cursor: 'not-allowed',
-    background: 'linear-gradient(135deg, #cccccc 0%, #999999 100%)'
-  };
-
-  // Группы форм
+  // Группа полей
   const formGroupStyle = {
     marginBottom: '20px'
   };
 
-  const labelStyle = {
-    display: 'block',
-    marginBottom: '8px',
-    fontWeight: '600',
-    color: '#333',
-    fontSize: '14px'
-  };
-
-  // Опции (радио-кнопки)
-  const optionGroupStyle = {
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    gap: '12px',
-    marginBottom: '20px'
-  };
-
-  const optionButtonStyle = {
-    padding: '15px 12px',
-    border: '2px solid #e1e5e9',
-    borderRadius: '8px',
-    background: 'white',
-    cursor: 'pointer',
-    textAlign: 'center',
-    transition: 'all 0.3s ease',
-    fontWeight: '500',
+  // Поля ввода
+  const inputStyle = {
+    width: '100%',
+    padding: '15px',
+    border: '2px solid #e1e8ed',
+    borderRadius: '12px',
     fontSize: '16px',
-    color: '#333',
-    minHeight: '54px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    boxSizing: 'border-box'
+    transition: 'all 0.3s ease',
+    backgroundColor: '#f8f9fa',
+    outline: 'none',
+    fontFamily: 'inherit'
   };
 
-  const optionButtonSelectedStyle = {
-    ...optionButtonStyle,
-    borderColor: '#9370DB',
-    background: 'rgba(147, 112, 219, 0.1)',
-    color: '#9370DB',
-    fontWeight: '600'
+  const inputErrorStyle = {
+    ...inputStyle,
+    borderColor: '#e74c3c',
+    backgroundColor: '#fdf2f2'
+  };
+
+  // Кнопки
+  const primaryButtonStyle = {
+    width: '100%',
+    padding: '15px',
+    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    color: 'white',
+    border: 'none',
+    borderRadius: '12px',
+    fontSize: '16px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.3s ease',
+    boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)',
+    fontFamily: 'inherit'
+  };
+
+  const secondaryButtonStyle = {
+    width: '100%',
+    padding: '15px',
+    background: 'transparent',
+    color: '#667eea',
+    border: '2px solid #667eea',
+    borderRadius: '12px',
+    fontSize: '16px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.3s ease',
+    fontFamily: 'inherit'
+  };
+
+  const disabledButtonStyle = {
+    ...primaryButtonStyle,
+    background: '#bdc3c7',
+    cursor: 'not-allowed',
+    boxShadow: 'none'
   };
 
   // Группа кнопок
   const buttonGroupStyle = {
     display: 'flex',
-    justifyContent: 'space-between',
     gap: '15px',
-    marginTop: '25px'
+    marginTop: '30px'
   };
 
-  // Ошибки
+  // Сообщения об ошибках
   const errorMessageStyle = {
-    background: '#ff4757',
-    color: 'white',
-    padding: '12px 16px',
-    borderRadius: '8px',
-    marginBottom: '15px',
+    color: '#e74c3c',
     fontSize: '14px',
+    marginTop: '5px',
     textAlign: 'center'
   };
 
-  // Результаты
+  // Точки фона
+  const dotStyle = (index) => ({
+    position: 'absolute',
+    width: '8px',
+    height: '8px',
+    borderRadius: '50%',
+    background: 'rgba(255, 255, 255, 0.2)',
+    ...(index === 1 && { top: '10%', left: '10%' }),
+    ...(index === 2 && { top: '20%', right: '15%' }),
+    ...(index === 3 && { top: '30%', left: '25%' }),
+    ...(index === 4 && { bottom: '15%', left: '15%' }),
+    ...(index === 5 && { top: '5%', right: '20%' }),
+    ...(index === 6 && { bottom: '25%', right: '10%' }),
+    ...(index === 7 && { top: '45%', left: '5%' }),
+    ...(index === 8 && { bottom: '5%', right: '30%' }),
+    ...(index === 9 && { top: '60%', right: '25%' }),
+    ...(index === 10 && { bottom: '40%', left: '30%' })
+  });
+
+  // Pi элемент - анимация полета по экрану
+  const piWrapperStyle = {
+    position: 'absolute',
+    top: '0',
+    left: '0',
+    zIndex: 2,
+    opacity: 0.4,
+    animation: `piFloatAround ${moveDuration} ease-in-out infinite`
+  };
+
+  const piImageStyle = {
+    width: '40px',
+    height: '40px',
+    opacity: 0.8,
+    animation: `piRotate ${rotateDuration} linear infinite`
+  };
+
+  // Стили результатов
   const resultsContainerStyle = {
     position: 'absolute',
     top: '50%',
@@ -387,70 +364,6 @@ export default function CareFuturePage() {
     fontSize: '14px'
   };
 
-  // Успех
-  const successMessageStyle = {
-    textAlign: 'center',
-    color: 'white',
-    zIndex: 3,
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    width: '90%',
-    maxWidth: '500px'
-  };
-
-  const successIconStyle = {
-    fontSize: '64px',
-    color: '#2ecc71',
-    marginBottom: '20px'
-  };
-
-  const contactInfoStyle = {
-    background: 'rgba(255, 255, 255, 0.95)',
-    borderRadius: '12px',
-    padding: '20px',
-    margin: '20px 0',
-    color: '#333',
-    textAlign: 'left'
-  };
-
-  // Точки фона
-  const dotStyle = (index) => ({
-    position: 'absolute',
-    width: '8px',
-    height: '8px',
-    borderRadius: '50%',
-    background: 'rgba(255, 255, 255, 0.2)',
-    ...(index === 1 && { top: '10%', left: '10%' }),
-    ...(index === 2 && { top: '20%', right: '15%' }),
-    ...(index === 3 && { top: '30%', left: '25%' }),
-    ...(index === 4 && { bottom: '15%', left: '15%' }),
-    ...(index === 5 && { top: '5%', right: '20%' }),
-    ...(index === 6 && { bottom: '25%', right: '10%' }),
-    ...(index === 7 && { top: '45%', left: '5%' }),
-    ...(index === 8 && { bottom: '5%', right: '30%' }),
-    ...(index === 9 && { top: '60%', right: '25%' }),
-    ...(index === 10 && { bottom: '40%', left: '30%' })
-  });
-
-  // Pi элемент
-  const piWrapperStyle = {
-    position: 'absolute',
-    top: '0',
-    left: '0',
-    zIndex: 2,
-    opacity: 0.4,
-    animation: `piFloatAround ${moveDuration} ease-in-out infinite`
-  };
-
-  const piImageStyle = {
-    width: '40px',
-    height: '40px',
-    opacity: 0.8,
-    animation: `piRotate ${rotateDuration} linear infinite`
-  };
-
   // ===== HELPERS =====
 
   useEffect(() => {
@@ -494,76 +407,75 @@ export default function CareFuturePage() {
     return str.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
   }
 
-  // ===== API ФУНКЦИИ (ОБНОВЛЕННЫЕ) =====
+  // ===== API ФУНКЦИИ =====
 
   async function loadApiConfig() {
     try {
-      // ✅ ИЗМЕНЕНО: Используем новый endpoint для программы сотрудников
-      const response = await fetch('/api/care-future-employees/config');
+      const response = await fetch('/api/care-future/config');
       if (response.ok) {
         const data = await response.json();
         if (data.success) {
-          setApiConfig(data);
-          setAvailableTerms(data.constraints.availableTerms || [5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]);
+          setApiConfig(data.config);
+          console.log('📊 Конфигурация API загружена:', data.config);
         }
-      } else {
-        // Fallback к старому API если новый недоступен
-        setAvailableTerms([5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]);
       }
     } catch (error) {
-      console.error('Ошибка загрузки конфигурации:', error);
-      setAvailableTerms([5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]);
+      console.error('❌ Ошибка загрузки конфигурации:', error);
     }
   }
 
   async function performCalculation() {
     try {
-      // ✅ ИЗМЕНЕНО: Данные для новой программы сотрудников
+      console.log('🧮 Начинаем расчет с исправленной логикой...');
+      
       const calculationData = {
+        email: email,
         birthDate: birthDate.toISOString().split('T')[0],
         gender: gender === 'мужской' ? 'male' : 'female',
         contractTerm: programTerm,
         calculationType: calcType === 'premium' ? 'from_premium' : 'from_sum',
-        inputAmount: parseInt(amountRaw.replace(/\s/g, '')),
-        email: email,
-        incomeLevel: incomeLevel // ✅ НОВОЕ: Уровень дохода
+        inputAmount: parseInt(amountRaw.replace(/\s/g, ''))
       };
 
-      // ✅ ИЗМЕНЕНО: Используем новый endpoint
-      const response = await fetch('/api/care-future-employees/calculate', {
+      console.log('📤 Отправляем данные:', calculationData);
+
+      const response = await fetch('/api/care-future/calculate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(calculationData)
       });
 
       const data = await response.json();
+      console.log('📥 Получен ответ:', data);
+
       if (!response.ok) throw new Error(data.error || 'Ошибка сервера');
 
       if (data.success) {
         setCalculationId(data.calculationId);
         
-        // ✅ ОБНОВЛЕНО: Новая структура результатов
+        // Обновленная структура данных с исправленной логикой
         setResultData({
           inputParams: {
             age: data.inputParameters.ageAtStart,
             gender: gender,
-            term: data.inputParameters.contractTerm,
-            incomeLevel: incomeLevel
+            term: data.inputParameters.contractTerm
           },
-          results: {
-            premiumAmount: data.results.premiumAmount,
-            insuranceSum: data.results.insuranceSum,
-            formedCapital: data.results.formedCapital || data.results.accumulatedCapital,
-            accumulatedCapital: data.results.accumulatedCapital || data.results.formedCapital,
-            programIncome: data.results.programIncome,
-            taxDeduction: data.results.taxDeduction,
-            cashbackCoefficient: data.results.cashbackCoefficient || 0
-          },
-          redemptionValues: data.redemptionValues || []
+          results: data.results,
+          redemptionValues: data.redemptionValues || [],
+          version: data.version || 'fixed_v1.15'
         });
+
+        console.log('✅ Расчет выполнен успешно:', {
+          premiumAmount: data.results.premiumAmount,
+          insuranceSum: data.results.insuranceSum,
+          programIncome: data.results.programIncome,
+          taxDeduction: data.results.taxDeduction
+        });
+
         return true;
       }
     } catch (error) {
+      console.error('❌ Ошибка расчета:', error);
       throw error;
     }
   }
@@ -640,9 +552,9 @@ export default function CareFuturePage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          subject: 'Заявка на консультацию - Программа для сотрудников',
+          subject: 'Заявка на консультацию - Калькулятор НСЖ (Исправленная версия)',
           body: `
-Новая заявка на консультацию по программе "Забота о будущем сотрудники":
+Новая заявка на консультацию по программе "Забота о будущем Ультра":
 
 👤 Контактные данные:
 • Фамилия: ${mgrSurname}
@@ -654,18 +566,17 @@ export default function CareFuturePage() {
 • Возраст: ${resultData?.inputParams?.age || 'Не указан'}
 • Пол: ${resultData?.inputParams?.gender || 'Не указан'}
 • Срок программы: ${resultData?.inputParams?.term || 'Не указан'} лет
-• Уровень дохода: ${resultData?.inputParams?.incomeLevel === 'high' ? 'Свыше 5 млн/год' : 'До 5 млн/год'}
 
-💰 Результаты расчета:
+💰 Результаты расчета (исправленная версия ${resultData?.version || 'v1.15'}):
 • Страховой взнос: ${resultData?.results?.premiumAmount ? formatSum(resultData.results.premiumAmount.toString()) + ' руб.' : 'Не рассчитан'}
 • Страховая сумма: ${resultData?.results?.insuranceSum ? formatSum(resultData.results.insuranceSum.toString()) + ' руб.' : 'Не рассчитана'}
-• Сформированный капитал: ${resultData?.results?.formedCapital ? formatSum(resultData.results.formedCapital.toString()) + ' руб.' : 'Не рассчитан'}
+• Накопленный капитал: ${resultData?.results?.accumulatedCapital ? formatSum(resultData.results.accumulatedCapital.toString()) + ' руб.' : 'Не рассчитан'}
 • Доход по программе: ${resultData?.results?.programIncome ? formatSum(resultData.results.programIncome.toString()) + ' руб.' : 'Не рассчитан'}
 • Налоговый вычет: ${resultData?.results?.taxDeduction ? formatSum(resultData.results.taxDeduction.toString()) + ' руб.' : 'Не рассчитан'}
 
 🆔 ID расчета: ${calculationId || 'Отсутствует'}
 
-Отправлено через калькулятор для сотрудников.
+Отправлено через калькулятор НСЖ с исправленной логикой Excel.
           `
         })
       });
@@ -682,80 +593,9 @@ export default function CareFuturePage() {
     }
   }
 
-  function handleAmountChange(value) {
-    const cleanValue = value.replace(/[^\d]/g, '');
-    setAmountRaw(cleanValue);
-    setAmountDisplay(formatSum(cleanValue));
-  }
+  // ===== RENDER ФУНКЦИИ =====
 
-  // ===== РЕНДЕРИНГ =====
-
-  // CSS анимации в стиле
-  const animations = (
-    <style>
-      {`
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-        
-        @keyframes piRotate {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-        
-        @keyframes piFloatAround {
-          0% { 
-            left: 10%; 
-            top: 10%; 
-            transform: scale(1); 
-          }
-          12.5% { 
-            left: 80%; 
-            top: 15%; 
-            transform: scale(1.2); 
-          }
-          25% { 
-            left: 85%; 
-            top: 40%; 
-            transform: scale(0.8); 
-          }
-          37.5% { 
-            left: 70%; 
-            top: 70%; 
-            transform: scale(1.1); 
-          }
-          50% { 
-            left: 40%; 
-            top: 80%; 
-            transform: scale(0.9); 
-          }
-          62.5% { 
-            left: 15%; 
-            top: 75%; 
-            transform: scale(1.3); 
-          }
-          75% { 
-            left: 5%; 
-            top: 50%; 
-            transform: scale(0.7); 
-          }
-          87.5% { 
-            left: 20%; 
-            top: 25%; 
-            transform: scale(1.1); 
-          }
-          100% { 
-            left: 10%; 
-            top: 10%; 
-            transform: scale(1); 
-          }
-        }
-      `}
-    </style>
-  );
-
-  // Страница ввода email
+  // Email шаг
   if (stage === 'email') {
     return (
       <div style={mainContainerStyle}>
@@ -774,35 +614,39 @@ export default function CareFuturePage() {
         <div style={logoStyle}>
           <img src={logoImage} alt="Логотип РГС Жизнь" style={logoImageStyle} />
         </div>
-        
-        <div style={buttonsContainerStyle}>
-          <h2 style={titleStyle}>
-            Калькулятор НСЖ<br />
-            «Забота о будущем сотрудники»
-          </h2>
-          <p style={subtitleStyle}>
-            Рассчитайте персональные условия накопительного страхования жизни для сотрудников
+
+        <div style={formContainerStyle}>
+          <h2 style={formTitleStyle}>Калькулятор НСЖ</h2>
+          <p style={{ ...subtitleStyle, color: '#666', textShadow: 'none' }}>
+            Программа «Забота о будущем Ультра»<br/>
+            <small style={{ fontSize: '12px', color: '#999' }}>
+              Исправленная версия с логикой Excel v1.15
+            </small>
           </p>
-          
-          <div style={emailFormStyle}>
-            <input
-              type="email"
-              placeholder="Введите ваш email"
-              value={email}
+
+          <div style={formGroupStyle}>
+            <input 
+              type="email" 
+              placeholder="Введите ваш email" 
+              value={email} 
               onChange={(e) => setEmail(e.target.value)}
               style={emailError ? inputErrorStyle : inputStyle}
             />
             {emailError && <div style={errorMessageStyle}>{emailError}</div>}
-            <button style={primaryButtonStyle} onClick={handleEmailSubmit}>
-              Продолжить
-            </button>
           </div>
+
+          <button 
+            style={primaryButtonStyle}
+            onClick={handleEmailSubmit}
+          >
+            Продолжить
+          </button>
         </div>
       </div>
     );
   }
 
-  // Форма параметров расчета
+  // Форма расчета
   if (stage === 'form') {
     return (
       <div style={mainContainerStyle}>
@@ -821,20 +665,23 @@ export default function CareFuturePage() {
         <div style={logoStyle}>
           <img src={logoImage} alt="Логотип РГС Жизнь" style={logoImageStyle} />
         </div>
-        
+
         <div style={formContainerStyle}>
-          <h2 style={formTitleStyle}>Параметры расчёта</h2>
+          <h2 style={formTitleStyle}>Параметры расчета</h2>
           
           {validationErrors.general && (
             <div style={errorMessageStyle}>{validationErrors.general}</div>
           )}
-          
+
           {/* Дата рождения */}
           <div style={formGroupStyle}>
-            <label style={labelStyle}>Дата рождения</label>
-            <DateWheelPicker
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#333' }}>
+              Дата рождения
+            </label>
+            <DateWheelPicker 
               value={birthParts}
-              onChange={(parts) => setBirthParts(parts)}
+              onChange={setBirthParts}
+              style={validationErrors.birthDate ? inputErrorStyle : inputStyle}
             />
             {validationErrors.birthDate && (
               <div style={errorMessageStyle}>{validationErrors.birthDate}</div>
@@ -843,75 +690,89 @@ export default function CareFuturePage() {
 
           {/* Пол */}
           <div style={formGroupStyle}>
-            <label style={labelStyle}>Пол</label>
-            <div style={optionGroupStyle}>
-              <div 
-                style={gender === 'мужской' ? optionButtonSelectedStyle : optionButtonStyle}
-                onClick={() => setGender('мужской')}
-              >
-                Мужской
-              </div>
-              <div 
-                style={gender === 'женский' ? optionButtonSelectedStyle : optionButtonStyle}
-                onClick={() => setGender('женский')}
-              >
-                Женский
-              </div>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#333' }}>
+              Пол
+            </label>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              {['мужской', 'женский'].map(option => (
+                <button
+                  key={option}
+                  style={{
+                    flex: 1,
+                    padding: '12px',
+                    border: gender === option ? '2px solid #667eea' : '2px solid #e1e8ed',
+                    borderRadius: '8px',
+                    background: gender === option ? '#f0f4ff' : '#f8f9fa',
+                    color: gender === option ? '#667eea' : '#666',
+                    fontSize: '14px',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease'
+                  }}
+                  onClick={() => setGender(option)}
+                >
+                  {option}
+                </button>
+              ))}
             </div>
             {validationErrors.gender && (
               <div style={errorMessageStyle}>{validationErrors.gender}</div>
             )}
           </div>
 
-          {/* ✅ НОВОЕ: Уровень дохода */}
+          {/* Срок программы */}
           <div style={formGroupStyle}>
-            <label style={labelStyle}>Уровень дохода</label>
-            <div style={{...optionGroupStyle, gridTemplateColumns: '1fr'}}>
-              <div 
-                style={incomeLevel === 'low' ? optionButtonSelectedStyle : optionButtonStyle}
-                onClick={() => setIncomeLevel('low')}
-              >
-                До 5 млн руб/год (налог 13%)
-              </div>
-              <div 
-                style={incomeLevel === 'high' ? optionButtonSelectedStyle : optionButtonStyle}
-                onClick={() => setIncomeLevel('high')}
-              >
-                Свыше 5 млн руб/год (налог 15%)
-              </div>
-            </div>
-          </div>
-
-          {/* Срок программы - обновленный список */}
-          <div style={formGroupStyle}>
-            <label style={labelStyle}>Срок программы (лет)</label>
-            <select 
-              value={programTerm} 
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#333' }}>
+              Срок программы: {programTerm} лет
+            </label>
+            <input
+              type="range"
+              min="5"
+              max="20"
+              value={programTerm}
               onChange={(e) => setProgramTerm(Number(e.target.value))}
-              style={inputStyle}
-            >
-              {availableTerms.map(year => (
-                <option key={year} value={year}>{year} лет</option>
-              ))}
-            </select>
+              style={{
+                width: '100%',
+                height: '6px',
+                borderRadius: '3px',
+                background: '#e1e8ed',
+                outline: 'none',
+                cursor: 'pointer'
+              }}
+            />
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#999', marginTop: '5px' }}>
+              <span>5 лет</span>
+              <span>20 лет</span>
+            </div>
           </div>
 
           {/* Тип расчета */}
           <div style={formGroupStyle}>
-            <label style={labelStyle}>Тип расчета</label>
-            <div style={optionGroupStyle}>
-              <div 
-                style={calcType === 'premium' ? optionButtonSelectedStyle : optionButtonStyle}
-                onClick={() => setCalcType('premium')}
-              >
-                От взноса
-              </div>
-              <div 
-                style={calcType === 'sum' ? optionButtonSelectedStyle : optionButtonStyle}
-                onClick={() => setCalcType('sum')}
-              >
-                От страх. суммы
-              </div>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#333' }}>
+              Тип расчета
+            </label>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              {[
+                { key: 'premium', label: 'От взноса' },
+                { key: 'sum', label: 'От суммы' }
+              ].map(option => (
+                <button
+                  key={option.key}
+                  style={{
+                    flex: 1,
+                    padding: '12px',
+                    border: calcType === option.key ? '2px solid #667eea' : '2px solid #e1e8ed',
+                    borderRadius: '8px',
+                    background: calcType === option.key ? '#f0f4ff' : '#f8f9fa',
+                    color: calcType === option.key ? '#667eea' : '#666',
+                    fontSize: '14px',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease'
+                  }}
+                  onClick={() => setCalcType(option.key)}
+                >
+                  {option.label}
+                </button>
+              ))}
             </div>
             {validationErrors.calcType && (
               <div style={errorMessageStyle}>{validationErrors.calcType}</div>
@@ -920,19 +781,30 @@ export default function CareFuturePage() {
 
           {/* Сумма */}
           <div style={formGroupStyle}>
-            <label style={labelStyle}>
-              {calcType === 'premium' ? 'Годовой страховой взнос (руб.)' : 'Страховая сумма (руб.)'}
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#333' }}>
+              {calcType === 'premium' ? 'Страховой взнос' : 'Страховая сумма'} (руб.)
             </label>
             <input
               type="text"
-              placeholder={calcType === 'premium' ? 'Например: 100 000' : 'Например: 500 000'}
+              placeholder={calcType === 'premium' ? 'Введите размер взноса' : 'Введите страховую сумму'}
               value={amountDisplay}
-              onChange={(e) => handleAmountChange(e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value.replace(/\s/g, '');
+                if (/^\d*$/.test(value)) {
+                  setAmountRaw(value);
+                  setAmountDisplay(formatSum(value));
+                }
+              }}
               style={validationErrors.amount ? inputErrorStyle : inputStyle}
             />
             {validationErrors.amount && (
               <div style={errorMessageStyle}>{validationErrors.amount}</div>
             )}
+            <div style={{ fontSize: '12px', color: '#999', marginTop: '5px' }}>
+              {calcType === 'premium' 
+                ? 'Минимум: 100,000 руб., максимум: 50,000,000 руб.' 
+                : 'Минимум: 500,000 руб., максимум: 100,000,000 руб.'}
+            </div>
           </div>
 
           <div style={buttonGroupStyle}>
@@ -975,13 +847,13 @@ export default function CareFuturePage() {
         <div style={processingContainerStyle}>
           <div style={spinnerStyle}></div>
           <div style={processingTextStyle}>Выполняется расчет...</div>
-          <div style={processingSubtextStyle}>Анализируем параметры для программы сотрудников</div>
+          <div style={processingSubtextStyle}>Применяем исправленную логику Excel</div>
         </div>
       </div>
     );
   }
 
-  // Результаты расчета (ОБНОВЛЕННЫЕ)
+  // Результаты расчета
   if (stage === 'result') {
     if (!resultData) {
       return (
@@ -991,26 +863,37 @@ export default function CareFuturePage() {
       );
     }
 
+    // Подготавливаем данные для карусели
     const carouselData = [
       {
         title: 'Основные результаты',
         items: [
           { label: 'Годовой взнос', value: `${formatSum(resultData.results.premiumAmount.toString())} руб.`, highlight: true },
           { label: 'Страховая сумма', value: `${formatSum(resultData.results.insuranceSum.toString())} руб.`, highlight: true },
-          { label: 'Сформированный капитал', value: `${formatSum(resultData.results.formedCapital.toString())} руб.` },
+          { label: 'Накопленный капитал', value: `${formatSum(resultData.results.accumulatedCapital.toString())} руб.` },
           { label: 'Доход по программе', value: `${formatSum(resultData.results.programIncome.toString())} руб.` },
-          { label: 'Налоговый вычет', value: `${formatSum(resultData.results.taxDeduction.toString())} руб.` },
-          { label: 'Коэффициент кэшбэка', value: `${(resultData.results.cashbackCoefficient * 100).toFixed(1)}%` }
+          { label: 'Налоговый вычет', value: `${formatSum(resultData.results.taxDeduction.toString())} руб.` }
         ]
-      },
-      {
-        title: 'Выкупные суммы',
-        items: resultData.redemptionValues.slice(0, 5).map(item => ({
-          label: `${item.year} год`,
-          value: `${formatSum(item.redemptionAmount.toString())} руб.`
-        }))
       }
     ];
+
+    // Добавляем выкупные суммы если есть
+    if (resultData.redemptionValues && resultData.redemptionValues.length > 0) {
+      const redemptionItems = resultData.redemptionValues
+        .filter(item => item.amount > 0)
+        .slice(0, 5)
+        .map(item => ({
+          label: `${item.year} год`,
+          value: `${formatSum(item.amount.toString())} руб.`
+        }));
+
+      if (redemptionItems.length > 0) {
+        carouselData.push({
+          title: 'Выкупные суммы',
+          items: redemptionItems
+        });
+      }
+    }
 
     return (
       <div style={mainContainerStyle}>
@@ -1032,7 +915,13 @@ export default function CareFuturePage() {
 
         <div style={resultsContainerStyle}>
           <div style={resultCardStyle}>
-            <div style={formTitleStyle}>{carouselData[carouselIndex].title}</div>
+            <div style={formTitleStyle}>
+              {carouselData[carouselIndex].title}
+              <br/>
+              <small style={{ fontSize: '12px', color: '#999', fontWeight: 'normal' }}>
+                Версия: {resultData.version || 'fixed_v1.15'}
+              </small>
+            </div>
             
             {carouselData[carouselIndex].items.map((item, idx) => (
               <div key={idx} style={{...resultItemStyle, borderBottom: idx === carouselData[carouselIndex].items.length - 1 ? 'none' : '1px solid #f0f0f0'}}>
@@ -1099,7 +988,7 @@ export default function CareFuturePage() {
         <div style={formContainerStyle}>
           <h2 style={formTitleStyle}>Связаться с менеджером</h2>
           <p style={{ ...subtitleStyle, color: '#666', textShadow: 'none' }}>
-            Наш специалист свяжется с вами для консультации по программе для сотрудников
+            Наш специалист свяжется с вами для консультации
           </p>
 
           <div style={formGroupStyle}>
@@ -1135,19 +1024,15 @@ export default function CareFuturePage() {
           {mgrError && <div style={errorMessageStyle}>{mgrError}</div>}
 
           <div style={buttonGroupStyle}>
-            <button 
-              style={isSendingMgr ? disabledButtonStyle : secondaryButtonStyle} 
-              onClick={() => setStage('result')} 
-              disabled={isSendingMgr}
-            >
-              Назад
+            <button style={secondaryButtonStyle} onClick={() => setStage('result')}>
+              Назад к результатам
             </button>
             <button 
-              style={(isSendingMgr || !mgrSurname.trim() || !mgrName.trim() || !mgrCity.trim()) ? disabledButtonStyle : primaryButtonStyle}
-              onClick={handleManagerSubmit} 
-              disabled={isSendingMgr || !mgrSurname.trim() || !mgrName.trim() || !mgrCity.trim()}
+              style={isSendingMgr ? disabledButtonStyle : primaryButtonStyle}
+              onClick={handleManagerSubmit}
+              disabled={isSendingMgr}
             >
-              {isSendingMgr ? 'Отправляем...' : 'Отправить'}
+              {isSendingMgr ? 'Отправка...' : 'Отправить заявку'}
             </button>
           </div>
         </div>
@@ -1155,7 +1040,7 @@ export default function CareFuturePage() {
     );
   }
 
-  // Успешная отправка заявки
+  // Успешная отправка
   if (stage === 'manager-sent') {
     return (
       <div style={mainContainerStyle}>
@@ -1175,47 +1060,29 @@ export default function CareFuturePage() {
           <img src={logoImage} alt="Логотип РГС Жизнь" style={logoImageStyle} />
         </div>
 
-        <div style={successMessageStyle}>
-          <div style={successIconStyle}>✓</div>
-          <h2 style={titleStyle}>Заявка отправлена!</h2>
-          <p style={subtitleStyle}>
-            Наш менеджер свяжется с вами в ближайшее время для консультации по программе 
-            «Забота о будущем сотрудники»
-          </p>
-          
-          <div style={contactInfoStyle}>
-            <p><strong>Ваши данные:</strong></p>
-            <p>{mgrSurname} {mgrName}</p>
-            <p>Город: {mgrCity}</p>
-            <p>Email: {email}</p>
-            <p>Уровень дохода: {incomeLevel === 'high' ? 'Свыше 5 млн/год' : 'До 5 млн/год'}</p>
-            {calculationId && <p>ID расчёта: {calculationId.slice(0, 8)}...</p>}
-          </div>
+        <div style={formContainerStyle}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '64px', color: '#2ecc71', marginBottom: '20px' }}>✅</div>
+            <h2 style={formTitleStyle}>Заявка отправлена!</h2>
+            <p style={{ color: '#666', marginBottom: '30px' }}>
+              Наш менеджер свяжется с вами в ближайшее время для консультации по программе «Забота о будущем Ультра».
+            </p>
+            
+            <div style={{ background: '#f8f9fa', borderRadius: '12px', padding: '20px', marginBottom: '30px', textAlign: 'left' }}>
+              <h4 style={{ margin: '0 0 15px 0', color: '#333' }}>Контактная информация:</h4>
+              <p style={{ margin: '5px 0', color: '#666' }}>📧 Email: {email}</p>
+              <p style={{ margin: '5px 0', color: '#666' }}>👤 Имя: {mgrName} {mgrSurname}</p>
+              <p style={{ margin: '5px 0', color: '#666' }}>🏙️ Город: {mgrCity}</p>
+              {calculationId && (
+                <p style={{ margin: '5px 0', color: '#666' }}>🆔 ID расчета: {calculationId}</p>
+              )}
+            </div>
 
-          <div style={{ display: 'flex', gap: '15px', marginTop: '30px' }}>
-            <button style={primaryButtonStyle} onClick={() => navigate('/')}>
-              На главную
-            </button>
-            <button style={secondaryButtonStyle} onClick={() => {
-              // Сброс всех состояний для нового расчета
-              setStage('email');
-              setEmail('');
-              setBirthParts({ day: '01', month: '01', year: new Date().getFullYear().toString() });
-              setGender(null);
-              setCalcType(null);
-              setAmountRaw('');
-              setAmountDisplay('');
-              setIncomeLevel('low');
-              setResultData(null);
-              setCalculationId(null);
-              setMgrSurname('');
-              setMgrName('');
-              setMgrCity('');
-              setValidationErrors({});
-              setEmailError('');
-              setMgrError('');
-            }}>
-              Новый расчёт
+            <button 
+              style={primaryButtonStyle}
+              onClick={() => navigate('/Main-Menu')}
+            >
+              Вернуться в меню
             </button>
           </div>
         </div>
@@ -1223,7 +1090,7 @@ export default function CareFuturePage() {
     );
   }
 
-  // Fallback на случай ошибки
+  // Ошибка
   return (
     <div style={mainContainerStyle}>
       <div style={errorMessageStyle}>

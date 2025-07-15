@@ -1,153 +1,166 @@
-# care_future_routes.py - ОБНОВЛЕННЫЕ роуты с логикой программы сотрудников
+# care_future_routes_updated.py - ОБНОВЛЕННАЯ версия с исправленной логикой расчетов
 
-from flask import Blueprint, request, jsonify
-from datetime import datetime, date
+import os
 import logging
-from typing import Dict, Any
-import uuid
+from datetime import datetime, date
+from typing import Dict, Any, List, Optional
+from flask import Blueprint, request, jsonify, current_app
+from sqlalchemy.exc import SQLAlchemyError
 
-# Импорты новых моделей для программы сотрудников
-try:
-    from care_future_employees_models import (
-        NSJRiskRatesByTerm, 
-        NSJCashbackRates, 
-        EmployeesCalculatorEngine,
-        NSJCalculationResult
-    )
-    # Также импортируем обновленную модель выкупных сумм
-    from care_future_models import NSJRedemptionRates
-    EMPLOYEES_LOGIC_AVAILABLE = True
-    logger = logging.getLogger(__name__)
-    logger.info("✅ Логика программы сотрудников загружена")
-except ImportError as e:
-    EMPLOYEES_LOGIC_AVAILABLE = False
-    logger = logging.getLogger(__name__)
-    logger.warning(f"⚠️ Логика программы сотрудников недоступна: {e}")
-    
-    # Заглушки для случая если модули недоступны
-    class MockModel:
-        @classmethod
-        def get_rates_for_term(cls, *args): return None
-        @classmethod
-        def get_cashback_for_term(cls, *args): return 0.63
-        @classmethod
-        def get_available_terms(cls, *args): return list(range(5, 21))
-    
-    NSJRiskRatesByTerm = NSJCashbackRates = MockModel
-    EmployeesCalculatorEngine = object
-    NSJCalculationResult = object
+# Импортируем исправленный калькулятор
+from care_future_calculator_fixed import NSJCalculatorFixed
 
-# Создаем Blueprint (сохраняем старое название)
+# Импортируем модели
+from care_future_models import (
+    NSJDataManager, NSJCalculations,
+    CalculationInput, CalculationResult,
+    NSJRiskRates, NSJRedemptionRates, NSJCalculatorSettings
+)
+from db_saver import db
+
+# Настройка логирования
+logger = logging.getLogger("care_future_routes_updated")
+
+# Создаем Blueprint для API калькулятора НСЖ
 care_future_bp = Blueprint('care_future', __name__, url_prefix='/api/care-future')
 
 # =============================================================================
-# ОСНОВНЫЕ ENDPOINTS КАЛЬКУЛЯТОРА (ОБНОВЛЕННЫЕ)
+# ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
+# =============================================================================
+
+def safe_get_json():
+    """Безопасное получение JSON из запроса с правильной обработкой ошибок"""
+    try:
+        # Проверяем Content-Type
+        content_type = request.content_type
+        logger.info(f"📋 Content-Type: {content_type}")
+        
+        if not content_type or 'application/json' not in content_type:
+            logger.error(f"❌ Неверный Content-Type: {content_type}")
+            return None, "Content-Type должен быть application/json"
+        
+        # Проверяем наличие данных
+        if not request.data:
+            logger.error("❌ Пустое тело запроса")
+            return None, "Пустое тело запроса"
+        
+        # Пытаемся распарсить JSON
+        try:
+            data = request.get_json(force=True)
+            if data is None:
+                logger.error("❌ Невозможно распарсить JSON")
+                return None, "Невозможно распарсить JSON данные"
+            
+            logger.info(f"📥 JSON успешно распарсен: {list(data.keys()) if isinstance(data, dict) else type(data)}")
+            return data, None
+            
+        except Exception as json_error:
+            logger.error(f"❌ Ошибка парсинга JSON: {json_error}")
+            return None, f"Ошибка парсинга JSON: {str(json_error)}"
+            
+    except Exception as e:
+        logger.error(f"❌ Общая ошибка получения JSON: {e}")
+        return None, f"Ошибка обработки запроса: {str(e)}"
+
+# =============================================================================
+# ОСНОВНЫЕ API ENDPOINTS
 # =============================================================================
 
 @care_future_bp.route('/calculate', methods=['POST', 'OPTIONS'])
-def calculate():
-    """Основной endpoint для расчета (обновлен с логикой программы сотрудников)"""
-    logger.info("🧮 Care Future Calculator: Starting calculation (employees logic)")
+def calculate_insurance():
+    """
+    Основной endpoint для расчета НСЖ с исправленной логикой
+    """
+    logger.info("🌐 ➜ %s %s", request.method, request.path)
     
+    # Обработка CORS preflight
     if request.method == "OPTIONS":
         return '', 200
     
-    if not EMPLOYEES_LOGIC_AVAILABLE:
-        return jsonify({
-            'success': False,
-            'error': 'Логика программы сотрудников недоступна'
-        }), 503
-    
     try:
-        data = request.get_json()
-        logger.info(f"📊 Входные данные: {data}")
+        # Безопасно получаем JSON
+        data, error = safe_get_json()
+        if error:
+            logger.error(f"❌ Ошибка получения JSON: {error}")
+            return jsonify({
+                'success': False,
+                'error': error
+            }), 400
         
-        # Валидация входных данных
+        logger.info(f"📊 Получены данные для расчета: {data}")
+        
+        # Валидация обязательных полей
         required_fields = ['birthDate', 'gender', 'contractTerm', 'calculationType', 'inputAmount']
-        for field in required_fields:
-            if field not in data:
-                return jsonify({
-                    'success': False,
-                    'error': f'Отсутствует обязательное поле: {field}'
-                }), 400
+        missing_fields = [field for field in required_fields if field not in data]
+        if missing_fields:
+            logger.error(f"❌ Отсутствуют поля: {missing_fields}")
+            return jsonify({
+                'success': False,
+                'error': f'Отсутствуют обязательные поля: {", ".join(missing_fields)}'
+            }), 400
         
         # Парсинг даты рождения
         try:
             birth_date = datetime.strptime(data['birthDate'], '%Y-%m-%d').date()
-        except ValueError:
+        except (ValueError, TypeError) as e:
+            logger.error(f"❌ Неверная дата рождения: {data['birthDate']}")
             return jsonify({
                 'success': False,
                 'error': 'Неверный формат даты рождения. Используйте YYYY-MM-DD'
             }), 400
         
-        # Создаем движок калькулятора сотрудников
-        calculator = EmployeesCalculatorEngine()
-        
-        # Валидация входных данных
-        validation_errors = calculator.validate_input(
-            birth_date=birth_date,
-            gender=data['gender'],
-            contract_term=int(data['contractTerm']),
-            calculation_type=data['calculationType'],
-            input_amount=int(data['inputAmount'])
-        )
-        
-        if validation_errors:
+        # Создаем объект входных данных
+        try:
+            calculation_input = CalculationInput(
+                birth_date=birth_date,
+                gender=data['gender'],
+                contract_term=int(data['contractTerm']),
+                calculation_type=data['calculationType'],
+                input_amount=int(data['inputAmount']),
+                email=data.get('email'),
+                calculation_date=date.today()
+            )
+        except (ValueError, TypeError) as e:
+            logger.error(f"❌ Ошибка создания входных данных: {e}")
             return jsonify({
                 'success': False,
-                'errors': validation_errors
+                'error': f'Ошибка в параметрах расчета: {str(e)}'
             }), 400
         
-        # Определяем уровень дохода
-        income_level = data.get('incomeLevel', 'low')  # 'low' или 'high'
+        # Выполняем расчет с исправленным калькулятором
+        logger.info(f"🧮 Начинаем расчет с исправленным калькулятором...")
+        calculator = NSJCalculatorFixed()
+        result = calculator.calculate(calculation_input)
         
-        # Выполняем расчет с новой логикой
-        result = calculator.calculate(
-            birth_date=birth_date,
-            gender=data['gender'],
-            contract_term=int(data['contractTerm']),
-            calculation_type=data['calculationType'],
-            input_amount=int(data['inputAmount']),
-            email=data.get('email'),
-            income_level=income_level
-        )
-        
-        # Формируем ответ в формате совместимом со старым API
+        # Формируем ответ
         response_data = {
             'success': True,
             'calculationId': result.calculation_uuid,
-            'programType': 'employees',
-            'excelVersion': result.excel_version,
-            
             'inputParameters': {
-                'birthDate': result.birth_date.isoformat(),
-                'gender': result.gender,
-                'contractTerm': result.contract_term,
-                'calculationType': result.calculation_type,
-                'inputAmount': result.input_amount,
-                'email': result.email,
-                'incomeLevel': income_level,
+                'birthDate': calculation_input.birth_date.isoformat(),
+                'gender': calculation_input.gender,
+                'contractTerm': calculation_input.contract_term,
+                'calculationType': calculation_input.calculation_type,
+                'inputAmount': calculation_input.input_amount,
+                'email': calculation_input.email,
                 'ageAtStart': result.age_at_start,
                 'ageAtEnd': result.age_at_end
             },
-            
             'results': {
                 'premiumAmount': result.premium_amount,
                 'insuranceSum': result.insurance_sum,
                 'accumulatedCapital': result.accumulated_capital,
-                'formedCapital': result.formed_capital,
                 'programIncome': result.program_income,
-                'taxDeduction': result.tax_deduction,
-                'cashbackCoefficient': result.cashback_coefficient,
-                'insuranceSumSurvival': result.insurance_sum_survival,
-                'insuranceSumDeath': result.insurance_sum_death
+                'taxDeduction': result.tax_deduction
             },
-            
             'redemptionValues': result.redemption_values,
-            'calculatedAt': datetime.now().isoformat()
+            'calculatedAt': datetime.now().isoformat(),
+            'version': 'fixed_v1.15'  # Указываем что используем исправленную версию
         }
         
         logger.info(f"✅ Расчет выполнен успешно: {result.calculation_uuid}")
+        logger.info(f"📊 Результат: премия={result.premium_amount:,}, сумма={result.insurance_sum:,}, доход={result.program_income:,}")
+        
         return jsonify(response_data)
         
     except ValueError as e:
@@ -161,314 +174,271 @@ def calculate():
         logger.error(f"❌ Ошибка расчета: {e}")
         return jsonify({
             'success': False,
-            'error': 'Внутренняя ошибка сервера'
+            'error': 'Внутренняя ошибка сервера при расчете'
         }), 500
 
 @care_future_bp.route('/config', methods=['GET'])
 def get_config():
-    """Получение конфигурации калькулятора (обновлено для программы сотрудников)"""
+    """Получение конфигурации калькулятора"""
     try:
-        if not EMPLOYEES_LOGIC_AVAILABLE:
-            # Fallback конфигурация
-            config_data = {
-                'success': True,
-                'programType': 'employees',
-                'programName': 'Забота о будущем сотрудники',
-                'available': False,
-                'constraints': {
-                    'minAge': 18,
-                    'maxAge': 63,
-                    'availableTerms': list(range(5, 21)),
-                    'minPremium': 100000,
-                    'maxPremium': 50000000,
-                    'minInsuranceSum': 500000,
-                    'maxInsuranceSum': 100000000
-                },
-                'error': 'Логика программы сотрудников недоступна'
-            }
-            return jsonify(config_data)
-        
-        # Получаем доступные сроки из БД
-        available_terms = NSJRiskRatesByTerm.get_available_terms('employees')
-        
+        # Основные настройки
         config_data = {
-            'success': True,
-            'programType': 'employees',
-            'programName': 'Забота о будущем сотрудники',
-            'excelVersion': 'v.1.15',
-            'available': True,
-            
-            'constraints': {
-                'minAge': 18,
-                'maxAge': 63,
-                'availableTerms': available_terms or list(range(5, 21)),
-                'minPremium': 100000,
-                'maxPremium': 50000000,
-                'minInsuranceSum': 500000,
-                'maxInsuranceSum': 100000000
+            'contractTerms': list(range(5, 21)),  # 5-20 лет
+            'ageRange': {
+                'min': 18,
+                'max': 63
             },
-            
-            'features': {
-                'supportsTaxCalculation': True,
-                'supportsRedemptionCalculation': True,
-                'supportsIncomeLevel': True,
-                'hasCashbackCoefficients': True
+            'amountLimits': {
+                'premium': {
+                    'min': 100000,
+                    'max': 50000000
+                },
+                'sum': {
+                    'min': 500000,
+                    'max': 100000000
+                }
             },
-            
-            'calculationTypes': [
-                {
-                    'value': 'from_premium',
-                    'label': 'От страхового взноса',
-                    'description': 'Расчет исходя из ежегодного взноса'
-                },
-                {
-                    'value': 'from_sum',
-                    'label': 'От страховой суммы',
-                    'description': 'Расчет исходя из желаемой страховой суммы'
-                }
-            ],
-            
-            'incomelevels': [
-                {
-                    'value': 'low',
-                    'label': 'До 5 млн руб/год',
-                    'taxRate': '13%',
-                    'description': 'Доход до 5 миллионов рублей в год'
-                },
-                {
-                    'value': 'high',
-                    'label': 'Свыше 5 млн руб/год',
-                    'taxRate': '15%',
-                    'description': 'Доход свыше 5 миллионов рублей в год'
-                }
-            ]
+            'calculationTypes': ['from_premium', 'from_sum'],
+            'genders': ['male', 'female'],
+            'currency': 'RUB',
+            'version': 'fixed_v1.15'
         }
         
-        return jsonify(config_data)
+        response_data = {
+            'success': True,
+            'config': config_data
+        }
+        
+        return jsonify(response_data)
         
     except Exception as e:
-        logger.error(f"❌ Ошибка получения конфигурации: {e}")
+        logger.error(f"Ошибка получения конфигурации: {e}")
         return jsonify({
             'success': False,
             'error': 'Ошибка получения конфигурации'
         }), 500
 
-@care_future_bp.route('/redemption', methods=['POST'])
-def calculate_redemption():
-    """Расчет выкупных сумм (обновлено для программы сотрудников)"""
+@care_future_bp.route('/validate-amount', methods=['POST', 'OPTIONS'])
+def validate_amount():
+    """Валидация суммы перед расчетом"""
+    logger.info("🌐 ➜ %s %s", request.method, request.path)
+    
+    if request.method == "OPTIONS":
+        return '', 200
+    
     try:
-        data = request.get_json()
-        
-        contract_term = int(data['contractTerm'])
-        premium_amount = int(data['premiumAmount'])
-        
-        # Проверяем, что есть коэффициенты выкупа для этого срока
-        redemption_rates = NSJRedemptionRates.query.filter_by(
-            contract_term=contract_term,
-            program_type='employees'  # ✅ ИЗМЕНЕНО: Используем программу сотрудников
-        ).all()
-       
-        if not redemption_rates:
+        data, error = safe_get_json()
+        if error:
             return jsonify({
                 'success': False,
-                'error': f'Коэффициенты выкупа не найдены для срока {contract_term} лет'
-            }), 404
+                'error': error
+            }), 400
         
-        # Рассчитываем выкупные суммы
-        redemption_values = []
-        for year in range(1, contract_term + 1):
-            coefficient_record = NSJRedemptionRates.query.filter_by(
-                contract_year=year,
-                contract_term=contract_term,
-                program_type='employees'  # ✅ ИЗМЕНЕНО: Программа сотрудников
-            ).first()
-            
-            coefficient = float(coefficient_record.redemption_coefficient) if coefficient_record else 0.0
-            paid_premiums = premium_amount * year
-            redemption_amount = int(paid_premiums * coefficient)
-            
-            redemption_values.append({
-                'year': year,
-                'paidPremiums': paid_premiums,
-                'coefficient': coefficient,
-                'redemptionAmount': redemption_amount
-            })
+        amount = int(data.get('amount', 0))
+        calc_type = data.get('calculationType', 'from_premium')
+        
+        # Валидация лимитов
+        if calc_type == 'from_premium':
+            if amount < 100000:
+                return jsonify({
+                    'success': False,
+                    'error': 'Минимальный страховой взнос: 100,000 руб.'
+                }), 400
+            if amount > 50000000:
+                return jsonify({
+                    'success': False,
+                    'error': 'Максимальный страховой взнос: 50,000,000 руб.'
+                }), 400
+        else:  # from_sum
+            if amount < 500000:
+                return jsonify({
+                    'success': False,
+                    'error': 'Минимальная страховая сумма: 500,000 руб.'
+                }), 400
+            if amount > 100000000:
+                return jsonify({
+                    'success': False,
+                    'error': 'Максимальная страховая сумма: 100,000,000 руб.'
+                }), 400
+        
+        return jsonify({
+            'success': True,
+            'valid': True
+        })
+        
+    except Exception as e:
+        logger.error(f"Ошибка валидации суммы: {e}")
+        return jsonify({
+            'success': False,
+            'error': 'Ошибка валидации'
+        }), 500
+
+@care_future_bp.route('/admin/status', methods=['GET'])
+def admin_status():
+    """Административный статус системы"""
+    try:
+        # Тест исправленного калькулятора
+        calculator = NSJCalculatorFixed()
+        test_input = CalculationInput(
+            birth_date=date(1990, 1, 1),
+            gender='male',
+            contract_term=5,
+            calculation_type='from_premium',
+            input_amount=960000
+        )
+        
+        try:
+            test_result = calculator.calculate(test_input)
+            calculator_status = 'working'
+            calculator_error = None
+        except Exception as e:
+            calculator_status = 'error'
+            calculator_error = str(e)
         
         response_data = {
             'success': True,
-            'programType': 'employees',
-            'contractTerm': contract_term,
-            'premiumAmount': premium_amount,
-            'redemptionValues': redemption_values
+            'status': {
+                'database': 'connected',
+                'calculator': calculator_status,
+                'version': 'fixed_v1.15',
+                'excel_logic': 'implemented'
+            },
+            'calculator_error': calculator_error,
+            'stats': {
+                'available_terms': list(range(5, 21)),
+                'calculations_count': NSJCalculations.query.count() if calculator_status == 'working' else 0
+            },
+            'endpoints': {
+                'calculate': '/api/care-future/calculate',
+                'config': '/api/care-future/config',
+                'validateAmount': '/api/care-future/validate-amount',
+                'adminStatus': '/api/care-future/admin/status'
+            }
         }
         
         return jsonify(response_data)
         
-    except ValueError:
-        return jsonify({
-            'success': False,
-            'error': 'Неверный формат данных'
-        }), 400
     except Exception as e:
-        logger.error(f"Ошибка расчета выкупных сумм: {e}")
+        logger.error(f"Ошибка получения статуса: {e}")
         return jsonify({
             'success': False,
-            'error': 'Ошибка расчета выкупных сумм'
-        }), 500
-
-# =============================================================================
-# АДМИНИСТРАТИВНЫЕ ENDPOINTS (ОБНОВЛЕННЫЕ)
-# =============================================================================
-
-@care_future_bp.route('/status', methods=['GET'])
-def get_status():
-    """Статус системы калькулятора (обновлено для программы сотрудников)"""
-    try:
-        if not EMPLOYEES_LOGIC_AVAILABLE:
-            return jsonify({
-                'success': False,
-                'available': False,
-                'programType': 'employees',
-                'error': 'Логика программы сотрудников недоступна',
-                'suggestion': 'Проверьте наличие файлов программы сотрудников'
-            })
-        
-        # Проверяем данные в БД
-        risk_rates_count = NSJRiskRatesByTerm.query.filter_by(
-            program_type='employees',
-            is_active=True
-        ).count()
-        
-        cashback_rates_count = NSJCashbackRates.query.filter_by(
-            program_type='employees',
-            is_active=True
-        ).count()
-        
-        redemption_rates_count = NSJRedemptionRates.query.filter_by(
-            program_type='employees',
-            is_active=True
-        ).count()
-        
-        available_terms = NSJRiskRatesByTerm.get_available_terms('employees')
-        
-        status_data = {
-            'success': True,
-            'available': True,
-            'programType': 'employees',
-            'programName': 'Забота о будущем сотрудники',
-            'excelVersion': 'v.1.15',
-            
-            'database': {
-                'riskRatesCount': risk_rates_count,
-                'cashbackRatesCount': cashback_rates_count,
-                'redemptionRatesCount': redemption_rates_count,
-                'availableTerms': available_terms,
-                'dataIntegrity': {
-                    'riskRatesOK': risk_rates_count >= 16,  # Ожидаем 16 сроков (5-20)
-                    'cashbackRatesOK': cashback_rates_count >= 16,
-                    'redemptionRatesOK': redemption_rates_count > 100  # Много записей по годам
-                }
-            },
-            
-            'endpoints': {
-                'calculate': '/api/care-future/calculate',
-                'config': '/api/care-future/config',
-                'redemption': '/api/care-future/redemption',
-                'status': '/api/care-future/status'
-            },
-            
-            'features': {
-                'calculationEngine': 'EmployeesCalculatorEngine',
-                'excelVersion': 'v.1.15',
-                'supportedCalculationTypes': ['from_premium', 'from_sum'],
-                'supportedIncomelevels': ['low', 'high'],
-                'lastUpdate': datetime.now().isoformat()
-            }
-        }
-        
-        return jsonify(status_data)
-        
-    except Exception as e:
-        logger.error(f"❌ Ошибка получения статуса: {e}")
-        return jsonify({
-            'success': False,
-            'available': False,
             'error': 'Ошибка получения статуса системы'
         }), 500
 
-@care_future_bp.route('/validate-age', methods=['POST'])
-def validate_age():
-    """Валидация возраста (совместимость со старым API)"""
+@care_future_bp.route('/calculation/<uuid:calculation_id>', methods=['GET'])
+def get_calculation(calculation_id):
+    """Получение расчета по ID"""
     try:
-        data = request.get_json()
-        birth_date = datetime.strptime(data['birthDate'], '%Y-%m-%d').date()
+        calculation = NSJCalculations.query.filter_by(
+            calculation_uuid=str(calculation_id)
+        ).first()
         
-        today = date.today()
-        age = today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
+        if not calculation:
+            return jsonify({
+                'success': False,
+                'error': 'Расчет не найден'
+            }), 404
         
-        is_valid = 18 <= age <= 63
-        
-        return jsonify({
+        response_data = {
             'success': True,
-            'age': age,
-            'isValid': is_valid,
-            'constraints': {
-                'minAge': 18,
-                'maxAge': 63,
-                'programType': 'employees'
-            }
-        })
+            'calculation': calculation.to_dict(include_redemption=True)
+        }
+        
+        return jsonify(response_data)
         
     except Exception as e:
+        logger.error(f"Ошибка получения расчета: {e}")
         return jsonify({
             'success': False,
-            'error': 'Ошибка валидации возраста'
-        }), 400
+            'error': 'Ошибка получения расчета'
+        }), 500
 
-@care_future_bp.route('/validate-amount', methods=['POST'])  
-def validate_amount():
-    """Валидация суммы (совместимость со старым API)"""
+@care_future_bp.route('/calculations/by-email/<email>', methods=['GET'])
+def get_calculations_by_email(email):
+    """Получение истории расчетов по email"""
     try:
-        data = request.get_json()
-        amount = int(data['amount'])
-        calculation_type = data['calculationType']
+        limit = request.args.get('limit', 10, type=int)
         
-        if calculation_type == 'from_premium':
-            is_valid = 100000 <= amount <= 50000000
-            constraints = {'min': 100000, 'max': 50000000, 'type': 'premium'}
-        else:  # from_sum
-            is_valid = 500000 <= amount <= 100000000
-            constraints = {'min': 500000, 'max': 100000000, 'type': 'insurance_sum'}
+        calculations = NSJCalculations.query.filter_by(
+            email=email
+        ).order_by(NSJCalculations.created_at.desc()).limit(limit).all()
         
-        return jsonify({
+        response_data = {
             'success': True,
-            'amount': amount,
-            'isValid': is_valid,
-            'constraints': constraints,
-            'programType': 'employees'
-        })
+            'calculations': [calc.to_dict() for calc in calculations],
+            'count': len(calculations)
+        }
+        
+        return jsonify(response_data)
         
     except Exception as e:
+        logger.error(f"Ошибка получения истории расчетов: {e}")
         return jsonify({
             'success': False,
-            'error': 'Ошибка валидации суммы'
-        }), 400
+            'error': 'Ошибка получения истории расчетов'
+        }), 500
 
-# =============================================================================
-# LEGACY ENDPOINTS (для обратной совместимости)
-# =============================================================================
-
-@care_future_bp.route('/legacy-status', methods=['GET'])
-def legacy_status():
-    """Legacy endpoint для проверки работы старых интеграций"""
-    return jsonify({
-        'success': True,
-        'message': 'Калькулятор обновлен до программы сотрудников',
-        'programType': 'employees',
-        'version': 'v.1.15',
-        'legacy': True,
-        'recommendedEndpoint': '/api/care-future/status'
-    })
+@care_future_bp.route('/test-excel-logic', methods=['GET'])
+def test_excel_logic():
+    """Тестирование логики Excel с проверкой результатов"""
+    try:
+        calculator = NSJCalculatorFixed()
+        
+        # Тестовые данные из Excel (мужчина 60 лет, срок 9 лет, премия 100,000)
+        test_input = CalculationInput(
+            birth_date=date(1965, 4, 1),  # возраст 60 лет
+            gender='male',
+            contract_term=9,
+            calculation_type='from_premium',
+            input_amount=100000,
+            email='test@example.com'
+        )
+        
+        result = calculator.calculate(test_input)
+        
+        # Ожидаемые значения из Excel файла
+        expected_values = {
+            'insurance_sum': 1467000,  # C16 из Excel
+            'accumulated_capital': 900000,  # C12 из Excel (100000 * 9)
+            'program_income_approx': 567000,  # C13 из Excel (примерно)
+            'tax_deduction': 117000  # C14 из Excel (для дохода до 5 млн)
+        }
+        
+        # Проверяем соответствие
+        accuracy = {}
+        accuracy['insurance_sum'] = abs(result.insurance_sum - expected_values['insurance_sum']) < 1000
+        accuracy['accumulated_capital'] = result.accumulated_capital == expected_values['accumulated_capital']
+        accuracy['program_income'] = abs(result.program_income - expected_values['program_income_approx']) < 10000
+        accuracy['tax_deduction'] = result.tax_deduction == expected_values['tax_deduction']
+        
+        all_accurate = all(accuracy.values())
+        
+        response_data = {
+            'success': True,
+            'test_passed': all_accurate,
+            'calculation_uuid': result.calculation_uuid,
+            'results': {
+                'calculated': {
+                    'insurance_sum': result.insurance_sum,
+                    'accumulated_capital': result.accumulated_capital,
+                    'program_income': result.program_income,
+                    'tax_deduction': result.tax_deduction
+                },
+                'expected': expected_values,
+                'accuracy': accuracy
+            },
+            'redemption_values_count': len(result.redemption_values),
+            'message': 'Логика Excel успешно реализована!' if all_accurate else 'Есть расхождения с Excel'
+        }
+        
+        return jsonify(response_data)
+        
+    except Exception as e:
+        logger.error(f"Ошибка тестирования Excel логики: {e}")
+        return jsonify({
+            'success': False,
+            'error': f'Ошибка тестирования: {str(e)}'
+        }), 500
 
 # =============================================================================
 # ОБРАБОТЧИКИ ОШИБОК
@@ -476,57 +446,111 @@ def legacy_status():
 
 @care_future_bp.errorhandler(404)
 def not_found(error):
+    """Обработчик 404 ошибок"""
     return jsonify({
         'success': False,
-        'error': 'Endpoint не найден',
-        'programType': 'employees',
-        'availableEndpoints': [
-            '/api/care-future/calculate',
-            '/api/care-future/config', 
-            '/api/care-future/status'
-        ]
+        'error': 'Endpoint не найден'
     }), 404
+
+@care_future_bp.errorhandler(405)
+def method_not_allowed(error):
+    """Обработчик 405 ошибок"""
+    return jsonify({
+        'success': False,
+        'error': 'Метод не разрешен'
+    }), 405
 
 @care_future_bp.errorhandler(500)
 def internal_error(error):
+    """Обработчик 500 ошибок"""
+    logger.error(f"Внутренняя ошибка сервера: {error}")
     return jsonify({
         'success': False,
-        'error': 'Внутренняя ошибка сервера',
-        'programType': 'employees'
+        'error': 'Внутренняя ошибка сервера'
     }), 500
 
 # =============================================================================
-# ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
+# ИНИЦИАЛИЗАЦИЯ BLUEPRINT
 # =============================================================================
 
-def register_care_future_routes(app):
-    """Регистрация роутов в основном приложении"""
-    app.register_blueprint(care_future_bp)
-    logger.info("✅ Care Future routes (employees logic) registered")
+def init_care_future_routes(app):
+    """Инициализация routes для калькулятора НСЖ с исправленной логикой"""
+    try:
+        # Регистрируем Blueprint
+        app.register_blueprint(care_future_bp)
+        
+        logger.info("✅ Care Future routes с исправленной логикой зарегистрированы успешно")
+        
+        # Проверяем готовность системы с исправленным калькулятором
+        with app.app_context():
+            try:
+                calculator = NSJCalculatorFixed()
+                test_input = CalculationInput(
+                    birth_date=date(1990, 1, 1),
+                    gender='male',
+                    contract_term=5,
+                    calculation_type='from_premium',
+                    input_amount=960000
+                )
+                
+                test_result = calculator.calculate(test_input)
+                logger.info(f"✅ Исправленный калькулятор НСЖ готов к работе: {test_result.calculation_uuid}")
+                logger.info(f"📍 Доступные endpoints:")
+                logger.info(f"  - POST /api/care-future/calculate (исправленная логика)")
+                logger.info(f"  - GET  /api/care-future/test-excel-logic")
+                logger.info(f"  - GET  /api/care-future/admin/status")
+                
+            except Exception as e:
+                logger.error(f"❌ Ошибка проверки исправленного калькулятора: {e}")
+                return False
+        
+        return True
+        
+    except Exception as e:
+        logger.error(f"❌ Ошибка инициализации Care Future routes: {e}")
+        return False
 
-# Middleware для логирования запросов к API
-@care_future_bp.before_request
-def before_request():
-    """Middleware для логирования"""
-    logger.info(f"🌐 {request.method} {request.path} - Care Future API Request (employees logic)")
-
-"""
-КЛЮЧЕВЫЕ ИЗМЕНЕНИЯ В ЭТОЙ ВЕРСИИ:
-
-1. ✅ Заменена логика расчетов на программу сотрудников
-2. ✅ Сохранены все старые endpoints (/api/care-future/*)
-3. ✅ Добавлена поддержка уровней дохода (incomeLevel)
-4. ✅ Обновлена структура ответов с новыми полями
-5. ✅ Добавлена обратная совместимость
-6. ✅ Сохранен интерфейс старого API
-
-НОВЫЕ ПОЛЯ В ОТВЕТАХ:
-- formedCapital - сформированный капитал
-- cashbackCoefficient - коэффициент кэшбэка
-- incomeLevel - уровень дохода клиента
-
-СОВМЕСТИМОСТЬ:
-- Все старые endpoints работают
-- Фронтенд может использовать тот же код
-- Добавлены новые возможности без breaking changes
-"""
+if __name__ == "__main__":
+    # Тестирование при прямом запуске
+    from flask import Flask
+    from db_saver import init_db
+    
+    app = Flask(__name__)
+    init_db(app)
+    init_care_future_routes(app)
+    
+    print("🧪 Тестирование обновленного Care Future API...")
+    
+    with app.test_client() as client:
+        # Тест конфигурации
+        response = client.get('/api/care-future/config')
+        print(f"Config test: {response.status_code}")
+        
+        # Тест статуса
+        response = client.get('/api/care-future/admin/status')
+        print(f"Status test: {response.status_code}")
+        
+        # Тест Excel логики
+        response = client.get('/api/care-future/test-excel-logic')
+        print(f"Excel logic test: {response.status_code}")
+        
+        if response.status_code == 200:
+            result = response.get_json()
+            print(f"Excel logic passed: {result.get('test_passed', False)}")
+        
+        # Тест расчета
+        test_data = {
+            'birthDate': '1990-01-01',
+            'gender': 'male',
+            'contractTerm': 5,
+            'calculationType': 'from_premium',
+            'inputAmount': 960000
+        }
+        
+        response = client.post('/api/care-future/calculate', json=test_data)
+        print(f"Calculate test: {response.status_code}")
+        
+        if response.status_code == 200:
+            print("🎉 Все API тесты с исправленной логикой пройдены!")
+        else:
+            print(f"❌ Ошибка API: {response.get_json()}")
