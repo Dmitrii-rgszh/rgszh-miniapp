@@ -276,7 +276,7 @@ export default function CareFuturePage() {
     display: 'flex',
     gap: '15px',
     marginTop: '30px',
-    marginBottom: '20px',
+    marginBottom: '0px',
   };
 
   // Сообщения об ошибках
@@ -332,7 +332,7 @@ export default function CareFuturePage() {
     width: '85%',
     maxWidth: '600px',
     zIndex: 3,
-    paddingBottom: '120px'
+    paddingBottom: '20px'
   };
 
   const resultCardStyle = {
@@ -748,7 +748,6 @@ export default function CareFuturePage() {
             <img src={piImage} style={piImageStyle} alt="Pi" />
           </div>
 
-          <div style={overlayStyle} />
 
           {(stage === 'email' || stage === 'result') && (
             <div style={logoStyle}>
@@ -808,8 +807,6 @@ export default function CareFuturePage() {
           <div style={piWrapperStyle}>
             <img src={piImage} style={piImageStyle} alt="Pi" />
           </div>
-
-          <div style={overlayStyle} />
 
           <div style={formContainerStyle}>
             <h2 style={formTitleStyle}>Параметры расчета</h2>
@@ -994,8 +991,6 @@ export default function CareFuturePage() {
             <img src={piImage} style={piImageStyle} alt="Pi" />
           </div>
 
-          <div style={overlayStyle} />
-
           <div style={logoStyle}>
             <img src={logoImage} alt="Логотип РГС Жизнь" style={logoImageStyle} />
           </div>
@@ -1174,8 +1169,6 @@ export default function CareFuturePage() {
             <img src={piImage} style={piImageStyle} alt="Pi" />
           </div>
 
-          <div style={overlayStyle} />
-
           <div style={logoStyle}>
             <img src={logoImage} alt="Логотип РГС Жизнь" style={logoImageStyle} />
           </div>
@@ -1332,7 +1325,10 @@ export default function CareFuturePage() {
                 color: 'white',
                 border: '2px solid white'
                 }} 
-                onClick={() => setStage('form')}
+                onClick={() => {
+                  setStage('form');
+                  setCarouselIndex(0); // СБРАСЫВАЕМ НА ПЕРВУЮ СТРАНИЦУ
+                }}
               >
                 Изменить параметры
               </button>
@@ -1369,8 +1365,6 @@ export default function CareFuturePage() {
           <div style={piWrapperStyle}>
             <img src={piImage} style={piImageStyle} alt="Pi" />
           </div>
-
-          <div style={overlayStyle} />
 
           {(stage === 'email' || stage === 'result' || stage === 'manager' || stage === 'manager-sent') && (
             <div style={logoStyle}>
@@ -1456,8 +1450,6 @@ export default function CareFuturePage() {
           <div style={piWrapperStyle}>
             <img src={piImage} style={piImageStyle} alt="Pi" />
           </div>
-
-          <div style={overlayStyle} />
 
           {(stage === 'email' || stage === 'result' || stage === 'manager-sent') && (
             <div style={logoStyle}>
