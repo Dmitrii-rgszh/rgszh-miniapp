@@ -133,8 +133,8 @@ export default function CareFuturePage() {
     top: logoAnimated && !isExiting ? '110px' : isExiting ? '-200px' : '-200px',
     left: '50%',
     transform: 'translateX(-50%)',
-    width: '160px',
-    height: '160px',
+    width: '112px',
+    height: '112px',
     backgroundColor: 'rgba(255, 255, 255, 0.10)',
     backdropFilter: 'blur(8px)',
     borderRadius: '20px',
@@ -148,8 +148,8 @@ export default function CareFuturePage() {
   };
 
   const logoImageStyle = {
-    width: '120px',
-    height: '120px',
+    width: '84px',
+    height: '84px',
     objectFit: 'contain'
   };
 
@@ -158,7 +158,7 @@ export default function CareFuturePage() {
     position: 'absolute',
     top: '50%',
     left: '50%',
-    transform: 'translate(-50%, -50%)',
+    transform: 'translateX(-50%)',
     background: 'rgba(255, 255, 255, 0.95)',
     borderRadius: '20px',
     padding: '40px',
@@ -478,7 +478,7 @@ export default function CareFuturePage() {
       const calculationData = {
         email: email,
         birthDate: birthDate.toISOString().split('T')[0],
-        gender: gender === 'мужской' ? 'male' : 'female',
+        gender: gender === 'Мужской' ? 'male' : 'female',
         contractTerm: programTerm,
         calculationType: calcType === 'premium' ? 'from_premium' : 'from_sum',
         inputAmount: parseInt(amountRaw.replace(/\s/g, ''))
