@@ -106,13 +106,13 @@ export default function CareFuturePage() {
 
   // Основной контейнер
   const mainContainerStyle = {
-    minHeight: '100vh',
+    minHeight: 'calc(100vh + 100px)', 
+    paddingBottom: '20px',
     background: `linear-gradient(135deg, #667eea 0%, #764ba2 100%), url(${backgroundImage})`,
     backgroundSize: 'cover',
     backgroundPosition: 'center',
     backgroundBlendMode: 'overlay',
     position: 'relative',
-    overflow: 'hidden',
     fontFamily: '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif'
   };
 
@@ -256,7 +256,8 @@ export default function CareFuturePage() {
   const buttonGroupStyle = {
     display: 'flex',
     gap: '15px',
-    marginTop: '30px'
+    marginTop: '30px',
+    marginBottom: '20px'
   };
 
   // Сообщения об ошибках
@@ -946,27 +947,90 @@ export default function CareFuturePage() {
 
     // Подготавливаем данные для карусели
     const carouselData = [
+      // 1. Основные результаты
       {
         title: 'Основные результаты',
         items: [
+          { label: 'Возраст клиента', value: `${resultData.inputParams.age} лет` },
+          { label: 'Пол', value: gender === 'Мужской' ? 'Мужской' : 'Женский' },
+          { label: 'Срок программы', value: `${resultData.inputParams.term} лет` },
           { label: 'Годовой взнос', value: `${formatSum(resultData.results.premiumAmount.toString())} руб.`, highlight: true },
           { label: 'Страховая сумма', value: `${formatSum(resultData.results.insuranceSum.toString())} руб.`, highlight: true },
           { label: 'Накопленный капитал', value: `${formatSum(resultData.results.accumulatedCapital.toString())} руб.` },
           { label: 'Доход по программе', value: `${formatSum(resultData.results.programIncome.toString())} руб.` },
           { label: 'Налоговый вычет', value: `${formatSum(resultData.results.taxDeduction.toString())} руб.` }
         ]
+      },
+
+      // 2. Страховые риски (новая страница)
+      {
+        title: 'Страховое покрытие',
+        items: [
+          { 
+            label: 'Дожитие до окончания срока', 
+            value: `${formatSum(resultData.results.insuranceSum.toString())} руб.`, 
+            highlight: true 
+          },
+          { 
+            label: 'Смерть ЛП с отложенной выплатой', 
+            value: `${formatSum(resultData.results.insuranceSum.toString())} руб.` 
+          },
+          { 
+            label: 'Смерть ЛП по любой причине', 
+            value: `${formatSum(Math.round(resultData.results.premiumAmount * resultData.inputParams.term).toString())} руб.` 
+          },
+          { 
+            label: 'Инвалидность ЛП по любой причине', 
+            value: 'Освобождение от уплаты взносов' 
+          },
+          { 
+            label: 'Ежегодный взнос', 
+            value: `${formatSum(resultData.results.premiumAmount.toString())} руб.`, 
+            highlight: true 
+          }
+        ]
+      },
+      // 3. Дополнительные сервисы (новая страница)
+      {
+        title: 'Дополнительные сервисы',
+        isServicePage: true,
+        services: [
+          {
+            icon: '💰',
+            title: 'Налоговый вычет',
+            description: 'Удобный сервис для получения социального налогового вычета онлайн не выходя из дома'
+          },
+          {
+            icon: '🧬',
+            title: 'ПРО Генетику',
+            description: 'Исследование генома ребенка, которое позволяет раскрыть потенциал его развития'
+          },
+          {
+            icon: '🎓',
+            title: 'Образовательный консьерж',
+            description: 'Информационная поддержка и помощь в получении образовательных и развивающих услуг'
+          }
+        ]
       }
     ];
 
     // Добавляем выкупные суммы если есть
+    // Добавляем выкупные суммы если есть
     if (resultData.redemptionValues && resultData.redemptionValues.length > 0) {
-      const redemptionItems = resultData.redemptionValues
-        .filter(item => item.amount > 0)
-        .slice(0, 5)
-        .map(item => ({
-          label: `${item.year} год`,
-          value: `${formatSum(item.amount.toString())} руб.`
-        }));
+      // Создаем массив на весь срок программы
+      const allYears = [];
+      for (let year = 1; year <= resultData.inputParams.term; year++) {
+        const existingData = resultData.redemptionValues.find(item => item.year === year);
+        allYears.push({
+          year: year,
+          amount: existingData ? existingData.amount : 0
+        });
+      }
+  
+      const redemptionItems = allYears.map(item => ({
+        label: `${item.year} год`,
+        value: item.amount > 0 ? `${formatSum(item.amount.toString())} руб.` : '0 руб.'
+      }));
 
       if (redemptionItems.length > 0) {
         carouselData.push({
@@ -995,20 +1059,129 @@ export default function CareFuturePage() {
         </div>
 
         <div style={resultsContainerStyle}>
-          <div style={resultCardStyle}>
+          <div style={{...resultCardStyle, position: 'relative'}}>
+            {/* Стрелка влево */}
+            {carouselIndex > 0 && (
+              <button 
+                style={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '-25px',
+                  transform: 'translateY(-50%)',
+                  width: '50px',
+                  height: '50px',
+                  borderRadius: '50%',
+                  background: 'rgba(102, 126, 234, 1.1)',
+                  border: 'none',
+                  color: 'white',
+                  fontSize: '20px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  zIndex: 4,
+                  transition: 'all 0.3s ease',
+                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)'
+                }}
+                onClick={() => setCarouselIndex(prev => prev - 1)}
+                onMouseEnter={(e) => e.target.style.background = 'rgba(102, 126, 234, 1)'}
+                onMouseLeave={(e) => e.target.style.background = 'rgba(102, 126, 234, 0.8)'}
+              >
+                ←
+              </button>
+            )}
+
             <div style={formTitleStyle}>
               {carouselData[carouselIndex].title}
               <br/>
             </div>
-            
-            {carouselData[carouselIndex].items.map((item, idx) => (
-              <div key={idx} style={{...resultItemStyle, borderBottom: idx === carouselData[carouselIndex].items.length - 1 ? 'none' : '1px solid #f0f0f0'}}>
-                <div style={resultLabelStyle}>{item.label}</div>
-                <div style={item.highlight ? resultValueHighlightStyle : resultValueStyle}>
-                  {item.value}
-                </div>
+  
+            {/* Обычная страница с таблицей */}
+            {!carouselData[carouselIndex].isServicePage && carouselData[carouselIndex].items && (
+              <>
+                {carouselData[carouselIndex].items.map((item, idx) => (
+                  <div key={idx} style={{...resultItemStyle, borderBottom: idx === carouselData[carouselIndex].items.length - 1 ? 'none' : '1px solid #f0f0f0'}}>
+                    <div style={resultLabelStyle}>{item.label}</div>
+                    <div style={item.highlight ? resultValueHighlightStyle : resultValueStyle}>
+                      {item.value}
+                    </div>
+                  </div>
+                ))}
+              </>
+            )}
+
+            {/* Страница дополнительных сервисов */}
+            {carouselData[carouselIndex].isServicePage && carouselData[carouselIndex].services && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginTop: '20px' }}>
+                {carouselData[carouselIndex].services.map((service, idx) => (
+                  <div key={idx} style={{
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: '15px',
+                    padding: '15px',
+                    background: 'rgba(102, 126, 234, 0.05)',
+                    borderRadius: '12px',
+                    border: '1px solid rgba(102, 126, 234, 0.1)'
+                  }}>
+                    <div style={{ 
+                      fontSize: '40px',
+                      flexShrink: 0,
+                      marginBottom: '15px'
+                    }}>
+                      {service.icon}
+                    </div>
+                    <div>
+                      <div style={{
+                        fontWeight: '600',
+                        color: '#667eea',
+                        fontSize: '16px',
+                        marginBottom: '8px'
+                      }}>
+                        {service.title}
+                      </div>
+                      <div style={{
+                        color: '#666',
+                        fontSize: '14px',
+                        lineHeight: '1.4'
+                      }}>
+                        {service.description}
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
+            )}
+
+            {/* Стрелка вправо */}
+            {carouselIndex < carouselData.length - 1 && (
+              <button 
+                style={{
+                  position: 'absolute',
+                  top: '50%',
+                  right: '-25px',
+                  transform: 'translateY(-50%)',
+                  width: '50px',
+                  height: '50px',
+                  borderRadius: '50%',
+                  background: 'rgba(102, 126, 234, 1.0)',
+                  border: 'none',
+                  color: 'white',
+                  fontSize: '20px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  zIndex: 4,
+                  transition: 'all 0.3s ease',
+                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)'
+                }}
+                onClick={() => setCarouselIndex(prev => prev + 1)}
+                onMouseEnter={(e) => e.target.style.background = 'rgba(102, 126, 234, 1)'}
+                onMouseLeave={(e) => e.target.style.background = 'rgba(102, 126, 234, 1)'}
+              >
+                →
+              </button>
+            )}
           </div>
 
           {carouselData.length > 1 && (
@@ -1020,7 +1193,7 @@ export default function CareFuturePage() {
                     width: '10px',
                     height: '10px',
                     borderRadius: '50%',
-                    background: carouselIndex === idx ? '#9370DB' : 'rgba(147, 112, 219, 0.3)',
+                    background: carouselIndex === idx ? '#667eea' : 'rgba(102, 126, 234, 0.3)',
                     cursor: 'pointer',
                     transition: 'background 0.3s ease'
                   }}
