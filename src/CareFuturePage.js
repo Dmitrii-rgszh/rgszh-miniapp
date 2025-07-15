@@ -57,25 +57,25 @@ export default function CareFuturePage() {
 
   // CSS-анимации как строки
   const animationsStyle = `
-    @keyframes fadeInUp {
+    @keyframes fadeInDown {
       from {
         opacity: 0;
-        transform: translate(-50%, 100%) translateX(-50%);
+        transform: translate3d(0, -100%, 0);
       }
       to {
         opacity: 1;
-        transform: translateX(-50%);  // Сохраняем центрирование по X
+        transform: translate3d(0, 0, 0);
       }
     }
 
     @keyframes fadeInUp {
       from {
         opacity: 0;
-        transform: translate3d(0, 100%, 0);
+        transform: translateX(-50%) translateY(100px);
       }
       to {
         opacity: 1;
-        transform: translate3d(0, 0, 0);
+        transform: translateX(-50%) translateY(0);
       }
     }
 
@@ -156,9 +156,9 @@ export default function CareFuturePage() {
   // Контейнер формы
   const formContainerStyle = {
     position: 'absolute',
-    top: (stage === 'email' || stage === 'result' || stage === 'manager-sent') 
+    top: (stage === 'email' || stage === 'result' || stage === 'manager' || stage === 'manager-sent') 
       ? '242px'  // С логотипом: 110px + 112px + 20px = 242px
-      : '130px', // Без логотипа: 110px + 20px = 130px
+      : '90px',
     left: '50%',
     transform: 'translateX(-50%)',
     background: 'rgba(255, 255, 255, 0.95)',
@@ -1059,9 +1059,11 @@ export default function CareFuturePage() {
         
         <div style={overlayStyle} />
         
-        <div style={logoStyle}>
-          <img src={logoImage} alt="Логотип РГС Жизнь" style={logoImageStyle} />
-        </div>
+        {(stage === 'email' || stage === 'result' || stage === 'manager' || stage === 'manager-sent') && (
+          <div style={logoStyle}>
+            <img src={logoImage} alt="Логотип РГС Жизнь" style={logoImageStyle} />
+          </div>
+        )}
 
         <div style={formContainerStyle}>
           <h2 style={formTitleStyle}>Связаться с менеджером</h2>
@@ -1145,7 +1147,7 @@ export default function CareFuturePage() {
             <div style={{ fontSize: '64px', color: '#2ecc71', marginBottom: '20px' }}>✅</div>
             <h2 style={formTitleStyle}>Заявка отправлена!</h2>
             <p style={{ color: '#666', marginBottom: '30px' }}>
-              Наш менеджер свяжется с вами в ближайшее время для консультации по программе «Забота о будущем Ультра».
+              Наш менеджер свяжется с вами в ближайшее время для консультации по программе «Забота о будущем» для сотрудников ВТБ.
             </p>
             
             <div style={{ background: '#f8f9fa', borderRadius: '12px', padding: '20px', marginBottom: '30px', textAlign: 'left' }}>
