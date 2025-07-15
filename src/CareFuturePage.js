@@ -362,13 +362,15 @@ export default function CareFuturePage() {
   const resultValueStyle = {
     fontWeight: '600',
     color: '#333',
-    fontSize: '16px'
+    fontSize: '16px',
+    textAlign: 'right'
   };
 
   const resultValueHighlightStyle = {
     ...resultValueStyle,
     color: '#9370DB',
-    fontSize: '18px'
+    fontSize: '18px',
+    textAlign: 'right'
   };
 
   // Процессинг
@@ -1055,11 +1057,11 @@ export default function CareFuturePage() {
               value: `${formatSum(resultData.results.insuranceSum.toString())} руб.`
             },
             {
-              label: 'Смерть ЛП по любой причине',
-              value: `${formatSum(Math.round(resultData.results.premiumAmount * resultData.inputParams.term).toString())} руб.`
+              label: 'Смерть по любой причине',
+              value: 'Возврат 100% взносов'
             },
             {
-              label: 'Инвалидность ЛП по любой причине',
+              label: 'Инвалидность по любой причине',
               value: 'Освобождение от уплаты взносов'
             },
             {
