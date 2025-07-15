@@ -118,16 +118,17 @@ export default function CareFuturePage() {
   const mainContainerStyle = {
     position: 'relative',
     width: '100%',
-    // ИСПРАВЛЕНО: используем реальную высоту viewport
-    height: `${getViewportHeight()}px`,
-    minHeight: `${getViewportHeight()}px`,
+    // ИСПРАВЛЕНО: фиксированная высота экрана
+    minHeight: '100vh',
+    height: '100vh',
     background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    overflow: 'hidden',
+    overflow: 'auto',
+    overflowX: 'hidden',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     fontFamily: 'Montserrat, sans-serif',
-    // Дополнительные свойства для мобильных браузеров
+    backgroundAttachment: 'local',
     ...(isMobile() && {
       WebkitOverflowScrolling: 'touch',
       overscrollBehavior: 'none'
@@ -275,7 +276,7 @@ export default function CareFuturePage() {
     display: 'flex',
     gap: '15px',
     marginTop: '30px',
-    marginBottom: '20px'
+    marginBottom: '20px',
   };
 
   // Сообщения об ошибках
@@ -330,7 +331,8 @@ export default function CareFuturePage() {
     transform: 'translateX(-50%)',
     width: '85%',
     maxWidth: '600px',
-    zIndex: 3
+    zIndex: 3,
+    paddingBottom: '120px'
   };
 
   const resultCardStyle = {
@@ -724,7 +726,18 @@ export default function CareFuturePage() {
     // Email шаг
     if (stage === 'email') {
       return (
-        <div style={mainContainerStyle}>
+        <div style={mainContainerStyle} className="care-future-container-fix">
+
+          {/* ДОБАВЬТЕ ЭТУ СТРОКУ */}
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            zIndex: -1
+          }} />
           {animations}
 
           {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => (
@@ -774,7 +787,18 @@ export default function CareFuturePage() {
     // Форма расчета
     if (stage === 'form') {
       return (
-        <div style={mainContainerStyle}>
+        <div style={mainContainerStyle} className="care-future-container-fix">
+
+          {/* ДОБАВЬТЕ ЭТУ СТРОКУ */}
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            zIndex: -1
+          }} />
           {animations}
 
           {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => (
@@ -948,7 +972,18 @@ export default function CareFuturePage() {
     // Обработка расчета
     if (stage === 'processing') {
       return (
-        <div style={mainContainerStyle}>
+        <div style={mainContainerStyle} className="care-future-container-fix">
+
+          {/* ДОБАВЬТЕ ЭТУ СТРОКУ */}
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            zIndex: -1
+          }} />
           {animations}
 
           {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => (
@@ -978,7 +1013,17 @@ export default function CareFuturePage() {
     if (stage === 'result') {
       if (!resultData) {
         return (
-          <div style={mainContainerStyle}>
+          <div style={mainContainerStyle} className="care-future-container-fix">
+            {/* ДОБАВЬТЕ ЭТУ СТРОКУ */}
+            <div style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              zIndex: -1
+            }} />
             <div style={errorMessageStyle}>Нет данных для отображения</div>
           </div>
         );
@@ -1055,7 +1100,19 @@ export default function CareFuturePage() {
 
       // Добавляем выкупные суммы если есть
       if (resultData.redemptionValues && resultData.redemptionValues.length > 0) {
-        console.log('🔍 Анализируем выкупные суммы:', resultData.redemptionValues);
+        console.log('🔍 ОТЛАДКА: Срок программы:', resultData.inputParams.term);
+        console.log('🔍 ОТЛАДКА: Данные с сервера:', resultData.redemptionValues);
+        console.log('🔍 ОТЛАДКА: Количество записей:', resultData.redemptionValues.length);
+
+        // Показываем что есть в данных по годам
+        for (let year = 1; year <= resultData.inputParams.term; year++) {
+          const found = resultData.redemptionValues.find(item => item.year === year);
+          if (found) {
+            console.log(`✅ Год ${year}: ${found.amount} руб.`);
+          } else {
+            console.log(`❌ Год ${year}: НЕТ ДАННЫХ`);
+          }
+        }
 
         const redemptionItems = [];
 
@@ -1072,26 +1129,41 @@ export default function CareFuturePage() {
               label: `${year} год`,
               value: amount > 0 ? `${formatSum(amount.toString())} руб.` : '0 руб.'
             });
+            console.log(`➕ ДОБАВЛЕН год ${year}: ${amount > 0 ? formatSum(amount.toString()) + ' руб.' : '0 руб.'}`);
+          } else {
+            console.log(`➖ ПРОПУЩЕН год ${year}: сумма = 0`);
           }
         }
 
-        console.log('💰 Показываем выкупных сумм:', redemptionItems.length);
-        console.log('📋 Структура:', redemptionItems.map(item => `${item.label}: ${item.value}`));
+        console.log('🎯 ИТОГО в интерфейсе будет показано лет:', redemptionItems.length);
 
         if (redemptionItems.length > 0) {
           carouselData.push({
-            title: 'Выкупные суммы',
+            title: `Выкупные суммы (${redemptionItems.length} из ${resultData.inputParams.term} лет)`,
             items: redemptionItems
           });
+          console.log('✅ Страница выкупных сумм ДОБАВЛЕНА в карусель');
         } else {
-          console.log('⚠️ Нет данных для отображения');
+          console.log('⚠️ Страница выкупных сумм НЕ добавлена - нет данных');
         }
       } else {
-        console.log('❌ Выкупные суммы отсутствуют в данных');
+        console.log('❌ resultData.redemptionValues пустой или отсутствует');
+        console.log('❌ resultData:', resultData);
       }
 
       return (
-        <div style={mainContainerStyle}>
+        <div style={mainContainerStyle} className="care-future-container-fix">
+
+          {/* ДОБАВЬТЕ ЭТУ СТРОКУ */}
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            zIndex: -1
+          }} />
           {animations}
 
           {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => (
@@ -1254,7 +1326,14 @@ export default function CareFuturePage() {
             )}
 
             <div style={buttonGroupStyle}>
-              <button style={secondaryButtonStyle} onClick={() => setStage('form')}>
+              <button 
+                style={{
+                ...secondaryButtonStyle,
+                color: 'white',
+                border: '2px solid white'
+                }} 
+                onClick={() => setStage('form')}
+              >
                 Изменить параметры
               </button>
               <button style={primaryButtonStyle} onClick={() => setStage('manager')}>
@@ -1269,7 +1348,18 @@ export default function CareFuturePage() {
     // Форма связи с менеджером
     if (stage === 'manager') {
       return (
-        <div style={mainContainerStyle}>
+        <div style={mainContainerStyle} className="care-future-container-fix">
+
+          {/* ДОБАВЬТЕ ЭТУ СТРОКУ */}
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            zIndex: -1
+          }} />
           {animations}
 
           {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => (
@@ -1346,7 +1436,17 @@ export default function CareFuturePage() {
     // Успешная отправка
     if (stage === 'manager-sent') {
       return (
-        <div style={mainContainerStyle}>
+        <div style={mainContainerStyle} className="care-future-container-fix">
+          {/* ДОБАВЬТЕ ЭТУ СТРОКУ */}
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            zIndex: -1
+          }} />
           {animations}
 
           {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => (
@@ -1394,7 +1494,17 @@ export default function CareFuturePage() {
 
     // Ошибка
     return (
-      <div style={mainContainerStyle}>
+      <div style={mainContainerStyle} className="care-future-container-fix">
+        {/* ДОБАВЬТЕ ЭТУ СТРОКУ */}
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            zIndex: -1
+          }} />
         <div style={errorMessageStyle}>
           Произошла ошибка. Попробуйте обновить страницу.
         </div>
