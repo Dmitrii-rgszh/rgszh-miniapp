@@ -156,13 +156,15 @@ export default function CareFuturePage() {
   // Контейнер формы
   const formContainerStyle = {
     position: 'absolute',
-    top: '242px',
+    top: (stage === 'email' || stage === 'result' || stage === 'manager-sent') 
+      ? '242px'  // С логотипом: 110px + 112px + 20px = 242px
+      : '130px', // Без логотипа: 110px + 20px = 130px
     left: '50%',
     transform: 'translateX(-50%)',
     background: 'rgba(255, 255, 255, 0.95)',
     borderRadius: '20px',
-    padding: '40px',
-    width: '90%',
+    padding: '30px',
+    width: '80%',
     maxWidth: '500px',
     boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
     backdropFilter: 'blur(10px)',
@@ -173,7 +175,7 @@ export default function CareFuturePage() {
 
   // Заголовки
   const formTitleStyle = {
-    fontSize: '28px',
+    fontSize: '24px',
     fontWeight: '700',
     color: '#333',
     marginBottom: '10px',
@@ -184,7 +186,7 @@ export default function CareFuturePage() {
     fontSize: '168x',
     color: 'rgba(255, 255, 255, 0.9)',
     textAlign: 'center',
-    marginBottom: '30px',
+    marginBottom: '20px',
     textShadow: '0 1px 2px rgba(0, 0, 0, 0.3)'
   };
 
@@ -304,7 +306,7 @@ export default function CareFuturePage() {
   // Стили результатов
   const resultsContainerStyle = {
     position: 'absolute',
-    top: '50%',
+    top: '242px',
     left: '50%',
     transform: 'translate(-50%, -50%)',
     width: '90%',
@@ -744,10 +746,6 @@ export default function CareFuturePage() {
         </div>
         
         <div style={overlayStyle} />
-        
-        <div style={logoStyle}>
-          <img src={logoImage} alt="Логотип РГС Жизнь" style={logoImageStyle} />
-        </div>
 
         <div style={formContainerStyle}>
           <h2 style={formTitleStyle}>Параметры расчета</h2>
@@ -758,7 +756,7 @@ export default function CareFuturePage() {
 
           {/* Дата рождения */}
           <div style={formGroupStyle}>
-            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#333', fontSize: '18px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#333', fontSize: '18px', textAlign: 'center' }}>
               Дата рождения
             </label>
             <DateWheelPicker 
@@ -773,7 +771,7 @@ export default function CareFuturePage() {
 
           {/* Пол */}
           <div style={formGroupStyle}>
-            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#333', fontSize: '18px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#333', fontSize: '18px', textAlign: 'center' }}>
               Пол
             </label>
             <div style={{ display: 'flex', gap: '10px' }}>
@@ -804,7 +802,7 @@ export default function CareFuturePage() {
 
           {/* Срок программы */}
           <div style={formGroupStyle}>
-            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#333', fontSize: '18px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#333', fontSize: '18px', textAlign: 'center' }}>
               Срок программы: {programTerm} лет
             </label>
             <input
@@ -830,7 +828,7 @@ export default function CareFuturePage() {
 
           {/* Тип расчета */}
           <div style={formGroupStyle}>
-            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#333', fontSize: '18px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#333', fontSize: '18px', textAlign: 'center' }}>
               Тип расчета
             </label>
             <div style={{ display: 'flex', gap: '10px' }}>
@@ -864,7 +862,7 @@ export default function CareFuturePage() {
 
           {/* Сумма */}
           <div style={formGroupStyle}>
-            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#333', fontSize: '18px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#333', fontSize: '18px', textAlign: 'center' }}>
               {calcType === 'premium' ? 'Страховой взнос' : 'Страховая сумма'} (руб.)
             </label>
             <input
@@ -883,7 +881,7 @@ export default function CareFuturePage() {
             {validationErrors.amount && (
               <div style={errorMessageStyle}>{validationErrors.amount}</div>
             )}
-            <div style={{ fontSize: '14px', color: '#999', marginTop: '5px' }}>
+            <div style={{ fontSize: '14px', color: '#999', marginTop: '5px', textAlign: 'center' }}>
               {calcType === 'premium' 
                 ? 'Минимум: 100,000 руб., максимум: 50,000,000 руб.' 
                 : 'Минимум: 500,000 руб., максимум: 100,000,000 руб.'}
