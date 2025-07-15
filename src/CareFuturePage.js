@@ -1096,6 +1096,8 @@ export default function CareFuturePage() {
       ];
 
       // Добавляем выкупные суммы если есть
+      // Добавляем выкупные суммы если есть
+      /*
       if (resultData.redemptionValues && resultData.redemptionValues.length > 0) {
         console.log('🔍 ОТЛАДКА: Срок программы:', resultData.inputParams.term);
         console.log('🔍 ОТЛАДКА: Данные с сервера:', resultData.redemptionValues);
@@ -1126,13 +1128,6 @@ export default function CareFuturePage() {
           console.log(`➕ ДОБАВЛЕН год ${year}: ${amount > 0 ? formatSum(amount.toString()) + ' руб.' : '0 руб.'}`);
         }
 
-        // ИЛИ просто убрать условие completely:
-        // Удалить if и else блоки, оставить только:
-        redemptionItems.push({
-          label: `${year} год`,
-          value: amount > 0 ? `${formatSum(amount.toString())} руб.` : '0 руб.'
-        });
-
         console.log('🎯 ИТОГО в интерфейсе будет показано лет:', redemptionItems.length);
 
         if (redemptionItems.length > 0) {
@@ -1148,7 +1143,7 @@ export default function CareFuturePage() {
         console.log('❌ resultData.redemptionValues пустой или отсутствует');
         console.log('❌ resultData:', resultData);
       }
-
+      */
       return (
         <div style={mainContainerStyle} className="care-future-container-fix">
 
