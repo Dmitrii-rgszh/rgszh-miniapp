@@ -1114,23 +1114,24 @@ export default function CareFuturePage() {
         const redemptionItems = [];
 
         // ЛОГИКА: 1-2 годы показываем всегда (даже если 0), остальные - только если > 0
+        // Показываем выкупные суммы для всех лет
         for (let year = 1; year <= resultData.inputParams.term; year++) {
           const existingData = resultData.redemptionValues.find(item => item.year === year);
           const amount = existingData ? existingData.amount : 0;
 
-          // Показываем:
-          // - 1-2 годы всегда (даже если 0)
-          // - Остальные годы только если сумма > 0
-          if (year <= 2 || amount > 0) {
-            redemptionItems.push({
-              label: `${year} год`,
-              value: amount > 0 ? `${formatSum(amount.toString())} руб.` : '0 руб.'
-            });
-            console.log(`➕ ДОБАВЛЕН год ${year}: ${amount > 0 ? formatSum(amount.toString()) + ' руб.' : '0 руб.'}`);
-          } else {
-            console.log(`➖ ПРОПУЩЕН год ${year}: сумма = 0`);
-          }
+          redemptionItems.push({
+            label: `${year} год`,
+            value: amount > 0 ? `${formatSum(amount.toString())} руб.` : '0 руб.'
+          });
+          console.log(`➕ ДОБАВЛЕН год ${year}: ${amount > 0 ? formatSum(amount.toString()) + ' руб.' : '0 руб.'}`);
         }
+
+        // ИЛИ просто убрать условие completely:
+        // Удалить if и else блоки, оставить только:
+        redemptionItems.push({
+          label: `${year} год`,
+          value: amount > 0 ? `${formatSum(amount.toString())} руб.` : '0 руб.'
+        });
 
         console.log('🎯 ИТОГО в интерфейсе будет показано лет:', redemptionItems.length);
 
