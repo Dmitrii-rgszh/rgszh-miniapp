@@ -57,14 +57,14 @@ export default function CareFuturePage() {
 
   // CSS-анимации как строки
   const animationsStyle = `
-    @keyframes fadeInDown {
+    @keyframes fadeInUp {
       from {
         opacity: 0;
-        transform: translate3d(0, -100%, 0);
+        transform: translate(-50%, 100%) translateX(-50%);
       }
       to {
         opacity: 1;
-        transform: translate3d(0, 0, 0);
+        transform: translateX(-50%);  // Сохраняем центрирование по X
       }
     }
 
