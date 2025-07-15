@@ -164,7 +164,7 @@ export default function CareFuturePage() {
     background: 'rgba(255, 255, 255, 0.95)',
     borderRadius: '20px',
     padding: '30px',
-    width: '80%',
+    width: '85%',
     maxWidth: '500px',
     boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
     backdropFilter: 'blur(10px)',
@@ -308,8 +308,8 @@ export default function CareFuturePage() {
     position: 'absolute',
     top: '242px',
     left: '50%',
-    transform: 'translate(-50%, -50%)',
-    width: '90%',
+    transform: 'translateX(-50%)',
+    width: '85%',
     maxWidth: '600px',
     zIndex: 3
   };
@@ -341,13 +341,13 @@ export default function CareFuturePage() {
   const resultValueStyle = {
     fontWeight: '600',
     color: '#333',
-    fontSize: '18px'
+    fontSize: '16px'
   };
 
   const resultValueHighlightStyle = {
     ...resultValueStyle,
     color: '#9370DB',
-    fontSize: '20px'
+    fontSize: '18px'
   };
 
   // Процессинг
@@ -1133,10 +1133,12 @@ export default function CareFuturePage() {
         </div>
         
         <div style={overlayStyle} />
-        
-        <div style={logoStyle}>
-          <img src={logoImage} alt="Логотип РГС Жизнь" style={logoImageStyle} />
-        </div>
+
+        {(stage === 'email' || stage === 'result' || stage === 'manager-sent') && (
+          <div style={logoStyle}>
+            <img src={logoImage} alt="Логотип РГС Жизнь" style={logoImageStyle} />
+          </div>
+        )}
 
         <div style={formContainerStyle}>
           <div style={{ textAlign: 'center' }}>
