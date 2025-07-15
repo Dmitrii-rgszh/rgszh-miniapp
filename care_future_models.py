@@ -345,7 +345,7 @@ class NSJCalculator:
             17: 2.57,
             18: 2.74,
             19: 2.92,
-            20: 3.11
+            20: 2.36
         }
         
         # Тарифы по рискам (из листа "к_Тарифы по рискам")
@@ -504,19 +504,40 @@ class NSJCalculator:
     def _calculate_insurance_sum_from_premium(self, premium: int, term: int) -> int:
         """
         ИСПРАВЛЕННАЯ: Расчет страховой суммы от премии 
-        Формула из Excel: р_сумма = р_взнос * р_срок * (1 + р_кэшбэк)
+        Формула из Excel: страховая_сумма = премия * срок * коэффициент_дожития
+        НЕ (1 + кэшбэк), а именно коэффициент_дожития!
         """
-        cashback_rate = self._get_cashback_rate(term)
-        insurance_sum = int(premium * term * (1 + cashback_rate))
+        survival_coeff = self.survival_coefficients.get(term)
+        if not survival_coeff:
+            raise ValueError(f"Нет данных о коэффициенте дожития для срока {term}")
+    
+        insurance_sum = int(premium * term * survival_coeff)
+    
+        self.logger.info(f"📊 Расчет страховой суммы:")
+        self.logger.info(f"   Премия: {premium:,} руб.")
+        self.logger.info(f"   Срок: {term} лет")
+        self.logger.info(f"   Коэффициент дожития: {survival_coeff}")
+        self.logger.info(f"   Результат: {premium} * {term} * {survival_coeff} = {insurance_sum:,} руб.")
+    
         return insurance_sum
     
     def _calculate_premium_from_sum(self, insurance_sum: int, term: int) -> int:
         """
         ИСПРАВЛЕННАЯ: Расчет премии от страховой суммы
-        Формула из Excel: р_взнос = р_сумма / (р_срок * (1 + р_кэшбэк))
+        Формула из Excel: премия = страховая_сумма / (срок * коэффициент_дожития)
         """
-        cashback_rate = self._get_cashback_rate(term)
-        premium = int(insurance_sum / (term * (1 + cashback_rate)))
+        survival_coeff = self.survival_coefficients.get(term)
+        if not survival_coeff:
+            raise ValueError(f"Нет данных о коэффициенте дожития для срока {term}")
+    
+        premium = int(insurance_sum / (term * survival_coeff))
+    
+        self.logger.info(f"📊 Расчет премии:")
+        self.logger.info(f"   Страховая сумма: {insurance_sum:,} руб.")
+        self.logger.info(f"   Срок: {term} лет")
+        self.logger.info(f"   Коэффициент дожития: {survival_coeff}")
+        self.logger.info(f"   Результат: {insurance_sum} / ({term} * {survival_coeff}) = {premium:,} руб.")
+    
         return premium
     
     def _calculate_tax_deduction(self, premium: int, term: int) -> int:
