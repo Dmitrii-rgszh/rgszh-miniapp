@@ -156,7 +156,7 @@ export default function CareFuturePage() {
   // Контейнер формы
   const formContainerStyle = {
     position: 'absolute',
-    top: '50%',
+    top: '242px',
     left: '50%',
     transform: 'translateX(-50%)',
     background: 'rgba(255, 255, 255, 0.95)',
@@ -695,9 +695,11 @@ export default function CareFuturePage() {
         
         <div style={overlayStyle} />
         
-        <div style={logoStyle}>
-          <img src={logoImage} alt="Логотип РГС Жизнь" style={logoImageStyle} />
-        </div>
+        {(stage === 'email' || stage === 'result') && (
+          <div style={logoStyle}>
+            <img src={logoImage} alt="Логотип РГС Жизнь" style={logoImageStyle} />
+          </div>
+        )}
 
         <div style={formContainerStyle}>
           <h2 style={formTitleStyle}>Калькулятор НСЖ</h2>
