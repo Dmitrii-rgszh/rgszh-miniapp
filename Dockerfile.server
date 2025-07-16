@@ -1,5 +1,3 @@
-# Dockerfile для сервера (подключение к внешней PostgreSQL)
-
 FROM python:3.11-slim
 
 WORKDIR /app
@@ -21,9 +19,17 @@ COPY db_saver.py .
 COPY polls_ws.py .
 COPY polls_routes.py .
 COPY assessment_routes.py .
+COPY questionnaire_routes.py .
+COPY questionnaire_models.py .
 COPY email_sender.py .
 COPY poll_manager.py .
 COPY init_assessment_db.py .
+COPY migrate_assessment_questions.py .
+
+# Копируем файлы калькулятора НСЖ (если есть)
+COPY care_future_models.py* .
+COPY care_future_routes.py* .
+COPY init_care_future.py* .
 
 # Копируем SQL файлы для инициализации assessment таблиц
 COPY assessment_schema.sql .
