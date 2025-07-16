@@ -116,6 +116,17 @@ const JustincasePage = () => {
   const handleScholarshipChange = e => setScholarship(formatSum(e.target.value));
   const handleUnsecuredLoansChange = e => setUnsecuredLoans(formatSum(e.target.value));
 
+  // Функция форматирования чисел для отображения
+  const formatNumber = (value) => {
+    if (!value) return '0';
+    
+    // Убираем все нецифровые символы
+    const cleanValue = value.toString().replace(/[^\d]/g, '');
+    
+    // Форматируем с пробелами
+    return cleanValue.replace(/(\d)(?=(\d{3})+$)/g, '$1 ');
+  };
+
   // Проверка возможности перехода
   const canGoNext = () => {
     if (currentStep === 1) {
@@ -176,46 +187,42 @@ const JustincasePage = () => {
     }, 700);
   };
 
-  // Отправка данных на бэкенд и приём результата
+  // ИСПРАВЛЕННАЯ отправка данных на бэкенд и приём результата
   const doCalculation = async () => {
     setIsProcessing(true);
   
     try {
-      // Определяем правильный URL для API
-      const apiUrl = window.location.hostname === 'localhost' && window.location.port === '3001'
-        ? 'http://localhost:4000/api/justincase/calculate'
-        : '/api/justincase/calculate';
-    
-      // Подготовка данных для расчета
-      const calculationData = {
-        birthDate: birthDate.toISOString().split('T')[0],
+      // Подготовка данных для расчета в формате, который ожидает сервер
+      const payload = {
+        birthDate: birthDate ? birthDate.toISOString().split('T')[0] : null,
         gender: gender === 'Мужской' ? 'male' : 'female',
         insuranceInfo,
         insuranceTerm: parseInt(insuranceTerm),
-        insuranceSum: insuranceSum ? parseInt(insuranceSum.replace(/\./g, '')) : null,
+        insuranceSum: insuranceSum ? insuranceSum.replace(/\./g, '') : '',
         insuranceFrequency,
-        accidentPackage: accidentPackage === 'yes',
-        criticalPackage: criticalPackage === 'yes',
-        treatmentRegion: criticalPackage === 'yes' ? treatmentRegion : null,
-        sportPackage: sportPackage === 'yes',
+        accidentPackage,
+        criticalPackage,
+        treatmentRegion,
+        sportPackage,
         hasJob,
-        income2021: income2021 ? parseInt(income2021.replace(/\./g, '')) : null,
-        income2022: income2022 ? parseInt(income2022.replace(/\./g, '')) : null,
-        income2023: income2023 ? parseInt(income2023.replace(/\./g, '')) : null,
-        scholarship: scholarship ? parseInt(scholarship.replace(/\./g, '')) : null,
-        unsecuredLoans: unsecuredLoans ? parseInt(unsecuredLoans.replace(/\./g, '')) : null,
+        income2021,
+        income2022,
+        income2023,
+        scholarship,
+        unsecuredLoans,
         breadwinnerStatus,
-        incomeShare: incomeShare ? parseFloat(incomeShare) : null,
-        childrenCount: parseInt(childrenCount),
-        specialCareRelatives: specialCareRelatives === 'yes'
+        incomeShare,
+        childrenCount,
+        specialCareRelatives
       };
 
-      console.log('📤 Отправляем данные на расчет:', calculationData);
+      console.log('📤 Отправляем данные на расчет:', payload);
 
-      const response = await fetch(apiUrl, {
+      const response = await fetch('/api/proxy/calculator/save', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(calculationData)
+        credentials: 'include',
+        body: JSON.stringify(payload)
       });
 
       const data = await response.json();
@@ -225,15 +232,73 @@ const JustincasePage = () => {
         throw new Error(data.error || 'Ошибка расчёта');
       }
 
-      if (data.success) {
-        setResultData(data.results);
-        setCurrentStep(4);
+      // ИСПРАВЛЕННАЯ обработка ответа
+      let processedData;
+      
+      if (data.success && data.calculation_result) {
+        // Новый формат ответа от полного калькулятора
+        const calc = data.calculation_result;
+        
+        processedData = {
+          success: true,
+          calculationDate: new Date().toLocaleDateString('ru-RU'),
+          clientAge: calc.clientAge || 35,
+          clientGender: calc.clientGender || (gender === 'Мужской' ? 'Мужской' : 'Женский'),
+          insuranceTerm: calc.insuranceTerm || insuranceTerm,
+          
+          // Основная программа
+          baseInsuranceSum: formatNumber(calc.baseInsuranceSum || calc.insuranceSum || insuranceSum),
+          basePremium: formatNumber(calc.basePremium || calc.basePremiumAmount || calc.annualPremium || '0'),
+          
+          // Пакет НС
+          accidentPackageIncluded: calc.accidentPackageIncluded || false,
+          accidentInsuranceSum: formatNumber(calc.accidentInsuranceSum || calc.accidentDetails?.insuranceSum || insuranceSum),
+          accidentPremium: formatNumber(calc.accidentPremium || calc.accidentDetails?.premium || '0'),
+          
+          // Пакет КЗ
+          criticalPackageIncluded: calc.criticalPackageIncluded || false,
+          criticalInsuranceSum: formatNumber(calc.criticalInsuranceSum || calc.criticalDetails?.insuranceSum || '60 000 000'),
+          criticalPremium: formatNumber(calc.criticalPremium || calc.criticalDetails?.premium || '0'),
+          
+          // Итого
+          totalPremium: formatNumber(calc.totalPremium || calc.annualPremium || '0'),
+          
+          // Дополнительная информация
+          treatmentRegion: calc.treatmentRegion || treatmentRegion,
+          sportPackage: calc.sportPackage || (sportPackage === 'yes'),
+          
+          // Служебная информация
+          calculationId: calc.calculationId || data.calculation_id || 'unknown',
+          calculator: data.calculator || 'JustincaseCalculatorComplete',
+          version: data.version || '2.0.0'
+        };
+      } else if (data.success) {
+        // Старый формат ответа (временный калькулятор)
+        processedData = {
+          ...data,
+          clientAge: data.clientAge || 35,
+          clientGender: data.clientGender || (gender === 'Мужской' ? 'Мужской' : 'Женский'),
+          insuranceTerm: data.insuranceTerm || insuranceTerm,
+          baseInsuranceSum: formatNumber(data.baseInsuranceSum || insuranceSum),
+          basePremium: formatNumber(data.basePremium || '0'),
+          totalPremium: formatNumber(data.totalPremium || '0'),
+          accidentPackageIncluded: data.accidentPackageIncluded || false,
+          accidentInsuranceSum: formatNumber(data.accidentInsuranceSum || '0'),
+          accidentPremium: formatNumber(data.accidentPremium || '0'),
+          criticalPackageIncluded: data.criticalPackageIncluded || false,
+          criticalPremium: formatNumber(data.criticalPremium || '0')
+        };
       } else {
-        throw new Error(data.error || 'Ошибка обработки данных');
+        throw new Error(data.error || 'Неизвестная ошибка расчета');
       }
+      
+      console.log('✅ Обработанные данные:', processedData);
+      
+      setResultData(processedData);
+      setCurrentStep(4);
     } catch (error) {
       console.error('❌ Ошибка расчета:', error);
-      alert('Ошибка при расчете: ' + error.message);
+      alert(`Ошибка при расчете: ${error.message}`);
     } finally {
       setIsProcessing(false);
     }
@@ -522,13 +587,53 @@ const JustincasePage = () => {
             </div>
             <div style={resultItemStyle}>
               <span style={resultLabelStyle}>Страховая сумма:</span>
-              <span style={resultValueStyle}>{resultData.baseInsuranceSum}</span>
+              <span style={resultValueStyle}>{resultData.baseInsuranceSum} руб.</span>
             </div>
             <div style={resultItemStyle}>
-              <span style={resultLabelStyle}>Итоговая премия:</span>
-              <span style={resultValueStyle}>{resultData.totalPremium} руб.</span>
+              <span style={resultLabelStyle}>Базовая премия:</span>
+              <span style={resultValueStyle}>{resultData.basePremium} руб.</span>
+            </div>
+            
+            {resultData.accidentPackageIncluded && (
+              <>
+                <div style={resultItemStyle}>
+                  <span style={resultLabelStyle}>НС страховая сумма:</span>
+                  <span style={resultValueStyle}>{resultData.accidentInsuranceSum} руб.</span>
+                </div>
+                <div style={resultItemStyle}>
+                  <span style={resultLabelStyle}>НС премия:</span>
+                  <span style={resultValueStyle}>{resultData.accidentPremium} руб.</span>
+                </div>
+              </>
+            )}
+            
+            {resultData.criticalPackageIncluded && (
+              <>
+                <div style={resultItemStyle}>
+                  <span style={resultLabelStyle}>КЗ страховая сумма:</span>
+                  <span style={resultValueStyle}>{resultData.criticalInsuranceSum} руб.</span>
+                </div>
+                <div style={resultItemStyle}>
+                  <span style={resultLabelStyle}>КЗ премия:</span>
+                  <span style={resultValueStyle}>{resultData.criticalPremium} руб.</span>
+                </div>
+              </>
+            )}
+            
+            <div style={{...resultItemStyle, borderTop: '2px solid #667eea', marginTop: '10px', paddingTop: '15px'}}>
+              <span style={{...resultLabelStyle, fontWeight: '700', color: '#333'}}>Итоговая премия:</span>
+              <span style={{...resultValueStyle, fontWeight: '700', color: '#667eea', fontSize: '16px'}}>{resultData.totalPremium} руб.</span>
             </div>
           </div>
+          
+          {/* Дополнительная информация */}
+          {resultData.calculator && (
+            <div style={{marginTop: '20px', padding: '15px', background: '#f8f9fa', borderRadius: '8px', fontSize: '12px', color: '#666'}}>
+              <div>Калькулятор: {resultData.calculator}</div>
+              <div>Версия: {resultData.version}</div>
+              <div>ID расчета: {resultData.calculationId}</div>
+            </div>
+          )}
           
           <div style={buttonGroupStyle}>
             <button style={secondaryButtonStyle} onClick={goToMenu}>

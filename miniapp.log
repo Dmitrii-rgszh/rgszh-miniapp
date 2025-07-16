@@ -1,0 +1,132 @@
+2025-07-16 18:01:05,456 - server - INFO - Socket.IO: running without Redis message queue
+2025-07-16 18:01:05,458 - db_saver - INFO - ��������� ���� ������: postgresql://postgres:secret@176.109.110.217:1112/postgres
+2025-07-16 18:01:12,068 - db_saver - INFO - ������� ������� (��� ��� ����������)
+2025-07-16 18:01:14,885 - care_future_models - INFO - �� ������������ ��� ����������������: {'survival_coefficients_count': 16, 'risk_tariffs_count': 16, 'redemption_terms_count': 16, 'available_terms': [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20], 'calculations_count': 115}
+2025-07-16 18:01:15,220 - NSJCalculator - INFO -    ������: 960,000 ���.
+2025-07-16 18:01:15,220 - NSJCalculator - INFO -    ����: 5 ���
+2025-07-16 18:01:15,221 - NSJCalculator - INFO -    ����������� �������: 1.34
+2025-07-16 18:01:15,221 - NSJCalculator - INFO -    ���������: 960000 * 5 * 1.34 = 6,432,000 ���.
+2025-07-16 18:01:16,165 - care_future_routes_updated - INFO -   - POST /api/care-future/calculate (������������ ������)
+2025-07-16 18:01:16,165 - care_future_routes_updated - INFO -   - GET  /api/care-future/test-excel-logic
+2025-07-16 18:01:16,166 - care_future_routes_updated - INFO -   - GET  /api/care-future/admin/status
+2025-07-16 18:01:16,181 - justincase_calculator - INFO -    ����� �� 1000: 8.5620
+2025-07-16 18:01:16,181 - justincase_calculator - INFO -    Net-������: 8562.00 ���.
+2025-07-16 18:01:16,181 - justincase_calculator - INFO -    Gross-������: 13172.31 ���.
+2025-07-16 18:01:16,185 - justincase_routes - INFO -   - POST /api/proxy/calculator/save (��������, ��� ���������)
+2025-07-16 18:01:16,185 - justincase_routes - INFO -   - POST /api/justincase/calculate (�����������)
+2025-07-16 18:01:16,185 - justincase_routes - INFO -   - POST /api/justincase/validate (���������)
+2025-07-16 18:01:16,185 - justincase_routes - INFO -   - POST /api/justincase/validate-sum (��������� �����)
+2025-07-16 18:01:16,185 - justincase_routes - INFO -   - POST /api/justincase/recommend-sum (������������� �����)
+2025-07-16 18:01:16,185 - justincase_routes - INFO -   - GET  /api/justincase/config (������������)
+2025-07-16 18:01:16,186 - justincase_routes - INFO -   - GET  /api/justincase/test (������������)
+2025-07-16 18:01:16,186 - justincase_routes - INFO -   - GET  /api/justincase/status (������)
+2025-07-16 18:06:24,383 - server - INFO - Socket.IO: running without Redis message queue
+2025-07-16 18:06:24,384 - db_saver - INFO - Использую базу данных: postgresql://postgres:secret@176.109.110.217:1112/postgres
+2025-07-16 18:06:31,115 - db_saver - INFO - Таблицы созданы (или уже существуют)
+2025-07-16 18:06:33,985 - care_future_models - INFO - БД калькулятора НСЖ инициализирована: {'survival_coefficients_count': 16, 'risk_tariffs_count': 16, 'redemption_terms_count': 16, 'available_terms': [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20], 'calculations_count': 116}
+2025-07-16 18:06:34,305 - care_future_routes_updated - INFO - ✅ Care Future routes с исправленной логикой зарегистрированы успешно
+2025-07-16 18:06:34,305 - NSJCalculator - INFO - 🧮 Начинаем расчет: from_premium, сумма: 960000, срок: 5
+2025-07-16 18:06:34,305 - NSJCalculator - INFO - 📅 Возраст на начало: 35, на окончание: 40
+2025-07-16 18:06:34,305 - NSJCalculator - INFO - 📊 Расчет страховой суммы:
+2025-07-16 18:06:34,305 - NSJCalculator - INFO -    Премия: 960,000 руб.
+2025-07-16 18:06:34,305 - NSJCalculator - INFO -    Срок: 5 лет
+2025-07-16 18:06:34,306 - NSJCalculator - INFO -    Коэффициент дожития: 1.34
+2025-07-16 18:06:34,306 - NSJCalculator - INFO -    Результат: 960000 * 5 * 1.34 = 6,432,000 руб.
+2025-07-16 18:06:34,306 - NSJCalculator - INFO - 💰 Премия: 960000, Страховая сумма: 6432000
+2025-07-16 18:06:34,306 - NSJCalculator - INFO - 📊 Кэшбэк для срока 5 лет: 0.3400
+2025-07-16 18:06:34,306 - NSJCalculator - INFO - 💰 Налоговый вычет: 19500/год × 5 лет = 97500
+2025-07-16 18:06:35,263 - NSJCalculator - INFO - 💾 Расчет сохранен в БД: f7a37274-3e9f-400b-bcae-df9a882b7c16
+2025-07-16 18:06:35,264 - NSJCalculator - INFO - ✅ Расчет завершен успешно: f7a37274-3e9f-400b-bcae-df9a882b7c16
+2025-07-16 18:06:35,264 - care_future_routes_updated - INFO - ✅ Исправленный калькулятор НСЖ готов к работе: f7a37274-3e9f-400b-bcae-df9a882b7c16
+2025-07-16 18:06:35,264 - care_future_routes_updated - INFO - 📍 Доступные endpoints:
+2025-07-16 18:06:35,264 - care_future_routes_updated - INFO -   - POST /api/care-future/calculate (исправленная логика)
+2025-07-16 18:06:35,264 - care_future_routes_updated - INFO -   - GET  /api/care-future/test-excel-logic
+2025-07-16 18:06:35,264 - care_future_routes_updated - INFO -   - GET  /api/care-future/admin/status
+2025-07-16 18:06:35,266 - justincase_routes - INFO - ✅ Маршруты полного калькулятора 'На всякий случай' зарегистрированы
+2025-07-16 18:06:35,266 - justincase_calculator - INFO - 🚀 Инициализация полного калькулятора 'На всякий случай'
+2025-07-16 18:06:35,266 - justincase_calculator - INFO - ✅ Все коэффициенты и таблицы загружены
+2025-07-16 18:06:35,266 - justincase_calculator - INFO - 📊 Актуарные таблицы: 15 возрастов мужчин, 15 возрастов женщин
+2025-07-16 18:06:35,266 - justincase_calculator - INFO - ⚙️ КВ коэффициенты: 30 сроков
+2025-07-16 18:06:35,267 - justincase_calculator - INFO - 🎯 Тарифы НС: 4 видов
+2025-07-16 18:06:35,267 - justincase_calculator - INFO - 🏥 Тарифы КЗ: 2 регионов
+2025-07-16 18:06:35,268 - justincase_calculator - INFO - ✅ Валидация входных данных пройдена
+2025-07-16 18:06:35,268 - justincase_calculator - INFO - 🚀 Начинаем полный расчет программы 'На всякий случай'
+2025-07-16 18:06:35,268 - justincase_calculator - INFO - 📝 Входные данные: ['birthDate', 'gender', 'insuranceInfo', 'insuranceTerm', 'insuranceSum']
+2025-07-16 18:06:35,268 - justincase_calculator - INFO - 👤 Клиент: 35 лет, male, сумма 1,000,000, срок 5 лет
+2025-07-16 18:06:35,268 - justincase_calculator - INFO - 📊 Базовая премия: возраст 35, пол male, срок 5
+2025-07-16 18:06:35,268 - justincase_calculator - INFO -    Тариф на 1000: 8.5620
+2025-07-16 18:06:35,269 - justincase_calculator - INFO -    Net-премия: 8562.00 руб.
+2025-07-16 18:06:35,269 - justincase_calculator - INFO -    Gross-премия: 13172.31 руб.
+2025-07-16 18:06:35,269 - justincase_calculator - INFO - 💰 Итоговая премия: 13172.31 руб. (Ежегодно)
+2025-07-16 18:06:35,269 - justincase_calculator - INFO - ✅ Расчет программы завершен успешно
+2025-07-16 18:06:35,269 - justincase_routes - INFO - ✅ Полный калькулятор готов: тест-премия 13,172.31 руб.
+2025-07-16 18:06:35,270 - justincase_routes - INFO - 📍 Доступные endpoints:
+2025-07-16 18:06:35,270 - justincase_routes - INFO -   - POST /api/proxy/calculator/save (основной, для фронтенда)
+2025-07-16 18:06:35,270 - justincase_routes - INFO -   - POST /api/justincase/calculate (расширенный)
+2025-07-16 18:06:35,270 - justincase_routes - INFO -   - POST /api/justincase/validate (валидация)
+2025-07-16 18:06:35,270 - justincase_routes - INFO -   - POST /api/justincase/validate-sum (валидация суммы)
+2025-07-16 18:06:35,270 - justincase_routes - INFO -   - POST /api/justincase/recommend-sum (рекомендуемая сумма)
+2025-07-16 18:06:35,270 - justincase_routes - INFO -   - GET  /api/justincase/config (конфигурация)
+2025-07-16 18:06:35,270 - justincase_routes - INFO -   - GET  /api/justincase/test (тестирование)
+2025-07-16 18:06:35,270 - justincase_routes - INFO -   - GET  /api/justincase/status (статус)
+2025-07-16 18:06:35,274 - server - INFO - 🚀 Starting MiniApp Server...
+2025-07-16 18:06:35,274 - server - INFO - ✅ Build folder found with 3 items
+2025-07-16 18:06:35,274 - server - INFO - 📧 Email configured: rgszh-miniapp@yandex.ru -> zerotlt@mail.ru, Polina.Iureva@rgsl.ru
+2025-07-16 18:06:35,274 - server - INFO - 📧 Additional recipient configured: Polina.Iureva@rgsl.ru
+2025-07-16 18:06:35,274 - server - INFO - 🧮 Care Future калькулятор НСЖ: ДОСТУПЕН
+2025-07-16 18:06:35,274 - server - INFO - 📍 Endpoints: /api/care-future/* и /care-future/calculate
+2025-07-16 18:06:35,276 - server - INFO - 📍 Server will run on port 4000
+2025-07-16 18:06:35,276 - server - INFO - 📍 Open http://localhost:4000/ in your browser
+2025-07-16 18:07:02,004 - server - INFO - 📨 OPTIONS /api/justincase/calculate - 127.0.0.1
+2025-07-16 18:07:02,004 - server - INFO - 📤 OPTIONS /api/justincase/calculate -> 200
+2025-07-16 18:07:02,256 - server - INFO - 📨 POST /api/justincase/calculate - 127.0.0.1
+2025-07-16 18:07:02,256 - server - INFO -    📋 JSON keys: ['birthDate', 'gender', 'insuranceInfo', 'insuranceTerm', 'insuranceSum', 'insuranceFrequency', 'accidentPackage', 'criticalPackage', 'treatmentRegion', 'sportPackage', 'hasJob', 'income2021', 'income2022', 'income2023', 'scholarship', 'unsecuredLoans', 'breadwinnerStatus', 'incomeShare', 'childrenCount', 'specialCareRelatives']
+2025-07-16 18:07:02,256 - justincase_routes - INFO - 🎯 === РАСШИРЕННЫЙ РАСЧЕТ ===
+2025-07-16 18:07:02,256 - justincase_routes - INFO - 📋 Content-Type: application/json
+2025-07-16 18:07:02,256 - justincase_routes - INFO - 📥 JSON получен: ['birthDate', 'gender', 'insuranceInfo', 'insuranceTerm', 'insuranceSum', 'insuranceFrequency', 'accidentPackage', 'criticalPackage', 'treatmentRegion', 'sportPackage', 'hasJob', 'income2021', 'income2022', 'income2023', 'scholarship', 'unsecuredLoans', 'breadwinnerStatus', 'incomeShare', 'childrenCount', 'specialCareRelatives']
+2025-07-16 18:07:02,256 - justincase_calculator - INFO - 🚀 Инициализация полного калькулятора 'На всякий случай'
+2025-07-16 18:07:02,256 - justincase_calculator - INFO - ✅ Все коэффициенты и таблицы загружены
+2025-07-16 18:07:02,256 - justincase_calculator - INFO - 📊 Актуарные таблицы: 15 возрастов мужчин, 15 возрастов женщин
+2025-07-16 18:07:02,257 - justincase_calculator - INFO - ⚙️ КВ коэффициенты: 30 сроков
+2025-07-16 18:07:02,257 - justincase_calculator - INFO - 🎯 Тарифы НС: 4 видов
+2025-07-16 18:07:02,257 - justincase_calculator - INFO - 🏥 Тарифы КЗ: 2 регионов
+2025-07-16 18:07:02,257 - justincase_calculator - INFO - ✅ Валидация входных данных пройдена
+2025-07-16 18:07:02,257 - justincase_calculator - INFO - 🚀 Начинаем полный расчет программы 'На всякий случай'
+2025-07-16 18:07:02,257 - justincase_calculator - INFO - 📝 Входные данные: ['birthDate', 'gender', 'insuranceInfo', 'insuranceTerm', 'insuranceSum', 'insuranceFrequency', 'accidentPackage', 'criticalPackage', 'treatmentRegion', 'sportPackage', 'hasJob', 'income2021', 'income2022', 'income2023', 'scholarship', 'unsecuredLoans', 'breadwinnerStatus', 'incomeShare', 'childrenCount', 'specialCareRelatives']
+2025-07-16 18:07:02,257 - justincase_calculator - INFO - 👤 Клиент: 35 лет, male, сумма 2,000,000, срок 10 лет
+2025-07-16 18:07:02,257 - justincase_calculator - INFO - 📊 Базовая премия: возраст 35, пол male, срок 10
+2025-07-16 18:07:02,257 - justincase_calculator - INFO -    Тариф на 1000: 9.1400
+2025-07-16 18:07:02,257 - justincase_calculator - INFO -    Net-премия: 18280.00 руб.
+2025-07-16 18:07:02,257 - justincase_calculator - INFO -    Gross-премия: 28123.08 руб.
+2025-07-16 18:07:02,257 - justincase_calculator - INFO - 💥 НС премия: спорт x1.3, общая 11.18 руб.
+2025-07-16 18:07:02,257 - justincase_calculator - INFO - 🏥 КЗ премия: abroad, база 51390, итого 86753.85 руб.
+2025-07-16 18:07:02,258 - justincase_calculator - INFO - 💰 Итоговая премия: 114888.11 руб. (Ежегодно)
+2025-07-16 18:07:02,258 - justincase_calculator - INFO - ✅ Расчет программы завершен успешно
+2025-07-16 18:07:02,258 - server - INFO - 📤 POST /api/justincase/calculate -> 200
+2025-07-16 18:07:30,815 - server - INFO - 📨 OPTIONS /api/justincase/calculate - 127.0.0.1
+2025-07-16 18:07:30,816 - server - INFO - 📤 OPTIONS /api/justincase/calculate -> 200
+2025-07-16 18:07:31,065 - server - INFO - 📨 POST /api/justincase/calculate - 127.0.0.1
+2025-07-16 18:07:31,066 - server - INFO -    📋 JSON keys: ['birthDate', 'gender', 'insuranceInfo', 'insuranceTerm', 'insuranceSum', 'insuranceFrequency', 'accidentPackage', 'criticalPackage', 'treatmentRegion', 'sportPackage', 'hasJob', 'income2021', 'income2022', 'income2023', 'scholarship', 'unsecuredLoans', 'breadwinnerStatus', 'incomeShare', 'childrenCount', 'specialCareRelatives']
+2025-07-16 18:07:31,066 - justincase_routes - INFO - 🎯 === РАСШИРЕННЫЙ РАСЧЕТ ===
+2025-07-16 18:07:31,066 - justincase_routes - INFO - 📋 Content-Type: application/json
+2025-07-16 18:07:31,066 - justincase_routes - INFO - 📥 JSON получен: ['birthDate', 'gender', 'insuranceInfo', 'insuranceTerm', 'insuranceSum', 'insuranceFrequency', 'accidentPackage', 'criticalPackage', 'treatmentRegion', 'sportPackage', 'hasJob', 'income2021', 'income2022', 'income2023', 'scholarship', 'unsecuredLoans', 'breadwinnerStatus', 'incomeShare', 'childrenCount', 'specialCareRelatives']
+2025-07-16 18:07:31,066 - justincase_calculator - INFO - 🚀 Инициализация полного калькулятора 'На всякий случай'
+2025-07-16 18:07:31,066 - justincase_calculator - INFO - ✅ Все коэффициенты и таблицы загружены
+2025-07-16 18:07:31,067 - justincase_calculator - INFO - 📊 Актуарные таблицы: 15 возрастов мужчин, 15 возрастов женщин
+2025-07-16 18:07:31,067 - justincase_calculator - INFO - ⚙️ КВ коэффициенты: 30 сроков
+2025-07-16 18:07:31,067 - justincase_calculator - INFO - 🎯 Тарифы НС: 4 видов
+2025-07-16 18:07:31,067 - justincase_calculator - INFO - 🏥 Тарифы КЗ: 2 регионов
+2025-07-16 18:07:31,067 - justincase_calculator - INFO - ✅ Валидация входных данных пройдена
+2025-07-16 18:07:31,067 - justincase_calculator - INFO - 🚀 Начинаем полный расчет программы 'На всякий случай'
+2025-07-16 18:07:31,067 - justincase_calculator - INFO - 📝 Входные данные: ['birthDate', 'gender', 'insuranceInfo', 'insuranceTerm', 'insuranceSum', 'insuranceFrequency', 'accidentPackage', 'criticalPackage', 'treatmentRegion', 'sportPackage', 'hasJob', 'income2021', 'income2022', 'income2023', 'scholarship', 'unsecuredLoans', 'breadwinnerStatus', 'incomeShare', 'childrenCount', 'specialCareRelatives']
+2025-07-16 18:07:31,067 - justincase_calculator - INFO - 👤 Клиент: 35 лет, male, сумма 2,000,000, срок 10 лет
+2025-07-16 18:07:31,067 - justincase_calculator - INFO - 📊 Базовая премия: возраст 35, пол male, срок 10
+2025-07-16 18:07:31,067 - justincase_calculator - INFO -    Тариф на 1000: 9.1400
+2025-07-16 18:07:31,067 - justincase_calculator - INFO -    Net-премия: 18280.00 руб.
+2025-07-16 18:07:31,067 - justincase_calculator - INFO -    Gross-премия: 28123.08 руб.
+2025-07-16 18:07:31,068 - justincase_calculator - INFO - 💥 НС премия: спорт x1.3, общая 11.18 руб.
+2025-07-16 18:07:31,068 - justincase_calculator - INFO - 🏥 КЗ премия: abroad, база 51390, итого 86753.85 руб.
+2025-07-16 18:07:31,068 - justincase_calculator - INFO - 💰 Итоговая премия: 114888.11 руб. (Ежегодно)
+2025-07-16 18:07:31,068 - justincase_calculator - INFO - ✅ Расчет программы завершен успешно
+2025-07-16 18:07:31,068 - server - INFO - 📤 POST /api/justincase/calculate -> 200
+2025-07-16 18:18:00,139 - server - INFO - 🔍 Incoming request: POST /proxy/calculator/save
