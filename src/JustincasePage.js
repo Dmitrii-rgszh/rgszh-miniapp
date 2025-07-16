@@ -179,8 +179,13 @@ const JustincasePage = () => {
   // Отправка данных на бэкенд и приём результата
   const doCalculation = async () => {
     setIsProcessing(true);
-    
+  
     try {
+      // Определяем правильный URL для API
+      const apiUrl = window.location.hostname === 'localhost' && window.location.port === '3001'
+        ? 'http://localhost:4000/api/justincase/calculate'
+        : '/api/justincase/calculate';
+    
       // Подготовка данных для расчета
       const calculationData = {
         birthDate: birthDate.toISOString().split('T')[0],
@@ -207,7 +212,7 @@ const JustincasePage = () => {
 
       console.log('📤 Отправляем данные на расчет:', calculationData);
 
-      const response = await fetch('/api/justincase/calculate', {
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(calculationData)
@@ -548,10 +553,18 @@ const JustincasePage = () => {
               Дата рождения
             </label>
             <DateWheelPicker
-              selectedDate={birthDate}
-              onDateChange={setBirthDate}
-              placeholder="Выберите дату рождения"
-            />
+              value={{
+              day: birthDate ? birthDate.getDate().toString().padStart(2, '0') : '01',
+              month: birthDate ? (birthDate.getMonth() + 1).toString().padStart(2, '0') : '01',
+              year: birthDate ? birthDate.getFullYear().toString() : new Date().getFullYear().toString()
+            }}
+            onChange={(val) => {
+              if (val?.day && val?.month && val?.year) {
+                const date = new Date(parseInt(val.year), parseInt(val.month) - 1, parseInt(val.day));
+                setBirthDate(date);
+              }
+            }}
+          />
           </div>
 
           <div style={formGroupStyle}>
