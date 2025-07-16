@@ -54,6 +54,15 @@ logging.basicConfig(
 )
 logger = logging.getLogger("server")
 
+try:
+    from justincase_calculator import JustincaseCalculator
+    justincase_calculator = JustincaseCalculator()
+    JUSTINCASE_AVAILABLE = True
+    print("✅ Калькулятор 'На всякий случай' загружен")
+except ImportError as e:
+    JUSTINCASE_AVAILABLE = False
+    print(f"❌ Калькулятор 'На всякий случай' недоступен: {e}")
+
 # ====== Flask app ======
 app = Flask(__name__, static_folder="build", static_url_path="")
 
@@ -768,6 +777,90 @@ def contact_manager():
     except Exception as e:
         logger.error(f"❌ Ошибка обработки заявки менеджера: {e}")
         return jsonify({"error": "Внутренняя ошибка сервера"}), 500
+
+# ====== JUSTINCASE ENDPOINTS ======
+
+@app.route('/api/justincase/calculate', methods=['POST'])
+def calculate_justincase():
+    """Расчет программы 'На всякий случай'"""
+    if not JUSTINCASE_AVAILABLE:
+        return jsonify({
+            'success': False,
+            'error': 'Калькулятор недоступен'
+        }), 500
+    
+    try:
+        data = request.get_json()
+        logger.info(f"🧮 Запрос расчета JustinCase от пользователя")
+        
+        if not data:
+            return jsonify({
+                'success': False,
+                'error': 'Нет данных для расчета'
+            }), 400
+        
+        # Валидация
+        if not justincase_calculator.validate_data(data):
+            return jsonify({
+                'success': False,
+                'error': 'Некорректные данные'
+            }), 400
+        
+        # Расчет
+        result = justincase_calculator.calculate_program(data)
+        
+        logger.info(f"✅ Расчет выполнен: возраст {result['clientAge']}, премия {result['annualPremium']}")
+        
+        return jsonify({
+            'success': True,
+            'results': result
+        })
+        
+    except Exception as e:
+        logger.error(f"❌ Ошибка расчета JustinCase: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@app.route('/api/justincase/test', methods=['GET'])
+def test_justincase():
+    """Тестовый расчет"""
+    if not JUSTINCASE_AVAILABLE:
+        return jsonify({
+            'success': False,
+            'error': 'Калькулятор недоступен'
+        }), 500
+    
+    try:
+        test_data = {
+            'birthDate': '1990-06-14',
+            'gender': 'male',
+            'insuranceInfo': 'yes',
+            'insuranceTerm': 5,
+            'insuranceSum': 1500000,
+            'insuranceFrequency': 'Ежегодно',
+            'accidentPackage': True,
+            'criticalPackage': True,
+            'treatmentRegion': 'russia',
+            'sportPackage': True
+        }
+        
+        result = justincase_calculator.calculate_program(test_data)
+        
+        return jsonify({
+            'success': True,
+            'message': 'Тестовый расчет выполнен',
+            'test_data': test_data,
+            'results': result
+        })
+        
+    except Exception as e:
+        logger.error(f"❌ Ошибка тестового расчета: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
 
 # ====== Static files ====== 
 # ВАЖНО: Эти маршруты должны быть ПОСЛЕДНИМИ, после всех API маршрутов
