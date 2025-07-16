@@ -8,7 +8,7 @@ from flask import Blueprint, request, jsonify, current_app
 from sqlalchemy.exc import SQLAlchemyError
 
 # Импортируем исправленный калькулятор
-from care_future_calculator_fixed import NSJCalculatorFixed
+from care_future_models import NSJCalculator
 
 # Импортируем модели
 from care_future_models import (
@@ -129,7 +129,7 @@ def calculate_insurance():
         
         # Выполняем расчет с исправленным калькулятором
         logger.info(f"🧮 Начинаем расчет с исправленным калькулятором...")
-        calculator = NSJCalculatorFixed()
+        calculator = NSJCalculator()
         result = calculator.calculate(calculation_input)
         
         # Формируем ответ
@@ -147,11 +147,11 @@ def calculate_insurance():
                 'ageAtEnd': result.age_at_end
             },
             'results': {
-                'premiumAmount': result.premium_amount,
-                'insuranceSum': result.insurance_sum,
-                'accumulatedCapital': result.accumulated_capital,
-                'programIncome': result.program_income,
-                'taxDeduction': result.tax_deduction
+              'premiumAmount': int(result.premium_amount),
+              'insuranceSum': int(result.insurance_sum),
+              'accumulatedCapital': int(result.accumulated_capital),
+              'programIncome': int(result.program_income),
+              'taxDeduction': int(result.tax_deduction)
             },
             'redemptionValues': result.redemption_values,
             'calculatedAt': datetime.now().isoformat(),
@@ -278,7 +278,7 @@ def admin_status():
     """Административный статус системы"""
     try:
         # Тест исправленного калькулятора
-        calculator = NSJCalculatorFixed()
+        calculator = NSJCalculator()
         test_input = CalculationInput(
             birth_date=date(1990, 1, 1),
             gender='male',
@@ -382,7 +382,7 @@ def get_calculations_by_email(email):
 def test_excel_logic():
     """Тестирование логики Excel с проверкой результатов"""
     try:
-        calculator = NSJCalculatorFixed()
+        calculator = NSJCalculator()
         
         # Тестовые данные из Excel (мужчина 60 лет, срок 9 лет, премия 100,000)
         test_input = CalculationInput(
@@ -484,7 +484,7 @@ def init_care_future_routes(app):
         # Проверяем готовность системы с исправленным калькулятором
         with app.app_context():
             try:
-                calculator = NSJCalculatorFixed()
+                calculator = NSJCalculator()
                 test_input = CalculationInput(
                     birth_date=date(1990, 1, 1),
                     gender='male',

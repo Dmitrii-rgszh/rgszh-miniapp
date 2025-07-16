@@ -458,6 +458,21 @@ export default function CareFuturePage() {
     }
   }, [birthParts]);
 
+  async function loadApiConfig() {
+    try {
+      const response = await fetch('/api/care-future/config');
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setApiConfig(data.config);
+          console.log('📊 Конфигурация API загружена:', data.config);
+        }
+      }
+    } catch (error) {
+      console.error('❌ Ошибка загрузки конфигурации:', error);
+    }
+  }
+
   useEffect(() => {
     loadApiConfig();
     const timer1 = setTimeout(() => setLogoAnimated(true), 100);
@@ -497,24 +512,14 @@ export default function CareFuturePage() {
     }
 
     function formatSum(str) {
-      return str.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
-    }
-
-    // ===== API ФУНКЦИИ =====
-
-    async function loadApiConfig() {
-      try {
-        const response = await fetch('/api/care-future/config');
-        if (response.ok) {
-          const data = await response.json();
-          if (data.success) {
-            setApiConfig(data.config);
-            console.log('📊 Конфигурация API загружена:', data.config);
-          }
-        }
-      } catch (error) {
-        console.error('❌ Ошибка загрузки конфигурации:', error);
-      }
+      // Убираем все нечисловые символы кроме точки и запятой (десятичные разделители)
+      const cleanStr = str.toString().replace(/[^\d.,]/g, '').replace(',', '.');
+  
+      // Преобразуем в число и округляем до целого рубля
+      const num = Math.round(parseFloat(cleanStr) || 0);
+  
+      // Форматируем с пробелами для удобства чтения
+      return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
     }
 
     async function performCalculation() {
@@ -610,10 +615,10 @@ export default function CareFuturePage() {
         const cleanAmount = parseInt(amountRaw.replace(/\s/g, ''));
         if (isNaN(cleanAmount) || cleanAmount <= 0) {
           errors.amount = 'Введите корректную сумму';
-        } else if (calcType === 'premium' && (cleanAmount < 100000 || cleanAmount > 50000000)) {
-          errors.amount = 'Взнос должен быть от 100,000 до 50,000,000 руб.';
-        } else if (calcType === 'sum' && (cleanAmount < 500000 || cleanAmount > 100000000)) {
-          errors.amount = 'Страховая сумма должна быть от 500,000 до 100,000,000 руб.';
+        } else if (calcType === 'premium' && (cleanAmount < 100000 )) {
+          errors.amount = 'Взнос должен быть от 100,000 руб.';
+        } else if (calcType === 'sum' && (cleanAmount < 670000 )) {
+          errors.amount = 'Страховая сумма должна быть от 670,000 руб.';
         }
       }
 
@@ -946,8 +951,8 @@ export default function CareFuturePage() {
               )}
               <div style={{ fontSize: '14px', color: '#999', marginTop: '5px', textAlign: 'center' }}>
                 {calcType === 'premium'
-                  ? 'Минимум: 100,000 руб., максимум: 50,000,000 руб.'
-                  : 'Минимум: 500,000 руб., максимум: 100,000,000 руб.'}
+                  ? 'Минимум: 100,000 руб.'
+                  : 'Минимум: 670,000 руб.'}
               </div>
             </div>
 
@@ -1053,21 +1058,16 @@ export default function CareFuturePage() {
               highlight: true
             },
             {
-              label: 'Смерть ЛП с отложенной выплатой',
+              label: 'Смерть ЛП (с отложенной выплатой)',
               value: `${formatSum(resultData.results.insuranceSum.toString())} руб.`
             },
             {
-              label: 'Смерть по любой причине',
+              label: 'Смерть по любой причине (выплата в моменте)',
               value: 'Возврат 100% взносов'
             },
             {
-              label: 'Инвалидность по любой причине',
+              label: 'Инвалидность(I,II) по любой причине',
               value: 'Освобождение от уплаты взносов'
-            },
-            {
-              label: 'Ежегодный взнос',
-              value: `${formatSum(resultData.results.premiumAmount.toString())} руб.`,
-              highlight: true
             }
           ]
         },

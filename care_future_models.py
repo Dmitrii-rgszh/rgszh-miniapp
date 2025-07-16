@@ -330,21 +330,21 @@ class NSJCalculator:
         
         # Коэффициенты дожития по срокам (из листа "к_Расчетчик")
         self.survival_coefficients = {
-            5: 1.34,
-            6: 1.38, 
+            5: 1.34,   # Консервативно для короткого срока
+            6: 1.38,
             7: 1.46,
             8: 1.54,
             9: 1.63,
             10: 1.73,
             11: 1.82,
-            12: 1.92,
-            13: 2.03,
-            14: 2.15,
-            15: 2.28,
-            16: 2.42,
-            17: 2.57,
-            18: 2.74,
-            19: 2.92,
+            12: 1.85,
+            13: 1.91,
+            14: 1.95,
+            15: 2.06,
+            16: 2.13,
+            17: 2.18,
+            18: 2.23,
+            19: 2.30,
             20: 2.36
         }
         
@@ -511,7 +511,7 @@ class NSJCalculator:
         if not survival_coeff:
             raise ValueError(f"Нет данных о коэффициенте дожития для срока {term}")
     
-        insurance_sum = int(premium * term * survival_coeff)
+        insurance_sum = round(premium * term * survival_coeff)
     
         self.logger.info(f"📊 Расчет страховой суммы:")
         self.logger.info(f"   Премия: {premium:,} руб.")
@@ -530,7 +530,7 @@ class NSJCalculator:
         if not survival_coeff:
             raise ValueError(f"Нет данных о коэффициенте дожития для срока {term}")
     
-        premium = int(insurance_sum / (term * survival_coeff))
+        premium = round(insurance_sum / (term * survival_coeff))
     
         self.logger.info(f"📊 Расчет премии:")
         self.logger.info(f"   Страховая сумма: {insurance_sum:,} руб.")
