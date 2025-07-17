@@ -247,3 +247,34 @@
 2025-07-17 09:37:31,965 - server - INFO - 📍 Server will run on port 4000
 2025-07-17 09:37:31,965 - server - INFO - 📍 Open http://localhost:4000/ in your browser
 2025-07-17 09:38:04,198 - server - INFO - 🔍 Incoming request: POST /proxy/calculator/save
+2025-07-17 09:40:07,872 - server - INFO - Socket.IO: running without Redis message queue
+2025-07-17 09:40:07,873 - db_saver - INFO - Использую базу данных: postgresql://postgres:secret@176.109.110.217:1112/postgres
+2025-07-17 09:40:14,425 - db_saver - INFO - Таблицы созданы (или уже существуют)
+2025-07-17 09:40:17,220 - care_future_models - INFO - БД калькулятора НСЖ инициализирована: {'survival_coefficients_count': 16, 'risk_tariffs_count': 16, 'redemption_terms_count': 16, 'available_terms': [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20], 'calculations_count': 119}
+2025-07-17 09:40:17,531 - care_future_routes_updated - INFO - ✅ Care Future routes с исправленной логикой зарегистрированы успешно
+2025-07-17 09:40:17,531 - NSJCalculator - INFO - 🧮 Начинаем расчет: from_premium, сумма: 960000, срок: 5
+2025-07-17 09:40:17,531 - NSJCalculator - INFO - 📅 Возраст на начало: 35, на окончание: 40
+2025-07-17 09:40:17,532 - NSJCalculator - INFO - 📊 Расчет страховой суммы:
+2025-07-17 09:40:17,532 - NSJCalculator - INFO -    Премия: 960,000 руб.
+2025-07-17 09:40:17,532 - NSJCalculator - INFO -    Срок: 5 лет
+2025-07-17 09:40:17,532 - NSJCalculator - INFO -    Коэффициент дожития: 1.34
+2025-07-17 09:40:17,532 - NSJCalculator - INFO -    Результат: 960000 * 5 * 1.34 = 6,432,000 руб.
+2025-07-17 09:40:17,532 - NSJCalculator - INFO - 💰 Премия: 960000, Страховая сумма: 6432000
+2025-07-17 09:40:17,532 - NSJCalculator - INFO - 📊 Кэшбэк для срока 5 лет: 0.3400
+2025-07-17 09:40:17,532 - NSJCalculator - INFO - 💰 Налоговый вычет: 19500/год × 5 лет = 97500
+2025-07-17 09:40:18,463 - NSJCalculator - INFO - 💾 Расчет сохранен в БД: c9423d75-7b83-4eb3-8737-d3ee779041ec
+2025-07-17 09:40:18,464 - NSJCalculator - INFO - ✅ Расчет завершен успешно: c9423d75-7b83-4eb3-8737-d3ee779041ec
+2025-07-17 09:40:18,464 - care_future_routes_updated - INFO - ✅ Исправленный калькулятор НСЖ готов к работе: c9423d75-7b83-4eb3-8737-d3ee779041ec
+2025-07-17 09:40:18,464 - care_future_routes_updated - INFO - 📍 Доступные endpoints:
+2025-07-17 09:40:18,464 - care_future_routes_updated - INFO -   - POST /api/care-future/calculate (исправленная логика)
+2025-07-17 09:40:18,464 - care_future_routes_updated - INFO -   - GET  /api/care-future/test-excel-logic
+2025-07-17 09:40:18,464 - care_future_routes_updated - INFO -   - GET  /api/care-future/admin/status
+2025-07-17 09:40:18,467 - server - INFO - 🚀 Starting MiniApp Server...
+2025-07-17 09:40:18,468 - server - INFO - ✅ Build folder found with 3 items
+2025-07-17 09:40:18,468 - server - INFO - 📧 Email configured: rgszh-miniapp@yandex.ru -> zerotlt@mail.ru, Polina.Iureva@rgsl.ru
+2025-07-17 09:40:18,468 - server - INFO - 📧 Additional recipient configured: Polina.Iureva@rgsl.ru
+2025-07-17 09:40:18,468 - server - INFO - 🧮 Care Future калькулятор НСЖ: ДОСТУПЕН
+2025-07-17 09:40:18,468 - server - INFO - 📍 Endpoints: /api/care-future/* и /care-future/calculate
+2025-07-17 09:40:18,469 - server - INFO - 📍 Server will run on port 4000
+2025-07-17 09:40:18,469 - server - INFO - 📍 Open http://localhost:4000/ in your browser
+2025-07-17 09:40:29,926 - server - INFO - 🔍 Incoming request: POST /proxy/calculator/save

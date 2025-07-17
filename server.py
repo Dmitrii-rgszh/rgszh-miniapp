@@ -204,6 +204,38 @@ else:
 # ===== ИНИЦИАЛИЗАЦИЯ ПОЛНОГО КАЛЬКУЛЯТОРА "НА ВСЯКИЙ СЛУЧАЙ" =====
 print("🚀 Инициализация полного калькулятора 'На всякий случай'...")
 
+if JUSTINCASE_AVAILABLE:
+    try:
+        print("  🔗 Регистрация API endpoints...")
+        route_success = register_justincase_routes(app)
+        if route_success:
+            print("  ✅ API полного калькулятора 'На всякий случай' зарегистрировано")
+            print("  📍 Доступные endpoints:")
+            print("    - POST /api/proxy/calculator/save (основной для фронтенда)")
+            print("    - POST /api/justincase/calculate (расширенный)")
+            print("    - POST /api/justincase/validate (валидация данных)")
+            print("    - POST /api/justincase/validate-sum (валидация суммы)")
+            print("    - POST /api/justincase/recommend-sum (рекомендуемая сумма)")
+            print("    - GET  /api/justincase/config (конфигурация)")
+            print("    - GET  /api/justincase/test (тестирование)")
+            print("    - GET  /api/justincase/status (статус)")
+            print("  🎯 Особенности полной версии:")
+            print("    - Актуарные таблицы из Excel (11,444+ коэффициентов)")
+            print("    - КВ коэффициенты по срокам (20%-60%)")
+            print("    - Детальные тарифы НС и КЗ")
+            print("    - Выкупные стоимости")
+            print("    - Коэффициенты рассрочки")
+            print("    - Спортивные доплаты")
+        else:
+            print("  ❌ Ошибка регистрации API полного калькулятора")
+            
+    except Exception as e:  # <-- ВОТ ЭТА СТРОКА ОТСУТСТВУЕТ!
+        print(f"  ❌ Ошибка инициализации полного калькулятора: {e}")
+        JUSTINCASE_AVAILABLE = False
+        JUSTINCASE_ERROR = str(e)
+else:
+    print(f"  ℹ️ Полный калькулятор 'На всякий случай' отключен: {JUSTINCASE_ERROR}")
+
 # ====== Email Configuration ======
 SMTP_SERVER = os.environ.get("SMTP_SERVER", "smtp.yandex.ru")
 SMTP_PORT = int(os.environ.get("SMTP_PORT", "587"))
@@ -903,161 +935,6 @@ def care_future_proxy():
             'error': 'Внутренняя ошибка сервера'
         }), 500
 
-# ====== JUSTINCASE CALCULATOR ENDPOINT ======
-
-@app.route('/api/proxy/calculator/save', methods=['POST', 'OPTIONS'])
-def justincase_calculator_save():
-    """Endpoint для калькулятора 'На всякий случай' (Justincase)"""
-    logger.info("🌐 ➜ %s %s (JUSTINCASE)", request.method, request.path)
-    
-    if request.method == "OPTIONS":
-        return '', 200
-    
-    try:
-        # Получаем данные запроса
-        data = request.get_json()
-        if not data:
-            return jsonify({
-                'success': False,
-                'error': 'Отсутствуют данные запроса'
-            }), 400
-        
-        logger.info(f"📊 Justincase расчет: {list(data.keys())}")
-        
-        # Рассчитываем возраст клиента
-        birth_date = data.get('birthDate')
-        if birth_date:
-            try:
-                birth_date_obj = datetime.strptime(birth_date, '%Y-%m-%d') if isinstance(birth_date, str) else birth_date
-                age = datetime.now().year - birth_date_obj.year
-                if datetime.now().month < birth_date_obj.month or (
-                    datetime.now().month == birth_date_obj.month and datetime.now().day < birth_date_obj.day
-                ):
-                    age -= 1
-            except:
-                age = 35  # fallback
-        else:
-            age = 35
-
-        # Получаем основные параметры
-        gender = data.get('gender', 'Мужской')
-        insurance_info = data.get('insuranceInfo', 'yes')
-        insurance_term = int(data.get('insuranceTerm', 1))
-        
-        # Базовая логика расчета
-        if insurance_info == 'yes':
-            # Клиент знает сумму страхования
-            insurance_sum = data.get('insuranceSum', '').replace('.', '').replace(' ', '')
-            if insurance_sum:
-                insurance_sum = int(insurance_sum)
-            else:
-                insurance_sum = 1000000  # минимальная сумма
-            
-            # Базовая премия (упрощенный расчет)
-            base_rate = 0.008 if gender == 'Мужской' else 0.006
-            age_factor = 1 + (age - 30) * 0.01
-            term_factor = 1 + (insurance_term - 1) * 0.05
-            
-            base_premium = int(insurance_sum * base_rate * age_factor * term_factor)
-            
-            # Дополнительные пакеты
-            accident_package = data.get('accidentPackage') == 'yes'
-            critical_package = data.get('criticalPackage') == 'yes'
-            sport_package = data.get('sportPackage') == 'yes'
-            
-            accident_premium = int(insurance_sum * 0.002) if accident_package else 0
-            critical_premium = int(60000000 * 0.005) if critical_package else 0
-            sport_premium = int(base_premium * 0.1) if sport_package else 0
-            
-            total_premium = base_premium + accident_premium + critical_premium + sport_premium
-            
-        else:
-            # Клиент не знает сумму - рассчитываем по доходам
-            income_2021 = data.get('income2021', '').replace('.', '').replace(' ', '')
-            income_2022 = data.get('income2022', '').replace('.', '').replace(' ', '')
-            income_2023 = data.get('income2023', '').replace('.', '').replace(' ', '')
-            
-            try:
-                avg_income = (int(income_2021) + int(income_2022) + int(income_2023)) / 3
-            except:
-                avg_income = 1000000  # fallback
-            
-            # Коэффициенты для расчета суммы страхования
-            breadwinner_status = data.get('breadwinnerStatus', 'no')
-            children_count = int(data.get('childrenCount', 0))
-            
-            income_multiplier = 5 if breadwinner_status == 'yes' else 3
-            children_multiplier = 1 + children_count * 0.5
-            
-            insurance_sum = int(avg_income * income_multiplier * children_multiplier)
-            
-            # Расчет премии
-            base_rate = 0.008 if gender == 'Мужской' else 0.006
-            age_factor = 1 + (age - 30) * 0.01
-            term_factor = 1 + (insurance_term - 1) * 0.05
-            
-            base_premium = int(insurance_sum * base_rate * age_factor * term_factor)
-            
-            accident_package = False
-            critical_package = False
-            sport_package = False
-            
-            accident_premium = 0
-            critical_premium = 0
-            sport_premium = 0
-            
-            total_premium = base_premium
-
-        # Форматируем числа для отображения
-        def format_number(value):
-            if not value:
-                return '0'
-            return f"{value:,}".replace(',', ' ')
-
-        # Подготавливаем результат
-        result_data = {
-            'success': True,
-            'calculationDate': datetime.now().strftime('%d.%m.%Y'),
-            'clientAge': age,
-            'clientGender': gender,
-            'insuranceTerm': insurance_term,
-            
-            # Основная программа
-            'baseInsuranceSum': format_number(insurance_sum),
-            'basePremium': format_number(base_premium),
-            
-            # Пакет НС
-            'accidentPackageIncluded': accident_package,
-            'accidentInsuranceSum': format_number(insurance_sum if accident_package else 0),
-            'accidentPremium': format_number(accident_premium),
-            
-            # Пакет КЗ
-            'criticalPackageIncluded': critical_package,
-            'criticalInsuranceSum': format_number(60000000 if critical_package else 0),
-            'criticalPremium': format_number(critical_premium),
-            
-            # Итого
-            'totalPremium': format_number(total_premium),
-            
-            # Дополнительная информация
-            'treatmentRegion': data.get('treatmentRegion', 'russia'),
-            'sportPackage': sport_package,
-            
-            # Служебная информация
-            'calculationId': str(uuid.uuid4()),
-            'calculator': 'JustincaseCalculatorSimple',
-            'version': '1.0.0'
-        }
-        
-        logger.info(f"✅ Justincase расчет завершен: премия {total_premium}")
-        return jsonify(result_data)
-        
-    except Exception as e:
-        logger.error(f"❌ Ошибка в justincase калькуляторе: {e}")
-        return jsonify({
-            'success': False,
-            'error': f'Ошибка расчета: {str(e)}'
-        }), 500
 
 # ====== EMAIL PROXY ENDPOINTS ======
 
