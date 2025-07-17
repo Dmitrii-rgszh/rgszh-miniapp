@@ -1,14 +1,8 @@
-// MainMenu.js - ОБНОВЛЕННАЯ ВЕРСИЯ БЕЗ ЛОГИКИ ФОНОВ
-// ✅ Вся логика фонов перенесена в MainApp.js
-// ✅ Применены корпоративные цвета: R:180 G:0 B:55, R:152 G:164 B:174, R:0 G:40 B:130
-// ✅ Семейство шрифтов: Segoe UI Bold для заголовков, Segoe UI Regular для текста
-// ✅ Инлайн стили как основной подход
-// ✅ Убраны импорты фонов - управление в MainApp.js
+// MainMenu.js - ВЕРСИЯ С ПОЛНЫМИ ИНЛАЙН СТИЛЯМИ
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-// УПРОЩЕННЫЕ ИМПОРТЫ - убран backgroundImage
 import logoImage from './components/logo.png';
 import piImage from './components/pi.png';
 
@@ -26,40 +20,18 @@ export default function MainMenu() {
 
   // ===== СТИЛИ =====
 
-  // Основной контейнер - БЕЗ ФОНА (фон управляется в MainApp.js)
+  // Основной контейнер
   const mainContainerStyle = {
     position: 'relative',
     width: '100%',
-    height: '100vh',
+    height: window.innerHeight + 'px',
     minHeight: '100vh',
     overflow: 'hidden',
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
-    fontFamily: '"Segoe UI", sans-serif',
-    zIndex: 2, // Поверх фона из MainApp.js
-    
-    // Адаптивность для мобильных браузеров
-    '@supports (-webkit-touch-callout: none)': {
-      height: '-webkit-fill-available',
-      minHeight: '-webkit-fill-available'
-    }
-  };
-
-  // Оверлей с корпоративным градиентом поверх фона из MainApp.js
-  const overlayStyle = {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: '100%',
-    height: '100%',
-    background: `linear-gradient(135deg, 
-      rgba(180, 0, 55, 0.1) 0%,     /* Легкий красный оверлей */
-      rgba(152, 164, 174, 0.05) 50%, /* Легкий серый оверлей */
-      rgba(0, 40, 130, 0.1) 100%     /* Легкий синий оверлей */
-    )`,
-    zIndex: 1
+    fontFamily: '"Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif'
   };
 
   // Логотип с анимацией
@@ -73,17 +45,13 @@ export default function MainMenu() {
     backgroundColor: 'rgba(255, 255, 255, 0.10)',
     backdropFilter: 'blur(8px)',
     borderRadius: '20px',
-    boxShadow: `
-      0 10px 25px rgba(0, 0, 0, 0.25),
-      0 5px 15px rgba(180, 0, 55, 0.2)
-    `,
+    boxShadow: '0 10px 25px rgba(0, 0, 0, 0.25)',
     opacity: logoAnimated && !isExiting ? 1 : 0,
     zIndex: 3,
     transition: 'all 0.8s ease-out',
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'center',
-    border: '1px solid rgba(255, 255, 255, 0.2)'
+    justifyContent: 'center'
   };
 
   const logoImageStyle = {
@@ -95,7 +63,7 @@ export default function MainMenu() {
   // Контейнер кнопок - ПОЗИЦИОНИРУЕМ ПОД ЛОГОТИПОМ
   const buttonContainerStyle = {
     position: 'absolute',
-    top: buttonsAnimated ? '300px' : '400px', // Под логотипом
+    top: buttonsAnimated ? '300px' : '400px', // Под логотипом (логотип на 110px + высота 160px + отступ 30px = 300px)
     left: '50%',
     transform: 'translateX(-50%)',
     display: 'flex',
@@ -110,98 +78,75 @@ export default function MainMenu() {
     paddingRight: '20px',
     boxSizing: 'border-box',
     opacity: buttonsAnimated ? 1 : 0,
-    transition: 'all 0.8s ease-out'
+    transition: 'all 0.8s ease-out 0.2s'
   };
 
-  // Базовый стиль кнопки с корпоративными цветами
-  const baseButtonStyle = {
-    width: '100%',
-    padding: '15px 25px',
-    fontSize: '16px',
-    fontFamily: '"Segoe UI", sans-serif',
-    fontWeight: 'bold',
+  // Стиль кнопки
+  const getButtonStyle = (index, animated) => ({
+    position: 'relative',
+    minWidth: '280px',
+    padding: '18px 36px',
+    fontSize: '18px',
+    fontFamily: '"Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif',
+    fontWeight: '600',
     color: 'white',
-    background: `linear-gradient(135deg, 
-      rgba(180, 0, 55, 0.9) 0%, 
-      rgba(153, 0, 55, 1) 100%
-    )`,
+    background: 'linear-gradient(135deg, rgba(180, 0, 55, 0.9) 0%, rgba(153, 0, 55, 0.9) 50%, rgba(0, 40, 130, 0.9) 100%)',
     border: 'none',
     borderRadius: '12px',
     cursor: 'pointer',
+    boxShadow: '0 4px 15px rgba(147, 112, 219, 0.3)',
+    transform: animated && !isExiting ? 'translateY(0)' : isExiting ? `translateY(${window.innerHeight}px)` : 'translateY(50px)',
+    opacity: animated && !isExiting ? 1 : 0,
+    transition: `all 0.8s cubic-bezier(0.34,1.56,0.64,1) ${0.3 + index * 0.1}s`,
+    overflow: 'hidden',
     textAlign: 'center',
-    textDecoration: 'none',
-    display: 'block',
-    transition: 'all 0.3s ease',
-    backdropFilter: 'blur(10px)',
-    boxShadow: `
-      0 4px 15px rgba(180, 0, 55, 0.3),
-      0 2px 8px rgba(0, 0, 0, 0.2)
-    `,
-    border: '1px solid rgba(255, 255, 255, 0.1)'
-  };
+    zIndex: 10
+  });
 
-  // Hover эффект для кнопок
-  const buttonHoverStyle = {
-    ...baseButtonStyle,
-    background: `linear-gradient(135deg, 
-      rgba(152, 164, 174, 0.9) 0%, 
-      rgba(118, 143, 146, 1) 100%
-    )`,
-    transform: 'translateY(-2px)',
-    boxShadow: `
-      0 6px 20px rgba(152, 164, 174, 0.4),
-      0 3px 10px rgba(0, 0, 0, 0.3)
-    `
-  };
-
-  // Pi элемент
-  const piStyle = {
+  // Фоновые точки
+  const dotStyle = (index) => ({
     position: 'absolute',
+    width: Math.random() * 8 + 4 + 'px',
+    height: Math.random() * 8 + 4 + 'px',
+    borderRadius: '50%',
+    background: `rgba(${152 + Math.random() * 28}, ${164 + Math.random() * 20}, ${174 + Math.random() * 20}, ${0.3 + Math.random() * 0.4})`,
+    zIndex: 2,
+    animation: `dotPulse${(index % 3) + 1} ${3 + Math.random() * 4}s infinite`,
+    ...(index === 1 && { top: '15%', left: '10%' }),
+    ...(index === 2 && { top: '25%', right: '15%' }),
+    ...(index === 3 && { bottom: '30%', left: '8%' }),
+    ...(index === 4 && { top: '50%', left: '20%' }),
+    ...(index === 5 && { bottom: '15%', right: '12%' }),
+    ...(index === 6 && { top: '35%', right: '8%' }),
+    ...(index === 7 && { top: '45%', left: '5%' }),
+    ...(index === 8 && { bottom: '5%', right: '30%' }),
+    ...(index === 9 && { top: '60%', right: '25%' }),
+    ...(index === 10 && { bottom: '40%', left: '30%' })
+  });
+
+  // Pi элемент с космической анимацией
+  const piWrapperStyle = {
+    position: 'absolute',
+    top: '0',
+    left: '0',
+    zIndex: 2,
+    opacity: 0.4,
+    animation: `piFloatAround ${moveDuration} ease-in-out infinite`
+  };
+
+  const piImageStyle = {
     width: '40px',
     height: '40px',
-    opacity: 0.4,
-    zIndex: 2,
-    animation: `piMove ${moveDuration} linear infinite, piRotate ${rotateDuration} linear infinite`
+    opacity: 0.8,
+    animation: `piRotate ${rotateDuration} linear infinite`
   };
 
-  // ===== АНИМАЦИИ =====
+  // ===== ЛОГИКА =====
 
-  // CSS-в-JS для анимации Pi
-  const keyframesStyle = `
-    @keyframes piMove {
-      0% { top: 100%; left: -50px; }
-      25% { top: -50px; left: 25%; }
-      50% { top: 100%; left: 50%; }
-      75% { top: -50px; left: 75%; }
-      100% { top: 100%; left: calc(100% + 50px); }
-    }
-    
-    @keyframes piRotate {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
-  `;
-
-  // Добавляем анимации в head
   useEffect(() => {
-    const styleId = 'mainmenu-animations';
-    if (!document.getElementById(styleId)) {
-      const style = document.createElement('style');
-      style.id = styleId;
-      style.textContent = keyframesStyle;
-      document.head.appendChild(style);
-    }
-  }, []);
-
-  // Последовательные анимации
-  useEffect(() => {
-    const logoTimer = setTimeout(() => {
-      setLogoAnimated(true);
-    }, 300);
-
-    const buttonsTimer = setTimeout(() => {
-      setButtonsAnimated(true);
-    }, 800);
+    // Запускаем анимации появления
+    const logoTimer = setTimeout(() => setLogoAnimated(true), 100);
+    const buttonsTimer = setTimeout(() => setButtonsAnimated(true), 900);
 
     return () => {
       clearTimeout(logoTimer);
@@ -209,83 +154,170 @@ export default function MainMenu() {
     };
   }, []);
 
-  // Навигация с анимацией выхода
-  const handleNavigation = (path) => {
+  // Обработчик клика с риппл-эффектом и анимацией выхода
+  const handleClick = (e, route) => {
+    const btn = e.currentTarget;
+    
+    // Риппл-эффект
+    const circle = document.createElement('span');
+    const diameter = Math.max(btn.clientWidth, btn.clientHeight);
+    const radius = diameter / 2;
+    
+    circle.style.cssText = `
+      position: absolute;
+      width: ${diameter}px;
+      height: ${diameter}px;
+      left: ${e.clientX - btn.offsetLeft - radius}px;
+      top: ${e.clientY - btn.offsetTop - radius}px;
+      background: rgba(255, 255, 255, 0.6);
+      border-radius: 50%;
+      transform: scale(0);
+      animation: ripple 0.6s linear;
+      pointer-events: none;
+    `;
+    
+    // Удаляем предыдущий риппл
+    const oldRipple = btn.querySelector('.ripple');
+    if (oldRipple) oldRipple.remove();
+    
+    circle.className = 'ripple';
+    btn.appendChild(circle);
+
+    // Запускаем анимацию выхода
     setIsExiting(true);
-    setTimeout(() => {
-      navigate(path);
-    }, 500);
+
+    // Переходим на новую страницу
+    setTimeout(() => navigate(route), 1000);
   };
+
+  // Кнопки меню - ТОЛЬКО 2 КНОПКИ
+  const buttons = [
+    { to: '/polls', label: 'Опросы' },
+    { to: '/employee', label: 'Сотрудники' }
+  ];
+
+  // ===== РЕНДЕРИНГ =====
+
+  // CSS анимации
+  const animations = (
+    <style>
+      {`
+        @keyframes piRotate {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes piFloatAround {
+          0% { 
+            transform: translate(20px, 20px); 
+          }
+          25% { 
+            transform: translate(calc(100vw - 60px), 30px); 
+          }
+          50% { 
+            transform: translate(calc(100vw - 50px), calc(100vh - 70px)); 
+          }
+          75% { 
+            transform: translate(30px, calc(100vh - 60px)); 
+          }
+          100% { 
+            transform: translate(20px, 20px); 
+          }
+        }
+
+        @keyframes ripple {
+          to {
+            transform: scale(4);
+            opacity: 0;
+          }
+        }
+
+        @keyframes dotPulse1 {
+          0%, 100% { opacity: 0.2; transform: scale(1); }
+          50% { opacity: 0.6; transform: scale(1.5); }
+        }
+        @keyframes dotPulse2 {
+          0%, 100% { opacity: 0.3; transform: scale(1); }
+          50% { opacity: 0.7; transform: scale(1.3); }
+        }
+        @keyframes dotPulse3 {
+          0%, 100% { opacity: 0.1; transform: scale(1); }
+          50% { opacity: 0.5; transform: scale(1.8); }
+        }
+
+        /* Hover эффекты для кнопок */
+        .menu-button:hover {
+          transform: translateY(-3px) !important;
+          box-shadow: 0 8px 25px rgba(180, 0, 55, 0.4) !important;
+        }
+
+        .menu-button:active {
+          transform: translateY(0) scale(0.98) !important;
+        }
+
+        .menu-button:focus {
+          outline: none;
+          box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+        }
+
+        /* Адаптивность */
+        @media (max-width: 768px) {
+          .menu-button {
+            min-width: 260px !important;
+            padding: 16px 32px !important;
+            font-size: 16px !important;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .menu-button {
+            min-width: 240px !important;
+            padding: 14px 28px !important;
+            font-size: 15px !important;
+          }
+        }
+      `}
+    </style>
+  );
 
   return (
     <div style={mainContainerStyle}>
-      {/* Оверлей поверх фона из MainApp.js */}
-      <div style={overlayStyle} />
+      {animations}
 
       {/* Логотип */}
       <div style={logoStyle}>
-        <img src={logoImage} alt="Логотип" style={logoImageStyle} />
+        <img
+          src={logoImage}
+          alt="Логотип РГС Жизнь"
+          style={logoImageStyle}
+        />
       </div>
 
-      {/* Контейнер кнопок */}
+      {/* Кнопки меню */}
       <div style={buttonContainerStyle}>
-        <button
-          style={baseButtonStyle}
-          onClick={() => handleNavigation('/polls')}
-          onMouseEnter={(e) => Object.assign(e.target.style, buttonHoverStyle)}
-          onMouseLeave={(e) => Object.assign(e.target.style, baseButtonStyle)}
-        >
-          📊 Опросы
-        </button>
-
-        <button
-          style={baseButtonStyle}
-          onClick={() => handleNavigation('/snp')}
-          onMouseEnter={(e) => Object.assign(e.target.style, buttonHoverStyle)}
-          onMouseLeave={(e) => Object.assign(e.target.style, baseButtonStyle)}
-        >
-          🎯 SNP Анализ
-        </button>
-
-        <button
-          style={baseButtonStyle}
-          onClick={() => handleNavigation('/employee')}
-          onMouseEnter={(e) => Object.assign(e.target.style, buttonHoverStyle)}
-          onMouseLeave={(e) => Object.assign(e.target.style, baseButtonStyle)}
-        >
-          👥 Сотрудники
-        </button>
-
-        <button
-          style={baseButtonStyle}
-          onClick={() => handleNavigation('/assessment')}
-          onMouseEnter={(e) => Object.assign(e.target.style, buttonHoverStyle)}
-          onMouseLeave={(e) => Object.assign(e.target.style, baseButtonStyle)}
-        >
-          📝 Оценка
-        </button>
-
-        <button
-          style={baseButtonStyle}
-          onClick={() => handleNavigation('/carefuture')}
-          onMouseEnter={(e) => Object.assign(e.target.style, buttonHoverStyle)}
-          onMouseLeave={(e) => Object.assign(e.target.style, baseButtonStyle)}
-        >
-          💼 НСЖ Калькулятор
-        </button>
-
-        <button
-          style={baseButtonStyle}
-          onClick={() => handleNavigation('/marzapoll')}
-          onMouseEnter={(e) => Object.assign(e.target.style, buttonHoverStyle)}
-          onMouseLeave={(e) => Object.assign(e.target.style, baseButtonStyle)}
-        >
-          💰 Маржа Опрос
-        </button>
+        {buttons.map((btn, index) => (
+          <button
+            key={btn.to}
+            className="menu-button"
+            style={getButtonStyle(index, buttonsAnimated)}
+            onClick={(e) => handleClick(e, btn.to)}
+            onMouseEnter={(e) => {
+              if (!isExiting) {
+                e.currentTarget.style.transform = 'translateY(-3px)';
+                e.currentTarget.style.boxShadow = '0 8px 25px rgba(180, 0, 55, 0.4)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!isExiting) {
+                e.currentTarget.style.transform = buttonsAnimated ? 'translateY(0)' : 'translateY(50px)';
+                e.currentTarget.style.boxShadow = '0 4px 15px rgba(147, 112, 219, 0.3)';
+              }
+            }}
+          >
+            {btn.label}
+          </button>
+        ))}
       </div>
-
-      {/* Pi элемент */}
-      <img src={piImage} alt="Pi" style={piStyle} />
     </div>
   );
 }
