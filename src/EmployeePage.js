@@ -26,7 +26,6 @@ const EmployeePage = () => {
     width: '100%',
     height: window.innerHeight + 'px',
     minHeight: '100vh',
-    backgroundImage: `url(${backgroundImage})`,
     backgroundSize: 'cover',
     backgroundPosition: 'center',
     backgroundRepeat: 'no-repeat',

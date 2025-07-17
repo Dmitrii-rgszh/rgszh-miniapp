@@ -222,7 +222,7 @@ export default function SNPPage() {
   // ===== Экран «Выполняется расчёт…» =====
   if (isProcessing) {
     return (
-      <div className="processing-screen" style={{ backgroundImage: `url(${backgroundImage})` }}>
+      <div className="processing-screen">
         <div className="logo-wrapper animate-logo">
           <img className="poll-logo" src={logoImage} alt="Логотип" />
         </div>
@@ -237,7 +237,7 @@ export default function SNPPage() {
   // ===== Экран «Отправляется запрос менеджеру…» =====
   if (contactSending) {
     return (
-      <div className="processing-screen" style={{ backgroundImage: `url(${backgroundImage})` }}>
+      <div className="processing-screen">
         <div className="logo-wrapper animate-logo">
           <img className="poll-logo" src={logoImage} alt="Логотип" />
         </div>
@@ -253,7 +253,7 @@ export default function SNPPage() {
   if (contactSent) {
     const fullName = `${lastName.trim()} ${firstName.trim()} ${middleName.trim()}`;
     return (
-      <div className="processing-screen" style={{ backgroundImage: `url(${backgroundImage})` }}>
+      <div className="processing-screen">
         <div className="logo-wrapper animate-logo">
           <img className="poll-logo" src={logoImage} alt="Логотип" />
         </div>
@@ -294,7 +294,7 @@ export default function SNPPage() {
     // ===== Если contactMode=true, показываем форму «Введите Ваши данные» =====
     if (contactMode) {
       return (
-        <div className="snp-container" style={{ backgroundImage: `url(${backgroundImage})` }}>
+        <div className="snp-container">
           <div className="polls-header">
             <button className="back-btn" onClick={goHome}>
               <svg viewBox="0 0 24 24">
@@ -363,7 +363,7 @@ export default function SNPPage() {
 
     // ===== Иначе (contactMode=false) — показываем результаты + карусель =====
     return (
-      <div className="snp-container" style={{ backgroundImage: `url(${backgroundImage})` }}>
+      <div className="snp-container">
         <div className="polls-header">
           <button className="back-btn" onClick={goHome}>
             <svg viewBox="0 0 24 24">
@@ -492,7 +492,7 @@ export default function SNPPage() {
 
   // ===== ОСНОВНОЙ UI (Шаг 1 и Шаг 2) =====
   return (
-    <div className="snp-container" style={{ backgroundImage:`url(${backgroundImage})` }}>
+    <div className="snp-container">
       <div className="polls-header">
         <button className="back-btn" onClick={goHome}>
           <svg viewBox="0 0 24 24">

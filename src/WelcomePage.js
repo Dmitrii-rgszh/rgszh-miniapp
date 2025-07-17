@@ -40,16 +40,6 @@ const WelcomePage = () => {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // Массив фонов - ВРЕМЕННО используем один файл (до создания остальных)
-  // Замени на: [backgroundImage1, backgroundImage2, backgroundImage3] когда создашь файлы
-  const backgrounds = [
-    backgroundImage,
-    backgroundImage,
-    backgroundImage
-  ];
-
-  // ===== СОВРЕМЕННЫЕ СТИЛИ =====
-
   // Главный контейнер с улучшенной адаптивностью
   const containerStyle = {
     position: 'relative',
@@ -268,7 +258,7 @@ const WelcomePage = () => {
       scale: 1,
       transition: { 
         duration: 0.8, 
-        ease: [0.6, 0.01, -0.05, 0.95] 
+        ease: [0.6, 0.01, 0.05, 0.95] 
       }
     },
     exit: { 
@@ -277,7 +267,7 @@ const WelcomePage = () => {
       y: -50,
       transition: { 
         duration: 0.6,
-        ease: [0.6, 0.01, -0.05, 0.95] 
+        ease: [0.6, 0.01, 0.05, 0.95] 
       }
     }
   };
@@ -369,10 +359,6 @@ const WelcomePage = () => {
         <AnimatePresence mode="wait">
           <motion.div
             key={currentBgIndex}
-            style={{
-              ...backgroundStyle,
-              backgroundImage: `url(${backgrounds[currentBgIndex]})`
-            }}
             initial={{ opacity: 0, scale: 1.05 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}

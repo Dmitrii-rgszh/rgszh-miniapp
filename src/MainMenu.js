@@ -24,7 +24,6 @@ export default function MainMenu() {
     width: '100%',
     height: window.innerHeight + 'px',
     minHeight: '100vh',
-    backgroundImage: `url(${backgroundImage})`,
     backgroundSize: 'cover',
     backgroundPosition: 'center',
     backgroundRepeat: 'no-repeat',
@@ -313,19 +312,6 @@ export default function MainMenu() {
   return (
     <div style={mainContainerStyle}>
       {animations}
-
-      {/* Фоновые точки с пульсирующими анимациями */}
-      {[1,2,3,4,5,6,7,8,9,10].map(n => (
-        <div key={n} style={dotStyle(n)} />
-      ))}
-
-      {/* Pi элемент с космической анимацией */}
-      <div style={piWrapperStyle}>
-        <img src={piImage} style={piImageStyle} alt="Pi" />
-      </div>
-
-      {/* Оверлей */}
-      <div style={overlayStyle} />
 
       {/* Логотип */}
       <div style={logoStyle}>

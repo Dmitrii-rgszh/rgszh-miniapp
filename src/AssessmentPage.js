@@ -331,8 +331,6 @@ export default function AssessmentPage() {
     width: '100%',
     height: `${containerHeight}px`,
     minHeight: `${containerHeight}px`,
-    // ТОЧНО ТАКАЯ ЖЕ ЦВЕТОВАЯ ГАММА КАК В WELCOMEPAGE
-    backgroundImage: `url(${backgroundImage})`,
     backgroundSize: 'cover',
     backgroundPosition: 'center',
     backgroundRepeat: 'no-repeat',

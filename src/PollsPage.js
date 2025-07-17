@@ -125,37 +125,11 @@ export default function PollsPage() {
       <div
         className="mainmenu-container"
         style={{ 
-          backgroundImage: `url(${backgroundImage})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat'
         }}
       >
-        {/* Оверлей с точно таким же градиентом как в MainMenu */}
-        <div style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          background: 'linear-gradient(135deg, rgba(147, 39, 143, 0.85) 0%, rgba(71, 125, 191, 0.85) 100%)',
-          zIndex: 1
-        }} />
-        {/* π-иконка в фоне, плывёт и покачивается */}
-        <div
-          className="pi-wrapper"
-          style={{ '--pi-move-duration': moveDuration }}
-        >
-          <img
-            src={piImage}
-            className="pi-fly"
-            alt="Pi"
-            style={{ '--pi-rotate-duration': rotateDuration }}
-          />
-        </div>
-
-        <div className="mainmenu-overlay" />
-
         {/* Логотип (появляется плавным «скольжением вниз» и скрывается при exit) */}
         <div className={logoClass}>
           <img

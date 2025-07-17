@@ -14,8 +14,6 @@ import FeedbackPage    from './FeedbackPage';
 import JustincasePage  from './JustincasePage';
 import CareFuturePage  from './CareFuturePage';
 import MarzaPollPage   from './MarzaPollPage';
-import ThankYouPage    from './ThankYouPage';
-
 class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
@@ -288,7 +286,6 @@ function MainApp() {
               <Route path="/justincase" element={<JustincasePage />} />
               <Route path="/carefuture" element={<CareFuturePage />} />
               <Route path="/marzapoll"  element={<MarzaPollPage />} />
-              <Route path="/thankyou"   element={<ThankYouPage />} />
             </Routes>
           </Router>
         </div>

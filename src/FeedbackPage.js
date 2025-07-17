@@ -824,27 +824,10 @@ useEffect(() => {
       <div
         className="mainmenu-container feedback-container"
         style={{ 
-          backgroundImage: `url(${backgroundImage})`,
-          // ИЗМЕНЕНО: Safari-совместимая высота
           height: isSafari() ? `${getViewportHeight()}px` : '100vh',
           minHeight: '100vh'
         }}
       >
-        {/* фоновые точки и π */}
-        <div className="subtle-dot dot-1" />
-        <div className="subtle-dot dot-2" />
-        <div className="subtle-dot dot-3" />
-        <div className="subtle-dot dot-4" />
-        <div className="subtle-dot dot-5" />
-        <div className="subtle-dot dot-6" />
-        <div className="subtle-dot dot-7" />
-        <div className="subtle-dot dot-8" />
-        <div className="subtle-dot dot-9" />
-        <div className="subtle-dot dot-10" />
-        <div className="pi-wrapper">
-          <img src={piImage} className="pi-fly" alt="Pi" />
-        </div>
-        <div className="mainmenu-overlay" />
 
         {/* Логотип (анимация «въезда») */}
         <div ref={logoRef} className="logo-wrapper animate-logo">
@@ -865,28 +848,10 @@ useEffect(() => {
     <div
       className="mainmenu-container feedback-container"
       style={{ 
-        backgroundImage: `url(${backgroundImage})`,
-        // ИЗМЕНЕНО: Safari-совместимая высота
         height: isSafari() ? `${getViewportHeight()}px` : '100vh',
         minHeight: '100vh'
       }}
     >
-      {/* Фоновые точки, Pi, overlay */}
-      <div className="subtle-dot dot-1" />
-      <div className="subtle-dot dot-2" />
-      <div className="subtle-dot dot-3" />
-      <div className="subtle-dot dot-4" />
-      <div className="subtle-dot dot-5" />
-      <div className="subtle-dot dot-6" />
-      <div className="subtle-dot dot-7" />
-      <div className="subtle-dot dot-8" />
-      <div className="subtle-dot dot-9" />
-      <div className="subtle-dot dot-10" />
-      <div className="pi-wrapper">
-        <img src={piImage} className="pi-fly" alt="Pi" />
-      </div>
-      <div className="mainmenu-overlay" />
-
       {/* Логотип */}
       <div ref={logoRef} className="logo-wrapper">
         <img src={logoImage} alt="Логотип" className="logo-image" />

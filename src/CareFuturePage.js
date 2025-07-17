@@ -571,7 +571,7 @@ export default function CareFuturePage() {
         }
       }
 
-      setValidationErrors(errors);вщслук
+      setValidationErrors(errors);
       if (Object.keys(errors).length > 0) return;
 
       setStage('processing');
@@ -683,28 +683,6 @@ export default function CareFuturePage() {
     if (stage === 'email') {
       return (
         <div style={mainContainerStyle} className="care-future-container-fix">
-
-          {/* ДОБАВЬТЕ ЭТУ СТРОКУ */}
-          <div style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            zIndex: -1
-          }} />
-          {animations}
-
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => (
-            <div key={n} style={dotStyle(n)} />
-          ))}
-
-          <div style={piWrapperStyle}>
-            <img src={piImage} style={piImageStyle} alt="Pi" />
-          </div>
-
-
           {(stage === 'email' || stage === 'result') && (
             <div style={logoStyle}>
               <img src={logoImage} alt="Логотип РГС Жизнь" style={logoImageStyle} />
@@ -743,27 +721,6 @@ export default function CareFuturePage() {
     if (stage === 'form') {
       return (
         <div style={mainContainerStyle} className="care-future-container-fix">
-
-          {/* ДОБАВЬТЕ ЭТУ СТРОКУ */}
-          <div style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            zIndex: -1
-          }} />
-          {animations}
-
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => (
-            <div key={n} style={dotStyle(n)} />
-          ))}
-
-          <div style={piWrapperStyle}>
-            <img src={piImage} style={piImageStyle} alt="Pi" />
-          </div>
-
           <div style={formContainerStyle}>
             <h2 style={formTitleStyle}>Параметры расчета</h2>
 
@@ -926,27 +883,6 @@ export default function CareFuturePage() {
     if (stage === 'processing') {
       return (
         <div style={mainContainerStyle} className="care-future-container-fix">
-
-          {/* ДОБАВЬТЕ ЭТУ СТРОКУ */}
-          <div style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            zIndex: -1
-          }} />
-          {animations}
-
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => (
-            <div key={n} style={dotStyle(n)} />
-          ))}
-
-          <div style={piWrapperStyle}>
-            <img src={piImage} style={piImageStyle} alt="Pi" />
-          </div>
-
           <div style={logoStyle}>
             <img src={logoImage} alt="Логотип РГС Жизнь" style={logoImageStyle} />
           </div>
@@ -1095,27 +1031,6 @@ export default function CareFuturePage() {
       */
       return (
         <div style={mainContainerStyle} className="care-future-container-fix">
-
-          {/* ДОБАВЬТЕ ЭТУ СТРОКУ */}
-          <div style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            zIndex: -1
-          }} />
-          {animations}
-
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => (
-            <div key={n} style={dotStyle(n)} />
-          ))}
-
-          <div style={piWrapperStyle}>
-            <img src={piImage} style={piImageStyle} alt="Pi" />
-          </div>
-
           <div style={logoStyle}>
             <img src={logoImage} alt="Логотип РГС Жизнь" style={logoImageStyle} />
           </div>
@@ -1292,27 +1207,6 @@ export default function CareFuturePage() {
     if (stage === 'manager') {
       return (
         <div style={mainContainerStyle} className="care-future-container-fix">
-
-          {/* ДОБАВЬТЕ ЭТУ СТРОКУ */}
-          <div style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            zIndex: -1
-          }} />
-          {animations}
-
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => (
-            <div key={n} style={dotStyle(n)} />
-          ))}
-
-          <div style={piWrapperStyle}>
-            <img src={piImage} style={piImageStyle} alt="Pi" />
-          </div>
-
           {(stage === 'email' || stage === 'result' || stage === 'manager' || stage === 'manager-sent') && (
             <div style={logoStyle}>
               <img src={logoImage} alt="Логотип РГС Жизнь" style={logoImageStyle} />
@@ -1378,26 +1272,6 @@ export default function CareFuturePage() {
     if (stage === 'manager-sent') {
       return (
         <div style={mainContainerStyle} className="care-future-container-fix">
-          {/* ДОБАВЬТЕ ЭТУ СТРОКУ */}
-          <div style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            zIndex: -1
-          }} />
-          {animations}
-
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => (
-            <div key={n} style={dotStyle(n)} />
-          ))}
-
-          <div style={piWrapperStyle}>
-            <img src={piImage} style={piImageStyle} alt="Pi" />
-          </div>
-
           {(stage === 'email' || stage === 'result' || stage === 'manager-sent') && (
             <div style={logoStyle}>
               <img src={logoImage} alt="Логотип РГС Жизнь" style={logoImageStyle} />

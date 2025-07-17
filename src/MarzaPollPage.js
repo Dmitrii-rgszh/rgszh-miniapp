@@ -33,7 +33,6 @@ export default function MarzaPollPage() {
     position: 'relative',
     width: '100%',
     height: '100vh',
-    backgroundImage: `url(${backgroundImage})`,
     backgroundSize: 'cover',
     backgroundPosition: 'center',
     backgroundRepeat: 'no-repeat',
@@ -515,16 +514,6 @@ export default function MarzaPollPage() {
         background: isConnected ? '#4caf50' : '#ff9800' // Оранжевый вместо красного для fallback режима
       }}>
         {socketRef.current?.connected ? '🟢 Online' : '🟡 Offline'}
-      </div>
-
-      {/* Плавающие точки */}
-      {[1,2,3,4,5,6,7,8,9,10].map(n => (
-        <div key={n} style={dotStyle(n)} />
-      ))}
-
-      {/* π-символ */}
-      <div style={piWrapperStyle}>
-        <img src={piImage} style={piImageStyle} alt="π" />
       </div>
 
       {/* Основной контент */}

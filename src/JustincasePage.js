@@ -1100,16 +1100,6 @@ const JustincasePage = () => {
 
   return (
     <div style={mainContainerStyle} className={isExiting ? 'exiting' : ''}>
-      {/* Фоновые элементы */}
-      {[...Array(10)].map((_, index) => (
-        <div key={index} style={dotStyle(index + 1)} />
-      ))}
-
-      {/* Pi элемент */}
-      <div style={piWrapperStyle}>
-        <img src={piImage} alt="Pi" style={piImageStyle} />
-      </div>
-
       {/* Логотип */}
       <div style={logoContainerStyle}>
         <img src={logoImage} alt="Logo" style={logoImageStyle} />
