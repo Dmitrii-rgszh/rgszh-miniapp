@@ -382,3 +382,63 @@
 2025-07-17 10:04:55,558 - server - INFO - 📤 GET /api/proxy/calculator/save -> 404
 2025-07-17 10:04:55,558 - server - WARNING -    ⚠️ Error response: 404 NOT FOUND
 2025-07-17 10:04:55,808 - server - INFO - 🔍 Incoming request: GET /favicon.ico
+2025-07-17 10:08:56,464 - server - INFO - Socket.IO: running without Redis message queue
+2025-07-17 10:08:56,465 - db_saver - INFO - Использую базу данных: postgresql://postgres:secret@176.109.110.217:1112/postgres
+2025-07-17 10:09:03,120 - db_saver - INFO - Таблицы созданы (или уже существуют)
+2025-07-17 10:09:05,959 - care_future_models - INFO - БД калькулятора НСЖ инициализирована: {'survival_coefficients_count': 16, 'risk_tariffs_count': 16, 'redemption_terms_count': 16, 'available_terms': [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20], 'calculations_count': 121}
+2025-07-17 10:09:06,276 - care_future_routes_updated - INFO - ✅ Care Future routes с исправленной логикой зарегистрированы успешно
+2025-07-17 10:09:06,276 - NSJCalculator - INFO - 🧮 Начинаем расчет: from_premium, сумма: 960000, срок: 5
+2025-07-17 10:09:06,276 - NSJCalculator - INFO - 📅 Возраст на начало: 35, на окончание: 40
+2025-07-17 10:09:06,276 - NSJCalculator - INFO - 📊 Расчет страховой суммы:
+2025-07-17 10:09:06,276 - NSJCalculator - INFO -    Премия: 960,000 руб.
+2025-07-17 10:09:06,276 - NSJCalculator - INFO -    Срок: 5 лет
+2025-07-17 10:09:06,276 - NSJCalculator - INFO -    Коэффициент дожития: 1.34
+2025-07-17 10:09:06,276 - NSJCalculator - INFO -    Результат: 960000 * 5 * 1.34 = 6,432,000 руб.
+2025-07-17 10:09:06,276 - NSJCalculator - INFO - 💰 Премия: 960000, Страховая сумма: 6432000
+2025-07-17 10:09:06,277 - NSJCalculator - INFO - 📊 Кэшбэк для срока 5 лет: 0.3400
+2025-07-17 10:09:06,277 - NSJCalculator - INFO - 💰 Налоговый вычет: 19500/год × 5 лет = 97500
+2025-07-17 10:09:07,225 - NSJCalculator - INFO - 💾 Расчет сохранен в БД: e891e7d7-601c-41dc-b1a6-d13473aaadb3
+2025-07-17 10:09:07,225 - NSJCalculator - INFO - ✅ Расчет завершен успешно: e891e7d7-601c-41dc-b1a6-d13473aaadb3
+2025-07-17 10:09:07,225 - care_future_routes_updated - INFO - ✅ Исправленный калькулятор НСЖ готов к работе: e891e7d7-601c-41dc-b1a6-d13473aaadb3
+2025-07-17 10:09:07,225 - care_future_routes_updated - INFO - 📍 Доступные endpoints:
+2025-07-17 10:09:07,225 - care_future_routes_updated - INFO -   - POST /api/care-future/calculate (исправленная логика)
+2025-07-17 10:09:07,225 - care_future_routes_updated - INFO -   - GET  /api/care-future/test-excel-logic
+2025-07-17 10:09:07,226 - care_future_routes_updated - INFO -   - GET  /api/care-future/admin/status
+2025-07-17 10:09:07,228 - justincase_routes - INFO - ✅ Маршруты полного калькулятора 'На всякий случай' зарегистрированы
+2025-07-17 10:09:07,228 - justincase_calculator - INFO - 🚀 Инициализация полного калькулятора 'На всякий случай'
+2025-07-17 10:09:07,228 - justincase_calculator - INFO - ✅ Все коэффициенты и таблицы загружены
+2025-07-17 10:09:07,228 - justincase_calculator - INFO - 📊 Актуарные таблицы: 15 возрастов мужчин, 15 возрастов женщин
+2025-07-17 10:09:07,228 - justincase_calculator - INFO - ⚙️ КВ коэффициенты: 30 сроков
+2025-07-17 10:09:07,228 - justincase_calculator - INFO - 🎯 Тарифы НС: 4 видов
+2025-07-17 10:09:07,228 - justincase_calculator - INFO - 🏥 Тарифы КЗ: 2 регионов
+2025-07-17 10:09:07,230 - justincase_calculator - INFO - ✅ Валидация входных данных пройдена
+2025-07-17 10:09:07,230 - justincase_calculator - INFO - 🚀 Начинаем полный расчет программы 'На всякий случай'
+2025-07-17 10:09:07,230 - justincase_calculator - INFO - 📝 Входные данные: ['birthDate', 'gender', 'insuranceInfo', 'insuranceTerm', 'insuranceSum']
+2025-07-17 10:09:07,230 - justincase_calculator - INFO - 👤 Клиент: 35 лет, male, сумма 1,000,000, срок 5 лет
+2025-07-17 10:09:07,230 - justincase_calculator - INFO - 📊 Базовая премия: возраст 35, пол male, срок 5
+2025-07-17 10:09:07,230 - justincase_calculator - INFO -    Тариф на 1000: 8.5620
+2025-07-17 10:09:07,230 - justincase_calculator - INFO -    Net-премия: 8562.00 руб.
+2025-07-17 10:09:07,230 - justincase_calculator - INFO -    Gross-премия: 13172.31 руб.
+2025-07-17 10:09:07,231 - justincase_calculator - INFO - 💰 Итоговая премия: 13172.31 руб. (Ежегодно)
+2025-07-17 10:09:07,231 - justincase_calculator - INFO - ✅ Расчет программы завершен успешно
+2025-07-17 10:09:07,231 - justincase_routes - INFO - ✅ Полный калькулятор готов: тест-премия 13,172.31 руб.
+2025-07-17 10:09:07,231 - justincase_routes - INFO - 📍 Доступные endpoints:
+2025-07-17 10:09:07,231 - justincase_routes - INFO -   - POST /api/proxy/calculator/save (основной, для фронтенда)
+2025-07-17 10:09:07,231 - justincase_routes - INFO -   - POST /api/justincase/calculate (расширенный)
+2025-07-17 10:09:07,231 - justincase_routes - INFO -   - POST /api/justincase/validate (валидация)
+2025-07-17 10:09:07,231 - justincase_routes - INFO -   - POST /api/justincase/validate-sum (валидация суммы)
+2025-07-17 10:09:07,231 - justincase_routes - INFO -   - POST /api/justincase/recommend-sum (рекомендуемая сумма)
+2025-07-17 10:09:07,231 - justincase_routes - INFO -   - GET  /api/justincase/config (конфигурация)
+2025-07-17 10:09:07,231 - justincase_routes - INFO -   - GET  /api/justincase/test (тестирование)
+2025-07-17 10:09:07,231 - justincase_routes - INFO -   - GET  /api/justincase/status (статус)
+2025-07-17 10:09:07,235 - server - INFO - 🚀 Starting MiniApp Server...
+2025-07-17 10:09:07,236 - server - INFO - ✅ Build folder found with 3 items
+2025-07-17 10:09:07,236 - server - INFO - 📧 Email configured: rgszh-miniapp@yandex.ru -> zerotlt@mail.ru, Polina.Iureva@rgsl.ru
+2025-07-17 10:09:07,236 - server - INFO - 📧 Additional recipient configured: Polina.Iureva@rgsl.ru
+2025-07-17 10:09:07,236 - server - INFO - 🧮 Care Future калькулятор НСЖ: ДОСТУПЕН
+2025-07-17 10:09:07,236 - server - INFO - 📍 Endpoints: /api/care-future/* и /care-future/calculate
+2025-07-17 10:09:07,238 - server - INFO - 📍 Server will run on port 4000
+2025-07-17 10:09:07,238 - server - INFO - 📍 Open http://localhost:4000/ in your browser
+2025-07-17 10:09:18,489 - server - INFO - 📨 GET /api/proxy/calculator/save - 127.0.0.1
+2025-07-17 10:09:18,489 - server - INFO - 📤 GET /api/proxy/calculator/save -> 404
+2025-07-17 10:09:18,490 - server - WARNING -    ⚠️ Error response: 404 NOT FOUND
