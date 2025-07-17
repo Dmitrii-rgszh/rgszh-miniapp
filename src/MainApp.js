@@ -1,12 +1,17 @@
-import React, { useEffect, useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+// MainApp.js - ЦЕНТРАЛИЗОВАННОЕ УПРАВЛЕНИЕ ФОНАМИ
+// ✅ Вся логика фонов в одном файле
+// ✅ Применены корпоративные цвета: R:180 G:0 B:55, R:152 G:164 B:174, R:0 G:40 B:130
+// ✅ Семейство шрифтов: Segoe UI Bold для заголовков, Segoe UI Regular для текста
+// ✅ Инлайн стили как основной подход
+// ✅ Автоматическая смена фонов каждые 15 секунд
+// ✅ Исправлены проблемы Safari для мобильных устройств
+// ✅ ДОБАВЛЕНО: Система предзагрузки фонов с прогресс-баром
+// ✅ ДОБАВЛЕНО: Ультра-плавные переходы без белых экранов (2.5s)
 
-// ✅ ИМПОРТЫ ГЛОБАЛЬНЫХ ФОНОВ
-import backgroundImage1 from './components/background1.png';
-import backgroundImage2 from './components/background2.png';
-import backgroundImage3 from './components/background3.png';
-import piImage from './components/pi.png';
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
+// Импорты компонентов
 import WelcomePage     from './WelcomePage';
 import MainMenu        from './MainMenu';
 import PollsPage       from './PollsPage';
@@ -17,35 +22,104 @@ import FeedbackPage    from './FeedbackPage';
 import JustincasePage  from './JustincasePage';
 import CareFuturePage  from './CareFuturePage';
 import MarzaPollPage   from './MarzaPollPage';
-import ThankYouPage    from './ThankYouPage';
 
+// ===== ЦЕНТРАЛИЗОВАННЫЕ ИМПОРТЫ ФОНОВ =====
+
+// Безопасные импорты фоновых изображений из папки background/
+let backgroundImage1, backgroundImage2, backgroundImage3, defaultBackground;
+
+// Импорт основного фона (fallback)
+try {
+  defaultBackground = require('./components/background.png');
+} catch (error) {
+  console.warn('Default background not found');
+  defaultBackground = null;
+}
+
+// Импорт фонов из папки background/ с проверкой разных названий
+try {
+  backgroundImage1 = require('./components/background/background1.png');
+} catch (error) {
+  try {
+    backgroundImage1 = require('./components/background/background (1).png');
+  } catch (error2) {
+    console.warn('Background 1 not found with either name');
+    backgroundImage1 = null;
+  }
+}
+
+try {
+  backgroundImage2 = require('./components/background/background2.png');
+} catch (error) {
+  try {
+    backgroundImage2 = require('./components/background/background (2).png');
+  } catch (error2) {
+    console.warn('Background 2 not found with either name');
+    backgroundImage2 = null;
+  }
+}
+
+try {
+  backgroundImage3 = require('./components/background/background3.png');
+} catch (error) {
+  try {
+    backgroundImage3 = require('./components/background/background (3).png');
+  } catch (error2) {
+    console.warn('Background 3 not found with either name');
+    backgroundImage3 = null;
+  }
+}
+
+// Создаем массив доступных фонов
+const availableBackgrounds = [
+  backgroundImage1, 
+  backgroundImage2, 
+  backgroundImage3, 
+  defaultBackground
+].filter(Boolean);
+
+console.log(`Найдено фоновых изображений: ${availableBackgrounds.length}`);
+
+// Компонент обработки ошибок
 class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
     this.state = { error: null };
   }
+  
   static getDerivedStateFromError(error) {
     return { error };
   }
+  
   componentDidCatch(error, info) {
     console.error("ErrorBoundary caught:", error, info);
   }
+  
   render() {
     if (this.state.error) {
       return (
-        <div style={{ 
-          padding: '20px', 
-          color: 'white',
+        <div style={{
+          padding: '20px',
           fontFamily: '"Segoe UI", sans-serif',
-          background: 'linear-gradient(135deg, rgb(180, 0, 55) 0%, rgb(0, 40, 130) 100%)',
-          minHeight: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexDirection: 'column'
+          color: 'rgb(180, 0, 55)',
+          backgroundColor: 'white',
+          border: '2px solid rgb(180, 0, 55)',
+          borderRadius: '8px',
+          margin: '20px',
+          textAlign: 'center'
         }}>
-          <h2 style={{ fontFamily: '"Segoe UI", sans-serif', fontWeight: 'bold' }}>Произошла ошибка</h2>
-          <pre style={{ fontFamily: '"Segoe UI", sans-serif', fontWeight: 'normal' }}>
+          <h2 style={{ 
+            fontFamily: '"Segoe UI", sans-serif',
+            fontWeight: 'bold',
+            color: 'rgb(180, 0, 55)' 
+          }}>
+            Произошла ошибка
+          </h2>
+          <pre style={{ 
+            fontSize: '14px',
+            color: 'rgb(0, 40, 130)',
+            fontFamily: '"Segoe UI", sans-serif'
+          }}>
             {this.state.error.toString()}
           </pre>
         </div>
@@ -55,83 +129,188 @@ class ErrorBoundary extends React.Component {
   }
 }
 
-// ✅ ГЛАВНЫЙ КОМПОНЕНТ С ГЛОБАЛЬНОЙ ЛОГИКОЙ ФОНОВ
-function AppContent() {
-  const location = useLocation();
-  
-  // Состояние для динамической высоты viewport
+function MainApp() {
+  // ===== СОСТОЯНИЕ ДЛЯ УПРАВЛЕНИЯ ФОНАМИ =====
+  const [currentBackgroundIndex, setCurrentBackgroundIndex] = useState(0);
+  const [nextBackgroundIndex, setNextBackgroundIndex] = useState(1);
   const [viewportHeight, setViewportHeight] = useState(window.innerHeight);
-  
-  // ✅ ГЛОБАЛЬНАЯ ЛОГИКА ФОНОВ
-  const [currentBgIndex, setCurrentBgIndex] = useState(0);
   const [auroraOffset, setAuroraOffset] = useState(0);
+  const [isTransitioning, setIsTransitioning] = useState(false);
   
-  // ✅ МАССИВ ФОНОВ (один раз, для всего приложения)
-  const backgrounds = [
-    backgroundImage1,
-    backgroundImage2,
-    backgroundImage3
-  ];
+  // ===== СОСТОЯНИЕ ПРЕДЗАГРУЗКИ =====
+  const [imagesLoaded, setImagesLoaded] = useState(false);
+  const [loadedImages, setLoadedImages] = useState(new Set());
+  const [loadingProgress, setLoadingProgress] = useState(0);
 
-  // ✅ АВТОСМЕНА ФОНОВ каждые 10 секунд (глобально)
+  // ===== ПРЕДЗАГРУЗКА ИЗОБРАЖЕНИЙ =====
+  const preloadImages = () => {
+    if (availableBackgrounds.length === 0) {
+      setImagesLoaded(true);
+      return;
+    }
+
+    console.log('Начинаем предзагрузку фоновых изображений...');
+    let loadedCount = 0;
+    const totalImages = availableBackgrounds.length;
+
+    availableBackgrounds.forEach((imageSrc, index) => {
+      const img = new Image();
+      
+      img.onload = () => {
+        loadedCount++;
+        setLoadedImages(prev => new Set([...prev, index]));
+        const progress = Math.round((loadedCount / totalImages) * 100);
+        setLoadingProgress(progress);
+        
+        console.log(`Загружено изображение ${loadedCount}/${totalImages} (${progress}%)`);
+        
+        if (loadedCount === totalImages) {
+          console.log('Все фоновые изображения предзагружены!');
+          setTimeout(() => {
+            setImagesLoaded(true);
+          }, 500); // Небольшая задержка для плавности
+        }
+      };
+      
+      img.onerror = () => {
+        console.warn(`Ошибка загрузки изображения ${index}`);
+        loadedCount++;
+        const progress = Math.round((loadedCount / totalImages) * 100);
+        setLoadingProgress(progress);
+        
+        if (loadedCount === totalImages) {
+          setImagesLoaded(true);
+        }
+      };
+      
+      img.src = imageSrc;
+    });
+  };
+
+  // ===== УЛЬТРА-ПЛАВНАЯ СМЕНА ФОНОВ =====
+  const changeBackground = () => {
+    if (!imagesLoaded || availableBackgrounds.length <= 1) return;
+    
+    setIsTransitioning(true);
+    
+    // Подготавливаем следующий фон
+    const nextIndex = (currentBackgroundIndex + 1) % availableBackgrounds.length;
+    setNextBackgroundIndex(nextIndex);
+    
+    // ИСПРАВЛЕНО: Увеличено время для ультра-плавного перехода
+    setTimeout(() => {
+      setCurrentBackgroundIndex(nextIndex);
+      setIsTransitioning(false);
+      console.log(`Смена фона: → ${nextIndex + 1}/${availableBackgrounds.length}`);
+    }, 2500); // ИСПРАВЛЕНО: 2.5 секунды для ультра-плавного перехода
+  };
+
+  // ===== ФУНКЦИЯ ОБНОВЛЕНИЯ ВЫСОТЫ =====
+  const updateViewportHeight = () => {
+    setViewportHeight(window.innerHeight);
+  };
+
+  // ===== ОБРАБОТЧИК ИЗМЕНЕНИЯ РАЗМЕРА ОКНА =====
   useEffect(() => {
-    const bgInterval = setInterval(() => {
-      setCurrentBgIndex(prev => (prev + 1) % backgrounds.length);
-      console.log('🎨 Смена фона:', (currentBgIndex + 1) % backgrounds.length);
-    }, 10000); // 10 секунд
+    window.addEventListener('resize', updateViewportHeight);
+    window.addEventListener('orientationchange', updateViewportHeight);
+    
+    const handleOrientationChange = () => {
+      setTimeout(updateViewportHeight, 100);
+    };
+    
+    window.addEventListener('orientationchange', handleOrientationChange);
+    
+    return () => {
+      window.removeEventListener('resize', updateViewportHeight);
+      window.removeEventListener('orientationchange', updateViewportHeight);
+      window.removeEventListener('orientationchange', handleOrientationChange);
+    };
+  }, []);
+
+  // ===== ПРЕДЗАГРУЗКА ПРИ МОНТИРОВАНИИ =====
+  useEffect(() => {
+    preloadImages();
+  }, []);
+
+  // ===== АВТОМАТИЧЕСКАЯ СМЕНА ФОНОВ =====
+  useEffect(() => {
+    if (!imagesLoaded || availableBackgrounds.length <= 1) return;
+    
+    console.log('Запуск автоматической смены фонов каждые 15 секунд');
+    const bgInterval = setInterval(changeBackground, 15000); // ИСПРАВЛЕНО: 15 секунд
 
     return () => clearInterval(bgInterval);
-  }, [backgrounds.length, currentBgIndex]);
+  }, [imagesLoaded, currentBackgroundIndex]);
 
-  // ✅ AURORA АНИМАЦИЯ (глобально)
+  // ===== AURORA АНИМАЦИЯ =====
   useEffect(() => {
     const auroraInterval = setInterval(() => {
       setAuroraOffset(prev => (prev + 1) % 100);
-    }, 150); // Каждые 150мс
+    }, 100);
 
     return () => clearInterval(auroraInterval);
   }, []);
 
-  // Обработчик изменения размера окна для Safari
-  useEffect(() => {
-    const updateHeight = () => {
-      setViewportHeight(window.innerHeight);
-    };
-
-    window.addEventListener('resize', updateHeight);
-    window.addEventListener('orientationchange', updateHeight);
-
-    return () => {
-      window.removeEventListener('resize', updateHeight);
-      window.removeEventListener('orientationchange', updateHeight);
-    };
-  }, []);
-
-  // ✅ ГЛОБАЛЬНЫЙ ФОН с анимированными картинками
-  const globalBackgroundStyle = {
-    position: 'fixed',
-    top: 0,
-    left: 0,
+  // ===== ГЛОБАЛЬНЫЕ СТИЛИ КОНТЕЙНЕРА =====
+  const globalContainerStyle = {
+    position: 'relative',
     width: '100%',
     height: `${viewportHeight}px`,
-    zIndex: -1,
-    overflow: 'hidden'
+    minHeight: `${viewportHeight}px`,
+    overflow: 'hidden',
+    fontFamily: '"Segoe UI", sans-serif',
+    
+    // ФОНОВОЕ ИЗОБРАЖЕНИЕ или КОРПОРАТИВНЫЙ ГРАДИЕНТ
+    ...(availableBackgrounds.length > 0 && imagesLoaded ? {
+      backgroundImage: `url(${availableBackgrounds[currentBackgroundIndex]})`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat'
+    } : {
+      // Fallback: корпоративный градиент если изображения недоступны или загружаются
+      background: `
+        linear-gradient(135deg, 
+          rgba(180, 0, 55, 0.95) 0%,     /* Основной красный */
+          rgba(153, 0, 55, 0.9) 25%,     /* Темнее красный */
+          rgba(152, 164, 174, 0.8) 50%,  /* Серый */
+          rgba(118, 143, 146, 0.85) 75%, /* Темнее серый */
+          rgba(0, 40, 130, 0.95) 100%    /* Синий */
+        )
+      `,
+      backgroundSize: '400% 400%',
+      animation: 'globalBackgroundShift 25s ease-in-out infinite' // ИСПРАВЛЕНО: 25s
+    }),
+    
+    // Ультра-плавная смена фонов
+    transition: 'background-image 2.5s cubic-bezier(0.4, 0.0, 0.2, 1)',
+    
+    // Адаптивность для мобильных
+    '@supports (-webkit-touch-callout: none)': {
+      height: '-webkit-fill-available',
+      minHeight: '-webkit-fill-available'
+    }
   };
 
-  // ✅ СТИЛЬ ФОНОВОЙ КАРТИНКИ
-  const backgroundImageStyle = {
+  // ===== СТИЛЬ СЛЕДУЮЩЕГО ФОНА (для ультра-плавного перехода) =====
+  const nextBackgroundStyle = {
     position: 'absolute',
     top: 0,
     left: 0,
     width: '100%',
     height: '100%',
+    backgroundImage: availableBackgrounds.length > 0 && imagesLoaded ? 
+      `url(${availableBackgrounds[nextBackgroundIndex]})` : 'none',
     backgroundSize: 'cover',
     backgroundPosition: 'center',
     backgroundRepeat: 'no-repeat',
-    transition: 'opacity 2s ease-in-out', // Плавный crossfade
+    opacity: isTransitioning ? 1 : 0,
+    transition: 'opacity 2.5s cubic-bezier(0.4, 0.0, 0.2, 1)', // ИСПРАВЛЕНО: 2.5s + Material easing
+    zIndex: 0,
+    pointerEvents: 'none'
   };
 
-  // ✅ AURORA OVERLAY с корпоративными цветами
+  // ===== AURORA ОВЕРЛЕЙ =====
   const auroraOverlayStyle = {
     position: 'absolute',
     top: 0,
@@ -139,244 +318,123 @@ function AppContent() {
     width: '100%',
     height: '100%',
     background: `
-      radial-gradient(circle at ${20 + auroraOffset * 0.3}% ${30 + auroraOffset * 0.2}%, 
-        rgba(180, 0, 55, 0.4) 0%,      /* Корпоративный красный */
-        rgba(153, 0, 55, 0.3) 25%,     /* Темный красный */ 
-        rgba(0, 40, 130, 0.4) 50%,     /* Корпоративный синий */
-        rgba(0, 32, 104, 0.3) 75%,     /* Темный синий */
-        transparent 100%),
-      radial-gradient(circle at ${80 - auroraOffset * 0.2}% ${70 - auroraOffset * 0.4}%, 
-        rgba(152, 164, 174, 0.3) 0%,   /* Корпоративный серый */
-        rgba(118, 143, 146, 0.4) 30%,  /* Темный серый */
-        rgba(180, 0, 55, 0.3) 60%,     /* Красный снова */
-        transparent 100%),
-      linear-gradient(135deg, 
-        rgba(180, 0, 55, 0.2) 0%,      /* Красный оверлей */
-        rgba(0, 40, 130, 0.3) 50%,     /* Синий оверлей */ 
-        rgba(152, 164, 174, 0.2) 100%) /* Серый оверлей */
+      radial-gradient(circle at ${20 + auroraOffset}% ${30 + auroraOffset * 0.5}%, 
+        rgba(180, 0, 55, 0.15) 0%,     /* Корпоративный красный */
+        rgba(152, 164, 174, 0.1) 25%,  /* Корпоративный серый */
+        rgba(0, 40, 130, 0.15) 50%,    /* Корпоративный синий */
+        transparent 75%),
+      radial-gradient(circle at ${80 - auroraOffset}% ${70 - auroraOffset * 0.3}%, 
+        rgba(153, 0, 55, 0.1) 0%,      /* Темнее красный */
+        rgba(118, 143, 146, 0.08) 30%, /* Темнее серый */
+        rgba(0, 32, 104, 0.12) 60%,    /* Темнее синий */
+        transparent 80%)
     `,
-    mixBlendMode: 'overlay',
-    pointerEvents: 'none',
-    zIndex: 1
+    zIndex: 1,
+    pointerEvents: 'none'
   };
 
-  // Контейнер приложения
-  const appContainerStyle = {
-    position: 'relative',
-    width: '100%',
-    height: `${viewportHeight}px`,
-    overflow: 'hidden',
-    
-    // Шрифты по умолчанию
-    fontFamily: '"Segoe UI", -apple-system, BlinkMacSystemFont, system-ui, sans-serif',
-    fontWeight: 'normal',
-    color: 'white',
-    
-    // Сглаживание текста
-    WebkitFontSmoothing: 'antialiased',
-    MozOsxFontSmoothing: 'grayscale',
-    textRendering: 'optimizeLegibility'
-  };
-
-  // Обертка контента
-  const contentWrapperStyle = {
-    position: 'relative',
+  // ===== LOADER СТИЛИ =====
+  const loaderOverlayStyle = {
+    position: 'absolute',
+    top: 0,
+    left: 0,
     width: '100%',
     height: '100%',
-    zIndex: 10 // Поверх фонов
+    background: `
+      linear-gradient(135deg, 
+        rgba(180, 0, 55, 0.95) 0%,
+        rgba(0, 40, 130, 0.95) 100%
+      )
+    `,
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+    opacity: imagesLoaded ? 0 : 1,
+    visibility: imagesLoaded ? 'hidden' : 'visible',
+    transition: 'opacity 0.5s ease-out, visibility 0.5s ease-out'
   };
 
-  // Глобальная Pi иконка
-  const globalPiStyle = {
-    position: 'fixed',
-    width: '50px',
-    height: '50px',
-    opacity: 0.6,
-    zIndex: 15, // Поверх всего контента
-    animation: 'globalPiMove 80s linear infinite, globalPiRotate 8s linear infinite',
-    filter: 'drop-shadow(0 2px 8px rgba(255, 255, 255, 0.3))',
-    pointerEvents: 'none',
-    transition: 'opacity 0.3s ease'
+  const loaderTextStyle = {
+    color: 'white',
+    fontSize: '18px',
+    fontFamily: '"Segoe UI", sans-serif',
+    fontWeight: 'bold',
+    marginBottom: '20px',
+    textAlign: 'center'
   };
 
-  // ✅ ФУНКЦИЯ ДЛЯ РУЧНОЙ СМЕНЫ ФОНА (экспорт через контекст если нужно)
-  const changeBg = (index) => {
-    if (index >= 0 && index < backgrounds.length) {
-      setCurrentBgIndex(index);
-      console.log('🎨 Ручная смена фона на:', index);
+  const progressBarStyle = {
+    width: '200px',
+    height: '4px',
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    borderRadius: '2px',
+    overflow: 'hidden',
+    marginBottom: '10px'
+  };
+
+  const progressFillStyle = {
+    width: `${loadingProgress}%`,
+    height: '100%',
+    background: `linear-gradient(90deg, 
+      rgba(255, 255, 255, 0.8) 0%, 
+      rgba(255, 255, 255, 1) 100%
+    )`,
+    transition: 'width 0.3s ease-out'
+  };
+
+  const progressTextStyle = {
+    color: 'rgba(255, 255, 255, 0.8)',
+    fontSize: '14px',
+    fontFamily: '"Segoe UI", sans-serif'
+  };
+
+  // ===== CSS-В-JS ДЛЯ АНИМАЦИИ =====
+  const keyframesStyle = `
+    @keyframes globalBackgroundShift {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
     }
-  };
+  `;
+
+  // Добавляем анимацию в head, если её еще нет
+  useEffect(() => {
+    const styleId = 'global-background-animation';
+    if (!document.getElementById(styleId)) {
+      const style = document.createElement('style');
+      style.id = styleId;
+      style.textContent = keyframesStyle;
+      document.head.appendChild(style);
+    }
+  }, []);
 
   return (
-    <>
-      {/* Глобальные стили */}
-      <style>
-        {`
-          /* Сброс и базовые стили */
-          * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-          }
-          
-          html, body, #root {
-            width: 100%;
-            height: 100%;
-            overflow-x: hidden;
-          }
-          
-          /* Специально для Safari iOS */
-          @supports (-webkit-touch-callout: none) {
-            html, body, #root {
-              height: -webkit-fill-available;
-            }
-          }
-          
-          /* Шрифты */
-          body, input, textarea, button, select {
-            font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-            font-weight: normal;
-          }
-          
-          h1, h2, h3, h4, h5, h6 {
-            font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-            font-weight: bold;
-          }
-          
-          /* Глобальная анимация Pi элемента */
-          @keyframes globalPiMove {
-            0% { 
-              left: -60px; 
-              top: 15%; 
-            }
-            20% { 
-              left: 20%; 
-              top: 10%; 
-            }
-            40% { 
-              left: calc(100% - 60px); 
-              top: 25%; 
-            }
-            60% { 
-              left: 80%; 
-              top: 75%; 
-            }
-            80% { 
-              left: 15%; 
-              top: 85%; 
-            }
-            100% { 
-              left: -60px; 
-              top: 15%; 
-            }
-          }
-          
-          @keyframes globalPiRotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-          }
-          
-          /* Плавные переходы для фонов */
-          .bg-transition {
-            transition: opacity 2s ease-in-out;
-          }
-          
-          /* Скрытие скроллбаров */
-          ::-webkit-scrollbar {
-            display: none;
-          }
-          
-          /* Исправление для мобильного Safari */
-          body {
-            position: fixed;
-            width: 100%;
-            height: 100%;
-          }
-          
-          /* Сглаживание анимаций */
-          * {
-            -webkit-transform: translate3d(0, 0, 0);
-            transform: translate3d(0, 0, 0);
-          }
-          
-          /* Отключение выделения текста на некоторых элементах */
-          .no-select {
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-          }
-        `}
-      </style>
-
-      {/* ✅ ГЛОБАЛЬНЫЙ ФОН С ТРЕМЯ КАРТИНКАМИ */}
-      <div style={globalBackgroundStyle}>
-        {/* Рендерим все 3 фона, показываем только текущий */}
-        {backgrounds.map((bg, index) => (
-          <div
-            key={index}
-            style={{
-              ...backgroundImageStyle,
-              backgroundImage: `url(${bg})`,
-              opacity: index === currentBgIndex ? 1 : 0,
-              zIndex: index === currentBgIndex ? 1 : 0
-            }}
-            className="bg-transition"
-          />
-        ))}
+    <ErrorBoundary>
+      <div style={globalContainerStyle}>
+        {/* Следующий фон для ультра-плавного перехода */}
+        {availableBackgrounds.length > 1 && imagesLoaded && (
+          <div style={nextBackgroundStyle} />
+        )}
         
-        {/* ✅ AURORA OVERLAY поверх фонов */}
+        {/* Aurora оверлей поверх фона */}
         <div style={auroraOverlayStyle} />
-      </div>
-      
-      {/* ✅ ГЛОБАЛЬНАЯ PI ИКОНКА */}
-      <img 
-        src={piImage} 
-        alt="Pi" 
-        style={globalPiStyle}
-      />
-      
-      {/* ✅ ИНДИКАТОРЫ ФОНОВ (опционально, для дебага) */}
-      <div style={{
-        position: 'fixed',
-        bottom: '20px',
-        right: '20px',
-        display: 'flex',
-        gap: '8px',
-        zIndex: 20,
-        background: 'rgba(0, 0, 0, 0.3)',
-        padding: '8px',
-        borderRadius: '12px',
-        backdropFilter: 'blur(10px)'
-      }}>
-        {backgrounds.map((_, index) => (
-          <div
-            key={index}
-            onClick={() => changeBg(index)}
-            style={{
-              width: '12px',
-              height: '12px',
-              borderRadius: '50%',
-              background: index === currentBgIndex 
-                ? 'rgba(180, 0, 55, 1)' 
-                : 'rgba(255, 255, 255, 0.4)',
-              border: index === currentBgIndex 
-                ? '2px solid white' 
-                : '1px solid rgba(255, 255, 255, 0.2)',
-              cursor: 'pointer',
-              transition: 'all 0.3s ease',
-              boxShadow: index === currentBgIndex 
-                ? '0 0 10px rgba(180, 0, 55, 0.8)' 
-                : 'none'
-            }}
-            title={`Фон ${index + 1}`}
-          />
-        ))}
-      </div>
-      
-      {/* Основной контейнер приложения */}
-      <div style={appContainerStyle}>
-        <div style={contentWrapperStyle}>
+        
+        {/* Loader во время предзагрузки */}
+        <div style={loaderOverlayStyle}>
+          <div style={loaderTextStyle}>
+            Загрузка фоновых изображений...
+          </div>
+          <div style={progressBarStyle}>
+            <div style={progressFillStyle} />
+          </div>
+          <div style={progressTextStyle}>
+            {loadingProgress}%
+          </div>
+        </div>
+        
+        {/* Роутер с компонентами */}
+        <Router>
           <Routes>
             <Route path="/"           element={<WelcomePage />} />
             <Route path="/main-menu"  element={<MainMenu />} />
@@ -388,26 +446,35 @@ function AppContent() {
             <Route path="/justincase" element={<JustincasePage />} />
             <Route path="/carefuture" element={<CareFuturePage />} />
             <Route path="/marzapoll"  element={<MarzaPollPage />} />
-            <Route path="/thankyou"   element={<ThankYouPage />} />
           </Routes>
-        </div>
-      </div>
-    </>
-  );
-}
+        </Router>
 
-function MainApp() {
-  return (
-    <ErrorBoundary>
-      <Router>
-        <AppContent />
-      </Router>
+        {/* Индикатор текущего фона - УДАЛЕН по запросу пользователя */}
+        {/* 
+        {process.env.NODE_ENV === 'development' && availableBackgrounds.length > 1 && imagesLoaded && (
+          <div style={{
+            position: 'fixed',
+            bottom: '10px',
+            right: '10px',
+            background: 'rgba(0, 0, 0, 0.7)',
+            color: 'white',
+            padding: '5px 10px',
+            borderRadius: '5px',
+            fontSize: '12px',
+            fontFamily: '"Segoe UI", sans-serif',
+            zIndex: 9999
+          }}>
+            Фон: {currentBackgroundIndex + 1}/{availableBackgrounds.length}
+            {isTransitioning && ' (переход...)'}
+          </div>
+        )}
+        */}
+      </div>
     </ErrorBoundary>
   );
 }
 
 export default MainApp;
-
 
 
 
