@@ -13,7 +13,7 @@ from justincase_calculator import JustincaseCalculatorComplete
 logger = logging.getLogger(__name__)
 
 # Создаем Blueprint для API калькулятора "На всякий случай"
-justincase_bp = Blueprint('justincase', __name__)
+justincase_bp = Blueprint('justincase', __name__, url_prefix='')
 
 # =============================================================================
 # ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ

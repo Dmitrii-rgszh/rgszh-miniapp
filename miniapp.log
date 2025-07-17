@@ -336,3 +336,49 @@
 2025-07-17 09:48:56,564 - server - INFO - 📍 Server will run on port 4000
 2025-07-17 09:48:56,564 - server - INFO - 📍 Open http://localhost:4000/ in your browser
 2025-07-17 09:49:42,164 - server - INFO - 🔍 Incoming request: POST /proxy/calculator/save
+2025-07-17 09:54:46,994 - server - INFO - 📨 GET /api/justincase/status - 127.0.0.1
+2025-07-17 09:54:46,994 - justincase_calculator - INFO - 🚀 Инициализация полного калькулятора 'На всякий случай'
+2025-07-17 09:54:46,994 - justincase_calculator - INFO - ✅ Все коэффициенты и таблицы загружены
+2025-07-17 09:54:46,994 - justincase_calculator - INFO - 📊 Актуарные таблицы: 15 возрастов мужчин, 15 возрастов женщин
+2025-07-17 09:54:46,994 - justincase_calculator - INFO - ⚙️ КВ коэффициенты: 30 сроков
+2025-07-17 09:54:46,994 - justincase_calculator - INFO - 🎯 Тарифы НС: 4 видов
+2025-07-17 09:54:46,996 - justincase_calculator - INFO - 🏥 Тарифы КЗ: 2 регионов
+2025-07-17 09:54:46,996 - justincase_calculator - INFO - ✅ Валидация входных данных пройдена
+2025-07-17 09:54:46,996 - justincase_calculator - INFO - 🚀 Начинаем полный расчет программы 'На всякий случай'
+2025-07-17 09:54:46,996 - justincase_calculator - INFO - 📝 Входные данные: ['birthDate', 'gender', 'insuranceInfo', 'insuranceTerm', 'insuranceSum']
+2025-07-17 09:54:46,996 - justincase_calculator - INFO - 👤 Клиент: 35 лет, male, сумма 1,000,000, срок 5 лет
+2025-07-17 09:54:46,996 - justincase_calculator - INFO - 📊 Базовая премия: возраст 35, пол male, срок 5
+2025-07-17 09:54:46,996 - justincase_calculator - INFO -    Тариф на 1000: 8.5620
+2025-07-17 09:54:46,996 - justincase_calculator - INFO -    Net-премия: 8562.00 руб.
+2025-07-17 09:54:46,996 - justincase_calculator - INFO -    Gross-премия: 13172.31 руб.
+2025-07-17 09:54:46,996 - justincase_calculator - INFO - 💰 Итоговая премия: 13172.31 руб. (Ежегодно)
+2025-07-17 09:54:46,996 - justincase_calculator - INFO - ✅ Расчет программы завершен успешно
+2025-07-17 09:54:46,997 - server - INFO - 📤 GET /api/justincase/status -> 200
+2025-07-17 09:54:47,244 - server - INFO - 🔍 Incoming request: GET /favicon.ico
+2025-07-17 09:56:52,167 - server - INFO - 🔍 Incoming request: GET /justincase/status
+2025-07-17 09:57:27,742 - server - INFO - 📨 GET /api/justincase/status - 127.0.0.1
+2025-07-17 09:57:27,742 - justincase_calculator - INFO - 🚀 Инициализация полного калькулятора 'На всякий случай'
+2025-07-17 09:57:27,743 - justincase_calculator - INFO - ✅ Все коэффициенты и таблицы загружены
+2025-07-17 09:57:27,743 - justincase_calculator - INFO - 📊 Актуарные таблицы: 15 возрастов мужчин, 15 возрастов женщин
+2025-07-17 09:57:27,743 - justincase_calculator - INFO - ⚙️ КВ коэффициенты: 30 сроков
+2025-07-17 09:57:27,743 - justincase_calculator - INFO - 🎯 Тарифы НС: 4 видов
+2025-07-17 09:57:27,743 - justincase_calculator - INFO - 🏥 Тарифы КЗ: 2 регионов
+2025-07-17 09:57:27,743 - justincase_calculator - INFO - ✅ Валидация входных данных пройдена
+2025-07-17 09:57:27,743 - justincase_calculator - INFO - 🚀 Начинаем полный расчет программы 'На всякий случай'
+2025-07-17 09:57:27,744 - justincase_calculator - INFO - 📝 Входные данные: ['birthDate', 'gender', 'insuranceInfo', 'insuranceTerm', 'insuranceSum']
+2025-07-17 09:57:27,744 - justincase_calculator - INFO - 👤 Клиент: 35 лет, male, сумма 1,000,000, срок 5 лет
+2025-07-17 09:57:27,744 - justincase_calculator - INFO - 📊 Базовая премия: возраст 35, пол male, срок 5
+2025-07-17 09:57:27,744 - justincase_calculator - INFO -    Тариф на 1000: 8.5620
+2025-07-17 09:57:27,744 - justincase_calculator - INFO -    Net-премия: 8562.00 руб.
+2025-07-17 09:57:27,744 - justincase_calculator - INFO -    Gross-премия: 13172.31 руб.
+2025-07-17 09:57:27,744 - justincase_calculator - INFO - 💰 Итоговая премия: 13172.31 руб. (Ежегодно)
+2025-07-17 09:57:27,744 - justincase_calculator - INFO - ✅ Расчет программы завершен успешно
+2025-07-17 09:57:27,745 - server - INFO - 📤 GET /api/justincase/status -> 200
+2025-07-17 09:59:35,749 - server - INFO - 🔍 Incoming request: POST /proxy/calculator/save
+2025-07-17 10:00:33,769 - server - INFO - 🔍 Incoming request: POST /proxy/calculator/save
+2025-07-17 10:02:33,269 - server - INFO - 🔍 Incoming request: GET /justincase/status
+2025-07-17 10:03:59,475 - server - INFO - 🔍 Incoming request: POST /proxy/calculator/save
+2025-07-17 10:04:55,558 - server - INFO - 📨 GET /api/proxy/calculator/save - 127.0.0.1
+2025-07-17 10:04:55,558 - server - INFO - 📤 GET /api/proxy/calculator/save -> 404
+2025-07-17 10:04:55,558 - server - WARNING -    ⚠️ Error response: 404 NOT FOUND
+2025-07-17 10:04:55,808 - server - INFO - 🔍 Incoming request: GET /favicon.ico
