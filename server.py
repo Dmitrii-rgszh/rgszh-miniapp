@@ -206,7 +206,7 @@ print("🚀 Инициализация полного калькулятора '
 
 if JUSTINCASE_AVAILABLE:
     try:
-        print("  🔗 Регистрация API endpoints...")
+        print("  🔗 Регистрируем Blueprint...")
         route_success = register_justincase_routes(app)
         if route_success:
             print("  ✅ API полного калькулятора 'На всякий случай' зарегистрировано")
@@ -510,52 +510,6 @@ def save_feedback():
         return jsonify({"error": "Database error"}), 500
 
 # ===== СТАТУС ENDPOINTS =====
-
-@app.route('/api/justincase/status', methods=['GET'])
-def justincase_status():
-    """Детальный статус калькулятора 'На всякий случай'"""
-    return jsonify({
-        'available': JUSTINCASE_AVAILABLE,
-        'mode': 'full' if JUSTINCASE_AVAILABLE else 'unavailable',
-        'error': JUSTINCASE_ERROR,
-        'version': '2.0.0-complete' if JUSTINCASE_AVAILABLE else '1.0.0-temp',
-        'type': 'complete_calculator' if JUSTINCASE_AVAILABLE else 'temporary_calculator',
-        'files_exist': {
-            'justincase_calculator.py': os.path.exists('justincase_calculator.py'),
-            'justincase_routes.py': os.path.exists('justincase_routes.py')
-        },
-        'features': {
-            'basic_calculations': True,
-            'age_factors': True,
-            'accident_insurance': True,
-            'critical_illness': True,
-            'sport_coefficients': JUSTINCASE_AVAILABLE,
-            'buyback_values': JUSTINCASE_AVAILABLE,
-            'installment_options': True,
-            'full_actuarial_tables': JUSTINCASE_AVAILABLE,  # Главная особенность
-            'regional_coefficients': JUSTINCASE_AVAILABLE,
-            'full_validation': JUSTINCASE_AVAILABLE,
-            'kv_coefficients': JUSTINCASE_AVAILABLE,
-            'excel_integration': JUSTINCASE_AVAILABLE
-        },
-        'actuarial_tables': {
-            'male_ages': 15 if JUSTINCASE_AVAILABLE else 0,
-            'female_ages': 15 if JUSTINCASE_AVAILABLE else 0,
-            'kv_terms': 30 if JUSTINCASE_AVAILABLE else 0,
-            'accident_types': 4 if JUSTINCASE_AVAILABLE else 0,
-            'critical_illness_regions': 2 if JUSTINCASE_AVAILABLE else 0
-        } if JUSTINCASE_AVAILABLE else {},
-        'accuracy': 'high' if JUSTINCASE_AVAILABLE else 'approximate',
-        'limitations': [] if JUSTINCASE_AVAILABLE else [
-            'Используются упрощенные коэффициенты',
-            'Нет полных актуарных таблиц',
-            'Результаты могут отличаться от официального калькулятора',
-            'Требуется интеграция с полным модулем для точных расчетов'
-        ],
-        'full_module_available': JUSTINCASE_AVAILABLE,
-        'full_module_error': JUSTINCASE_ERROR if not JUSTINCASE_AVAILABLE else None
-    })
-
 @app.route('/api/status', methods=['GET'])
 def api_status_updated():
     """Обновленный общий статус всех API"""
@@ -934,6 +888,7 @@ def care_future_proxy():
             'success': False,
             'error': 'Внутренняя ошибка сервера'
         }), 500
+
 
 
 # ====== EMAIL PROXY ENDPOINTS ======
