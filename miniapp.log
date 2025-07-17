@@ -818,3 +818,31 @@
 2025-07-17 12:01:41,508 - justincase_calculator - INFO - ✅ Расчет программы завершен успешно
 2025-07-17 12:01:41,508 - justincase_routes - INFO - ✅ Расчет выполнен: премия 114,888.11 руб.
 2025-07-17 12:01:41,509 - server - INFO - 📤 POST /api/proxy/calculator/save -> 200
+2025-07-17 12:32:24,483 - server - INFO - 📨 OPTIONS /api/proxy/calculator/save - 127.0.0.1
+2025-07-17 12:32:24,483 - server - INFO - 📤 OPTIONS /api/proxy/calculator/save -> 200
+2025-07-17 12:32:24,788 - server - INFO - 📨 POST /api/proxy/calculator/save - 127.0.0.1
+2025-07-17 12:32:24,788 - server - INFO -    📋 JSON keys: ['birthDate', 'gender', 'insuranceInfo', 'insuranceTerm', 'insuranceSum', 'insuranceFrequency', 'accidentPackage', 'criticalPackage', 'treatmentRegion', 'sportPackage', 'hasJob', 'income2021', 'income2022', 'income2023', 'scholarship', 'unsecuredLoans', 'breadwinnerStatus', 'incomeShare', 'childrenCount', 'specialCareRelatives']
+2025-07-17 12:32:24,788 - justincase_routes - INFO - 🧮 === ОСНОВНОЙ РАСЧЕТ 'НА ВСЯКИЙ СЛУЧАЙ' ===
+2025-07-17 12:32:24,788 - justincase_routes - INFO - 📋 Content-Type: application/json
+2025-07-17 12:32:24,788 - justincase_routes - INFO - 📥 JSON получен: ['birthDate', 'gender', 'insuranceInfo', 'insuranceTerm', 'insuranceSum', 'insuranceFrequency', 'accidentPackage', 'criticalPackage', 'treatmentRegion', 'sportPackage', 'hasJob', 'income2021', 'income2022', 'income2023', 'scholarship', 'unsecuredLoans', 'breadwinnerStatus', 'incomeShare', 'childrenCount', 'specialCareRelatives']
+2025-07-17 12:32:24,788 - justincase_routes - INFO - 📝 Входные данные: ['birthDate', 'gender', 'insuranceInfo', 'insuranceTerm', 'insuranceSum', 'insuranceFrequency', 'accidentPackage', 'criticalPackage', 'treatmentRegion', 'sportPackage', 'hasJob', 'income2021', 'income2022', 'income2023', 'scholarship', 'unsecuredLoans', 'breadwinnerStatus', 'incomeShare', 'childrenCount', 'specialCareRelatives']
+2025-07-17 12:32:24,788 - justincase_calculator - INFO - 🚀 Инициализация полного калькулятора 'На всякий случай'
+2025-07-17 12:32:24,789 - justincase_calculator - INFO - ✅ Все коэффициенты и таблицы загружены
+2025-07-17 12:32:24,789 - justincase_calculator - INFO - 📊 Актуарные таблицы: 15 возрастов мужчин, 15 возрастов женщин
+2025-07-17 12:32:24,789 - justincase_calculator - INFO - ⚙️ КВ коэффициенты: 30 сроков
+2025-07-17 12:32:24,789 - justincase_calculator - INFO - 🎯 Тарифы НС: 4 видов
+2025-07-17 12:32:24,789 - justincase_calculator - INFO - 🏥 Тарифы КЗ: 2 регионов
+2025-07-17 12:32:24,789 - justincase_calculator - INFO - ✅ Валидация входных данных пройдена
+2025-07-17 12:32:24,789 - justincase_calculator - INFO - 🚀 Начинаем полный расчет программы 'На всякий случай'
+2025-07-17 12:32:24,789 - justincase_calculator - INFO - 📝 Входные данные: ['birthDate', 'gender', 'insuranceInfo', 'insuranceTerm', 'insuranceSum', 'insuranceFrequency', 'accidentPackage', 'criticalPackage', 'treatmentRegion', 'sportPackage', 'hasJob', 'income2021', 'income2022', 'income2023', 'scholarship', 'unsecuredLoans', 'breadwinnerStatus', 'incomeShare', 'childrenCount', 'specialCareRelatives']
+2025-07-17 12:32:24,789 - justincase_calculator - INFO - 👤 Клиент: 35 лет, male, сумма 2,000,000, срок 11 лет
+2025-07-17 12:32:24,789 - justincase_calculator - INFO - 📊 Базовая премия: возраст 35, пол male, срок 11
+2025-07-17 12:32:24,789 - justincase_calculator - INFO -    Тариф на 1000: 9.2410
+2025-07-17 12:32:24,789 - justincase_calculator - INFO -    Net-премия: 18482.00 руб.
+2025-07-17 12:32:24,789 - justincase_calculator - INFO -    Gross-премия: 28433.85 руб.
+2025-07-17 12:32:24,789 - justincase_calculator - INFO - 💥 НС премия: спорт x1.3, общая 11.18 руб.
+2025-07-17 12:32:24,789 - justincase_calculator - INFO - 🏥 КЗ премия: abroad, база 51390, итого 86753.85 руб.
+2025-07-17 12:32:24,789 - justincase_calculator - INFO - 💰 Итоговая премия: 115198.88 руб. (Ежегодно)
+2025-07-17 12:32:24,789 - justincase_calculator - INFO - ✅ Расчет программы завершен успешно
+2025-07-17 12:32:24,789 - justincase_routes - INFO - ✅ Расчет выполнен: премия 115,198.88 руб.
+2025-07-17 12:32:24,790 - server - INFO - 📤 POST /api/proxy/calculator/save -> 200
