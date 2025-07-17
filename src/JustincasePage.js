@@ -312,18 +312,19 @@ const JustincasePage = () => {
   const mainContainerStyle = {
     position: 'relative',
     width: '100%',
-    height: typeof viewportHeight === 'number' ? `${viewportHeight}px` : viewportHeight,
+    minHeight: typeof viewportHeight === 'number' ? `${viewportHeight}px` : viewportHeight,
     background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
     backgroundSize: 'cover',
     backgroundPosition: 'center',
     backgroundRepeat: 'no-repeat',
-    overflow: 'hidden',
+    overflowX: 'hidden',      // ← Только горизонтальный скролл запрещен
+    overflowY: 'auto',        // ← Вертикальный скролл разрешен
     fontFamily: '"Montserrat", sans-serif',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'flex-start',
-    minHeight: '100vh'
+    paddingBottom: '50px'     // ← Добавим отступ снизу
   };
 
   const logoContainerStyle = {
@@ -363,6 +364,8 @@ const JustincasePage = () => {
     background: 'rgba(255, 255, 255, 0.95)',
     borderRadius: '20px',
     padding: '30px',
+    maxHeight: currentStep === 4 ? '80vh' : 'auto',  // ← Ограничим высоту для результатов
+    overflowY: currentStep === 4 ? 'auto' : 'visible', // ← Скролл для результатов
     width: '85%',
     maxWidth: '500px',
     boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
@@ -569,87 +572,146 @@ const JustincasePage = () => {
       );
     }
 
-    // Шаг 4 - результаты
-    if (currentStep === 4 && resultData) {
-      return (
-        <div style={formContainerStyle}>
-          <div style={formTitleStyle}>
-            Ваша программа «На всякий случай»
+    // Шаг 4 - результаты (ИСПРАВЛЕННЫЙ БЛОК)
+  if (currentStep === 4 && resultData) {
+    return (
+      <div style={formContainerStyle}>
+        <div style={formTitleStyle}>
+          Ваша программа «На всякий случай»
+        </div>
+        <div style={{...formTitleStyle, fontSize: '14px', color: '#666', marginBottom: '20px'}}>
+          (расчет от {resultData.calculationDate || new Date().toLocaleDateString('ru-RU')})
+        </div>
+        
+        <div style={resultContainerStyle}>
+          {/* Основная информация */}
+          <div style={resultItemStyle}>
+            <span style={resultLabelStyle}>Возраст клиента:</span>
+            <span style={resultValueStyle}>{resultData.clientAge} лет</span>
           </div>
-          <div style={resultContainerStyle}>
-            <div style={resultItemStyle}>
-              <span style={resultLabelStyle}>Возраст клиента:</span>
-              <span style={resultValueStyle}>{resultData.clientAge} лет</span>
-            </div>
-            <div style={resultItemStyle}>
-              <span style={resultLabelStyle}>Пол клиента:</span>
-              <span style={resultValueStyle}>{resultData.clientGender}</span>
-            </div>
-            <div style={resultItemStyle}>
-              <span style={resultLabelStyle}>Срок страхования:</span>
-              <span style={resultValueStyle}>{resultData.insuranceTerm} лет</span>
-            </div>
-            <div style={resultItemStyle}>
-              <span style={resultLabelStyle}>Страховая сумма:</span>
-              <span style={resultValueStyle}>{resultData.baseInsuranceSum} руб.</span>
-            </div>
-            <div style={resultItemStyle}>
-              <span style={resultLabelStyle}>Базовая премия:</span>
-              <span style={resultValueStyle}>{resultData.basePremium} руб.</span>
-            </div>
-            
-            {resultData.accidentPackageIncluded && (
-              <>
-                <div style={resultItemStyle}>
-                  <span style={resultLabelStyle}>НС страховая сумма:</span>
-                  <span style={resultValueStyle}>{resultData.accidentInsuranceSum} руб.</span>
-                </div>
-                <div style={resultItemStyle}>
-                  <span style={resultLabelStyle}>НС премия:</span>
-                  <span style={resultValueStyle}>{resultData.accidentPremium} руб.</span>
-                </div>
-              </>
-            )}
-            
-            {resultData.criticalPackageIncluded && (
-              <>
-                <div style={resultItemStyle}>
-                  <span style={resultLabelStyle}>КЗ страховая сумма:</span>
-                  <span style={resultValueStyle}>{resultData.criticalInsuranceSum} руб.</span>
-                </div>
-                <div style={resultItemStyle}>
-                  <span style={resultLabelStyle}>КЗ премия:</span>
-                  <span style={resultValueStyle}>{resultData.criticalPremium} руб.</span>
-                </div>
-              </>
-            )}
-            
-            <div style={{...resultItemStyle, borderTop: '2px solid #667eea', marginTop: '10px', paddingTop: '15px'}}>
-              <span style={{...resultLabelStyle, fontWeight: '700', color: '#333'}}>Итоговая премия:</span>
-              <span style={{...resultValueStyle, fontWeight: '700', color: '#667eea', fontSize: '16px'}}>{resultData.totalPremium} руб.</span>
-            </div>
+          <div style={resultItemStyle}>
+            <span style={resultLabelStyle}>Пол клиента:</span>
+            <span style={resultValueStyle}>{resultData.clientGender}</span>
+          </div>
+          <div style={resultItemStyle}>
+            <span style={resultLabelStyle}>Срок страхования:</span>
+            <span style={resultValueStyle}>{resultData.insuranceTerm} лет</span>
           </div>
           
-          {/* Дополнительная информация */}
-          {resultData.calculator && (
-            <div style={{marginTop: '20px', padding: '15px', background: '#f8f9fa', borderRadius: '8px', fontSize: '12px', color: '#666'}}>
-              <div>Калькулятор: {resultData.calculator}</div>
-              <div>Версия: {resultData.version}</div>
-              <div>ID расчета: {resultData.calculationId}</div>
-            </div>
+          {/* Разделитель */}
+          <div style={{borderTop: '2px solid #e0e0e0', margin: '15px 0'}}></div>
+          
+          {/* Основная программа */}
+          <div style={{...resultLabelStyle, fontWeight: '700', fontSize: '16px', marginBottom: '10px', color: '#333'}}>
+            Основная программа (страхование на случай ухода из жизни и инвалидности I и II группы по любой причине):
+          </div>
+          <div style={resultItemStyle}>
+            <span style={resultLabelStyle}>• Страховая сумма:</span>
+            <span style={resultValueStyle}>{formatNumber(resultData.baseInsuranceSum || resultData.insuranceSum)} руб.</span>
+          </div>
+          <div style={resultItemStyle}>
+            <span style={resultLabelStyle}>• Страховая премия:</span>
+            <span style={resultValueStyle}>{formatNumber(resultData.basePremium)} руб.</span>
+          </div>
+          
+          {/* Пакет НС (только если выбран) */}
+          {resultData.accidentPackageIncluded && (
+            <>
+              <div style={{borderTop: '1px solid #e0e0e0', margin: '15px 0'}}></div>
+              <div style={{...resultLabelStyle, fontWeight: '700', fontSize: '16px', marginBottom: '10px', color: '#333'}}>
+                Пакет «Несчастный случай»:
+              </div>
+              <div style={resultItemStyle}>
+                <span style={resultLabelStyle}>• Страховая сумма:</span>
+                <span style={resultValueStyle}>{formatNumber(resultData.accidentInsuranceSum)} руб.</span>
+              </div>
+              <div style={resultItemStyle}>
+                <span style={resultLabelStyle}>• Страховая премия:</span>
+                <span style={resultValueStyle}>{formatNumber(resultData.accidentPremium)} руб.</span>
+              </div>
+            </>
           )}
           
-          <div style={buttonGroupStyle}>
-            <button style={secondaryButtonStyle} onClick={goToMenu}>
-              Главное меню
-            </button>
-            <button style={primaryButtonStyle} onClick={repeatCalculation}>
-              Повторить расчёт
-            </button>
+          {/* Пакет КЗ (только если выбран) */}
+          {resultData.criticalPackageIncluded && (
+            <>
+              <div style={{borderTop: '1px solid #e0e0e0', margin: '15px 0'}}></div>
+              <div style={{...resultLabelStyle, fontWeight: '700', fontSize: '16px', marginBottom: '10px', color: '#333'}}>
+                {resultData.treatmentRegion === 'russia' ? 
+                  'Пакет «Критические заболевания (лечение в РФ)»:' : 
+                  'Пакет «Критические заболевания (лечение за рубежом)»:'
+                }
+              </div>
+              <div style={{...resultItemStyle, alignItems: 'flex-start'}}>
+                <span style={resultLabelStyle}>• Максимальная страховая сумма:</span>
+                <span style={resultValueStyle}>
+                  60 000 000 рублей,<br/>
+                  дополнительно по реабилитации – 100 000 рублей
+                </span>
+              </div>
+              <div style={resultItemStyle}>
+                <span style={resultLabelStyle}>• Страховая премия:</span>
+                <span style={resultValueStyle}>{formatNumber(resultData.criticalPremium)} руб.</span>
+              </div>
+            </>
+          )}
+          
+          {/* Опция спорт (только если выбрана) */}
+          {resultData.sportPackage && (
+            <>
+              <div style={{borderTop: '1px solid #e0e0e0', margin: '15px 0'}}></div>
+              <div style={{...resultLabelStyle, fontWeight: '700', fontSize: '16px', marginBottom: '10px', color: '#333'}}>
+                Опция «Любительский спорт»
+              </div>
+              <div style={{...resultItemStyle, paddingLeft: '15px'}}>
+                <span style={{...resultLabelStyle, fontStyle: 'italic'}}>
+                  (учтена в расчете премий НС)
+                </span>
+              </div>
+            </>
+          )}
+          
+          {/* Итого */}
+          <div style={{borderTop: '2px solid #667eea', margin: '20px 0 10px 0', paddingTop: '15px'}}>
+            <div style={resultItemStyle}>
+              <span style={{...resultLabelStyle, fontWeight: '700', color: '#333', fontSize: '16px'}}>
+                Итого страховая премия:
+              </span>
+              <span style={{...resultValueStyle, fontWeight: '700', color: '#667eea', fontSize: '18px'}}>
+                {formatNumber(resultData.totalPremium || resultData.annualPremium)} руб.
+              </span>
+            </div>
+            <div style={resultItemStyle}>
+              <span style={{...resultLabelStyle, fontWeight: '600', color: '#333'}}>
+                Порядок оплаты премии:
+              </span>
+              <span style={{...resultValueStyle, fontWeight: '600'}}>
+                {insuranceFrequency || 'Ежегодно'}
+              </span>
+            </div>
           </div>
         </div>
-      );
-    }
+        
+        {/* Дополнительная информация */}
+        {resultData.calculator && (
+          <div style={{marginTop: '20px', padding: '15px', background: '#f8f9fa', borderRadius: '8px', fontSize: '12px', color: '#666'}}>
+            <div>Калькулятор: {resultData.calculator}</div>
+            <div>Версия: {resultData.version}</div>
+            <div>ID расчета: {resultData.calculationId}</div>
+          </div>
+        )}
+        
+        <div style={buttonGroupStyle}>
+          <button style={secondaryButtonStyle} onClick={goToMenu}>
+            Главное меню
+          </button>
+          <button style={primaryButtonStyle} onClick={repeatCalculation}>
+            Повторить расчёт
+          </button>
+        </div>
+      </div>
+    );
+  }
 
     // Шаг 1 - основная информация
     if (currentStep === 1) {
@@ -731,17 +793,62 @@ const JustincasePage = () => {
             <>
               <div style={formGroupStyle}>
                 <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#333' }}>
-                  Срок страхования (лет)
+                  Срок страхования: <span style={{fontWeight: '700', color: '#667eea'}}>{insuranceTerm} лет</span>
                 </label>
-                <input
-                  type="number"
-                  style={inputStyle}
-                  value={insuranceTerm}
-                  onChange={(e) => setInsuranceTerm(e.target.value)}
-                  min="1"
-                  max="30"
-                  placeholder="От 1 до 30 лет"
-                />
+                <div style={{position: 'relative', margin: '20px 0'}}>
+                  <input
+                    type="range"
+                    min="1"
+                    max="30"
+                    value={insuranceTerm}
+                    onChange={(e) => setInsuranceTerm(e.target.value)}
+                    style={{
+                      width: '100%',
+                      height: '8px',
+                      borderRadius: '5px',
+                      background: `linear-gradient(to right, #667eea 0%, #667eea ${((insuranceTerm - 1) / 29) * 100}%, #e1e8ed ${((insuranceTerm - 1) / 29) * 100}%, #e1e8ed 100%)`,
+                      outline: 'none',
+                      WebkitAppearance: 'none',
+                      cursor: 'pointer'
+                    }}
+                  />
+                  <style jsx>{`
+                    input[type="range"]::-webkit-slider-thumb {
+                      -webkit-appearance: none;
+                      appearance: none;
+                      width: 24px;
+                      height: 24px;
+                      border-radius: 50%;
+                      background: #667eea;
+                      cursor: pointer;
+                      box-shadow: 0 2px 6px rgba(102, 126, 234, 0.3);
+                      border: 3px solid white;
+                    }
+      
+                    input[type="range"]::-moz-range-thumb {
+                      width: 24px;
+                      height: 24px;
+                      border-radius: 50%;
+                      background: #667eea;
+                      cursor: pointer;
+                      box-shadow: 0 2px 6px rgba(102, 126, 234, 0.3);
+                      border: 3px solid white;
+                    }
+                  `}</style>
+    
+                  {/* Подписи под ползунком */}
+                  <div style={{
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    marginTop: '10px',
+                    fontSize: '12px',
+                    color: '#666'
+                  }}>
+                    <span>1 год</span>
+                    <span>15 лет</span>
+                    <span>30 лет</span>
+                  </div>
+                </div>
               </div>
 
               <div style={formGroupStyle}>
@@ -761,7 +868,7 @@ const JustincasePage = () => {
                 <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#333' }}>
                   Периодичность оплаты
                 </label>
-                <div style={buttonGroupStyle}>
+                <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '10px'}}>
                   <button
                     style={optionButtonStyle(insuranceFrequency === 'Ежегодно')}
                     onClick={() => setInsuranceFrequency('Ежегодно')}
@@ -773,6 +880,20 @@ const JustincasePage = () => {
                     onClick={() => setInsuranceFrequency('Ежемесячно')}
                   >
                     Ежемесячно
+                  </button>
+                </div>
+                <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px'}}>
+                  <button
+                    style={optionButtonStyle(insuranceFrequency === 'Поквартально')}
+                    onClick={() => setInsuranceFrequency('Поквартально')}
+                  >
+                    Ежеквартально
+                  </button>
+                  <button
+                    style={optionButtonStyle(insuranceFrequency === 'Полугодие')}
+                    onClick={() => setInsuranceFrequency('Полугодие')}
+                  >
+                    Раз в пол года
                   </button>
                 </div>
               </div>
