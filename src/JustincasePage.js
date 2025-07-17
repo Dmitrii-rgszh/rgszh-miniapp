@@ -218,7 +218,11 @@ const JustincasePage = () => {
 
       console.log('📤 Отправляем данные на расчет:', payload);
 
-      const response = await fetch('/api/proxy/calculator/save', {
+      const apiUrl = process.env.NODE_ENV === 'development' 
+        ? 'http://localhost:4000/api/proxy/calculator/save'  // Для разработки
+        : `${window.location.origin}/api/proxy/calculator/save`;  // Для продакшена
+
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
