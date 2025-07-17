@@ -1,131 +1,199 @@
-// WelcomePage.js - УПРОЩЕННАЯ ВЕРСИЯ БЕЗ ОБРЕЗКИ
+// WelcomePage.js - ULTRA-MODERN REDESIGN 2024-2025
+// Гласморфизм + Aurora градиенты + Параллакс + Rotating Backgrounds
+// 
+// 🎛️ НАСТРОЙКИ:
+// - Смена фонов: каждые 12 секунд (строка 177: `12000`)
+// - Aurora скорость: каждые 100мс (строка 164: `100`)
+// - Тайминг анимаций: 3s показ + 1s переход (строки 148-149)
 
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSwipeable } from 'react-swipeable';
+import { motion, AnimatePresence } from 'framer-motion';
 
-import backgroundImage from './components/background.png';
+// Фоновые изображения - ИНСТРУКЦИЯ:
+// 1. Переименуй файлы в простые имена:
+//    background (1).png → background1.png
+//    background (2).png → background2.png  
+//    background (3).png → background3.png
+// 2. Создай копию любого файла как background.png для остальных компонентов
+
+import backgroundImage1 from './components/background1.png';
+import backgroundImage2 from './components/background2.png';
+import backgroundImage3 from './components/background3.png';
 import logoImage from './components/logo.png';
 import piImage from './components/pi.png';
 
 const WelcomePage = () => {
   const navigate = useNavigate();
-
-  // Рефы на логотип и текст для управления анимациями
+  
+  // Рефы для анимаций
   const logoRef = useRef(null);
   const textRef = useRef(null);
+  const containerRef = useRef(null);
 
-  // Состояния
+  // Основные состояния
   const [logoAnimated, setLogoAnimated] = useState(false);
   const [textAnimated, setTextAnimated] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
   const [greeting, setGreeting] = useState('');
-  const [moveDuration] = useState('70s');
-  const [rotateDuration] = useState('6s');
+  
+  // НОВЫЕ состояния для современного дизайна
+  const [currentBgIndex, setCurrentBgIndex] = useState(0);
+  const [auroraOffset, setAuroraOffset] = useState(0);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [isLoaded, setIsLoaded] = useState(false);
 
-  // ===== СТИЛИ - УПРОЩЕННЫЕ =====
+  // Массив всех фонов - теперь все активны!
+  const backgrounds = [
+    backgroundImage1,
+    backgroundImage2,
+    backgroundImage3
+  ];
 
-  // Основной контейнер - ПРОСТАЯ ВЕРСИЯ
-  const welcomeContainerStyle = {
+  // ===== СОВРЕМЕННЫЕ СТИЛИ =====
+
+  // Главный контейнер с улучшенной адаптивностью
+  const containerStyle = {
     position: 'relative',
     width: '100%',
-    height: '100%', // ← УПРОЩЕНО
-    minHeight: '100%', // ← УПРОЩЕНО
-    backgroundImage: `url(${backgroundImage})`,
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
-    backgroundRepeat: 'no-repeat',
+    height: '100vh',
+    minHeight: '100vh',
     overflow: 'hidden',
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'center',
-    alignItems: 'center',
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+    fontFamily: '"Segoe UI", -apple-system, BlinkMacSystemFont, system-ui, "Helvetica Neue", Helvetica, Arial, sans-serif',
+    background: '#0a0a0a', // fallback
+    
+    // Поддержка мобильных браузеров
+    '@supports (-webkit-touch-callout: none)': {
+      height: '-webkit-fill-available',
+      minHeight: '-webkit-fill-available'
+    }
   };
 
-  // Оверлей с градиентом - ПРОСТАЯ ВЕРСИЯ
-  const overlayStyle = {
+  // Animated Background с crossfade
+  const backgroundStyle = {
     position: 'absolute',
     top: 0,
     left: 0,
     width: '100%',
     height: '100%',
-    background: 'linear-gradient(135deg, rgba(147, 39, 143, 0.85) 0%, rgba(71, 125, 191, 0.85) 100%)',
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundRepeat: 'no-repeat',
+    zIndex: 0
+  };
+
+  // Aurora градиент - ГЛАВНЫЙ ТРЕНД 2024-2025
+  const auroraOverlayStyle = {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    background: `
+      radial-gradient(circle at ${20 + auroraOffset}% ${30 + auroraOffset * 0.5}%, 
+        rgba(139, 69, 19, 0.4) 0%,     /* Mocha Mousse */
+        rgba(255, 20, 147, 0.3) 25%,   /* Deep Pink */ 
+        rgba(75, 0, 130, 0.4) 50%,     /* Indigo */
+        rgba(0, 191, 255, 0.3) 75%,    /* Deep Sky Blue */
+        transparent 100%),
+      radial-gradient(circle at ${80 - auroraOffset}% ${70 - auroraOffset * 0.3}%, 
+        rgba(50, 205, 50, 0.3) 0%,     /* Lime Green */
+        rgba(255, 215, 0, 0.4) 30%,    /* Gold */
+        rgba(148, 0, 211, 0.3) 60%,    /* Dark Violet */
+        transparent 100%),
+      linear-gradient(135deg, 
+        rgba(139, 69, 19, 0.6) 0%,     /* Mocha Mousse overlay */
+        rgba(30, 30, 60, 0.7) 50%, 
+        rgba(139, 69, 19, 0.5) 100%)
+    `,
+    mixBlendMode: 'overlay',
+    animation: 'auroraShift 12s ease-in-out infinite alternate',
     zIndex: 1
   };
 
-  // Логотип с анимацией
-  const logoStyle = {
-    position: 'absolute',
-    top: logoAnimated && !isExiting ? '110px' : isExiting ? '-200px' : '-200px',
-    left: '50%',
-    transform: 'translateX(-50%)',
-    width: '160px',
-    height: '160px',
-    backgroundColor: 'rgba(255, 255, 255, 0.10)',
-    backdropFilter: 'blur(8px)',
-    borderRadius: '20px',
-    boxShadow: '0 10px 25px rgba(0, 0, 0, 0.25)',
-    opacity: logoAnimated && !isExiting ? 1 : 0,
-    zIndex: 3,
-    transition: 'all 0.8s ease-out',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center'
-  };
-
-  const logoImageStyle = {
-    width: '120px',
-    height: '120px',
-    objectFit: 'contain'
-  };
-
-  // Текст приветствия
-  const textWrapperStyle = {
+  // Гласморфизм контейнер - УЛУЧШЕННАЯ ВЕРСИЯ
+  const glassContainerStyle = {
     position: 'absolute',
     top: '50%',
     left: '50%',
-    transform: textAnimated && !isExiting 
-      ? 'translate(-50%, -50%)' 
-      : isExiting 
-        ? 'translate(-50%, calc(-50% + 100px))' 
-        : 'translate(-50%, calc(-50% - 100px))',
-    opacity: textAnimated && !isExiting ? 1 : 0,
-    zIndex: 3,
+    transform: `translate(-50%, -50%) perspective(1000px) rotateX(${mousePosition.y * 0.01}deg) rotateY(${mousePosition.x * 0.01}deg)`,
+    width: '90%',
+    maxWidth: '400px',
+    background: 'rgba(255, 255, 255, 0.08)',
+    backdropFilter: 'blur(20px) saturate(180%)',
+    WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+    border: '1px solid rgba(255, 255, 255, 0.2)',
+    borderRadius: '24px',
+    boxShadow: `
+      0 8px 32px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.4),
+      0 0 60px rgba(139, 69, 19, 0.3)
+    `,
+    padding: '40px 30px',
     textAlign: 'center',
-    transition: 'all 0.8s ease-out'
+    zIndex: 10,
+    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
   };
 
-  const welcomeTitleStyle = {
-    fontSize: '48px',
+  // Логотип с hover эффектами
+  const logoContainerStyle = {
+    position: 'relative',
+    width: '120px',
+    height: '120px',
+    margin: '0 auto 30px',
+    background: 'rgba(255, 255, 255, 0.1)',
+    backdropFilter: 'blur(10px)',
+    borderRadius: '20px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    border: '1px solid rgba(255, 255, 255, 0.2)',
+    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.2)',
+    transition: 'all 0.3s ease',
+    cursor: 'pointer'
+  };
+
+  // Текст с кинетической типографикой
+  const titleStyle = {
+    fontSize: 'clamp(2rem, 5vw, 3rem)',
+    fontFamily: '"Segoe UI", sans-serif',
     fontWeight: 'bold',
-    color: 'white',
-    margin: '0',
-    textShadow: '2px 2px 8px rgba(0, 0, 0, 0.5)',
-    letterSpacing: '2px'
+    background: 'linear-gradient(135deg, #ffffff 0%, #f0f0f0 50%, #ffffff 100%)',
+    WebkitBackgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
+    backgroundClip: 'text',
+    letterSpacing: '0.02em',
+    lineHeight: '1.2',
+    margin: 0,
+    textShadow: '0 2px 20px rgba(255, 255, 255, 0.1)',
+    animation: 'textShimmer 3s ease-in-out infinite alternate'
   };
 
-  // Pi элемент с анимацией полета
-  const piWrapperStyle = {
+  // Floating particles - УЛУЧШЕННЫЕ
+  const particleStyle = (index) => ({
     position: 'absolute',
-    top: '0',
-    left: '0',
+    width: `${Math.random() * 8 + 4}px`,
+    height: `${Math.random() * 8 + 4}px`,
+    background: `radial-gradient(circle, 
+      rgba(255, 255, 255, ${Math.random() * 0.6 + 0.2}) 0%, 
+      rgba(139, 69, 19, ${Math.random() * 0.4 + 0.1}) 50%, 
+      transparent 100%)`,
+    borderRadius: '50%',
+    top: `${Math.random() * 100}%`,
+    left: `${Math.random() * 100}%`,
+    animation: `float${(index % 3) + 1} ${Math.random() * 20 + 30}s linear infinite`,
     zIndex: 2,
-    opacity: 0.4,
-    animation: `piFloatAround ${moveDuration} ease-in-out infinite`
-  };
+    pointerEvents: 'none'
+  });
 
-  const piImageStyle = {
-    width: '40px',
-    height: '40px',
-    opacity: 0.8,
-    animation: `piRotate ${rotateDuration} linear infinite`
-  };
+  // ===== ЭФФЕКТЫ И ЛОГИКА =====
 
-  // ===== ЛОГИКА =====
-
+  // Инициализация и анимации
   useEffect(() => {
-    // Определяем приветствие по времени суток
+    setIsLoaded(true);
+    
+    // Определяем приветствие
     const hour = new Date().getHours();
     let text = '';
     if (hour >= 6 && hour < 11) text = 'Доброе утро';
@@ -134,19 +202,13 @@ const WelcomePage = () => {
     else text = 'Доброй ночи';
     setGreeting(text);
 
-    // Запускаем анимации появления
-    const logoTimer = setTimeout(() => setLogoAnimated(true), 100);
-    const textTimer = setTimeout(() => setTextAnimated(true), 600);
-
-    // Запускаем анимации исчезновения через 2 секунды
-    const exitTimer = setTimeout(() => {
-      setIsExiting(true);
-    }, 2000);
-
-    // Переходим на главную страницу через 2.8 секунды
-    const navTimer = setTimeout(() => {
-      navigate('/main-menu');
-    }, 2800);
+    // Запускаем анимации
+    const logoTimer = setTimeout(() => setLogoAnimated(true), 300);
+    const textTimer = setTimeout(() => setTextAnimated(true), 800);
+    
+    // Auto-exit
+    const exitTimer = setTimeout(() => setIsExiting(true), 3000);
+    const navTimer = setTimeout(() => navigate('/main-menu'), 4000);
 
     return () => {
       clearTimeout(logoTimer);
@@ -156,132 +218,294 @@ const WelcomePage = () => {
     };
   }, [navigate]);
 
-  // Свайп-обработчик
-  const swipeHandlers = useSwipeable({ 
-    preventDefault: true,
-    onSwipedLeft: () => navigate('/main-menu'),
-    onSwipedRight: () => navigate('/main-menu'),
-    onTap: () => navigate('/main-menu')
+  // Aurora animation
+  useEffect(() => {
+    const auroraInterval = setInterval(() => {
+      setAuroraOffset(prev => (prev + 1) % 100);
+    }, 100);
+
+    return () => clearInterval(auroraInterval);
+  }, []);
+
+  // Background rotation - автоматическая смена каждые 12 секунд
+  useEffect(() => {
+    const bgInterval = setInterval(() => {
+      setCurrentBgIndex(prev => (prev + 1) % backgrounds.length);
+    }, 12000); // меняем каждые 12 секунд
+
+    return () => clearInterval(bgInterval);
+  }, []);
+
+  // Mouse tracking для параллакса
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      const { clientX, clientY } = e;
+      const { innerWidth, innerHeight } = window;
+      
+      setMousePosition({
+        x: (clientX - innerWidth / 2) / innerWidth,
+        y: (clientY - innerHeight / 2) / innerHeight
+      });
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+
+  // Swipe handlers
+  const swipeHandlers = useSwipeable({
+    onSwipedLeft: () => !isExiting && navigate('/main-menu'),
+    onSwipedRight: () => !isExiting && navigate('/main-menu'),
+    onTap: () => !isExiting && navigate('/main-menu')
   });
+
+  // ===== АНИМАЦИИ FRAMER MOTION =====
+
+  const containerVariants = {
+    hidden: { opacity: 0, scale: 0.9 },
+    visible: { 
+      opacity: 1, 
+      scale: 1,
+      transition: { 
+        duration: 0.8, 
+        ease: [0.6, 0.01, -0.05, 0.95] 
+      }
+    },
+    exit: { 
+      opacity: 0, 
+      scale: 1.1, 
+      y: -50,
+      transition: { 
+        duration: 0.6,
+        ease: [0.6, 0.01, -0.05, 0.95] 
+      }
+    }
+  };
+
+  const logoVariants = {
+    hidden: { y: -100, opacity: 0, rotateY: -90 },
+    visible: { 
+      y: 0, 
+      opacity: 1, 
+      rotateY: 0,
+      transition: { 
+        type: 'spring',
+        stiffness: 200,
+        damping: 20,
+        delay: 0.2
+      }
+    }
+  };
+
+  const textVariants = {
+    hidden: { y: 50, opacity: 0 },
+    visible: { 
+      y: 0, 
+      opacity: 1,
+      transition: { 
+        type: 'spring',
+        stiffness: 150,
+        damping: 25,
+        delay: 0.5
+      }
+    }
+  };
 
   // ===== РЕНДЕРИНГ =====
 
-  // CSS анимации
-  const animations = (
-    <style>
-      {`
-        @keyframes piRotate {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-        
-        @keyframes piFloatAround {
-          0% { 
-            left: 10%; 
-            top: 10%; 
-            transform: scale(1); 
-          }
-          12.5% { 
-            left: 80%; 
-            top: 15%; 
-            transform: scale(1.2); 
-          }
-          25% { 
-            left: 85%; 
-            top: 40%; 
-            transform: scale(0.8); 
-          }
-          37.5% { 
-            left: 70%; 
-            top: 70%; 
-            transform: scale(1.1); 
-          }
-          50% { 
-            left: 40%; 
-            top: 80%; 
-            transform: scale(0.9); 
-          }
-          62.5% { 
-            left: 15%; 
-            top: 75%; 
-            transform: scale(1.3); 
-          }
-          75% { 
-            left: 5%; 
-            top: 50%; 
-            transform: scale(0.7); 
-          }
-          87.5% { 
-            left: 20%; 
-            top: 25%; 
-            transform: scale(1.1); 
-          }
-          100% { 
-            left: 10%; 
-            top: 10%; 
-            transform: scale(1); 
-          }
-        }
-
-        /* Дополнительные анимации для точек */
-        @keyframes dotPulse1 {
-          0%, 100% { opacity: 0.2; transform: scale(1); }
-          50% { opacity: 0.6; transform: scale(1.5); }
-        }
-        @keyframes dotPulse2 {
-          0%, 100% { opacity: 0.3; transform: scale(1); }
-          50% { opacity: 0.7; transform: scale(1.3); }
-        }
-        @keyframes dotPulse3 {
-          0%, 100% { opacity: 0.1; transform: scale(1); }
-          50% { opacity: 0.5; transform: scale(1.8); }
-        }
-      `}
-    </style>
-  );
-
   return (
-    <div
-      style={welcomeContainerStyle}
-      className="welcome-container" // ← ИСПОЛЬЗУЕМ КЛАСС ИЗ CSS
-      {...swipeHandlers}
-    >
-      {animations}
+    <>
+      {/* CSS анимации */}
+      <style>
+        {`
+          @keyframes auroraShift {
+            0% { filter: hue-rotate(0deg) brightness(1) saturate(1); }
+            50% { filter: hue-rotate(90deg) brightness(1.2) saturate(1.5); }
+            100% { filter: hue-rotate(180deg) brightness(0.9) saturate(1.2); }
+          }
 
-      {/* Точки фона - ИСПОЛЬЗУЕМ КЛАССЫ ИЗ CSS */}
-      <div className="subtle-dot dot-1" />
-      <div className="subtle-dot dot-2" />
-      <div className="subtle-dot dot-3" />
-      <div className="subtle-dot dot-4" />
-      <div className="subtle-dot dot-5" />
-      <div className="subtle-dot dot-6" />
-      <div className="subtle-dot dot-7" />
-      <div className="subtle-dot dot-8" />
-      <div className="subtle-dot dot-9" />
-      <div className="subtle-dot dot-10" />
+          @keyframes textShimmer {
+            0% { background-position: -200px 0; }
+            100% { background-position: 200px 0; }
+          }
 
-      {/* Pi элемент - ИСПОЛЬЗУЕМ КЛАССЫ ИЗ CSS */}
-      <div className="pi-wrapper">
-        <img src={piImage} className="pi-fly" alt="Pi" />
-      </div>
+          @keyframes float1 {
+            0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.4; }
+            25% { transform: translateY(-20px) rotate(90deg); opacity: 0.8; }
+            50% { transform: translateY(-40px) rotate(180deg); opacity: 0.6; }
+            75% { transform: translateY(-20px) rotate(270deg); opacity: 0.9; }
+          }
 
-      {/* Оверлей */}
-      <div style={overlayStyle} />
+          @keyframes float2 {
+            0%, 100% { transform: translateX(0) rotate(0deg); opacity: 0.3; }
+            33% { transform: translateX(30px) rotate(120deg); opacity: 0.7; }
+            66% { transform: translateX(-30px) rotate(240deg); opacity: 0.5; }
+          }
 
-      {/* Логотип */}
-      <div ref={logoRef} style={logoStyle}>
-        <img
-          src={logoImage}
-          alt="Логотип РГС Жизнь"
-          style={logoImageStyle}
-        />
-      </div>
+          @keyframes float3 {
+            0%, 100% { transform: translate(0, 0) rotate(0deg) scale(1); opacity: 0.5; }
+            25% { transform: translate(20px, -30px) rotate(90deg) scale(1.2); opacity: 0.8; }
+            50% { transform: translate(-20px, -60px) rotate(180deg) scale(0.8); opacity: 0.6; }
+            75% { transform: translate(-40px, -30px) rotate(270deg) scale(1.1); opacity: 0.7; }
+          }
 
-      {/* Приветственный текст */}
-      <div ref={textRef} style={textWrapperStyle}>
-        <h1 style={welcomeTitleStyle}>{greeting}</h1>
-      </div>
-    </div>
+          .glass-logo:hover {
+            transform: scale(1.05) rotateY(10deg);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+          }
+        `}
+      </style>
+
+      <motion.div
+        ref={containerRef}
+        style={containerStyle}
+        variants={containerVariants}
+        initial="hidden"
+        animate={isLoaded ? "visible" : "hidden"}
+        exit="exit"
+        {...swipeHandlers}
+      >
+        {/* Animated Backgrounds с crossfade */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentBgIndex}
+            style={{
+              ...backgroundStyle,
+              backgroundImage: `url(${backgrounds[currentBgIndex]})`
+            }}
+            initial={{ opacity: 0, scale: 1.05 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 2, ease: "easeInOut" }}
+          />
+        </AnimatePresence>
+
+        {/* Aurora градиент overlay */}
+        <div style={auroraOverlayStyle} />
+
+        {/* Floating particles */}
+        {Array.from({ length: 12 }, (_, i) => (
+          <div key={i} style={particleStyle(i)} />
+        ))}
+
+        {/* Главный гласморфизм контейнер */}
+        <AnimatePresence>
+          {!isExiting && (
+            <motion.div
+              style={glassContainerStyle}
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+            >
+              {/* Логотип с анимацией */}
+              <motion.div
+                ref={logoRef}
+                style={logoContainerStyle}
+                variants={logoVariants}
+                className="glass-logo"
+                whileHover={{ 
+                  scale: 1.05, 
+                  rotateY: 10,
+                  transition: { duration: 0.3 }
+                }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <img
+                  src={logoImage}
+                  alt="Логотип РГС Жизнь"
+                  style={{
+                    width: '80px',
+                    height: '80px',
+                    objectFit: 'contain',
+                    filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.2))'
+                  }}
+                />
+              </motion.div>
+
+              {/* Приветственный текст */}
+              <motion.div
+                ref={textRef}
+                variants={textVariants}
+              >
+                <h1 style={titleStyle}>
+                  {greeting}
+                </h1>
+                <p style={{
+                  fontSize: '0.9rem',
+                  fontFamily: '"Segoe UI", sans-serif',
+                  fontWeight: 'normal',
+                  color: 'rgba(255, 255, 255, 0.8)',
+                  margin: '15px 0 0',
+                  letterSpacing: '0.5px'
+                }}>
+                  Добро пожаловать в будущее
+                </p>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Background indicator - показывает какой фон активен */}
+        <div style={{
+          position: 'absolute',
+          bottom: '30px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          display: 'flex',
+          gap: '8px',
+          zIndex: 15
+        }}>
+          {backgrounds.map((_, index) => (
+            <div
+              key={index}
+              style={{
+                width: '8px',
+                height: '8px',
+                borderRadius: '50%',
+                background: index === currentBgIndex 
+                  ? 'rgba(255, 255, 255, 0.9)' 
+                  : 'rgba(255, 255, 255, 0.4)',
+                border: index === currentBgIndex 
+                  ? '2px solid rgba(139, 69, 19, 0.8)' 
+                  : '1px solid rgba(255, 255, 255, 0.2)',
+                boxShadow: index === currentBgIndex 
+                  ? '0 0 10px rgba(139, 69, 19, 0.5)' 
+                  : 'none',
+                transition: 'all 0.3s ease',
+                cursor: 'pointer'
+              }}
+              onClick={() => setCurrentBgIndex(index)}
+            />
+          ))}
+        </div>
+        <motion.div
+          style={{
+            position: 'absolute',
+            top: '20%',
+            right: '10%',
+            zIndex: 3,
+            opacity: 0.6
+          }}
+          animate={{
+            x: mousePosition.x * 50,
+            y: mousePosition.y * 30,
+            rotate: auroraOffset * 2
+          }}
+          transition={{ type: 'spring', stiffness: 100, damping: 20 }}
+        >
+          <img
+            src={piImage}
+            alt="Pi"
+            style={{
+              width: '40px',
+              height: '40px',
+              filter: 'drop-shadow(0 2px 10px rgba(139, 69, 19, 0.5))'
+            }}
+          />
+        </motion.div>
+      </motion.div>
+    </>
   );
 };
 
