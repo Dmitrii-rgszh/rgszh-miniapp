@@ -5,6 +5,7 @@ import logging
 import threading
 import smtplib
 import sys
+import uuid
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
@@ -202,38 +203,6 @@ else:
 
 # ===== ИНИЦИАЛИЗАЦИЯ ПОЛНОГО КАЛЬКУЛЯТОРА "НА ВСЯКИЙ СЛУЧАЙ" =====
 print("🚀 Инициализация полного калькулятора 'На всякий случай'...")
-
-if JUSTINCASE_AVAILABLE:
-    try:
-        print("  🔗 Регистрация API endpoints...")
-        route_success = register_justincase_routes(app)
-        if route_success:
-            print("  ✅ API полного калькулятора 'На всякий случай' зарегистрировано")
-            print("  📍 Доступные endpoints:")
-            print("    - POST /api/proxy/calculator/save (основной для фронтенда)")
-            print("    - POST /api/justincase/calculate (расширенный)")
-            print("    - POST /api/justincase/validate (валидация данных)")
-            print("    - POST /api/justincase/validate-sum (валидация суммы)")
-            print("    - POST /api/justincase/recommend-sum (рекомендуемая сумма)")
-            print("    - GET  /api/justincase/config (конфигурация)")
-            print("    - GET  /api/justincase/test (тестирование)")
-            print("    - GET  /api/justincase/status (статус)")
-            print("  🎯 Особенности полной версии:")
-            print("    - Актуарные таблицы из Excel (11,444+ коэффициентов)")
-            print("    - КВ коэффициенты по срокам (20%-60%)")
-            print("    - Детальные тарифы НС и КЗ")
-            print("    - Выкупные стоимости")
-            print("    - Коэффициенты рассрочки")
-            print("    - Спортивные доплаты")
-        else:
-            print("  ❌ Ошибка регистрации API полного калькулятора")
-            
-    except Exception as e:
-        print(f"  ❌ Ошибка инициализации полного калькулятора: {e}")
-        JUSTINCASE_AVAILABLE = False
-        JUSTINCASE_ERROR = str(e)
-else:
-    print(f"  ℹ️ Полный калькулятор 'На всякий случай' отключен: {JUSTINCASE_ERROR}")
 
 # ====== Email Configuration ======
 SMTP_SERVER = os.environ.get("SMTP_SERVER", "smtp.yandex.ru")
