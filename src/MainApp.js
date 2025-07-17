@@ -7,6 +7,8 @@
 // ✅ Исправлены проблемы Safari для мобильных устройств
 // ✅ ДОБАВЛЕНО: Система предзагрузки фонов с прогресс-баром
 // ✅ ДОБАВЛЕНО: Ультра-плавные переходы без белых экранов (2.5s)
+// ✅ ДОБАВЛЕНО: Эффект блюра при смене фонов (1s) - УСКОРЕНО В 2 РАЗА
+// ✅ ДОБАВЛЕНО: Глобальная логика Safe Area для всех страниц
 
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
@@ -137,6 +139,10 @@ function MainApp() {
   const [auroraOffset, setAuroraOffset] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
   
+  // ===== СОСТОЯНИЕ ДЛЯ БЛЮРА =====
+  const [currentBlur, setCurrentBlur] = useState(0);  // Блюр текущего фона (0px = четкий)
+  const [nextBlur, setNextBlur] = useState(15);       // Блюр следующего фона (15px = размытый)
+  
   // ===== СОСТОЯНИЕ ПРЕДЗАГРУЗКИ =====
   const [imagesLoaded, setImagesLoaded] = useState(false);
   const [loadedImages, setLoadedImages] = useState(new Set());
@@ -187,7 +193,31 @@ function MainApp() {
     });
   };
 
-  // ===== УЛЬТРА-ПЛАВНАЯ СМЕНА ФОНОВ =====
+  // ===== НАЧАЛО РАЗМЫТИЯ ТЕКУЩЕГО ФОНА (за 1 секунду до смены) =====
+  const startBlurring = () => {
+    if (!imagesLoaded || availableBackgrounds.length <= 1) return;
+    
+    console.log(`🌫️ Начинаем размытие текущего фона за 1 секунду до смены`);
+    
+    // Плавно размываем текущий фон за 1 секунду (УСКОРЕНО В 2 РАЗА)
+    const blurStep = 15 / 10; // 15px размытия за 10 шагов (по 100ms) = 1 секунда
+    let currentStep = 0;
+    
+    const blurInterval = setInterval(() => {
+      currentStep++;
+      const newBlur = blurStep * currentStep;
+      
+      if (newBlur >= 15) {
+        setCurrentBlur(15);
+        clearInterval(blurInterval);
+        console.log(`🌫️ Размытие завершено: ${15}px`);
+      } else {
+        setCurrentBlur(newBlur);
+      }
+    }, 100); // Каждые 100ms
+  };
+
+  // ===== СМЕНА ФОНОВ (когда старый уже размыт) =====
   const changeBackground = () => {
     if (!imagesLoaded || availableBackgrounds.length <= 1) return;
     
@@ -197,12 +227,35 @@ function MainApp() {
     const nextIndex = (currentBackgroundIndex + 1) % availableBackgrounds.length;
     setNextBackgroundIndex(nextIndex);
     
-    // ИСПРАВЛЕНО: Увеличено время для ультра-плавного перехода
-    setTimeout(() => {
-      setCurrentBackgroundIndex(nextIndex);
-      setIsTransitioning(false);
-      console.log(`Смена фона: → ${nextIndex + 1}/${availableBackgrounds.length}`);
-    }, 2500); // ИСПРАВЛЕНО: 2.5 секунды для ультра-плавного перехода
+    console.log(`🎨 Начинаем смену фона: ${currentBackgroundIndex + 1} → ${nextIndex + 1}`);
+    
+    // Новый фон начинает размытым и становится четким за 1 секунду (УСКОРЕНО В 2 РАЗА)
+    setNextBlur(15); // Начинаем с максимального размытия
+    
+    // Плавно убираем размытие с нового фона за 1 секунду
+    const unblurStep = 15 / 10; // 15px размытия за 10 шагов = 1 секунда
+    let currentStep = 0;
+    
+    const unblurInterval = setInterval(() => {
+      currentStep++;
+      const newBlur = 15 - (unblurStep * currentStep);
+      
+      if (newBlur <= 0) {
+        setNextBlur(0);
+        clearInterval(unblurInterval);
+        
+        // Финальное переключение
+        setTimeout(() => {
+          setCurrentBackgroundIndex(nextIndex);
+          setIsTransitioning(false);
+          setCurrentBlur(0);    // Новый фон четкий
+          setNextBlur(15);      // Готовим для следующего перехода
+          console.log(`✅ Переход завершен: фон ${nextIndex + 1}/${availableBackgrounds.length}`);
+        }, 100);
+      } else {
+        setNextBlur(newBlur);
+      }
+    }, 100); // Каждые 100ms
   };
 
   // ===== ФУНКЦИЯ ОБНОВЛЕНИЯ ВЫСОТЫ =====
@@ -237,22 +290,38 @@ function MainApp() {
   useEffect(() => {
     if (!imagesLoaded || availableBackgrounds.length <= 1) return;
     
-    console.log('Запуск автоматической смены фонов каждые 15 секунд');
-    const bgInterval = setInterval(changeBackground, 15000); // ИСПРАВЛЕНО: 15 секунд
+    console.log('Запуск автоматической смены фонов: размытие через 14 сек, смена через 15 сек');
+    
+    // Размытие начинается через 14 секунд (за 1 секунду до смены) - ОБНОВЛЕНО
+    const blurTimer = setInterval(() => {
+      startBlurring();
+    }, 14000); // ИЗМЕНЕНО: 14 секунд вместо 13
+    
+    // Смена фона происходит через 15 секунд (когда фон уже размыт)
+    const changeTimer = setInterval(() => {
+      changeBackground();
+    }, 15000);
 
-    return () => clearInterval(bgInterval);
+    return () => {
+      clearInterval(blurTimer);
+      clearInterval(changeTimer);
+    };
   }, [imagesLoaded, currentBackgroundIndex]);
 
-  // ===== AURORA АНИМАЦИЯ =====
+  // ===== AURORA АНИМАЦИЯ (синхронизированная с фонами) =====
   useEffect(() => {
+    if (!imagesLoaded) return;
+    
+    // Aurora цикл = 15 секунд (время жизни одного фона)
+    // 150 шагов по 100ms = 15 секунд
     const auroraInterval = setInterval(() => {
-      setAuroraOffset(prev => (prev + 1) % 100);
+      setAuroraOffset(prev => (prev + 1) % 150); // 150 шагов вместо 100
     }, 100);
 
     return () => clearInterval(auroraInterval);
-  }, []);
+  }, [imagesLoaded]);
 
-  // ===== ГЛОБАЛЬНЫЕ СТИЛИ КОНТЕЙНЕРА =====
+  // ===== ГЛОБАЛЬНЫЕ СТИЛИ КОНТЕЙНЕРА + SAFE AREA =====
   const globalContainerStyle = {
     position: 'relative',
     width: '100%',
@@ -261,12 +330,34 @@ function MainApp() {
     overflow: 'hidden',
     fontFamily: '"Segoe UI", sans-serif',
     
+    // ✨ SAFE AREA: отступ сверху для безопасной зоны
+    paddingTop: 'env(safe-area-inset-top, 50px)',
+    boxSizing: 'border-box',
+    
+    // Адаптивность для мобильных
+    '@supports (-webkit-touch-callout: none)': {
+      height: '-webkit-fill-available',
+      minHeight: '-webkit-fill-available'
+    }
+  };
+
+  // ===== СТИЛЬ ОСНОВНОГО ФОНА (с блюром только для фона) =====
+  const mainBackgroundStyle = {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    zIndex: -1, // Под всеми элементами
+    
     // ФОНОВОЕ ИЗОБРАЖЕНИЕ или КОРПОРАТИВНЫЙ ГРАДИЕНТ
     ...(availableBackgrounds.length > 0 && imagesLoaded ? {
       backgroundImage: `url(${availableBackgrounds[currentBackgroundIndex]})`,
       backgroundSize: 'cover',
       backgroundPosition: 'center',
-      backgroundRepeat: 'no-repeat'
+      backgroundRepeat: 'no-repeat',
+      filter: `blur(${currentBlur}px)`,  // ✨ Блюр только для фона
+      transition: 'filter 1s cubic-bezier(0.4, 0.0, 0.2, 1)' // ✨ УСКОРЕНО: 1 секунда анимация блюра
     } : {
       // Fallback: корпоративный градиент если изображения недоступны или загружаются
       background: `
@@ -279,20 +370,11 @@ function MainApp() {
         )
       `,
       backgroundSize: '400% 400%',
-      animation: 'globalBackgroundShift 25s ease-in-out infinite' // ИСПРАВЛЕНО: 25s
-    }),
-    
-    // Ультра-плавная смена фонов
-    transition: 'background-image 2.5s cubic-bezier(0.4, 0.0, 0.2, 1)',
-    
-    // Адаптивность для мобильных
-    '@supports (-webkit-touch-callout: none)': {
-      height: '-webkit-fill-available',
-      minHeight: '-webkit-fill-available'
-    }
+      animation: 'globalBackgroundShift 25s ease-in-out infinite'
+    })
   };
 
-  // ===== СТИЛЬ СЛЕДУЮЩЕГО ФОНА (для ультра-плавного перехода) =====
+  // ===== СТИЛЬ СЛЕДУЮЩЕГО ФОНА (для ультра-плавного перехода с блюром) =====
   const nextBackgroundStyle = {
     position: 'absolute',
     top: 0,
@@ -305,12 +387,13 @@ function MainApp() {
     backgroundPosition: 'center',
     backgroundRepeat: 'no-repeat',
     opacity: isTransitioning ? 1 : 0,
-    transition: 'opacity 2.5s cubic-bezier(0.4, 0.0, 0.2, 1)', // ИСПРАВЛЕНО: 2.5s + Material easing
-    zIndex: 0,
+    filter: `blur(${nextBlur}px)`,  // ✨ Блюр только для фона
+    transition: 'opacity 1s cubic-bezier(0.4, 0.0, 0.2, 1), filter 1s cubic-bezier(0.4, 0.0, 0.2, 1)', // ✨ УСКОРЕНО: 1 секунда анимация
+    zIndex: -1, // Под всеми элементами
     pointerEvents: 'none'
   };
 
-  // ===== AURORA ОВЕРЛЕЙ =====
+  // ===== ПЛАВНАЯ AURORA АНИМАЦИЯ (синхронизированная с фонами) =====
   const auroraOverlayStyle = {
     position: 'absolute',
     top: 0,
@@ -318,18 +401,18 @@ function MainApp() {
     width: '100%',
     height: '100%',
     background: `
-      radial-gradient(circle at ${20 + auroraOffset}% ${30 + auroraOffset * 0.5}%, 
-        rgba(180, 0, 55, 0.15) 0%,     /* Корпоративный красный */
-        rgba(152, 164, 174, 0.1) 25%,  /* Корпоративный серый */
-        rgba(0, 40, 130, 0.15) 50%,    /* Корпоративный синий */
-        transparent 75%),
-      radial-gradient(circle at ${80 - auroraOffset}% ${70 - auroraOffset * 0.3}%, 
-        rgba(153, 0, 55, 0.1) 0%,      /* Темнее красный */
-        rgba(118, 143, 146, 0.08) 30%, /* Темнее серый */
-        rgba(0, 32, 104, 0.12) 60%,    /* Темнее синий */
-        transparent 80%)
+      radial-gradient(circle at ${15 + (auroraOffset * 0.4)}% ${25 + (auroraOffset * 0.3)}%, 
+        rgba(180, 0, 55, 0.08) 0%,     /* Более мягкий красный */
+        rgba(152, 164, 174, 0.05) 30%,  /* Более мягкий серый */
+        rgba(0, 40, 130, 0.08) 60%,    /* Более мягкий синий */
+        transparent 85%),
+      radial-gradient(circle at ${85 - (auroraOffset * 0.3)}% ${75 - (auroraOffset * 0.2)}%, 
+        rgba(153, 0, 55, 0.06) 0%,      /* Еще мягче красный */
+        rgba(118, 143, 146, 0.04) 40%, /* Еще мягче серый */
+        rgba(0, 32, 104, 0.06) 70%,    /* Еще мягче синий */
+        transparent 90%)
     `,
-    zIndex: 1,
+    zIndex: 0, // Над фоном, но под интерфейсом
     pointerEvents: 'none'
   };
 
@@ -350,7 +433,7 @@ function MainApp() {
     flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 1000,
+    zIndex: 100, // Над всем во время загрузки
     opacity: imagesLoaded ? 0 : 1,
     visibility: imagesLoaded ? 'hidden' : 'visible',
     transition: 'opacity 0.5s ease-out, visibility 0.5s ease-out'
@@ -390,11 +473,39 @@ function MainApp() {
     fontFamily: '"Segoe UI", sans-serif'
   };
 
-  // ===== CSS-В-JS ДЛЯ АНИМАЦИИ =====
+  // ===== CSS-В-JS ДЛЯ АНИМАЦИИ + SAFE AREA =====
   const keyframesStyle = `
     @keyframes globalBackgroundShift {
       0%, 100% { background-position: 0% 50%; }
       50% { background-position: 100% 50%; }
+    }
+    
+    /* ✨ ГЛОБАЛЬНЫЕ CSS ПЕРЕМЕННЫЕ ДЛЯ SAFE AREA */
+    :root {
+      --safe-area-top: env(safe-area-inset-top, 50px);
+      --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+      --safe-area-left: env(safe-area-inset-left, 0px);
+      --safe-area-right: env(safe-area-inset-right, 0px);
+    }
+    
+    /* ✨ ГЛОБАЛЬНЫЕ УТИЛИТАРНЫЕ КЛАССЫ ДЛЯ SAFE AREA */
+    .safe-top { margin-top: var(--safe-area-top) !important; }
+    .safe-top-padding { padding-top: var(--safe-area-top) !important; }
+    .safe-bottom { margin-bottom: var(--safe-area-bottom) !important; }
+    .safe-bottom-padding { padding-bottom: var(--safe-area-bottom) !important; }
+    
+    /* ✨ АВТОМАТИЧЕСКИЙ SAFE AREA ДЛЯ ОСНОВНЫХ ЭЛЕМЕНТОВ */
+    .logo-safe { top: 110px !important; }
+    .buttons-safe { top: 300px !important; }
+    .title-safe { top: 260px !important; }
+    
+    /* ✨ АНИМАЦИИ С SAFE AREA */
+    @keyframes piFloatAroundSafe {
+      0% { transform: translate(20px, 20px); }
+      25% { transform: translate(calc(100vw - 60px), 30px); }
+      50% { transform: translate(calc(100vw - 50px), calc(100vh - 70px - var(--safe-area-bottom))); }
+      75% { transform: translate(30px, calc(100vh - 60px - var(--safe-area-bottom))); }
+      100% { transform: translate(20px, 20px); }
     }
   `;
 
@@ -412,12 +523,15 @@ function MainApp() {
   return (
     <ErrorBoundary>
       <div style={globalContainerStyle}>
-        {/* Следующий фон для ультра-плавного перехода */}
+        {/* Основной фон (с блюром только для фона) */}
+        <div style={mainBackgroundStyle} />
+        
+        {/* Следующий фон для ультра-плавного перехода с блюром */}
         {availableBackgrounds.length > 1 && imagesLoaded && (
           <div style={nextBackgroundStyle} />
         )}
         
-        {/* Aurora оверлей поверх фона */}
+        {/* Плавная Aurora анимация поверх фона */}
         <div style={auroraOverlayStyle} />
         
         {/* Loader во время предзагрузки */}
@@ -448,27 +562,6 @@ function MainApp() {
             <Route path="/marzapoll"  element={<MarzaPollPage />} />
           </Routes>
         </Router>
-
-        {/* Индикатор текущего фона - УДАЛЕН по запросу пользователя */}
-        {/* 
-        {process.env.NODE_ENV === 'development' && availableBackgrounds.length > 1 && imagesLoaded && (
-          <div style={{
-            position: 'fixed',
-            bottom: '10px',
-            right: '10px',
-            background: 'rgba(0, 0, 0, 0.7)',
-            color: 'white',
-            padding: '5px 10px',
-            borderRadius: '5px',
-            fontSize: '12px',
-            fontFamily: '"Segoe UI", sans-serif',
-            zIndex: 9999
-          }}>
-            Фон: {currentBackgroundIndex + 1}/{availableBackgrounds.length}
-            {isTransitioning && ' (переход...)'}
-          </div>
-        )}
-        */}
       </div>
     </ErrorBoundary>
   );
