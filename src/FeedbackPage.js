@@ -7,14 +7,11 @@ import { useNavigate }      from 'react-router-dom';
 import './Styles/logo.css';         // стили и анимации логотипа
 import './Styles/Buttons.css';      // базовые стили кнопок
  // правки специфичные для FeedbackPage (контент, next-btn и т.д.)
-import './Styles/background.css';
 import './Styles/BackButton.css';
 import './Styles/NextButton.css';
 import './Styles/OptionButton.css';
 import './FeedbackPage.css';
-import backgroundImage from './components/background.png';
 import logoImage       from './components/logo.png';
-import piImage         from './components/pi.png';
 
 import partners      from './components/autosuggest/partners.json';
 import speakersData  from './components/autosuggest/speakers.json';

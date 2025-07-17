@@ -8,18 +8,13 @@ import { apiCall } from './config';
 // Стили
 import './Styles/logo.css';
 import './Styles/Buttons.css';
-import './Styles/background.css';
 import './Styles/BackButton.css';
 import './Styles/NextButton.css';
 import './Styles/OptionButton.css';
 import './FeedbackPage.css';
 import './AssessmentPage.css';
 import './Styles/mobile-responsive.css';
-
-// Ресурсы
-import backgroundImage from './components/background.png';
 import logoImage from './components/logo.png';
-import piImage from './components/pi.png';
 
 // JSON-файлы с ФИО
 import surnames from './components/autosuggest/surname.json';
@@ -351,18 +346,6 @@ export default function AssessmentPage() {
     overscrollBehavior: 'none'
   };
 
-  // Оверлей с ТОЧНО ТАКИМ ЖЕ градиентом как в WelcomePage
-  const overlayStyle = {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: '100%',
-    height: '100%',
-    // ТОЧНО ТАКОЙ ЖЕ ГРАДИЕНТ КАК В WELCOMEPAGE
-    background: 'linear-gradient(135deg, rgba(147, 39, 143, 0.85) 0%, rgba(71, 125, 191, 0.85) 100%)',
-    zIndex: 1
-  };
-
   // Фиксированный логотип
   const logoContainerStyle = {
     position: 'absolute',
@@ -623,24 +606,6 @@ export default function AssessmentPage() {
           }
         `}
       </style>
-
-      {/* Фоновые элементы - ТОЧНО КАК В WELCOMEPAGE */}
-      <div className="subtle-dot dot-1" />
-      <div className="subtle-dot dot-2" />
-      <div className="subtle-dot dot-3" />
-      <div className="subtle-dot dot-4" />
-      <div className="subtle-dot dot-5" />
-      <div className="subtle-dot dot-6" />
-      <div className="subtle-dot dot-7" />
-      <div className="subtle-dot dot-8" />
-      <div className="subtle-dot dot-9" />
-      <div className="subtle-dot dot-10" />
-      <div className="pi-wrapper">
-        <img src={piImage} className="pi-fly" alt="Pi" />
-      </div>
-
-      {/* ОВЕРЛЕЙ С ГРАДИЕНТОМ КАК В WELCOMEPAGE */}
-      <div style={overlayStyle} />
 
       {/* ФИКСИРОВАННЫЙ ЛОГОТИП ВВЕРХУ */}
       <div style={logoContainerStyle}>

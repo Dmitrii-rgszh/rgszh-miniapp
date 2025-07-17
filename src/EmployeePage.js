@@ -3,10 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSwipeable } from 'react-swipeable';
-
-import backgroundImage from './components/background.png';
 import logoImage from './components/logo.png';
-import piImage from './components/pi.png';
 
 const EmployeePage = () => {
   const navigate = useNavigate();
@@ -154,23 +151,6 @@ const EmployeePage = () => {
     ...(index === 9 && { top: '60%', right: '25%' }),
     ...(index === 10 && { bottom: '40%', left: '30%' })
   });
-
-  // Pi элемент с космической анимацией
-  const piWrapperStyle = {
-    position: 'absolute',
-    top: '0',
-    left: '0',
-    zIndex: 2,
-    opacity: 0.4,
-    animation: `piFloatAround ${moveDuration} ease-in-out infinite`
-  };
-
-  const piImageStyle = {
-    width: '40px',
-    height: '40px',
-    opacity: 0.8,
-    animation: `piRotate ${rotateDuration} linear infinite`
-  };
 
   // ===== ЛОГИКА =====
 
@@ -354,29 +334,6 @@ const EmployeePage = () => {
   return (
     <div style={mainContainerStyle} {...swipeHandlers}>
       {animations}
-
-      {/* Фоновые точки с пульсирующими анимациями */}
-      {[1,2,3,4,5,6,7,8,9,10].map(n => (
-        <div key={n} style={dotStyle(n)} />
-      ))}
-
-      {/* Pi элемент с космической анимацией */}
-      <div style={piWrapperStyle}>
-        <img src={piImage} style={piImageStyle} alt="Pi" />
-      </div>
-
-      {/* Оверлей */}
-      <div style={overlayStyle} />
-
-      {/* Логотип */}
-      <div style={logoStyle}>
-        <img
-          src={logoImage}
-          alt="Логотип РГС Жизнь"
-          style={logoImageStyle}
-        />
-      </div>
-
       {/* Заголовок страницы */}
       <h2 style={titleStyle}>
         Страница сотрудника

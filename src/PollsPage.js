@@ -1,15 +1,9 @@
 // PollsPage.js - Точная копия стилей MainMenu с классами
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-
-import './Styles/global.css';     // Монстерат, сбросы
-import './Styles/background.css'; // Градиент, шум, subtle-dot и pi
 import './Styles/logo.css';       // Лого, анимации (уезжает наверх)
 import './Styles/Buttons.css';    // Стили кнопок (включая exit-анимации)
-
-import backgroundImage from './components/background.png';
 import logoImage       from './components/logo.png';
-import piImage         from './components/pi.png';
 
 export default function PollsPage() {
   const navigate    = useNavigate();

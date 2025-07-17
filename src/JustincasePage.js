@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import mainmenuIcon from './components/icons/mainmenu.png';
 import logoImage from './components/logo.png';
-import backgroundImage from './components/background.png';
-import piImage from './components/pi.png';
 import DateWheelPicker from './DateWheelPicker';
 
 // Функция определения мобильного браузера
@@ -480,42 +477,6 @@ const JustincasePage = () => {
     right: '30px',
     background: canGoNext() ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : 'rgba(189, 195, 199, 0.8)',
     cursor: canGoNext() ? 'pointer' : 'not-allowed'
-  };
-
-  // Точки фона
-  const dotStyle = (index) => ({
-    position: 'absolute',
-    width: '8px',
-    height: '8px',
-    borderRadius: '50%',
-    background: 'rgba(255, 255, 255, 0.2)',
-    ...(index === 1 && { top: '10%', left: '10%' }),
-    ...(index === 2 && { top: '20%', right: '15%' }),
-    ...(index === 3 && { top: '30%', left: '25%' }),
-    ...(index === 4 && { bottom: '15%', left: '15%' }),
-    ...(index === 5 && { top: '5%', right: '20%' }),
-    ...(index === 6 && { bottom: '25%', right: '10%' }),
-    ...(index === 7 && { top: '45%', left: '5%' }),
-    ...(index === 8 && { bottom: '5%', right: '30%' }),
-    ...(index === 9 && { top: '60%', right: '25%' }),
-    ...(index === 10 && { bottom: '40%', left: '30%' })
-  });
-
-  // Pi элемент
-  const piWrapperStyle = {
-    position: 'absolute',
-    top: '0',
-    left: '0',
-    zIndex: 2,
-    opacity: 0.4,
-    animation: `piFloatAround ${moveDuration} ease-in-out infinite`
-  };
-
-  const piImageStyle = {
-    width: '40px',
-    height: '40px',
-    opacity: 0.8,
-    animation: `piRotate ${rotateDuration} linear infinite`
   };
 
   // Результаты

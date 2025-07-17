@@ -2,12 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import io from 'socket.io-client';
-
-// Убираем CSS импорты и используем только inline стили
-
-import backgroundImage from './components/background.png';
 import logoImage from './components/logo.png';
-import piImage from './components/pi.png';
 
 const SOCKET_URL = process.env.REACT_APP_SOCKET_URL || window.location.origin;
 
@@ -234,42 +229,6 @@ export default function MarzaPollPage() {
     cursor: 'pointer',
     transition: 'all 0.3s ease',
     width: '100%'
-  };
-
-  // Стили для точек (упрощенные)
-  const dotStyle = (index) => ({
-    position: 'absolute',
-    width: '8px',
-    height: '8px',
-    borderRadius: '50%',
-    background: 'rgba(255, 255, 255, 0.2)',
-    zIndex: 1,
-    ...(index === 1 && { top: '10%', left: '10%' }),
-    ...(index === 2 && { top: '20%', right: '15%' }),
-    ...(index === 3 && { top: '30%', left: '25%' }),
-    ...(index === 4 && { bottom: '15%', left: '15%' }),
-    ...(index === 5 && { top: '5%', right: '20%' }),
-    ...(index === 6 && { bottom: '25%', right: '10%' }),
-    ...(index === 7 && { top: '45%', left: '5%' }),
-    ...(index === 8 && { bottom: '5%', right: '30%' }),
-    ...(index === 9 && { top: '60%', right: '25%' }),
-    ...(index === 10 && { bottom: '40%', left: '30%' })
-  });
-
-  const piWrapperStyle = {
-    position: 'absolute',
-    top: '0',
-    left: '0',
-    zIndex: 2,
-    opacity: 0.4,
-    animation: 'piFloatAround 70s ease-in-out infinite'
-  };
-
-  const piImageStyle = {
-    width: '40px',
-    height: '40px',
-    opacity: 0.8,
-    animation: 'piRotate 6s linear infinite'
   };
 
   useEffect(() => {

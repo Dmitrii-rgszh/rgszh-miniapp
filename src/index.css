@@ -1,22 +1,319 @@
-/* Подключение Montserrat (300 — лёгкое, 400 — обычное, 600 — полужирное) */
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&display=swap');
+/* ===================================================================
+   index.css - ПОЛНОСТЬЮ ОБНОВЛЕННЫЙ ДЛЯ SEGOE UI И SAFARI
+   
+   Особенности:
+   - Segoe UI как основной шрифт (Bold для заголовков, Regular для текста)
+   - Исправления для Safari iOS и мобильных браузеров
+   - Корпоративные цвета как CSS переменные
+   - Минимальные стили (основной фон в MainApp.js)
+=================================================================== */
 
-/* ИСПРАВЛЕНИЕ ДЛЯ SAFARI - добавляем только эти строки */
-html, body, #root {
+/* Корпоративные цвета как CSS переменные */
+:root {
+  /* Красные */
+  --color-red-primary: rgb(180, 0, 55);
+  --color-red-dark: rgb(153, 0, 55);
+  
+  /* Серые */
+  --color-gray-primary: rgb(152, 164, 174);
+  --color-gray-dark: rgb(118, 143, 146);
+  
+  /* Синие */
+  --color-blue-primary: rgb(0, 40, 130);
+  --color-blue-dark: rgb(0, 32, 104);
+  
+  /* Дополнительные цвета */
+  --color-white: #ffffff;
+  --color-text-primary: #ffffff;
+  --color-text-secondary: rgba(255, 255, 255, 0.85);
+}
+
+/* ===================================================================
+   БАЗОВЫЙ СБРОС И НАСТРОЙКИ
+=================================================================== */
+
+/* Полный сброс */
+*, *::before, *::after {
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
+}
+
+/* HTML и BODY - критично для Safari */
+html {
   width: 100%;
   height: 100%;
   overflow-x: hidden;
+  
+  /* Исправление для Safari iOS */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
-/* Специально для Safari iOS */
+body {
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden;
+  
+  /* ОСНОВНЫЕ ШРИФТЫ SEGOE UI */
+  font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  font-weight: 400; /* Regular */
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--color-text-primary);
+  
+  /* Сглаживание шрифтов */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  
+  /* Исправление для мобильных браузеров */
+  position: fixed;
+  top: 0;
+  left: 0;
+}
+
+/* ROOT контейнер */
+#root {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+/* Специальное исправление для Safari iOS */
 @supports (-webkit-touch-callout: none) {
   html, body, #root {
-    height: -webkit-fill-available;
+    height: -webkit-fill-available !important;
   }
 }
 
-body, h1, h2, h3, h4, h5, h6, button, input, textarea {
-  font-family: 'Montserrat', sans-serif;
+/* ===================================================================
+   ТИПОГРАФИКА SEGOE UI
+=================================================================== */
+
+/* Заголовки - BOLD */
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  font-weight: 700; /* Bold */
+  color: var(--color-text-primary);
+  line-height: 1.2;
+  margin: 0;
+}
+
+/* Размеры заголовков */
+h1 { font-size: 2.5rem; }   /* 40px */
+h2 { font-size: 2rem; }     /* 32px */
+h3 { font-size: 1.75rem; }  /* 28px */
+h4 { font-size: 1.5rem; }   /* 24px */
+h5 { font-size: 1.25rem; }  /* 20px */
+h6 { font-size: 1rem; }     /* 16px */
+
+/* Основной текст - REGULAR */
+p, span, div, li, td, th {
+  font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  font-weight: 400; /* Regular */
+  color: var(--color-text-primary);
+}
+
+/* Подзаголовки - REGULAR */
+.subtitle {
+  font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  font-weight: 400; /* Regular */
+  color: var(--color-text-secondary);
+}
+
+/* ===================================================================
+   ЭЛЕМЕНТЫ ФОРМ
+=================================================================== */
+
+/* Кнопки */
+button {
+  font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  font-weight: 600; /* Semi-bold для кнопок */
+  border: none;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+/* Поля ввода */
+input, textarea, select {
+  font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  font-weight: 400; /* Regular */
+  border: none;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+/* Плейсхолдеры */
+::placeholder {
+  color: var(--color-text-secondary);
+  font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  font-weight: 400;
+}
+
+/* ===================================================================
+   УТИЛИТАРНЫЕ КЛАССЫ
+=================================================================== */
+
+/* Шрифты */
+.font-bold {
+  font-weight: 700 !important;
+}
+
+.font-regular {
+  font-weight: 400 !important;
+}
+
+.font-semi-bold {
+  font-weight: 600 !important;
+}
+
+/* Цвета текста */
+.text-primary {
+  color: var(--color-text-primary) !important;
+}
+
+.text-secondary {
+  color: var(--color-text-secondary) !important;
+}
+
+.text-red {
+  color: var(--color-red-primary) !important;
+}
+
+.text-blue {
+  color: var(--color-blue-primary) !important;
+}
+
+.text-gray {
+  color: var(--color-gray-primary) !important;
+}
+
+/* Фоновые цвета */
+.bg-red {
+  background-color: var(--color-red-primary) !important;
+}
+
+.bg-red-dark {
+  background-color: var(--color-red-dark) !important;
+}
+
+.bg-blue {
+  background-color: var(--color-blue-primary) !important;
+}
+
+.bg-blue-dark {
+  background-color: var(--color-blue-dark) !important;
+}
+
+.bg-gray {
+  background-color: var(--color-gray-primary) !important;
+}
+
+.bg-gray-dark {
+  background-color: var(--color-gray-dark) !important;
+}
+
+/* ===================================================================
+   ИСПРАВЛЕНИЯ ДЛЯ МОБИЛЬНЫХ
+=================================================================== */
+
+/* Отключение выделения текста для UI элементов */
+.no-select {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Отключение zoom при focus на input в Safari iOS */
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="number"],
+textarea {
+  font-size: 16px !important; /* Предотвращает zoom в Safari iOS */
+}
+
+/* Скрытие скроллбаров */
+::-webkit-scrollbar {
+  display: none;
+}
+
+/* Firefox */
+html {
+  scrollbar-width: none;
+}
+
+/* ===================================================================
+   АНИМАЦИИ И ПЕРЕХОДЫ
+=================================================================== */
+
+/* Плавная прокрутка */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Базовые переходы для интерактивных элементов */
+a, button, input, select, textarea {
+  transition: all 0.3s ease;
+}
+
+/* Убираем outline для accessibility с заменой на другие индикаторы */
+button:focus,
+input:focus,
+textarea:focus,
+select:focus {
+  outline: 2px solid var(--color-blue-primary);
+  outline-offset: 2px;
+}
+
+/* ===================================================================
+   АДАПТИВНОСТЬ
+=================================================================== */
+
+/* Мобильные устройства */
+@media (max-width: 768px) {
+  body {
+    font-size: 14px;
+  }
+  
+  h1 { font-size: 2rem; }     /* 32px */
+  h2 { font-size: 1.75rem; }  /* 28px */
+  h3 { font-size: 1.5rem; }   /* 24px */
+  h4 { font-size: 1.25rem; }  /* 20px */
+  h5 { font-size: 1.125rem; } /* 18px */
+  h6 { font-size: 1rem; }     /* 16px */
+}
+
+/* Очень маленькие экраны */
+@media (max-width: 480px) {
+  body {
+    font-size: 13px;
+  }
+  
+  h1 { font-size: 1.75rem; }  /* 28px */
+  h2 { font-size: 1.5rem; }   /* 24px */
+  h3 { font-size: 1.25rem; }  /* 20px */
+  h4 { font-size: 1.125rem; } /* 18px */
+  h5 { font-size: 1rem; }     /* 16px */
+  h6 { font-size: 0.875rem; } /* 14px */
+}
+
+/* ===================================================================
+   ДОПОЛНИТЕЛЬНЫЕ ИСПРАВЛЕНИЯ
+=================================================================== */
+
+/* Исправление для iOS Safari - предотвращение bounce эффекта */
+body {
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Исправление для landscape режима на мобильных */
+@media screen and (orientation: landscape) and (max-height: 500px) {
+  body {
+    height: 100vh;
+  }
 }

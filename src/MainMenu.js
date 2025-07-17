@@ -2,10 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-
-import backgroundImage from './components/background.png';
 import logoImage from './components/logo.png';
-import piImage from './components/pi.png';
 
 export default function MainMenu() {
   const navigate = useNavigate();
@@ -143,23 +140,6 @@ export default function MainMenu() {
     ...(index === 9 && { top: '60%', right: '25%' }),
     ...(index === 10 && { bottom: '40%', left: '30%' })
   });
-
-  // Pi элемент с космической анимацией
-  const piWrapperStyle = {
-    position: 'absolute',
-    top: '0',
-    left: '0',
-    zIndex: 2,
-    opacity: 0.4,
-    animation: `piFloatAround ${moveDuration} ease-in-out infinite`
-  };
-
-  const piImageStyle = {
-    width: '40px',
-    height: '40px',
-    opacity: 0.8,
-    animation: `piRotate ${rotateDuration} linear infinite`
-  };
 
   // ===== ЛОГИКА =====
 

@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logoImage       from './components/logo.png';
-import backgroundImage from './components/background.png';
 import DateWheelPicker from './DateWheelPicker';
 
 export default function SNPPage() {

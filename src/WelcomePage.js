@@ -5,24 +5,20 @@
 // - Смена фонов: каждые 12 секунд (строка 177: `12000`)
 // - Aurora скорость: каждые 100мс (строка 164: `100`)
 // - Тайминг анимаций: 3s показ + 1s переход (строки 148-149)
+//
+// 📁 ДЛЯ РАЗНЫХ ФОНОВ:
+// 1. Создай в папке src/components/ файлы:
+//    - background1.png (первый фон)
+//    - background2.png (второй фон) 
+//    - background3.png (третий фон)
+// 2. Раскомментируй строки импорта выше
+// 3. Обнови массив backgrounds
 
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSwipeable } from 'react-swipeable';
 import { motion, AnimatePresence } from 'framer-motion';
-
-// Фоновые изображения - ИНСТРУКЦИЯ:
-// 1. Переименуй файлы в простые имена:
-//    background (1).png → background1.png
-//    background (2).png → background2.png  
-//    background (3).png → background3.png
-// 2. Создай копию любого файла как background.png для остальных компонентов
-
-import backgroundImage1 from './components/background1.png';
-import backgroundImage2 from './components/background2.png';
-import backgroundImage3 from './components/background3.png';
 import logoImage from './components/logo.png';
-import piImage from './components/pi.png';
 
 const WelcomePage = () => {
   const navigate = useNavigate();
@@ -44,11 +40,12 @@ const WelcomePage = () => {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // Массив всех фонов - теперь все активны!
+  // Массив фонов - ВРЕМЕННО используем один файл (до создания остальных)
+  // Замени на: [backgroundImage1, backgroundImage2, backgroundImage3] когда создашь файлы
   const backgrounds = [
-    backgroundImage1,
-    backgroundImage2,
-    backgroundImage3
+    backgroundImage,
+    backgroundImage,
+    backgroundImage
   ];
 
   // ===== СОВРЕМЕННЫЕ СТИЛИ =====
@@ -227,7 +224,9 @@ const WelcomePage = () => {
     return () => clearInterval(auroraInterval);
   }, []);
 
-  // Background rotation - автоматическая смена каждые 12 секунд
+  // Background rotation - ОТКЛЮЧЕНО пока все фоны одинаковые
+  // Раскомментируй когда добавишь разные фоны
+  /*
   useEffect(() => {
     const bgInterval = setInterval(() => {
       setCurrentBgIndex(prev => (prev + 1) % backgrounds.length);
@@ -235,6 +234,7 @@ const WelcomePage = () => {
 
     return () => clearInterval(bgInterval);
   }, []);
+  */
 
   // Mouse tracking для параллакса
   useEffect(() => {
@@ -446,7 +446,8 @@ const WelcomePage = () => {
           )}
         </AnimatePresence>
 
-        {/* Background indicator - показывает какой фон активен */}
+        {/* Background indicator - СКРЫТО пока все фоны одинаковые */}
+        {/* Раскомментируй когда добавишь разные фоны
         <div style={{
           position: 'absolute',
           bottom: '30px',
@@ -479,6 +480,7 @@ const WelcomePage = () => {
             />
           ))}
         </div>
+        */}
         <motion.div
           style={{
             position: 'absolute',
@@ -494,15 +496,7 @@ const WelcomePage = () => {
           }}
           transition={{ type: 'spring', stiffness: 100, damping: 20 }}
         >
-          <img
-            src={piImage}
-            alt="Pi"
-            style={{
-              width: '40px',
-              height: '40px',
-              filter: 'drop-shadow(0 2px 10px rgba(139, 69, 19, 0.5))'
-            }}
-          />
+  
         </motion.div>
       </motion.div>
     </>

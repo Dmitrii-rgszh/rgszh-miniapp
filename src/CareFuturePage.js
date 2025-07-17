@@ -2,11 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-
-// Импортируем только изображения
 import logoImage from './components/logo.png';
-import backgroundImage from './components/background.png';
-import piImage from './components/pi.png';
 import DateWheelPicker from './DateWheelPicker';
 
 const getViewportHeight = () => {
@@ -133,17 +129,6 @@ export default function CareFuturePage() {
       WebkitOverflowScrolling: 'touch',
       overscrollBehavior: 'none'
     })
-  };
-
-  // Оверлей
-  const overlayStyle = {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    background: 'rgba(102, 126, 234, 0.7)',
-    zIndex: 1
   };
 
   // Логотип
@@ -285,42 +270,6 @@ export default function CareFuturePage() {
     fontSize: '14px',
     marginTop: '5px',
     textAlign: 'center'
-  };
-
-  // Точки фона
-  const dotStyle = (index) => ({
-    position: 'absolute',
-    width: '8px',
-    height: '8px',
-    borderRadius: '50%',
-    background: 'rgba(255, 255, 255, 0.2)',
-    ...(index === 1 && { top: '10%', left: '10%' }),
-    ...(index === 2 && { top: '20%', right: '15%' }),
-    ...(index === 3 && { top: '30%', left: '25%' }),
-    ...(index === 4 && { bottom: '15%', left: '15%' }),
-    ...(index === 5 && { top: '5%', right: '20%' }),
-    ...(index === 6 && { bottom: '25%', right: '10%' }),
-    ...(index === 7 && { top: '45%', left: '5%' }),
-    ...(index === 8 && { bottom: '5%', right: '30%' }),
-    ...(index === 9 && { top: '60%', right: '25%' }),
-    ...(index === 10 && { bottom: '40%', left: '30%' })
-  });
-
-  // Pi элемент - анимация полета по экрану
-  const piWrapperStyle = {
-    position: 'absolute',
-    top: '0',
-    left: '0',
-    zIndex: 2,
-    opacity: 0.4,
-    animation: `piFloatAround ${moveDuration} ease-in-out infinite`
-  };
-
-  const piImageStyle = {
-    width: '40px',
-    height: '40px',
-    opacity: 0.8,
-    animation: `piRotate ${rotateDuration} linear infinite`
   };
 
   // Стили результатов
@@ -622,7 +571,7 @@ export default function CareFuturePage() {
         }
       }
 
-      setValidationErrors(errors);
+      setValidationErrors(errors);вщслук
       if (Object.keys(errors).length > 0) return;
 
       setStage('processing');
