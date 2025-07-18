@@ -1,15 +1,17 @@
-// PollsPage.js - БЕЗ МАГНИТНЫХ КНОПОК
-// ✨ Обычные кнопки с корпоративными стилями + Квадратные QR кнопки + Защита от CSS конфликтов
+// PollsPage.js - АДАПТИВНАЯ ВЕРСИЯ
+// ✨ Обычные кнопки с корпоративными стилями + Квадратные QR кнопки + Адаптивность
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logoImage from './components/logo.png';
+import './Styles/HomeButton.css'; // Импортируем CSS для кнопки "Домой"
 
 export default function PollsPage() {
   const navigate = useNavigate();
   const logoRef = useRef(null);
   const homeRef = useRef(null);
   const [windowHeight, setWindowHeight] = useState(window.innerHeight);
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
   // Состояния анимаций
   const [logoAnimated, setLogoAnimated] = useState(false);
@@ -28,8 +30,12 @@ export default function PollsPage() {
   useEffect(() => {
     const handleResize = () => {
       setWindowHeight(window.innerHeight);
+      setWindowWidth(window.innerWidth);
       // Принудительно перерендерим компонент при изменении ориентации
-      setTimeout(() => setWindowHeight(window.innerHeight), 100);
+      setTimeout(() => {
+        setWindowHeight(window.innerHeight);
+        setWindowWidth(window.innerWidth);
+      }, 100);
     };
 
     window.addEventListener('resize', handleResize);
@@ -50,25 +56,26 @@ export default function PollsPage() {
     };
   }, []);
 
-  // ===== АДАПТИВНЫЕ ПАРАМЕТРЫ (КАК В MAINMENU.JS) =====
+  // ===== АДАПТИВНЫЕ ПАРАМЕТРЫ =====
 
-  // Используем ТОЧНО такие же размеры как в MainMenu.js
-  const logoSize = 128; // Точно как в MainMenu
-  const logoTop = 110; // Точно как в MainMenu
-  const logoImageSize = 96; // Точно как в MainMenu
-  const buttonsTop = 268; // Точно как в MainMenu
-  const buttonContainerMaxWidth = 400; // Точно как в MainMenu
-  const buttonContainerGap = 20; // Точно как в MainMenu
-  const buttonContainerPadding = 20; // Точно как в MainMenu
+  // Определяем размеры в зависимости от размера экрана
+  const isSmallScreen = windowHeight < 700 || windowWidth < 400;
+  const isMobileWidth = windowWidth < 768;
+  const isMediumScreen = windowHeight >= 700 && windowHeight < 900;
   
-  // Кнопка "Домой" - без адаптивности, стандартные размеры
-  const homeButtonSize = 64;
-  const homeButtonGap = 20;
-  const homeIconSize = 28;
-  
-  // QR кнопки - стандартные размеры
-  const qrButtonSize = 56;
-  const qrIconSize = 24;
+  // Адаптивные значения
+  const logoSize = isSmallScreen ? 96 : 128;
+  const logoTop = isSmallScreen ? 80 : 110;
+  const logoImageSize = isSmallScreen ? 72 : 96;
+  const qrButtonSize = isSmallScreen ? 48 : 56;
+  const qrIconSize = isSmallScreen ? 20 : 24;
+  const buttonsTop = isSmallScreen ? 200 : (isMediumScreen ? 240 : 268);
+  const buttonContainerMaxWidth = isSmallScreen ? 340 : 400;
+  const buttonContainerGap = isSmallScreen ? 16 : 20;
+  const buttonContainerPadding = 20;
+
+  // Состояния для анимации кнопки домой
+  const [homeAnimated, setHomeAnimated] = useState(false);
 
   // ===== СТИЛИ =====
 
@@ -86,7 +93,7 @@ export default function PollsPage() {
     fontFamily: '"Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif'
   };
 
-  // Логотип - ТОЧНО КАК В MAINMENU.JS
+  // Логотип - адаптивный размер
   const logoStyle = {
     position: 'absolute',
     top: logoAnimated && !isExiting ? `${logoTop}px` : isExiting ? '-200px' : '-200px',
@@ -96,7 +103,7 @@ export default function PollsPage() {
     height: `${logoSize}px`,
     backgroundColor: 'rgba(255, 255, 255, 0.10)',
     backdropFilter: 'blur(8px)',
-    borderRadius: '20px', // Точно как в MainMenu
+    borderRadius: isSmallScreen ? '16px' : '20px',
     boxShadow: '0 10px 25px rgba(0, 0, 0, 0.25)',
     opacity: logoAnimated && !isExiting ? 1 : 0,
     zIndex: 3,
@@ -106,117 +113,81 @@ export default function PollsPage() {
     justifyContent: 'center'
   };
 
-  // Изображение логотипа - ТОЧНО КАК В MAINMENU.JS
+  // Изображение логотипа - адаптивный размер
   const logoImageStyle = {
-    width: `${logoImageSize}px`, // 96px как в MainMenu
-    height: `${logoImageSize}px`, // 96px как в MainMenu
+    width: `${logoImageSize}px`,
+    height: `${logoImageSize}px`,
     objectFit: 'contain'
   };
 
-  // Кнопка "Домой" - ТОЧНО КАК В MAINMENU.JS (с защитой от конфликтов)
-  const homeButtonStyle = {
-    position: 'absolute',
-    top: `${logoTop + (logoSize - homeButtonSize) / 2}px`, // Центрируем по высоте относительно логотипа
-    left: `calc(50% - ${logoSize/2}px - ${homeButtonGap}px - ${homeButtonSize}px)`, // Позиционируем слева от логотипа
-    width: `${homeButtonSize}px`,
-    height: `${homeButtonSize}px`,
-    backgroundColor: 'rgba(255, 255, 255, 0.10)',
-    backdropFilter: 'blur(8px)',
-    border: '1px solid rgba(255,255,255,0.17)',
-    borderRadius: '16px', // Точно как в MainMenu
-    zIndex: 5,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    cursor: 'pointer',
-    transition: 'all 0.3s ease',
-    transform: logoAnimated ? 'translateX(0)' : 'translateX(-100px)',
-    opacity: logoAnimated ? 1 : 0,
-    // ЗАЩИТА ОТ ПЕРЕОПРЕДЕЛЕНИЙ
-    fontSize: 'initial',
-    fontWeight: 'initial',
-    padding: '0',
-    margin: '0',
-    fontFamily: 'inherit',
-    lineHeight: '1',
-    boxSizing: 'border-box',
-    outline: 'none',
-    textDecoration: 'none'
-  };
-
-  // Контейнер кнопок - ТОЧНО КАК В MAINMENU.JS
+  // Контейнер кнопок
   const buttonContainerStyle = {
     position: 'absolute',
-    top: buttonsAnimated ? `${buttonsTop}px` : `${buttonsTop + 100}px`, // 268px как в MainMenu
+    top: buttonsAnimated ? `${buttonsTop}px` : `${buttonsTop + 100}px`,
     left: '50%',
     transform: 'translateX(-50%)',
     display: 'flex',
     flexDirection: 'column',
-    gap: `${buttonContainerGap}px`, // 20px как в MainMenu
+    gap: `${buttonContainerGap}px`,
     justifyContent: 'center',
     alignItems: 'center',
     width: '100%',
-    maxWidth: `${buttonContainerMaxWidth}px`, // 400px как в MainMenu
+    maxWidth: `${buttonContainerMaxWidth}px`,
     zIndex: 3,
-    paddingLeft: `${buttonContainerPadding}px`, // 20px как в MainMenu
-    paddingRight: `${buttonContainerPadding}px`, // 20px как в MainMenu
+    paddingLeft: `${buttonContainerPadding}px`,
+    paddingRight: `${buttonContainerPadding}px`,
     boxSizing: 'border-box',
     opacity: buttonsAnimated ? 1 : 0,
-    transition: 'all 0.8s ease-out 0.2s' // Точно как в MainMenu
+    transition: 'all 0.8s ease-out 0.2s'
   };
 
-  // Стиль для обычных кнопок - ЗАМЕНЯЕМ МАГНИТНЫЕ (с защитой от конфликтов)
+  // Стиль для обычных кнопок
   const getButtonStyle = (index, animated) => ({
-    minWidth: '280px', // Точно как в MainMenu
+    minWidth: isSmallScreen ? '240px' : '280px',
     background: 'linear-gradient(135deg, rgba(180, 0, 55, 0.9) 0%, rgba(153, 0, 55, 0.85) 50%, rgba(0, 40, 130, 0.9) 100%)',
     color: 'white',
     border: 'none',
     borderRadius: '12px',
-    padding: '18px 36px',
+    padding: isSmallScreen ? '16px 28px' : '18px 36px',
     cursor: 'pointer',
     transform: animated && !isExiting ? 'translateY(0)' : isExiting ? 'translateY(100px)' : 'translateY(50px)',
     opacity: animated && !isExiting ? 1 : 0,
-    transition: `all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) ${0.1 + index * 0.15}s`, // Точно как в MainMenu
+    transition: `all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) ${0.1 + index * 0.15}s`,
     zIndex: 2,
     boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)',
     // ЗАЩИТА ОТ ПЕРЕОПРЕДЕЛЕНИЙ
-    fontSize: '20px', // Стандартный размер
+    fontSize: isSmallScreen ? '18px' : '20px',
     fontWeight: '600',
     fontFamily: '"Segoe UI", sans-serif',
     boxSizing: 'border-box',
     outline: 'none',
-    textDecoration: 'none',
-    // Hover эффект
-    ':hover': {
-      transform: 'translateY(-2px)',
-      boxShadow: '0 6px 20px rgba(0, 0, 0, 0.3)'
-    }
+    textDecoration: 'none'
   });
 
-  // Контейнер для кнопки опроса + QR кнопки - СТАНДАРТНЫЕ НАСТРОЙКИ
+  // Контейнер для кнопки опроса + QR кнопки
   const pollButtonContainerStyle = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: '12px', // Стандартный отступ
+    gap: isSmallScreen ? '10px' : '12px',
     width: '100%',
     flexWrap: 'nowrap'
   };
 
-  // QR кнопка - РАДИКАЛЬНО ПРОСТЫЕ СТИЛИ ДЛЯ ГАРАНТИРОВАННОГО КВАДРАТА
+  // QR кнопка - УСИЛЕННЫЕ СТИЛИ ДЛЯ ГАРАНТИРОВАННОГО КВАДРАТА
   const qrButtonStyle = {
-    // РАЗМЕРЫ - ТОЛЬКО БАЗОВЫЕ СВОЙСТВА
-    width: '56px',
-    height: '56px',
-    minWidth: '56px',
-    maxWidth: '56px',
-    minHeight: '56px',
-    maxHeight: '56px',
+    // РАЗМЕРЫ - ЖЕСТКО ФИКСИРОВАННЫЕ
+    width: `${qrButtonSize}px`,
+    height: `${qrButtonSize}px`,
+    minWidth: `${qrButtonSize}px`,
+    maxWidth: `${qrButtonSize}px`,
+    minHeight: `${qrButtonSize}px`,
+    maxHeight: `${qrButtonSize}px`,
     
     // БАЗОВЫЕ СТИЛИ
     backgroundColor: 'rgba(255, 255, 255, 0.15)',
     border: '1px solid rgba(255, 255, 255, 0.25)',
-    borderRadius: '12px',
+    borderRadius: isSmallScreen ? '10px' : '12px',
     cursor: 'pointer',
     
     // FLEXBOX ДЛЯ ЦЕНТРИРОВАНИЯ
@@ -224,13 +195,21 @@ export default function PollsPage() {
     alignItems: 'center',
     justifyContent: 'center',
     
-    // ЗАПРЕТ НА ИЗМЕНЕНИЕ РАЗМЕРА
+    // КРИТИЧЕСКИ ВАЖНО - ЗАПРЕТ НА ИЗМЕНЕНИЕ РАЗМЕРА
     flexShrink: 0,
     flexGrow: 0,
+    flex: '0 0 auto',
     
-    // СБРОС ВСЕХ ОТСТУПОВ
-    padding: 0,
-    margin: 0,
+    // СБРОС ВСЕХ ОТСТУПОВ И ТЕКСТА
+    padding: '0 !important',
+    margin: '0 !important',
+    fontSize: '0 !important',
+    lineHeight: '0 !important',
+    letterSpacing: '0 !important',
+    textIndent: '0 !important',
+    textTransform: 'none !important',
+    whiteSpace: 'nowrap !important',
+    wordSpacing: '0 !important',
     
     // ПРОЧИЕ СТИЛИ
     transition: 'all 0.3s ease',
@@ -238,28 +217,49 @@ export default function PollsPage() {
     zIndex: 10,
     boxSizing: 'border-box',
     outline: 'none',
-    
-    // ПРИНУДИТЕЛЬНЫЙ СБРОС
-    fontSize: 0,
-    lineHeight: 0,
     textDecoration: 'none',
-    verticalAlign: 'top'
+    verticalAlign: 'top',
+    
+    // ДОПОЛНИТЕЛЬНАЯ ЗАЩИТА
+    aspectRatio: '1 / 1',
+    overflow: 'hidden',
+    position: 'relative'
   };
 
   // ===== ЛОГИКА =====
 
-  // УПРОЩЕННЫЙ эффект для принудительного квадрата QR кнопок
+  // Эффект для установки CSS переменных для позиционирования кнопки "Домой"
+  useEffect(() => {
+    if (homeRef.current) {
+      const homeButtonSize = isSmallScreen ? 48 : 64;
+      const homeButtonGap = isSmallScreen ? 20 : 30;
+      
+      // Вычисляем позицию
+      const top = logoTop + (logoSize - homeButtonSize) / 2;
+      const left = windowWidth < 400 
+        ? '20px'
+        : `calc(50% - ${logoSize/2}px - ${homeButtonGap}px - ${homeButtonSize}px)`;
+      
+      // Устанавливаем CSS переменные
+      homeRef.current.style.setProperty('--home-button-top', `${top}px`);
+      homeRef.current.style.setProperty('--home-button-left', left);
+      homeRef.current.style.setProperty('--home-button-size', `${homeButtonSize}px`);
+    }
+  }, [logoSize, logoTop, windowWidth, isSmallScreen]);
+
+  // Эффект для принудительного квадрата QR кнопок
   useEffect(() => {
     const enforceSquareButtons = () => {
       const qrButtons = document.querySelectorAll('.qr-button-polls');
       qrButtons.forEach(button => {
         // ПРИНУДИТЕЛЬНО УСТАНАВЛИВАЕМ РАЗМЕРЫ
-        button.style.setProperty('width', '56px', 'important');
-        button.style.setProperty('height', '56px', 'important');
-        button.style.setProperty('min-width', '56px', 'important');
-        button.style.setProperty('max-width', '56px', 'important');
-        button.style.setProperty('min-height', '56px', 'important');
-        button.style.setProperty('max-height', '56px', 'important');
+        const size = isSmallScreen ? '48px' : '56px';
+        button.style.setProperty('width', size, 'important');
+        button.style.setProperty('height', size, 'important');
+        button.style.setProperty('min-width', size, 'important');
+        button.style.setProperty('max-width', size, 'important');
+        button.style.setProperty('min-height', size, 'important');
+        button.style.setProperty('max-height', size, 'important');
         button.style.setProperty('flex-shrink', '0', 'important');
         button.style.setProperty('flex-grow', '0', 'important');
         button.style.setProperty('padding', '0', 'important');
@@ -283,11 +283,14 @@ export default function PollsPage() {
       window.removeEventListener('resize', enforceSquareButtons);
       window.removeEventListener('orientationchange', enforceSquareButtons);
     };
-  }, []);
+  }, [isSmallScreen]);
 
   // Анимация входа
   useEffect(() => {
-    const timer1 = setTimeout(() => setLogoAnimated(true), 100);
+    const timer1 = setTimeout(() => {
+      setLogoAnimated(true);
+      setHomeAnimated(true);
+    }, 100);
     const timer2 = setTimeout(() => setButtonsAnimated(true), 600);
     
     return () => {
@@ -344,22 +347,14 @@ export default function PollsPage() {
         />
       </div>
 
-      {/* Кнопка "Домой" (с дополнительной защитой) */}
+      {/* Кнопка "Домой" (стили через CSS) */}
       <button
         ref={homeRef}
         onClick={handleHomeClick}
-        style={homeButtonStyle}
+        className={`home-button-polls ${homeAnimated ? 'animate-home' : ''} ${isExiting ? 'animate-home-exit' : ''}`}
         title="Назад в главное меню"
-        className="home-button-polls" // Уникальный класс для возможных CSS правил
       >
-        <svg 
-          style={{
-            width: `${homeIconSize}px`,
-            height: `${homeIconSize}px`,
-            fill: '#ffffff'
-          }}
-          viewBox="0 0 24 24"
-        >
+        <svg viewBox="0 0 24 24">
           <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
         </svg>
       </button>
@@ -378,10 +373,19 @@ export default function PollsPage() {
               {poll.label}
             </button>
 
-            {/* QR кнопка - МАКСИМАЛЬНО ПРОСТАЯ */}
+            {/* QR кнопка - С ИНЛАЙН СТИЛЯМИ ДЛЯ ГАРАНТИИ */}
             <button
               onClick={(e) => handleQrClick(e, poll)}
-              style={qrButtonStyle}
+              style={{
+                ...qrButtonStyle,
+                // Дублируем критические стили прямо здесь
+                width: `${qrButtonSize}px !important`,
+                height: `${qrButtonSize}px !important`,
+                minWidth: `${qrButtonSize}px !important`,
+                maxWidth: `${qrButtonSize}px !important`,
+                minHeight: `${qrButtonSize}px !important`,
+                maxHeight: `${qrButtonSize}px !important`,
+              }}
               title={`QR-код для ${poll.label}`}
               className="qr-button-polls"
             >
@@ -435,14 +439,15 @@ export default function PollsPage() {
               backgroundColor: 'rgba(255, 255, 255, 0.15)',
               backdropFilter: 'blur(20px)',
               borderRadius: '20px',
-              padding: '30px',
+              padding: isSmallScreen ? '20px' : '30px',
               maxWidth: '90vw',
               maxHeight: '90vh',
               textAlign: 'center',
               position: 'relative',
               border: '1px solid rgba(255, 255, 255, 0.25)',
               color: 'white',
-              fontFamily: '"Segoe UI", sans-serif'
+              fontFamily: '"Segoe UI", sans-serif',
+              overflow: 'auto'
             }}
             onClick={e => e.stopPropagation()}
           >
@@ -468,8 +473,8 @@ export default function PollsPage() {
             {/* Заголовок */}
             <h3 style={{ 
               margin: '0 0 10px 0', 
-              fontSize: '20px', 
-              fontWeight: '700', // Segoe UI Bold
+              fontSize: isSmallScreen ? '18px' : '20px', 
+              fontWeight: '700',
               fontFamily: '"Segoe UI", sans-serif'
             }}>
               QR-код для опроса
@@ -477,9 +482,9 @@ export default function PollsPage() {
             
             <p style={{ 
               margin: '0 0 20px 0', 
-              fontSize: '16px', 
+              fontSize: isSmallScreen ? '14px' : '16px', 
               opacity: 0.8,
-              fontWeight: '400' // Segoe UI Regular
+              fontWeight: '400'
             }}>
               «{qrData.label}»
             </p>
@@ -489,8 +494,8 @@ export default function PollsPage() {
               style={{
                 background: 'white',
                 borderRadius: '12px',
-                width: '200px',
-                height: '200px',
+                width: isSmallScreen ? '160px' : '200px',
+                height: isSmallScreen ? '160px' : '200px',
                 padding: '16px',
                 margin: '20px auto',
                 display: 'inline-block',
@@ -502,8 +507,8 @@ export default function PollsPage() {
                 alt="QR Code"
                 style={{
                   display: 'block',
-                  width: '168px',
-                  height: '168px',
+                  width: isSmallScreen ? '128px' : '168px',
+                  height: isSmallScreen ? '128px' : '168px',
                   borderRadius: '8px'
                 }}
                 loading="lazy"
@@ -544,9 +549,9 @@ export default function PollsPage() {
                 background: 'linear-gradient(135deg, rgba(180, 0, 55, 0.9) 0%, rgba(153, 0, 55, 0.85) 50%, rgba(0, 40, 130, 0.9) 100%)',
                 color: 'white',
                 border: 'none',
-                padding: '12px 24px',
+                padding: isSmallScreen ? '10px 20px' : '12px 24px',
                 borderRadius: '12px',
-                fontSize: '16px',
+                fontSize: isSmallScreen ? '14px' : '16px',
                 cursor: 'pointer',
                 transition: 'all 0.3s ease',
                 fontFamily: '"Segoe UI", sans-serif',

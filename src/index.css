@@ -1,5 +1,5 @@
 /* ===================================================================
-   index.css - ОБНОВЛЕН С УВЕЛИЧЕННЫМИ ШРИФТАМИ ДЛЯ МОБИЛЬНЫХ КНОПОК
+   index.css - ОБНОВЛЕН С БОЛЕЕ ЛЕГКИМИ ШРИФТАМИ
 =================================================================== */
 
 /* Корпоративные цвета как CSS переменные */
@@ -82,13 +82,13 @@ body {
 }
 
 /* ===================================================================
-   ТИПОГРАФИКА SEGOE UI
+   ТИПОГРАФИКА SEGOE UI - БОЛЕЕ ЛЕГКИЕ ВЕСА
 =================================================================== */
 
-/* Заголовки - BOLD */
+/* Заголовки - SEMI-BOLD вместо BOLD */
 h1, h2, h3, h4, h5, h6 {
   font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
-  font-weight: 700; /* Bold */
+  font-weight: 600; /* Semi-bold вместо Bold */
   color: var(--color-text-primary);
   line-height: 1.2;
   margin: 0;
@@ -120,10 +120,10 @@ p, span, div, li, td, th {
    ЭЛЕМЕНТЫ ФОРМ
 =================================================================== */
 
-/* Кнопки */
+/* Кнопки - MEDIUM вместо SEMI-BOLD */
 button {
   font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
-  font-weight: 600; /* Semi-bold для кнопок */
+  font-weight: 500; /* Medium вместо Semi-bold */
   border: none;
   outline: none;
   cursor: pointer;
@@ -152,7 +152,7 @@ input, textarea, select {
 
 /* Шрифты */
 .font-bold {
-  font-weight: 700 !important;
+  font-weight: 600 !important; /* Semi-bold вместо Bold */
 }
 
 .font-regular {
@@ -160,7 +160,11 @@ input, textarea, select {
 }
 
 .font-semi-bold {
-  font-weight: 600 !important;
+  font-weight: 500 !important; /* Medium вместо Semi-bold */
+}
+
+.font-light {
+  font-weight: 300 !important; /* Light */
 }
 
 /* Цвета текста */
@@ -280,17 +284,17 @@ select:focus {
   h5 { font-size: 1.125rem; } /* 18px */
   h6 { font-size: 1rem; }     /* 16px */
   
-  /* УВЕЛИЧЕННЫЕ ШРИФТЫ ДЛЯ КНОПОК НА МОБИЛЬНЫХ */
+  /* БОЛЕЕ ЛЕГКИЕ ШРИФТЫ ДЛЯ КНОПОК НА МОБИЛЬНЫХ */
   button {
-    font-size: 20px !important;
-    font-weight: 700 !important;
-    padding: 18px 36px !important;
+    font-size: 18px !important;
+    font-weight: 500 !important; /* Medium вместо Bold */
+    padding: 16px 32px !important;
   }
   
   .magnetic-button {
-    font-size: 20px !important;
-    font-weight: 700 !important;
-    padding: 18px 36px !important;
+    font-size: 18px !important;
+    font-weight: 500 !important; /* Medium вместо Bold */
+    padding: 16px 32px !important;
   }
 }
 
@@ -307,19 +311,19 @@ select:focus {
   h5 { font-size: 1rem; }     /* 16px */
   h6 { font-size: 0.875rem; } /* 14px */
   
-  /* УВЕЛИЧЕННЫЕ ШРИФТЫ ДЛЯ КНОПОК НА МАЛЕНЬКИХ ЭКРАНАХ */
+  /* БОЛЕЕ ЛЕГКИЕ ШРИФТЫ ДЛЯ КНОПОК НА МАЛЕНЬКИХ ЭКРАНАХ */
   button {
-    font-size: 18px !important;
-    font-weight: 700 !important;
-    padding: 16px 32px !important;
-    min-width: 260px !important;
+    font-size: 16px !important;
+    font-weight: 500 !important; /* Medium вместо Bold */
+    padding: 14px 28px !important;
+    min-width: 240px !important;
   }
   
   .magnetic-button {
-    font-size: 18px !important;
-    font-weight: 700 !important;
-    padding: 16px 32px !important;
-    min-width: 260px !important;
+    font-size: 16px !important;
+    font-weight: 500 !important; /* Medium вместо Bold */
+    padding: 14px 28px !important;
+    min-width: 240px !important;
   }
 }
 
@@ -327,25 +331,25 @@ select:focus {
 
 /* Утилитарный класс для крупных кнопок на мобильных */
 .btn-mobile-large {
-  font-size: 18px;
-  font-weight: 600;
-  padding: 18px 36px;
+  font-size: 16px;
+  font-weight: 500; /* Medium */
+  padding: 16px 32px;
 }
 
 @media (max-width: 768px) {
   .btn-mobile-large {
-    font-size: 20px !important;
-    font-weight: 700 !important;
-    padding: 20px 40px !important;
+    font-size: 18px !important;
+    font-weight: 500 !important; /* Medium */
+    padding: 18px 36px !important;
   }
 }
 
 @media (max-width: 480px) {
   .btn-mobile-large {
-    font-size: 18px !important;
-    font-weight: 700 !important;
-    padding: 18px 36px !important;
-    min-width: 280px !important;
+    font-size: 16px !important;
+    font-weight: 500 !important; /* Medium */
+    padding: 16px 32px !important;
+    min-width: 260px !important;
   }
 }
 

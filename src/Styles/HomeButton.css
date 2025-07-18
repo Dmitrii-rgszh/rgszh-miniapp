@@ -1,85 +1,102 @@
-.home-btn {
+/* HomeButton.css - АДАПТИВНАЯ ВЕРСИЯ С CSS ПЕРЕМЕННЫМИ */
+
+/* HomeButton.css - АДАПТИВНАЯ ВЕРСИЯ С CSS ПЕРЕМЕННЫМИ */
+
+.home-button-polls {
   position: absolute;
-  top: 140px;
-  /* по центру экрана, с учётом ширины кнопки */
-  left: calc(50% - 40px);
-  width: 80px;
-  height: 80px;
-  background: rgba(255, 255, 255, 0.10);
-  backdrop-filter: blur(8px);
-  border: 1.5px solid rgba(255,255,255,0.17);
-  border-radius: 16px;
-  z-index: 5;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  /* Размеры кнопки - используем CSS переменную или fallback с !important */
+  width: var(--home-button-size, 64px) !important;
+  height: var(--home-button-size, 64px) !important;
+  min-width: var(--home-button-size, 64px) !important;
+  max-width: var(--home-button-size, 64px) !important;
+  min-height: var(--home-button-size, 64px) !important;
+  max-height: var(--home-button-size, 64px) !important;
   
-  /* изначально скрыта за левой границей через transform */
-  transform: translateX(-200%);
+  /* Позиционирование - используем CSS переменные с !important */
+  top: var(--home-button-top, 142px) !important;
+  left: var(--home-button-left, calc(50% - 64px - 30px - 64px)) !important;
+  
+  /* Стили */
+  background: rgba(255, 255, 255, 0.10) !important;
+  backdrop-filter: blur(8px) !important;
+  border: 1px solid rgba(255,255,255,0.17) !important;
+  border-radius: 16px !important;
+  z-index: 5 !important;
+  
+  /* Flexbox для центрирования иконки */
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  
+  /* Анимация */
+  transform: translateX(-100px);
   opacity: 0;
+  transition: all 0.8s cubic-bezier(0.22,1,0.36,1);
+  cursor: pointer !important;
   
-  /* единая анимация въезда и появления */
-  transition: 
-    transform 0.8s cubic-bezier(0.22,1,0.36,1) 0.1s,
-    opacity 0.5s ease 0.1s;
-  cursor: pointer;
+  /* Сброс стилей для гарантии квадрата */
+  padding: 0 !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+  outline: none !important;
+  text-decoration: none !important;
+  font-size: 0 !important;
+  line-height: 0 !important;
+  overflow: hidden !important;
+  aspect-ratio: 1 / 1 !important;
+  flex-shrink: 0 !important;
+  flex-grow: 0 !important;
 }
 
-/* === Въезд кнопки === */
-.home-btn.animate-home {
+/* Анимация входа */
+.home-button-polls.animate-home {
   transform: translateX(0);
   opacity: 1;
 }
 
-/* === Уезд кнопки === */
-.home-btn.animate-home-exit {
-  transform: translateX(-200%);
+/* Анимация выхода */
+.home-button-polls.animate-home-exit {
+  transform: translateX(-100px);
   opacity: 0;
-  transition: 
-    transform 0.7s cubic-bezier(0.65,0.05,0.36,1) 0.1s,
-    opacity 0.4s ease 0.1s;
+  transition: all 0.7s cubic-bezier(0.65,0.05,0.36,1);
 }
 
-/* Плавное появление SVG‑иконки */
-.home-btn .home-icon {
-  width: 36px;
-  height: 36px;
+/* Иконка внутри кнопки */
+.home-button-polls svg {
+  width: 28px;
+  height: 28px;
   fill: #ffffff;
-  opacity: 0;
-  transition: opacity 0.4s ease 0.3s;
-}
-.home-btn.animate-home .home-icon {
-  opacity: 1;
 }
 
-/* --- Мобильная версия (≤768px) --- */
-@media (max-width: 768px) {
-  .home-btn {
-    top: 140px;
-    left: 70px;           /* ближе к левому краю, не загораживает логотип */
-    width: 64px;
-    height: 64px;
+/* ===== АДАПТИВНОСТЬ ===== */
+
+/* Маленькие экраны - иконка и border-radius */
+@media (max-height: 700px), (max-width: 400px) {
+  .home-button-polls {
     border-radius: 12px;
-    transition:
-      transform 0.8s cubic-bezier(0.22,1,0.36,1) 0.1s,
-      opacity 0.5s ease 0.1s;
   }
-  .home-btn.animate-home {
-    transform: translateX(0);
-    opacity: 1;
+  
+  .home-button-polls svg {
+    width: 24px;
+    height: 24px;
   }
-  .home-btn.animate-home-exit {
-    transform: translateX(-200%);
-    opacity: 0;
-    transition:
-      transform 0.7s cubic-bezier(0.65,0.05,0.36,1) 0.1s,
-      opacity 0.4s ease 0.1s;
+}
+
+/* Hover эффект (только для устройств с курсором) */
+@media (hover: hover) {
+  .home-button-polls:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255,255,255,0.25);
   }
-  .home-btn .home-icon {
-    width: 32px;
-    height: 32px;
-    transition: opacity 0.4s ease 0.3s;
-  }
+}
+
+/* Убираем все text-related стили чтобы гарантировать квадрат */
+.home-button-polls * {
+  font-size: 0 !important;
+  line-height: 0 !important;
+  letter-spacing: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
 }
 
 
