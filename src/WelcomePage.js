@@ -1,11 +1,9 @@
-// WelcomePage.js - ИСПРАВЛЕННАЯ ВЕРСИЯ С УМЕНЬШЕННЫМ ЛОГОТИПОМ
-// Работает поверх глобального фона из MainApp.js
-// Логотип уменьшен на 20%: контейнер 96x96px, изображение 76x76px
+// WelcomePage.js - В СТИЛЕ MAINMENU
+// Логотип как в MainMenu, текст как кнопки (простой белый)
 
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSwipeable } from 'react-swipeable';
-import { motion, AnimatePresence } from 'framer-motion';
 
 import logoImage from './components/logo.png';
 
@@ -17,98 +15,111 @@ const WelcomePage = () => {
   const textRef = useRef(null);
   const containerRef = useRef(null);
 
-  // Состояния
+  // Состояния - КАК В MAINMENU
   const [greeting, setGreeting] = useState('');
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [logoAnimated, setLogoAnimated] = useState(false);
+  const [textAnimated, setTextAnimated] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
+  const [autoExitTimer, setAutoExitTimer] = useState(null);
 
-  // ===== СТИЛИ (работают поверх глобального фона) =====
+  // ===== СТИЛИ КАК В MAINMENU =====
 
-  // Главный контейнер - БЕЗ ФОНА
-  const containerStyle = {
+  // Основной контейнер - КАК В MAINMENU
+  const mainContainerStyle = {
     position: 'relative',
     width: '100%',
-    height: '100vh',
+    height: window.innerHeight + 'px',
+    minHeight: '100vh',
     overflow: 'hidden',
     display: 'flex',
     flexDirection: 'column',
-    alignItems: 'center',
     justifyContent: 'center',
-    fontFamily: '"Segoe UI", sans-serif',
+    alignItems: 'center',
+    fontFamily: '"Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif'
   };
 
-  // Гласморфизм контейнер
-  const glassContainerStyle = {
+  // Логотип с анимацией - ТОЧНО КАК В MAINMENU (уменьшенный на 20%)
+  const logoStyle = {
+    position: 'absolute',
+    top: logoAnimated && !isExiting ? '110px' : isExiting ? '-200px' : '-200px',
+    left: '50%',
+    transform: 'translateX(-50%)',
+    width: '128px',  // уменьшено на 20%
+    height: '128px', // уменьшено на 20%
+    backgroundColor: 'rgba(255, 255, 255, 0.10)',
+    backdropFilter: 'blur(8px)',
+    borderRadius: '20px',
+    boxShadow: '0 10px 25px rgba(0, 0, 0, 0.25)',
+    opacity: logoAnimated && !isExiting ? 1 : 0,
+    zIndex: 3,
+    transition: 'all 0.8s ease-out',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
+  };
+
+  // Изображение логотипа - ТОЧНО КАК В MAINMENU (уменьшенное на 20%)
+  const logoImageStyle = {
+    width: '96px',   // уменьшено на 20%
+    height: '96px',  // уменьшено на 20%
+    objectFit: 'contain'
+  };
+
+  // Контейнер текста - ПОД ЛОГОТИПОМ КАК КНОПКИ
+  // Логотип: 110px (top) + 128px (height) + 50px (отступ) = 288px
+  const textContainerStyle = {
+    position: 'absolute',
+    top: textAnimated ? '288px' : '388px', // под логотипом
+    left: '50%',
+    transform: 'translateX(-50%)',
     display: 'flex',
     flexDirection: 'column',
-    alignItems: 'center',
+    gap: '15px',
     justifyContent: 'center',
-    padding: '40px 30px',
-    background: 'rgba(255, 255, 255, 0.08)',
-    backdropFilter: 'blur(20px) saturate(180%)',
-    WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-    border: '1px solid rgba(255, 255, 255, 0.2)',
-    borderRadius: '24px',
-    boxShadow: `
-      0 8px 32px rgba(0, 0, 0, 0.3),
-      inset 0 1px 0 rgba(255, 255, 255, 0.4),
-      0 0 60px rgba(180, 0, 55, 0.2)
-    `,
+    alignItems: 'center',
+    width: '100%',
     maxWidth: '400px',
-    width: '90%',
-    textAlign: 'center',
-    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+    zIndex: 3,
+    paddingLeft: '20px',
+    paddingRight: '20px',
+    boxSizing: 'border-box',
+    opacity: textAnimated ? 1 : 0,
+    transition: 'all 0.8s ease-out 0.2s'
   };
 
-  // Логотип контейнер - УМЕНЬШЕН НА 20%
-  const logoContainerStyle = {
-    position: 'relative',
-    width: '96px',        // было 120px
-    height: '96px',       // было 120px
-    margin: '0 auto 30px',
-    background: 'rgba(255, 255, 255, 0.1)',
-    backdropFilter: 'blur(10px)',
-    borderRadius: '20px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    border: '1px solid rgba(255, 255, 255, 0.2)',
-    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.2)',
-    transition: 'all 0.3s ease',
-    cursor: 'pointer'
-  };
-
-  // Заголовок с корпоративными цветами
+  // Заголовок - ПРОСТОЙ БЕЛЫЙ КАК КНОПКИ
   const titleStyle = {
-    fontSize: 'clamp(2rem, 5vw, 3rem)',
-    fontFamily: '"Segoe UI", sans-serif',
-    fontWeight: 'bold', // Segoe UI Bold
-    background: 'linear-gradient(135deg, #ffffff 0%, rgba(180, 0, 55, 0.8) 50%, #ffffff 100%)',
-    WebkitBackgroundClip: 'text',
-    WebkitTextFillColor: 'transparent',
-    backgroundClip: 'text',
-    letterSpacing: '0.02em',
-    lineHeight: '1.2',
+    fontSize: 'clamp(2rem, 6vw, 3.5rem)',
+    fontFamily: '"Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif',
+    fontWeight: '600',
+    color: 'white',
     margin: 0,
-    textShadow: '0 2px 20px rgba(255, 255, 255, 0.1)',
-    animation: 'textShimmer 3s ease-in-out infinite alternate'
+    textAlign: 'center',
+    textShadow: '0 2px 10px rgba(0, 0, 0, 0.5)',
+    transform: textAnimated && !isExiting ? 'translateY(0)' : isExiting ? 'translateY(50px)' : 'translateY(30px)',
+    opacity: textAnimated && !isExiting ? 1 : 0,
+    transition: 'all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.1s'
   };
 
-  // Подзаголовок
+  // Подзаголовок - ПРОСТОЙ БЕЛЫЙ КАК КНОПКИ
   const subtitleStyle = {
-    fontSize: '0.9rem',
-    fontFamily: '"Segoe UI", sans-serif',
-    fontWeight: 'normal', // Segoe UI Regular
-    color: 'rgba(255, 255, 255, 0.8)',
-    margin: '15px 0 0',
-    letterSpacing: '0.5px'
+    fontSize: 'clamp(1rem, 3vw, 1.3rem)',
+    fontFamily: '"Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif',
+    fontWeight: '400',
+    color: 'rgba(255, 255, 255, 0.9)',
+    margin: 0,
+    textAlign: 'center',
+    textShadow: '0 2px 8px rgba(0, 0, 0, 0.4)',
+    transform: textAnimated && !isExiting ? 'translateY(0)' : isExiting ? 'translateY(50px)' : 'translateY(30px)',
+    opacity: textAnimated && !isExiting ? 1 : 0,
+    transition: 'all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.25s'
   };
 
-  // ===== ЛОГИКА =====
+  // ===== ЛОГИКА КАК В MAINMENU =====
 
   // Инициализация
   useEffect(() => {
-    setIsLoaded(true);
+    console.log('WelcomePage: Компонент монтируется');
     
     // Определяем приветствие по времени
     const hour = new Date().getHours();
@@ -117,209 +128,143 @@ const WelcomePage = () => {
     else if (hour >= 11 && hour < 17) text = 'Добрый день';
     else if (hour >= 17 && hour < 24) text = 'Добрый вечер';
     else text = 'Доброй ночи';
+    
+    console.log('WelcomePage: Установлено приветствие:', text);
     setGreeting(text);
 
-    // Автопереход через 3 секунды
-    const exitTimer = setTimeout(() => {
+    // Анимация входа - КАК В MAINMENU
+    const timer1 = setTimeout(() => setLogoAnimated(true), 100);
+    const timer2 = setTimeout(() => setTextAnimated(true), 600);
+    
+    // Автопереход через 4 секунды
+    const timer3 = setTimeout(() => {
+      console.log('WelcomePage: Автопереход запущен');
       handleNavigation();
-    }, 3000);
+    }, 4000);
+    
+    setAutoExitTimer(timer3);
 
-    return () => clearTimeout(exitTimer);
+    return () => {
+      console.log('WelcomePage: Очистка таймеров');
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+      if (timer3) clearTimeout(timer3);
+    };
   }, []);
 
   // Swipe handlers
   const swipeHandlers = useSwipeable({
-    onSwipedLeft: () => !isExiting && handleNavigation(),
-    onSwipedRight: () => !isExiting && handleNavigation(),
-    onTap: () => !isExiting && handleNavigation()
+    onSwipedLeft: () => {
+      console.log('WelcomePage: Swipe left');
+      if (!isExiting) handleNavigation();
+    },
+    onSwipedRight: () => {
+      console.log('WelcomePage: Swipe right');
+      if (!isExiting) handleNavigation();
+    },
+    onTap: () => {
+      console.log('WelcomePage: Tap');
+      if (!isExiting) handleNavigation();
+    }
   });
 
-  // Навигация с анимацией
+  // Навигация с анимацией - КАК В MAINMENU
   const handleNavigation = () => {
-    if (isExiting) return;
+    if (isExiting) {
+      console.log('WelcomePage: Навигация уже в процессе');
+      return;
+    }
+    
+    console.log('WelcomePage: Начинаем навигацию');
+    
+    if (autoExitTimer) {
+      clearTimeout(autoExitTimer);
+      setAutoExitTimer(null);
+    }
     
     setIsExiting(true);
+    
     setTimeout(() => {
+      console.log('WelcomePage: Переход на main-menu');
       navigate('/main-menu');
-    }, 600);
+    }, 800);
   };
 
-  // ===== АНИМАЦИИ FRAMER MOTION =====
-
-  const containerVariants = {
-    hidden: { opacity: 0, scale: 0.9 },
-    visible: { 
-      opacity: 1, 
-      scale: 1,
-      transition: { 
-        duration: 0.8, 
-        ease: [0.6, 0.01, 0.05, 0.95]
-      }
-    },
-    exit: { 
-      opacity: 0, 
-      scale: 1.1, 
-      y: -50,
-      transition: { 
-        duration: 0.6,
-        ease: [0.6, 0.01, 0.05, 0.95]
-      }
-    }
+  // Обработчик клика
+  const handleClick = () => {
+    console.log('WelcomePage: Click обработан');
+    handleNavigation();
   };
 
-  const glassVariants = {
-    hidden: { y: 50, opacity: 0, scale: 0.8 },
-    visible: { 
-      y: 0, 
-      opacity: 1, 
-      scale: 1,
-      transition: { 
-        duration: 0.8, 
-        delay: 0.2,
-        ease: [0.6, 0.01, 0.05, 0.95]
-      }
-    },
-    exit: { 
-      y: -30, 
-      opacity: 0, 
-      scale: 0.9,
-      transition: { 
-        duration: 0.4,
-        ease: [0.6, 0.01, 0.05, 0.95]
-      }
-    }
-  };
-
-  const logoVariants = {
-    hidden: { scale: 0, rotate: -180 },
-    visible: { 
-      scale: 1, 
-      rotate: 0,
-      transition: { 
-        duration: 0.6, 
-        delay: 0.4,
-        ease: [0.34, 1.56, 0.64, 1]
-      }
-    }
-  };
-
-  const textVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: { 
-      y: 0, 
-      opacity: 1,
-      transition: { 
-        duration: 0.6, 
-        delay: 0.6,
-        ease: [0.6, 0.01, 0.05, 0.95]
-      }
-    }
-  };
-
-  // Добавляем CSS анимации
-  const animationStyles = (
+  // Стили анимации - КАК В MAINMENU
+  const animations = (
     <style>
       {`
-        @keyframes textShimmer {
-          0% { 
-            background: linear-gradient(135deg, #ffffff 0%, rgba(180, 0, 55, 0.8) 50%, #ffffff 100%); 
-          }
-          100% { 
-            background: linear-gradient(135deg, rgba(180, 0, 55, 0.8) 0%, #ffffff 50%, rgba(180, 0, 55, 0.8) 100%); 
-          }
-        }
-        
-        @keyframes logoFloat {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-5px); }
-        }
-
         .clickable-area {
           cursor: pointer;
           user-select: none;
         }
 
-        .glass-container:hover {
-          background: rgba(255, 255, 255, 0.12);
-          border-color: rgba(255, 255, 255, 0.3);
+        /* Адаптивность */
+        @media (max-width: 768px) {
+          .welcome-title {
+            font-size: clamp(1.8rem, 6vw, 2.5rem) !important;
+          }
+          .welcome-subtitle {
+            font-size: clamp(0.9rem, 3vw, 1.1rem) !important;
+          }
         }
 
-        .glass-logo:hover {
-          background: rgba(255, 255, 255, 0.15);
+        @media (max-width: 480px) {
+          .welcome-title {
+            font-size: clamp(1.6rem, 6vw, 2rem) !important;
+          }
+          .welcome-subtitle {
+            font-size: clamp(0.8rem, 3vw, 1rem) !important;
+          }
         }
       `}
     </style>
   );
 
+  console.log('WelcomePage: Рендер - logoAnimated:', logoAnimated, 'textAnimated:', textAnimated, 'isExiting:', isExiting, 'greeting:', greeting);
+
   return (
     <>
-      {animationStyles}
+      {animations}
       
-      <motion.div
+      <div
         ref={containerRef}
-        style={containerStyle}
-        variants={containerVariants}
-        initial="hidden"
-        animate={isLoaded ? "visible" : "hidden"}
-        exit="exit"
+        style={mainContainerStyle}
         {...swipeHandlers}
-        onClick={handleNavigation}
+        onClick={handleClick}
         className="clickable-area"
       >
-        {/* Главный гласморфизм контейнер */}
-        <AnimatePresence>
-          {!isExiting && (
-            <motion.div
-              style={glassContainerStyle}
-              className="glass-container"
-              variants={glassVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              {/* Логотип */}
-              <motion.div
-                ref={logoRef}
-                style={logoContainerStyle}
-                variants={logoVariants}
-                className="glass-logo"
-                whileHover={{ 
-                  scale: 1.05, 
-                  rotateY: 5,
-                  transition: { duration: 0.3 }
-                }}
-              >
-                <img
-                  src={logoImage}
-                  alt="Логотип РГС Жизнь"
-                  style={{
-                    width: '76px',      // уменьшено на 20% (было 96px)
-                    height: '76px',     // уменьшено на 20% (было 96px)
-                    objectFit: 'contain',
-                    filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.2))',
-                    animation: 'logoFloat 4s ease-in-out infinite'
-                  }}
-                />
-              </motion.div>
+        {/* Логотип - ТОЧНО КАК В MAINMENU */}
+        <div style={logoStyle}>
+          <img
+            src={logoImage}
+            alt="Логотип РГС Жизнь"
+            style={logoImageStyle}
+          />
+        </div>
 
-              {/* Приветственный текст */}
-              <motion.div
-                ref={textRef}
-                variants={textVariants}
-              >
-                <h1 style={titleStyle}>
-                  {greeting}
-                </h1>
-                <p style={subtitleStyle}>
-                  Добро пожаловать в будущее
-                </p>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.div>
+        {/* Текст - КАК КНОПКИ В MAINMENU */}
+        <div style={textContainerStyle}>
+          <h1 
+            style={titleStyle}
+            className="welcome-title"
+          >
+            {greeting || 'Добро пожаловать'}
+          </h1>
+          <p 
+            style={subtitleStyle}
+            className="welcome-subtitle"
+          >
+            Под крылом сильной компании
+          </p>
+        </div>
+      </div>
     </>
   );
 };
