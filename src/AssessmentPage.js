@@ -361,14 +361,14 @@ export default function AssessmentPage() {
     display: 'flex',
     justifyContent: 'center',
     paddingTop: isDesktop ? '30px' : '40px',
-    paddingBottom: isDesktop ? '15px' : '200px',
+    paddingBottom: isDesktop ? '15px' : '20px',
     background: 'transparent'
   };
 
   // ИСПРАВЛЕНИЕ 2: Увеличенный отступ от логотипа + центрирование для десктопа
   const scrollableContentStyle = {
     position: 'absolute',
-    top: isDesktop ? '270px' : '205px', // Меньший отступ для десктопа
+    top: isDesktop ? '200px' : '205px', // Меньший отступ для десктопа
     left: '0',
     right: '0',
     bottom: '0',
@@ -376,7 +376,7 @@ export default function AssessmentPage() {
     overflowX: 'hidden',
     paddingLeft: isDesktop ? '40px' : '15px',
     paddingRight: isDesktop ? '40px' : '15px',
-    paddingBottom: isDesktop ? '120px' : '120px',
+    paddingBottom: isDesktop ? '120px' : '100px',
     zIndex: 2,
     display: 'flex',
     justifyContent: 'center',  // ЦЕНТРИРОВАНИЕ ДЛЯ ДЕСКТОПА
