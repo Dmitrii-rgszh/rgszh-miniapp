@@ -143,14 +143,14 @@ function MainApp() {
   const [imagesLoaded, setImagesLoaded] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
 
-  // ===== ПРЕДЗАГРУЗКА ИЗОБРАЖЕНИЙ =====
+  // ===== ПРЕДЗАГРУЗКА ИЗОБРАЖЕНИЙ (СКРЫТАЯ ОТ ПОЛЬЗОВАТЕЛЯ) =====
   const preloadImages = () => {
     if (availableBackgrounds.length === 0) {
       setImagesLoaded(true);
       return;
     }
 
-    console.log('Начинаем предзагрузку фоновых изображений...');
+    console.log('Начинаем скрытую предзагрузку фоновых изображений...');
     let loadedCount = 0;
     const totalImages = availableBackgrounds.length;
 
@@ -162,13 +162,13 @@ function MainApp() {
         const progress = Math.round((loadedCount / totalImages) * 100);
         setLoadingProgress(progress);
         
-        console.log(`Загружено изображение ${loadedCount}/${totalImages} (${progress}%)`);
+        console.log(`Скрыто загружено изображение ${loadedCount}/${totalImages} (${progress}%)`);
         
         if (loadedCount === totalImages) {
-          console.log('Все фоновые изображения предзагружены!');
+          console.log('Все фоновые изображения скрыто предзагружены! Запускаем систему смены фонов.');
           setTimeout(() => {
             setImagesLoaded(true);
-          }, 500);
+          }, 100); // Минимальная задержка
         }
       };
       
@@ -305,8 +305,12 @@ function MainApp() {
     };
   }, []);
 
-  // ===== ПРЕДЗАГРУЗКА ПРИ МОНТИРОВАНИИ =====
+  // ===== ПРЕДЗАГРУЗКА ПРИ МОНТИРОВАНИИ (СКРЫТАЯ) =====
   useEffect(() => {
+    // Сразу показываем интерфейс пользователю
+    setImagesLoaded(false); // Фоны еще не загружены, но интерфейс уже работает
+    
+    // Запускаем скрытую предзагрузку в фоне
     preloadImages();
   }, []);
 
@@ -337,25 +341,17 @@ function MainApp() {
     fontFamily: '"Segoe UI", sans-serif',
     
     // ✨ ПОСТОЯННЫЙ КОРПОРАТИВНЫЙ ФОН
-    background: `
-      linear-gradient(135deg, 
-        rgba(180, 0, 55, 0.95) 0%,     /* Основной красный */
-        rgba(153, 0, 55, 0.9) 25%,     /* Темнее красный */
-        rgba(152, 164, 174, 0.8) 50%,  /* Серый */
-        rgba(118, 143, 146, 0.85) 75%, /* Темнее серый */
-        rgba(0, 40, 130, 0.95) 100%    /* Синий */
-      )
-    `,
+    background: `linear-gradient(135deg, 
+      rgba(180, 0, 55, 0.95) 0%,
+      rgba(153, 0, 55, 0.9) 25%,
+      rgba(152, 164, 174, 0.8) 50%,
+      rgba(118, 143, 146, 0.85) 75%,
+      rgba(0, 40, 130, 0.95) 100%
+    )`,
     
     // ✨ SAFE AREA: отступ сверху для безопасной зоны
-    paddingTop: 'env(safe-area-inset-top, 50px)',
-    boxSizing: 'border-box',
-    
-    // Адаптивность для мобильных
-    '@supports (-webkit-touch-callout: none)': {
-      height: '-webkit-fill-available',
-      minHeight: '-webkit-fill-available'
-    }
+    paddingTop: 'env(safe-area-inset-top, 20px)',
+    boxSizing: 'border-box'
   };
 
   // ===== СТИЛЬ ОСНОВНОГО ФОНА =====
@@ -402,63 +398,6 @@ function MainApp() {
     pointerEvents: 'none'
   };
 
-  // ===== LOADER СТИЛИ =====
-  const loaderOverlayStyle = {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: '100%',
-    height: '100%',
-    background: `
-      linear-gradient(135deg, 
-        rgba(180, 0, 55, 0.95) 0%,
-        rgba(0, 40, 130, 0.95) 100%
-      )
-    `,
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 1000,
-    opacity: imagesLoaded ? 0 : 1,
-    visibility: imagesLoaded ? 'hidden' : 'visible',
-    transition: 'opacity 1s ease-out, visibility 1s ease-out'
-  };
-
-  const loaderTextStyle = {
-    color: 'white',
-    fontSize: '18px',
-    fontFamily: '"Segoe UI", sans-serif',
-    fontWeight: 'bold',
-    marginBottom: '20px',
-    textAlign: 'center'
-  };
-
-  const progressBarStyle = {
-    width: '200px',
-    height: '4px',
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
-    borderRadius: '2px',
-    overflow: 'hidden',
-    marginBottom: '10px'
-  };
-
-  const progressFillStyle = {
-    width: `${loadingProgress}%`,
-    height: '100%',
-    background: `linear-gradient(90deg, 
-      rgba(255, 255, 255, 0.8) 0%, 
-      rgba(255, 255, 255, 1) 100%
-    )`,
-    transition: 'width 0.5s ease-out'
-  };
-
-  const progressTextStyle = {
-    color: 'rgba(255, 255, 255, 0.8)',
-    fontSize: '14px',
-    fontFamily: '"Segoe UI", sans-serif'
-  };
-
   // ===== CSS-В-JS ДЛЯ SAFE AREA =====
   const keyframesStyle = `
     /* ✨ ГЛОБАЛЬНЫЕ CSS ПЕРЕМЕННЫЕ ДЛЯ SAFE AREA */
@@ -495,28 +434,17 @@ function MainApp() {
   return (
     <ErrorBoundary>
       <div style={globalContainerStyle}>
-        {/* Основной фон */}
-        <div style={mainBackgroundStyle} />
+        {/* Основной фон - показываем только после загрузки */}
+        {imagesLoaded && availableBackgrounds.length > 0 && (
+          <div style={mainBackgroundStyle} />
+        )}
         
-        {/* Следующий фон для переходов */}
-        {availableBackgrounds.length > 1 && imagesLoaded && (
+        {/* Следующий фон для переходов - показываем только после загрузки */}
+        {imagesLoaded && availableBackgrounds.length > 1 && (
           <div style={nextBackgroundStyle} />
         )}
         
-        {/* Loader во время предзагрузки */}
-        <div style={loaderOverlayStyle}>
-          <div style={loaderTextStyle}>
-            Загрузка фоновых изображений...
-          </div>
-          <div style={progressBarStyle}>
-            <div style={progressFillStyle} />
-          </div>
-          <div style={progressTextStyle}>
-            {loadingProgress}%
-          </div>
-        </div>
-        
-        {/* Роутер с компонентами */}
+        {/* Роутер с компонентами - показываем сразу */}
         <Router>
           <Routes>
             <Route path="/"           element={<WelcomePage />} />
