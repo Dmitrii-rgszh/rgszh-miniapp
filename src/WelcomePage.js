@@ -65,8 +65,8 @@ const WelcomePage = () => {
   // Логотип контейнер
   const logoContainerStyle = {
     position: 'relative',
-    width: '120px',
-    height: '120px',
+    width: '96px',
+    height: '96px',
     margin: '0 auto 30px',
     background: 'rgba(255, 255, 255, 0.1)',
     backdropFilter: 'blur(10px)',

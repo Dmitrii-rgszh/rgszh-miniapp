@@ -1,4 +1,4 @@
-/* MarzaPollPage.css */
+/* MarzaPollPage.css - ОБНОВЛЕНО: размеры логотипа уменьшены на 20% */
 
 /* Основной контейнер */
 .mainmenu-container {
@@ -34,12 +34,12 @@
   background-color: rgba(248, 5, 62, 1);
 }
 
-/* Логотип */
+/* Логотип - ОБНОВЛЕНО: размеры уменьшены на 20% */
 .logo-wrapper {
   position: relative;
   margin-bottom: 40px;
-  width: 120px;
-  height: 120px;
+  width: 96px;    /* было 120px */
+  height: 96px;   /* было 120px */
   overflow: hidden;
 }
 .logo-image {

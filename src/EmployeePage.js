@@ -37,16 +37,6 @@ const EmployeePage = () => {
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
   };
 
-  // Оверлей с градиентом
-  const overlayStyle = {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: '100%',
-    height: '100%',
-    background: 'linear-gradient(135deg, rgba(147, 39, 143, 0.85) 0%, rgba(71, 125, 191, 0.85) 100%)',
-    zIndex: 1
-  };
 
   // Логотип с анимацией
   const logoStyle = {
@@ -54,8 +44,8 @@ const EmployeePage = () => {
     top: logoAnimated && !isExiting ? '80px' : isExiting ? '-200px' : '-200px',
     left: '50%',
     transform: 'translateX(-50%)',
-    width: '160px',
-    height: '160px',
+    width: '128px',
+    height: '128px',
     backgroundColor: 'rgba(255, 255, 255, 0.10)',
     backdropFilter: 'blur(8px)',
     borderRadius: '20px',
@@ -69,8 +59,8 @@ const EmployeePage = () => {
   };
 
   const logoImageStyle = {
-    width: '120px',
-    height: '120px',
+    width: '96px',
+    height: '96px',
     objectFit: 'contain'
   };
 

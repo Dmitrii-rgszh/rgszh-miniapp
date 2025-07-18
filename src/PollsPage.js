@@ -444,8 +444,8 @@ export default function PollsPage() {
           top: 110px;
           left: 50%;
           transform: translateX(-50%);
-          width: 160px !important;
-          height: 160px !important;
+          width: 128px !important;
+          height: 128px !important;
           backgroundColor: rgba(255, 255, 255, 0.10);
           backdropFilter: blur(8px);
           borderRadius: 20px;
@@ -457,8 +457,8 @@ export default function PollsPage() {
         }
 
         .mainmenu-container .logo-image {
-          width: 120px !important;
-          height: 120px !important;
+          width: 96px !important;
+          height: 96px !important;
           objectFit: contain;
         }
 

@@ -4,6 +4,8 @@
    Здесь исправлены ключевые кадры так, чтобы entry-анимация
    «приземляла» рамку с логотипом на top:110px, а exit-анимация
    уводила её обратно наверх.
+   
+   ОБНОВЛЕНО: Все размеры логотипа уменьшены на 20%
    ============================================================================= */
 
 html, body, #root {
@@ -18,14 +20,15 @@ html, body, #root {
 
 /* ---------------------------------------------------
    1) Контейнер рамки «glassmorphism»
+   БЫЛО: 160x160px, СТАЛО: 128x128px (-20%)
 --------------------------------------------------- */
 .logo-wrapper {
   position: absolute;
   top: 100px;
   left: 50%;
   transform: translateX(-50%);
-  width: 160px;
-  height: 160px;
+  width: 128px;
+  height: 128px;
   background-color: rgba(255, 255, 255, 0.10);
   backdrop-filter: blur(8px);
   border-radius: 20px;
@@ -50,14 +53,15 @@ html, body, #root {
 
 /* ---------------------------------------------------
    2) Само изображение логотипа внутри рамки
+   БЫЛО: 120x120px, СТАЛО: 96x96px (-20%)
 --------------------------------------------------- */
 .logo-wrapper .logo-image {
   position: absolute;
   top:   50%;
   left:  50%;
   transform: translate(-50%, -50%);
-  width:   120px;
-  height:  120px;
+  width:   96px;
+  height:  96px;
   object-fit: contain;
   z-index: 11;       /* поверх рамки */
 }
@@ -68,6 +72,17 @@ html, body, #root {
 --------------------------------------------------- */
 .logo-wrapper.animate-logo {
   animation: slideDownWrapper 0.8s ease-out forwards;
+}
+
+/* === «Лёгкая встряска» влево–вправо === */
+@keyframes shakeLeftRight {
+  0%   { transform: translateX(-50%) translateX(0); }
+  10%  { transform: translateX(-50%) translateX(-10px); }
+  20%  { transform: translateX(-50%) translateX(10px); }
+  30%  { transform: translateX(-50%) translateX(-6px); }
+  40%  { transform: translateX(-50%) translateX(6px); }
+  50%  { transform: translateX(-50%) translateX(0); }
+  100% { transform: translateX(-50%) translateX(0); }
 }
 
 /* === «Лёгкая встряска» вверх–вниз === */
@@ -103,13 +118,14 @@ html, body, #root {
 
 /* ---------------------------------------------------
    4) Entry-анимация (мобильные ≤768px):
-      рамка «въезжает» до top:110px, размеры 120×120
+      рамка «въезжает» до top:110px
+      БЫЛО: 120x120px, СТАЛО: 96x96px (-20%)
 --------------------------------------------------- */
 @media (max-width: 768px) {
   .logo-wrapper {
     top:   -150px;   /* стартовая позиция скрытая */
-    width: 120px;
-    height: 120px;
+    width: 96px;
+    height: 96px;
     border-radius: 16px;
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
   }
@@ -127,8 +143,8 @@ html, body, #root {
     }
   }
   .logo-wrapper .logo-image {
-    width:  90px;
-    height: 90px;
+    width:  72px;
+    height: 72px;
   }
   .logo-wrapper.animate-logo .logo-image {
     animation: fadeInImage 0.8s ease-out forwards;
@@ -137,13 +153,14 @@ html, body, #root {
 
 /* ---------------------------------------------------
    5) Entry-анимация (широкие ≥1920px):
-      рамка «въезжает» до top:110px, размеры 200×200
+      рамка «въезжает» до top:110px
+      БЫЛО: 200x200px, СТАЛО: 160x160px (-20%)
 --------------------------------------------------- */
 @media (min-width: 1920px) {
   .logo-wrapper {
     top:   -250px;  /* старт */
-    width: 200px;
-    height: 200px;
+    width: 160px;
+    height: 160px;
     border-radius: 24px;
     box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
   }
@@ -161,8 +178,8 @@ html, body, #root {
     }
   }
   .logo-wrapper .logo-image {
-    width:  150px;
-    height: 150px;
+    width:  120px;
+    height: 120px;
   }
   .logo-wrapper.animate-logo .logo-image {
     animation: fadeInImage 0.8s ease-out forwards;
@@ -174,62 +191,57 @@ html, body, #root {
    из позиции top:110px обратно на top:-200px
 --------------------------------------------------- */
 .logo-wrapper.animate-logo-exit {
-  animation: slideUpWrapper 0.8s ease-in forwards;
+  animation: slideUpWrapperExit 0.8s ease-out forwards;
 }
-@keyframes slideUpWrapper {
-  from {
+
+@keyframes slideUpWrapperExit {
+  0%   {
     opacity: 1;
-    top:   110px;   /* <-- стартовать из 110px */
+    top: 110px;
+    transform: translateX(-50%);
   }
-  to {
+  100% {
     opacity: 0;
-    top:   -200px;  /* обратно «за» верхний край */
+    top: -200px;
+    transform: translateX(-50%);
   }
 }
 
 /* ---------------------------------------------------
-   7) Exit-анимация (мобильные ≤768px):
-      рамка «уезжает» вверх из top:110px в top:-150px
+   7) Exit-анимация (мобильные)
 --------------------------------------------------- */
 @media (max-width: 768px) {
   .logo-wrapper.animate-logo-exit {
-    animation: slideUpWrapperMobile 0.8s ease-in forwards;
+    animation: slideUpWrapperExitMobile 0.8s ease-out forwards;
   }
-  @keyframes slideUpWrapperMobile {
-    from {
+  @keyframes slideUpWrapperExitMobile {
+    0%   {
       opacity: 1;
-      top:   100px;  /* <-- стартовая позиция 110px */
+      top: 110px;
     }
-    to {
+    100% {
       opacity: 0;
-      top:   -150px; /* обратно «за» экран */
+      top: -150px;
     }
-  }
-  .logo-wrapper.animate-logo-exit .logo-image {
-    animation: fadeInImage 0.8s ease-in forwards;
   }
 }
 
 /* ---------------------------------------------------
-   8) Exit-анимация (широкие ≥1920px):
-      рамка «уезжает» вверх из top:110px в top:-250px
+   8) Exit-анимация (широкие экраны)
 --------------------------------------------------- */
 @media (min-width: 1920px) {
   .logo-wrapper.animate-logo-exit {
-    animation: slideUpWrapperLarge 0.8s ease-in forwards;
+    animation: slideUpWrapperExitLarge 0.8s ease-out forwards;
   }
-  @keyframes slideUpWrapperLarge {
-    from {
+  @keyframes slideUpWrapperExitLarge {
+    0%   {
       opacity: 1;
-      top:   100px;  /* <-- стартовая позиция 110px */
+      top: 110px;
     }
-    to {
+    100% {
       opacity: 0;
-      top:   -250px; /* «за» край экрана */
+      top: -250px;
     }
-  }
-  .logo-wrapper.animate-logo-exit .logo-image {
-    animation: fadeInImage 0.8s ease-in forwards;
   }
 }
 

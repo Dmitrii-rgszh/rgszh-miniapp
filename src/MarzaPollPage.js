@@ -95,8 +95,8 @@ export default function MarzaPollPage() {
   const logoWrapperStyle = {
     position: 'relative',
     marginBottom: '40px',
-    width: '120px',
-    height: '120px',
+    width: '96px',
+    height: '96px',
     overflow: 'hidden',
     zIndex: 3
   };
