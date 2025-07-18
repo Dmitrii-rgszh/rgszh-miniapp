@@ -686,7 +686,7 @@ export default function AssessmentPage() {
           .next-btn {
             width: ${isDesktop ? '72px' : '64px'} !important;
             height: ${isDesktop ? '72px' : '64px'} !important;
-            top: ${isDesktop ? '140px' : '180px'} !important;
+            top: ${isDesktop ? '140px' : '110px'} !important;
             right: ${isDesktop ? '40px' : '70px'} !important;
           }
 
