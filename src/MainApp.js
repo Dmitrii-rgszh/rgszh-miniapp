@@ -1,11 +1,5 @@
-// MainApp.js - УПРОЩЕННАЯ СИСТЕМА ФОНОВ
-// ✅ Простой цикл: background1 → background2 → background3 → background1...
-// ✅ Только плавное растворение (crossfade) без сложных анимаций
-// ✅ Применены корпоративные цвета: R:180 G:0 B:55, R:152 G:164 B:174, R:0 G:40 B:130
-// ✅ Семейство шрифтов: Segoe UI Bold для заголовков, Segoe UI Regular для текста
-// ✅ Инлайн стили как основной подход
-// ✅ Автоматическая смена фонов каждые 15 секунд
-// ✅ Глобальная логика Safe Area для всех страниц
+// MainApp.js - БЕЗ ЧАСТИЦ, ГОТОВ ДЛЯ МАГНИТНЫХ КНОПОК
+// Убраны частицы, оставлена чистая основа для других эффектов
 
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
@@ -24,7 +18,6 @@ import MarzaPollPage   from './MarzaPollPage';
 
 // ===== ЦЕНТРАЛИЗОВАННЫЕ ИМПОРТЫ ФОНОВ =====
 
-// Безопасные импорты фоновых изображений из папки background/
 let backgroundImage1, backgroundImage2, backgroundImage3, defaultBackground;
 
 // Импорт основного фона (fallback)
@@ -35,7 +28,7 @@ try {
   defaultBackground = null;
 }
 
-// Импорт фонов из папки background/ с проверкой разных названий
+// Импорт фонов из папки background/
 try {
   backgroundImage1 = require('./components/background/background1.png');
 } catch (error) {
@@ -143,7 +136,7 @@ function MainApp() {
   const [imagesLoaded, setImagesLoaded] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
 
-  // ===== ПРЕДЗАГРУЗКА ИЗОБРАЖЕНИЙ (СКРЫТАЯ ОТ ПОЛЬЗОВАТЕЛЯ) =====
+  // ===== ПРЕДЗАГРУЗКА ИЗОБРАЖЕНИЙ =====
   const preloadImages = () => {
     if (availableBackgrounds.length === 0) {
       setImagesLoaded(true);
@@ -168,7 +161,7 @@ function MainApp() {
           console.log('Все фоновые изображения скрыто предзагружены! Запускаем систему смены фонов.');
           setTimeout(() => {
             setImagesLoaded(true);
-          }, 100); // Минимальная задержка
+          }, 100);
         }
       };
       
@@ -187,15 +180,14 @@ function MainApp() {
     });
   };
 
-  // ===== ПРОСТАЯ ФУНКЦИЯ ПОЛУЧЕНИЯ СЛЕДУЮЩЕГО ИНДЕКСА =====
+  // ===== ФУНКЦИЯ ПОЛУЧЕНИЯ СЛЕДУЮЩЕГО ИНДЕКСА =====
   const getNextBackgroundIndex = (currentIndex) => {
     if (availableBackgrounds.length === 0) return 0;
     return (currentIndex + 1) % availableBackgrounds.length;
   };
 
-  // ===== ГЛАВНАЯ ФУНКЦИЯ ПРОСТОГО ПЕРЕХОДА =====
+  // ===== ГЛАВНАЯ ФУНКЦИЯ ПЕРЕХОДА =====
   const startSimpleTransition = () => {
-    // Проверки
     if (!imagesLoaded) {
       console.log('⏸️ Фоны еще не загружены, пропускаем переход');
       return;
@@ -211,7 +203,6 @@ function MainApp() {
       return;
     }
     
-    // Используем функциональное обновление состояния для получения актуального значения
     setCurrentBackgroundIndex(currentIndex => {
       const nextIndex = getNextBackgroundIndex(currentIndex);
       
@@ -220,19 +211,17 @@ function MainApp() {
       setIsTransitioning(true);
       setNextBackgroundIndex(nextIndex);
       
-      // Запускаем простое растворение
       executeCrossfadeTransition();
       
-      return currentIndex; // Не меняем здесь, изменим в finalizeTransition
+      return currentIndex;
     });
   };
 
-  // ===== РЕАЛИЗАЦИЯ ПРОСТОГО CROSSFADE ПЕРЕХОДА =====
+  // ===== РЕАЛИЗАЦИЯ CROSSFADE ПЕРЕХОДА =====
   const executeCrossfadeTransition = () => {
-    const duration = 3000; // 3 секунды на переход
-    const steps = 120; // 120 шагов = 25ms на шаг (более плавная анимация)
+    const duration = 3000;
+    const steps = 120;
     
-    // Сбрасываем состояние следующего фона
     setNextOpacity(0);
     
     setTimeout(() => {
@@ -240,11 +229,8 @@ function MainApp() {
       const fadeInterval = setInterval(() => {
         step++;
         const progress = step / steps;
-        
-        // Используем ease-in-out функцию для более плавного перехода
         const easeProgress = 0.5 * (1 + Math.sin(Math.PI * (progress - 0.5)));
         
-        // Плавное изменение прозрачности с гарантией границ [0, 1]
         const currentOpacityValue = Math.max(0, Math.min(1, 1 - easeProgress));
         const nextOpacityValue = Math.max(0, Math.min(1, easeProgress));
         
@@ -253,33 +239,28 @@ function MainApp() {
         
         if (step >= steps) {
           clearInterval(fadeInterval);
-          // Принудительно устанавливаем финальные значения
           setCurrentOpacity(0);
           setNextOpacity(1);
           finalizeTransition();
         }
-      }, 25); // 25ms интервал для плавности
+      }, 25);
     }, 100);
   };
 
   // ===== ФИНАЛИЗАЦИЯ ПЕРЕХОДА =====
   const finalizeTransition = () => {
     setTimeout(() => {
-      // Используем функциональное обновление для получения актуального nextBackgroundIndex
       setNextBackgroundIndex(nextIndex => {
         console.log(`✅ Переход завершен: теперь активен фон ${nextIndex + 1}`);
         
-        // Обновляем текущий индекс на следующий
         setCurrentBackgroundIndex(nextIndex);
-        
-        // ПРИНУДИТЕЛЬНО устанавливаем правильные финальные состояния
         setCurrentOpacity(1);
         setNextOpacity(0);
         setIsTransitioning(false);
         
         return nextIndex;
       });
-    }, 100); // Уменьшили задержку
+    }, 100);
   };
 
   // ===== ФУНКЦИЯ ОБНОВЛЕНИЯ ВЫСОТЫ =====
@@ -305,33 +286,28 @@ function MainApp() {
     };
   }, []);
 
-  // ===== ПРЕДЗАГРУЗКА ПРИ МОНТИРОВАНИИ (СКРЫТАЯ) =====
+  // ===== ПРЕДЗАГРУЗКА ПРИ МОНТИРОВАНИИ =====
   useEffect(() => {
-    // Сразу показываем интерфейс пользователю
-    setImagesLoaded(false); // Фоны еще не загружены, но интерфейс уже работает
-    
-    // Запускаем скрытую предзагрузку в фоне
+    setImagesLoaded(false);
     preloadImages();
   }, []);
 
-  // ===== АВТОМАТИЧЕСКАЯ СМЕНА ФОНОВ КАЖДЫЕ 15 СЕКУНД =====
+  // ===== АВТОМАТИЧЕСКАЯ СМЕНА ФОНОВ =====
   useEffect(() => {
     if (!imagesLoaded || availableBackgrounds.length <= 1) return;
     
     console.log('🚀 Запуск простой системы смены фонов: каждые 15 секунд');
     
-    // Повторяющийся таймер каждые 15 секунд
     const repeatTimer = setInterval(() => {
       startSimpleTransition();
     }, 15000);
 
-    // Cleanup при размонтировании
     return () => {
       clearInterval(repeatTimer);
     };
-  }, [imagesLoaded]); // Убрали currentBackgroundIndex из зависимостей!
+  }, [imagesLoaded]);
 
-  // ===== ГЛОБАЛЬНЫЕ СТИЛИ КОНТЕЙНЕРА + SAFE AREA =====
+  // ===== ГЛОБАЛЬНЫЕ СТИЛИ КОНТЕЙНЕРА =====
   const globalContainerStyle = {
     position: 'relative',
     width: '100%',
@@ -340,7 +316,7 @@ function MainApp() {
     overflow: 'hidden',
     fontFamily: '"Segoe UI", sans-serif',
     
-    // ✨ ПОСТОЯННЫЙ КОРПОРАТИВНЫЙ ФОН
+    // ПОСТОЯННЫЙ КОРПОРАТИВНЫЙ ФОН
     background: `linear-gradient(135deg, 
       rgba(180, 0, 55, 0.95) 0%,
       rgba(153, 0, 55, 0.9) 25%,
@@ -349,7 +325,6 @@ function MainApp() {
       rgba(0, 40, 130, 0.95) 100%
     )`,
     
-    // ✨ SAFE AREA: отступ сверху для безопасной зоны
     paddingTop: 'env(safe-area-inset-top, 20px)',
     boxSizing: 'border-box'
   };
@@ -369,7 +344,6 @@ function MainApp() {
       backgroundPosition: 'center',
       backgroundRepeat: 'no-repeat',
       opacity: currentOpacity
-      // Убрали transition - анимация полностью управляется JavaScript
     } : {
       opacity: 0
     })
@@ -390,7 +364,6 @@ function MainApp() {
       backgroundPosition: 'center',
       backgroundRepeat: 'no-repeat',
       opacity: nextOpacity
-      // Убрали transition - анимация полностью управляется JavaScript
     } : {
       opacity: 0
     }),
@@ -400,7 +373,6 @@ function MainApp() {
 
   // ===== CSS-В-JS ДЛЯ SAFE AREA =====
   const keyframesStyle = `
-    /* ✨ ГЛОБАЛЬНЫЕ CSS ПЕРЕМЕННЫЕ ДЛЯ SAFE AREA */
     :root {
       --safe-area-top: env(safe-area-inset-top, 50px);
       --safe-area-bottom: env(safe-area-inset-bottom, 0px);
@@ -408,13 +380,11 @@ function MainApp() {
       --safe-area-right: env(safe-area-inset-right, 0px);
     }
     
-    /* ✨ ГЛОБАЛЬНЫЕ УТИЛИТАРНЫЕ КЛАССЫ ДЛЯ SAFE AREA */
     .safe-top { margin-top: var(--safe-area-top) !important; }
     .safe-top-padding { padding-top: var(--safe-area-top) !important; }
     .safe-bottom { margin-bottom: var(--safe-area-bottom) !important; }
     .safe-bottom-padding { padding-bottom: var(--safe-area-bottom) !important; }
     
-    /* ✨ АВТОМАТИЧЕСКИЙ SAFE AREA ДЛЯ ОСНОВНЫХ ЭЛЕМЕНТОВ */
     .logo-safe { top: 110px !important; }
     .buttons-safe { top: 300px !important; }
     .title-safe { top: 260px !important; }
@@ -434,17 +404,17 @@ function MainApp() {
   return (
     <ErrorBoundary>
       <div style={globalContainerStyle}>
-        {/* Основной фон - показываем только после загрузки */}
+        {/* Основной фон */}
         {imagesLoaded && availableBackgrounds.length > 0 && (
           <div style={mainBackgroundStyle} />
         )}
         
-        {/* Следующий фон для переходов - показываем только после загрузки */}
+        {/* Следующий фон для переходов */}
         {imagesLoaded && availableBackgrounds.length > 1 && (
           <div style={nextBackgroundStyle} />
         )}
         
-        {/* Роутер с компонентами - показываем сразу */}
+        {/* Роутер с компонентами - поверх всего */}
         <Router>
           <Routes>
             <Route path="/"           element={<WelcomePage />} />
