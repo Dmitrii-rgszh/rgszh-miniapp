@@ -1,10 +1,9 @@
-// MainApp.js - СИСТЕМА ФОНОВ С ДВИЖЕНИЕМ
-// ✅ Простой цикл: background1 → background2 → background3 → background1...
-// ✅ Плавное растворение (crossfade) + движение фона
-// ✅ Каждый фон имеет свой независимый div с анимацией
-// ✅ Плавное круговое движение фонов
-// ✅ Увеличение фона на 130% для избежания пустот
+// MainApp.js - БЕЗ АНИМАЦИИ ДВИЖЕНИЯ ФОНОВ
+// ✅ Простой цикл: background1 → background2 → background3 → background4 → background1...
+// ✅ Плавное растворение (crossfade) между фонами
+// ❌ ОТКЛЮЧЕНА анимация движения фонов
 // ✅ Автоматическая смена фонов каждые 15 секунд
+// ✅ 4 фона: background1.png, background2.png, background3.png, background4.png
 
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
@@ -24,7 +23,7 @@ import MarzaPollPage   from './MarzaPollPage';
 // ===== ЦЕНТРАЛИЗОВАННЫЕ ИМПОРТЫ ФОНОВ =====
 
 // Безопасные импорты фоновых изображений из папки background/
-let backgroundImage1, backgroundImage2, backgroundImage3, defaultBackground;
+let backgroundImage1, backgroundImage2, backgroundImage3, backgroundImage4, defaultBackground;
 
 // Импорт основного фона (fallback)
 try {
@@ -68,13 +67,29 @@ try {
   }
 }
 
+try {
+  backgroundImage4 = require('./components/background/background4.png');
+} catch (error) {
+  try {
+    backgroundImage4 = require('./components/background/background (4).png');
+  } catch (error2) {
+    console.warn('Background 4 not found with either name');
+    backgroundImage4 = null;
+  }
+}
+
 // Создаем массив доступных фонов
 const availableBackgrounds = [
   backgroundImage1, 
   backgroundImage2, 
-  backgroundImage3, 
-  defaultBackground
+  backgroundImage3,
+  backgroundImage4
 ].filter(Boolean);
+
+// Добавляем defaultBackground только если других фонов нет
+if (availableBackgrounds.length === 0 && defaultBackground) {
+  availableBackgrounds.push(defaultBackground);
+}
 
 console.log(`Найдено фоновых изображений: ${availableBackgrounds.length}`);
 
@@ -295,40 +310,8 @@ function MainApp() {
     };
   }, [imagesLoaded, activeBackgroundIndex]);
 
-  // ===== CSS KEYFRAMES ДЛЯ АНИМАЦИЙ =====
-  const animationStyles = `
-    @keyframes moveBackground0 {
-      0% { transform: translate(-5%, 5%); }
-      25% { transform: translate(5%, 5%); }
-      50% { transform: translate(5%, -5%); }
-      75% { transform: translate(-5%, -5%); }
-      100% { transform: translate(-5%, 5%); }
-    }
-    
-    @keyframes moveBackground1 {
-      0% { transform: translate(5%, -5%); }
-      25% { transform: translate(5%, 5%); }
-      50% { transform: translate(-5%, 5%); }
-      75% { transform: translate(-5%, -5%); }
-      100% { transform: translate(5%, -5%); }
-    }
-    
-    @keyframes moveBackground2 {
-      0% { transform: translate(-5%, -5%); }
-      25% { transform: translate(-5%, 5%); }
-      50% { transform: translate(5%, 5%); }
-      75% { transform: translate(5%, -5%); }
-      100% { transform: translate(-5%, -5%); }
-    }
-    
-    @keyframes moveBackground3 {
-      0% { transform: translate(5%, 5%); }
-      25% { transform: translate(-5%, 5%); }
-      50% { transform: translate(-5%, -5%); }
-      75% { transform: translate(5%, -5%); }
-      100% { transform: translate(5%, 5%); }
-    }
-    
+  // ===== CSS СТИЛИ БЕЗ АНИМАЦИИ ДВИЖЕНИЯ =====
+  const staticStyles = `
     /* ✨ ГЛОБАЛЬНЫЕ CSS ПЕРЕМЕННЫЕ ДЛЯ SAFE AREA */
     :root {
       --safe-area-top: env(safe-area-inset-top, 50px);
@@ -343,7 +326,7 @@ function MainApp() {
     .safe-bottom { margin-bottom: var(--safe-area-bottom) !important; }
     .safe-bottom-padding { padding-bottom: var(--safe-area-bottom) !important; }
     
-    /* ✨ АВТОМАТИЧЕСКИЙ SAFE AREA ДЛЯ ОСНОВНЫХ ЭЛЕМЕНТОВ */
+    /0* ✨ АВТОМАТИЧЕСКИЙ SAFE AREA ДЛЯ ОСНОВНЫХ ЭЛЕМЕНТОВ */
     .logo-safe { top: 110px !important; }
     .buttons-safe { top: 300px !important; }
     .title-safe { top: 260px !important; }
@@ -351,11 +334,11 @@ function MainApp() {
 
   // Добавляем стили в head
   useEffect(() => {
-    const styleId = 'animation-styles';
+    const styleId = 'static-styles';
     if (!document.getElementById(styleId)) {
       const style = document.createElement('style');
       style.id = styleId;
-      style.textContent = animationStyles;
+      style.textContent = staticStyles;
       document.head.appendChild(style);
     }
   }, []);
@@ -391,23 +374,23 @@ function MainApp() {
     }
   };
 
-  // ===== ФУНКЦИЯ СОЗДАНИЯ СТИЛЯ ДЛЯ КАЖДОГО ФОНА =====
+  // ===== СТИЛЬ ДЛЯ СТАТИЧНЫХ ФОНОВ (БЕЗ АНИМАЦИИ) =====
   const createBackgroundStyle = (backgroundImage, index) => ({
     position: 'absolute',
-    top: '-15%',
-    left: '-15%',
-    width: '130%',
-    height: '130%',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
     backgroundImage: `url(${backgroundImage})`,
     backgroundSize: 'cover',
     backgroundPosition: 'center',
     backgroundRepeat: 'no-repeat',
     opacity: backgroundOpacities[index] || 0,
     filter: `brightness(${0.7 + (backgroundOpacities[index] || 0) * 0.3})`,
-    animation: `moveBackground${index} ${40 + index * 5}s ease-in-out infinite`,
-    transition: 'opacity 0.025s linear',
+    // ❌ УБРАНА АНИМАЦИЯ: animation: `moveBackground 80s linear infinite`,
+    transition: 'opacity 5s ease-in-out',
     pointerEvents: 'none',
-    zIndex: backgroundOpacities[index] > 0 ? 2 : 1
+    zIndex: 1
   });
 
   // ===== LOADER СТИЛИ =====
@@ -470,7 +453,7 @@ function MainApp() {
   return (
     <ErrorBoundary>
       <div style={globalContainerStyle}>
-        {/* Создаем отдельный div для каждого фона */}
+        {/* Создаем отдельный div для каждого фона БЕЗ АНИМАЦИИ ДВИЖЕНИЯ */}
         {imagesLoaded && availableBackgrounds.map((background, index) => (
           <div
             key={index}
