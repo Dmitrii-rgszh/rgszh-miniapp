@@ -1,13 +1,12 @@
-// WelcomePage.js - ПРОСТАЯ ВЕРСИЯ 
+// WelcomePage.js - ИСПРАВЛЕННАЯ ВЕРСИЯ С УМЕНЬШЕННЫМ ЛОГОТИПОМ
 // Работает поверх глобального фона из MainApp.js
-// Все фоны и Pi элементы теперь глобальные!
+// Логотип уменьшен на 20%: контейнер 96x96px, изображение 76x76px
 
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSwipeable } from 'react-swipeable';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// Только логотип - все остальное глобальное
 import logoImage from './components/logo.png';
 
 const WelcomePage = () => {
@@ -18,7 +17,7 @@ const WelcomePage = () => {
   const textRef = useRef(null);
   const containerRef = useRef(null);
 
-  // Простые состояния
+  // Состояния
   const [greeting, setGreeting] = useState('');
   const [isLoaded, setIsLoaded] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
@@ -36,7 +35,6 @@ const WelcomePage = () => {
     alignItems: 'center',
     justifyContent: 'center',
     fontFamily: '"Segoe UI", sans-serif',
-    // НЕТ background - используем глобальный!
   };
 
   // Гласморфизм контейнер
@@ -62,11 +60,11 @@ const WelcomePage = () => {
     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
   };
 
-  // Логотип контейнер
+  // Логотип контейнер - УМЕНЬШЕН НА 20%
   const logoContainerStyle = {
     position: 'relative',
-    width: '96px',
-    height: '96px',
+    width: '96px',        // было 120px
+    height: '96px',       // было 120px
     margin: '0 auto 30px',
     background: 'rgba(255, 255, 255, 0.1)',
     backdropFilter: 'blur(10px)',
@@ -155,7 +153,7 @@ const WelcomePage = () => {
       scale: 1,
       transition: { 
         duration: 0.8, 
-        ease: [0.6, 0.01, 0.05, 0.95] // ✅ Исправленный cubic-bezier
+        ease: [0.6, 0.01, 0.05, 0.95]
       }
     },
     exit: { 
@@ -176,30 +174,31 @@ const WelcomePage = () => {
       opacity: 1, 
       scale: 1,
       transition: { 
-        type: 'spring',
-        stiffness: 200,
-        damping: 20,
-        delay: 0.2
+        duration: 0.8, 
+        delay: 0.2,
+        ease: [0.6, 0.01, 0.05, 0.95]
       }
     },
-    exit: {
-      y: -50,
-      opacity: 0,
-      scale: 0.8,
-      transition: { duration: 0.4 }
+    exit: { 
+      y: -30, 
+      opacity: 0, 
+      scale: 0.9,
+      transition: { 
+        duration: 0.4,
+        ease: [0.6, 0.01, 0.05, 0.95]
+      }
     }
   };
 
   const logoVariants = {
-    hidden: { rotateY: -90, opacity: 0 },
+    hidden: { scale: 0, rotate: -180 },
     visible: { 
-      rotateY: 0, 
-      opacity: 1,
+      scale: 1, 
+      rotate: 0,
       transition: { 
-        type: 'spring',
-        stiffness: 150,
-        damping: 15,
-        delay: 0.4
+        duration: 0.6, 
+        delay: 0.4,
+        ease: [0.34, 1.56, 0.64, 1]
       }
     }
   };
@@ -210,50 +209,52 @@ const WelcomePage = () => {
       y: 0, 
       opacity: 1,
       transition: { 
-        type: 'spring',
-        stiffness: 150,
-        damping: 20,
-        delay: 0.6
+        duration: 0.6, 
+        delay: 0.6,
+        ease: [0.6, 0.01, 0.05, 0.95]
       }
     }
   };
 
-  // ===== РЕНДЕРИНГ =====
+  // Добавляем CSS анимации
+  const animationStyles = (
+    <style>
+      {`
+        @keyframes textShimmer {
+          0% { 
+            background: linear-gradient(135deg, #ffffff 0%, rgba(180, 0, 55, 0.8) 50%, #ffffff 100%); 
+          }
+          100% { 
+            background: linear-gradient(135deg, rgba(180, 0, 55, 0.8) 0%, #ffffff 50%, rgba(180, 0, 55, 0.8) 100%); 
+          }
+        }
+        
+        @keyframes logoFloat {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-5px); }
+        }
+
+        .clickable-area {
+          cursor: pointer;
+          user-select: none;
+        }
+
+        .glass-container:hover {
+          background: rgba(255, 255, 255, 0.12);
+          border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .glass-logo:hover {
+          background: rgba(255, 255, 255, 0.15);
+        }
+      `}
+    </style>
+  );
 
   return (
     <>
-      {/* CSS анимации */}
-      <style>
-        {`
-          @keyframes textShimmer {
-            0% { background-position: -200px 0; }
-            100% { background-position: 200px 0; }
-          }
-
-          @keyframes logoFloat {
-            0%, 100% { transform: translateY(0) scale(1); }
-            50% { transform: translateY(-5px) scale(1.02); }
-          }
-
-          .glass-logo:hover {
-            transform: scale(1.05) rotateY(5deg);
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
-          }
-          
-          .clickable-area {
-            cursor: pointer;
-          }
-          
-          .clickable-area:hover .glass-container {
-            transform: scale(1.02);
-            box-shadow: 
-              0 12px 40px rgba(0, 0, 0, 0.4),
-              inset 0 1px 0 rgba(255, 255, 255, 0.5),
-              0 0 80px rgba(180, 0, 55, 0.3);
-          }
-        `}
-      </style>
-
+      {animationStyles}
+      
       <motion.div
         ref={containerRef}
         style={containerStyle}
@@ -294,8 +295,8 @@ const WelcomePage = () => {
                   src={logoImage}
                   alt="Логотип РГС Жизнь"
                   style={{
-                    width: '80px',
-                    height: '80px',
+                    width: '76px',      // уменьшено на 20% (было 96px)
+                    height: '76px',     // уменьшено на 20% (было 96px)
                     objectFit: 'contain',
                     filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.2))',
                     animation: 'logoFloat 4s ease-in-out infinite'
