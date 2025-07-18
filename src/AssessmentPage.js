@@ -368,7 +368,7 @@ export default function AssessmentPage() {
   // ИСПРАВЛЕНИЕ 2: Увеличенный отступ от логотипа + центрирование для десктопа
   const scrollableContentStyle = {
     position: 'absolute',
-    top: isDesktop ? '200px' : '205px', // Меньший отступ для десктопа
+    top: isDesktop ? '200px' : '235px', // Меньший отступ для десктопа
     left: '0',
     right: '0',
     bottom: '0',
@@ -455,7 +455,11 @@ export default function AssessmentPage() {
       case 1:
         return (
           <div className="step-container fade-in-up" style={{ textAlign: 'center' }}>
-            <h2 style={{ fontSize: isDesktop ? '28px' : '22px', marginBottom: '25px' }}>
+            <h2 style={{ 
+              fontSize: isDesktop ? '28px' : '22px', 
+              marginBottom: '25px',
+              paddingTop: isDesktop ? '0px' : '20px'
+            }}>
               Психологическая оценка
             </h2>
             <p className="instruction-text large-text" style={{ 
