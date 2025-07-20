@@ -5,10 +5,13 @@
 
 .back-btn {
   position: absolute;
-  top: 140px;
-  left: -60px;  /* за пределами видимой области */
-  width: 64px;
-  height: 64px;
+  /* Размеры как у HomeButton */
+  width: var(--next-button-size, 64px) !important;
+  height: var(--next-button-size, 64px) !important;
+  min-width: var(--next-button-size, 64px) !important;
+  max-width: var(--next-button-size, 64px) !important;
+  min-height: var(--next-button-size, 64px) !important;
+  max-height: var(--next-button-size, 64px) !important;
   background: rgba(255, 255, 255, 0.10);
   backdrop-filter: blur(8px);
   border: 1.5px solid rgba(255,255,255,0.17); /* лёгкая стеклянная рамка */

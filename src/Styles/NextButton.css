@@ -14,7 +14,7 @@
   max-height: var(--next-button-size, 64px) !important;
   
   /* Позиционирование - CSS переменные */
-  top: var(--next-button-top, 92px) !important;
+  top: var(--home-button-top, 142px) !important;
   right: var(--next-button-right, calc(50% - 64px - 30px - 64px)) !important;
   
   /* Стиль как у HomeButton - стеклянный эффект */
@@ -153,7 +153,7 @@
   .next-btn {
     /* Позиционирование для мобильных */
     right: var(--home-button-left, calc(50% - 64px - 30px - 64px)) !important;
-    top: var(--next-button-top-mobile, 90px) !important;
+    top: var(--home-button-top, 142px) !important;
     
     /* Размеры остаются 64x64 */
     width: 64px !important;

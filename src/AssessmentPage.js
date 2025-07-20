@@ -1,4 +1,4 @@
-// AssessmentPage.js - ИСПРАВЛЕНО: BackButton.css + условная анимация SVG
+// AssessmentPage.js - ПОЛНОЕ ИСПРАВЛЕНИЕ: адаптивность + правильная кнопка "Назад"
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Autosuggest from 'react-autosuggest';
@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { apiCall } from './config';
 import logoImage from './components/logo.png';
 import './Styles/NextButton.css';
-import './Styles/BackButton.css'; // ✅ ДОБАВЛЕНО: импорт стилей кнопки "Назад"
+import './Styles/BackButton.css';
 
 // JSON-файлы с ФИО
 import surnames from './components/autosuggest/surname.json';
@@ -16,8 +16,52 @@ import patronymics from './components/autosuggest/lastname.json';
 export default function AssessmentPage() {
   const navigate = useNavigate();
   const startTimeRef = useRef(null);
+  const backRef = useRef(null);
 
-  // ===== СОСТОЯНИЯ АНИМАЦИЙ (как в MainMenu) =====
+  // ===== АДАПТИВНОСТЬ (как в PollsPage) =====
+  const [windowHeight, setWindowHeight] = useState(window.innerHeight);
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+
+  // Обработчик изменения размера окна
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowHeight(window.innerHeight);
+      setWindowWidth(window.innerWidth);
+      setTimeout(() => {
+        setWindowHeight(window.innerHeight);
+        setWindowWidth(window.innerWidth);
+      }, 100);
+    };
+
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', handleResize);
+    
+    const checkMobile = () => {
+      if (windowWidth < 768) {
+        handleResize();
+      }
+    };
+    
+    setTimeout(checkMobile, 300);
+    
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('orientationchange', handleResize);
+    };
+  }, [windowWidth]);
+
+  // ===== АДАПТИВНЫЕ ПАРАМЕТРЫ (как в PollsPage) =====
+  const isSmallScreen = windowHeight < 700 || windowWidth < 400;
+  const isMobileWidth = windowWidth < 768;
+  const isMediumScreen = windowHeight >= 700 && windowHeight < 900;
+  
+  // Адаптивные значения для логотипа (КАК В PollsPage)
+  const logoSize = isSmallScreen ? 96 : 128;
+  const logoTop = isSmallScreen ? 80 : 110;
+  const logoImageSize = isSmallScreen ? 72 : 96;
+  const contentTop = isSmallScreen ? 200 : (isMediumScreen ? 240 : 268);
+
+  // ===== СОСТОЯНИЯ АНИМАЦИЙ =====
   const [logoAnimated, setLogoAnimated] = useState(false);
   const [contentAnimated, setContentAnimated] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
@@ -51,7 +95,7 @@ export default function AssessmentPage() {
 
   // ===== ФУНКЦИИ И ЛОГИКА =====
 
-  // Определение возможности перехода далее (перенесено выше)
+  // Определение возможности перехода далее
   const canGoNext = () => {
     if (currentStep === 1) return true;
     if (currentStep === 2) return surname.trim() && firstName.trim() && patronymic.trim();
@@ -59,13 +103,13 @@ export default function AssessmentPage() {
     return false;
   };
 
-  // ===== СТИЛИ (как в MainMenu) =====
+  // ===== АДАПТИВНЫЕ СТИЛИ =====
 
   // Основной контейнер
   const mainContainerStyle = {
     position: 'relative',
     width: '100%',
-    height: window.innerHeight + 'px',
+    height: windowHeight + 'px',
     minHeight: '100vh',
     overflow: 'hidden',
     display: 'flex',
@@ -75,17 +119,17 @@ export default function AssessmentPage() {
     fontFamily: '"Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif'
   };
 
-  // Логотип с анимацией (как в MainMenu)
+  // Логотип - адаптивный как в PollsPage
   const logoStyle = {
     position: 'absolute',
-    top: logoAnimated && !isExiting ? '60px' : isExiting ? '-200px' : '-200px',
+    top: logoAnimated && !isExiting ? `${logoTop}px` : isExiting ? '-200px' : '-200px',
     left: '50%',
     transform: 'translateX(-50%)',
-    width: '128px',
-    height: '128px',
+    width: `${logoSize}px`,
+    height: `${logoSize}px`,
     backgroundColor: 'rgba(255, 255, 255, 0.10)',
     backdropFilter: 'blur(8px)',
-    borderRadius: '20px',
+    borderRadius: isSmallScreen ? '16px' : '20px',
     boxShadow: '0 10px 25px rgba(0, 0, 0, 0.25)',
     opacity: logoAnimated && !isExiting ? 1 : 0,
     zIndex: 3,
@@ -95,17 +139,17 @@ export default function AssessmentPage() {
     justifyContent: 'center'
   };
 
-  // Изображение логотипа
+  // Изображение логотипа - адаптивный размер
   const logoImageStyle = {
-    width: '96px',
-    height: '96px',
+    width: `${logoImageSize}px`,
+    height: `${logoImageSize}px`,
     objectFit: 'contain'
   };
 
-  // Контейнер контента (адаптивный отступ от логотипа)
+  // Контейнер контента - адаптивный отступ
   const contentContainerStyle = {
     position: 'absolute',
-    top: window.innerWidth < 768 ? '200px' : '200px',
+    top: contentTop + 'px',
     left: '50%',
     transform: 'translateX(-50%)',
     display: 'flex',
@@ -120,12 +164,12 @@ export default function AssessmentPage() {
     opacity: contentAnimated ? 1 : 0,
     transition: 'all 0.8s ease-out 0.2s',
     overflowY: 'auto',
-    maxHeight: `calc(${window.innerHeight}px - 220px)`
+    maxHeight: `calc(${windowHeight}px - ${contentTop + 40}px)`
   };
 
   // Стиль заголовка
   const titleStyle = {
-    fontSize: '28px',
+    fontSize: isSmallScreen ? '24px' : '28px',
     fontWeight: '700',
     fontFamily: '"Segoe UI", sans-serif',
     color: 'rgba(255, 255, 255, 0.95)',
@@ -136,7 +180,7 @@ export default function AssessmentPage() {
 
   // Стиль текста
   const textStyle = {
-    fontSize: '18px',
+    fontSize: isSmallScreen ? '16px' : '18px',
     fontWeight: '400',
     fontFamily: '"Segoe UI", sans-serif',
     color: 'rgba(255, 255, 255, 0.9)',
@@ -146,30 +190,28 @@ export default function AssessmentPage() {
     textShadow: '0 1px 5px rgba(0, 0, 0, 0.3)'
   };
 
-  // ❌ УДАЛЕН: backButtonStyle - теперь используется CSS класс
-
   // Стиль для кнопки (как в MainMenu)
   const buttonStyle = {
-    minWidth: '280px',
+    minWidth: isSmallScreen ? '240px' : '280px',
     background: 'linear-gradient(135deg, rgba(180, 0, 55, 0.9) 0%, rgba(153, 0, 55, 0.85) 50%, rgba(0, 40, 130, 0.9) 100%)',
     color: 'white',
     border: 'none',
     borderRadius: '12px',
-    padding: '18px 36px',
+    padding: isSmallScreen ? '16px 28px' : '18px 36px',
     cursor: 'pointer',
     boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)',
-    fontSize: '20px',
+    fontSize: isSmallScreen ? '18px' : '20px',
     fontWeight: '600',
     fontFamily: '"Segoe UI", sans-serif',
     transition: 'all 0.3s ease',
     marginTop: '20px'
   };
 
-  // Стиль для полей ввода (адаптированный под стиль MainMenu)
+  // Стиль для полей ввода
   const inputStyle = {
     width: '100%',
-    padding: '16px 20px',
-    fontSize: '18px',
+    padding: isSmallScreen ? '14px 18px' : '16px 20px',
+    fontSize: isSmallScreen ? '16px' : '18px',
     fontFamily: '"Segoe UI", sans-serif',
     background: 'rgba(255, 255, 255, 0.15)',
     backdropFilter: 'blur(10px)',
@@ -181,7 +223,7 @@ export default function AssessmentPage() {
     outline: 'none'
   };
 
-  // Стиль для опций ответов (как кнопки в MainMenu)
+  // Стиль для опций ответов
   const optionButtonStyle = (isSelected) => ({
     width: '100%',
     background: isSelected 
@@ -191,9 +233,9 @@ export default function AssessmentPage() {
     color: 'white',
     border: isSelected ? '2px solid rgba(255, 255, 255, 0.8)' : '1px solid rgba(255, 255, 255, 0.3)',
     borderRadius: '12px',
-    padding: '16px 24px',
+    padding: isSmallScreen ? '14px 20px' : '16px 24px',
     cursor: 'pointer',
-    fontSize: '18px',
+    fontSize: isSmallScreen ? '16px' : '18px',
     fontWeight: isSelected ? '600' : '400',
     fontFamily: '"Segoe UI", sans-serif',
     marginBottom: '12px',
@@ -202,7 +244,7 @@ export default function AssessmentPage() {
     transform: isSelected ? 'scale(1.02)' : 'scale(1)'
   });
 
-  // ===== АНИМАЦИЯ ВХОДА (как в MainMenu) =====
+  // ===== АНИМАЦИЯ ВХОДА =====
   useEffect(() => {
     if (!isLoading) {
       const timer1 = setTimeout(() => setLogoAnimated(true), 100);
@@ -445,7 +487,7 @@ export default function AssessmentPage() {
     setTimeout(() => navigate('/'), 800);
   };
 
-  // Hover эффекты (как в MainMenu)
+  // Hover эффекты
   const handleMouseEnter = (e) => {
     e.target.style.transform = 'translateY(-2px) scale(1.02)';
     e.target.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.4)';
@@ -532,7 +574,7 @@ export default function AssessmentPage() {
               Пройдите короткий тест для определения ваших корпоративных ценностей.
               {questionnaire?.description && ` ${questionnaire.description}`}
             </p>
-            <p style={{...textStyle, fontSize: '16px', opacity: 0.9}}>
+            <p style={{...textStyle, fontSize: isSmallScreen ? '14px' : '16px', opacity: 0.9}}>
               {questionnaire?.instructions || 
                'Здесь нет «правильных» или «неправильных» ответов — важно лишь понять ваш естественный стиль работы и взаимодействия.'}
             </p>
@@ -541,18 +583,18 @@ export default function AssessmentPage() {
                 background: 'rgba(255, 255, 255, 0.1)',
                 backdropFilter: 'blur(10px)',
                 borderRadius: '12px',
-                padding: '20px',
+                padding: isSmallScreen ? '16px' : '20px',
                 marginTop: '20px',
                 textAlign: 'center'
               }}>
-                <p style={{ ...textStyle, margin: '10px 0', fontSize: '16px' }}>
+                <p style={{ ...textStyle, margin: '10px 0', fontSize: isSmallScreen ? '14px' : '16px' }}>
                   <strong>Опросник:</strong> {questionnaire.title}
                 </p>
-                <p style={{ ...textStyle, margin: '10px 0', fontSize: '16px' }}>
+                <p style={{ ...textStyle, margin: '10px 0', fontSize: isSmallScreen ? '14px' : '16px' }}>
                   <strong>Количество вопросов:</strong> {questionnaire.questions_count}
                 </p>
                 {questionnaire.max_time_minutes && (
-                  <p style={{ ...textStyle, margin: '10px 0', fontSize: '16px' }}>
+                  <p style={{ ...textStyle, margin: '10px 0', fontSize: isSmallScreen ? '14px' : '16px' }}>
                     <strong>Примерное время:</strong> {questionnaire.max_time_minutes} минут
                   </p>
                 )}
@@ -580,7 +622,7 @@ export default function AssessmentPage() {
             )}
             
             <div style={{ width: '100%', maxWidth: '400px' }}>
-              <label style={{ ...textStyle, fontSize: '16px', marginBottom: '5px', display: 'block', textAlign: 'left' }}>
+              <label style={{ ...textStyle, fontSize: isSmallScreen ? '14px' : '16px', marginBottom: '5px', display: 'block', textAlign: 'left' }}>
                 Фамилия
               </label>
               {renderAutosuggest(
@@ -589,7 +631,7 @@ export default function AssessmentPage() {
                 surnameList, 'Введите фамилию'
               )}
               
-              <label style={{ ...textStyle, fontSize: '16px', marginBottom: '5px', display: 'block', textAlign: 'left' }}>
+              <label style={{ ...textStyle, fontSize: isSmallScreen ? '14px' : '16px', marginBottom: '5px', display: 'block', textAlign: 'left' }}>
                 Имя
               </label>
               {renderAutosuggest(
@@ -598,7 +640,7 @@ export default function AssessmentPage() {
                 firstNameList, 'Введите имя'
               )}
               
-              <label style={{ ...textStyle, fontSize: '16px', marginBottom: '5px', display: 'block', textAlign: 'left' }}>
+              <label style={{ ...textStyle, fontSize: isSmallScreen ? '14px' : '16px', marginBottom: '5px', display: 'block', textAlign: 'left' }}>
                 Отчество
               </label>
               {renderAutosuggest(
@@ -638,15 +680,15 @@ export default function AssessmentPage() {
             {/* Прогресс индикатор */}
             <div style={{
               display: 'flex',
-              gap: '8px',
+              gap: isSmallScreen ? '6px' : '8px',
               marginBottom: '20px'
             }}>
               {questions.map((_, idx) => (
                 <div 
                   key={idx} 
                   style={{
-                    width: '8px',
-                    height: '8px',
+                    width: isSmallScreen ? '6px' : '8px',
+                    height: isSmallScreen ? '6px' : '8px',
                     borderRadius: '50%',
                     background: idx < currentQuestion ? 'rgba(180, 0, 55, 0.9)' : 
                                idx === currentQuestion ? 'white' : 
@@ -659,14 +701,14 @@ export default function AssessmentPage() {
 
             <div style={{
               ...textStyle,
-              fontSize: '14px',
+              fontSize: isSmallScreen ? '12px' : '14px',
               marginBottom: '20px',
               opacity: 0.8
             }}>
               Вопрос {currentQuestion + 1} из {questions.length}
             </div>
 
-            <h2 style={{...titleStyle, fontSize: '24px', marginBottom: '30px'}}>
+            <h2 style={{...titleStyle, fontSize: isSmallScreen ? '20px' : '24px', marginBottom: '30px'}}>
               {currentQuestionData.question_text || currentQuestionData.text || 'Вопрос'}
             </h2>
 
@@ -684,7 +726,7 @@ export default function AssessmentPage() {
               </div>
             )}
 
-            <div style={{ width: '100%', maxWidth: '500px' }}>
+            <div style={{ width: '100%', maxWidth: isSmallScreen ? '400px' : '500px' }}>
               {currentQuestionData.shuffledOptions.map((option, idx) => (
                 <button
                   key={idx}
@@ -708,7 +750,7 @@ export default function AssessmentPage() {
             {currentQuestionData.description && (
               <div style={{
                 ...textStyle,
-                fontSize: '14px',
+                fontSize: isSmallScreen ? '12px' : '14px',
                 marginTop: '20px',
                 opacity: 0.7
               }}>
@@ -745,17 +787,10 @@ export default function AssessmentPage() {
             background: rgba(255, 255, 255, 0.3);
             border-radius: 2px;
           }
-          
-          /* Адаптивные медиа запросы */
-          @media (max-width: 768px) {
-            .assessment-content {
-              padding-top: 180px !important;
-            }
-          }
         `}
       </style>
 
-      {/* Логотип */}
+      {/* Логотип - АДАПТИВНЫЙ КАК В PollsPage */}
       <div style={logoStyle}>
         <img
           src={logoImage}
@@ -764,19 +799,46 @@ export default function AssessmentPage() {
         />
       </div>
 
-      {/* ✅ ИСПРАВЛЕНО: Кнопка "Назад" в стиле BackButton.css */}
+      {/* ✅ ИСПРАВЛЕНО: Кнопка "Назад" с правильной иконкой стрелки влево */}
       {(currentStep > 1 || (currentStep === 3 && currentQuestion > 0)) && !isFinished && !isLoading && !isProcessing && (
         <button 
+          ref={backRef}
           className={`back-btn ${contentAnimated ? 'animate-home' : ''} ${isExiting ? 'animate-home-exit' : ''}`}
           onClick={handleBack}
+          style={{
+            // ✅ ПРИНУДИТЕЛЬНО УСТАНАВЛИВАЕМ ПРАВИЛЬНЫЕ РАЗМЕРЫ И СТИЛИ
+            position: 'absolute',
+            top: logoTop + (logoSize - 64) / 2 + 'px',
+            left: windowWidth < 400 ? '20px' : `calc(50% - ${logoSize/2}px - 30px - 64px)`,
+            width: '64px !important',
+            height: '64px !important',
+            minWidth: '64px !important',
+            maxWidth: '64px !important',
+            minHeight: '64px !important',
+            maxHeight: '64px !important',
+            background: 'rgba(255, 255, 255, 0.10)',
+            backdropFilter: 'blur(8px)',
+            border: '1.5px solid rgba(255,255,255,0.17)',
+            borderRadius: '16px !important',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            zIndex: 5,
+            padding: '0 !important',
+            margin: '0 !important',
+            boxSizing: 'border-box',
+            transition: 'background 0.25s, border 0.25s'
+          }}
         >
-          <svg viewBox="0 0 24 24" width="20" height="20">
+          {/* ✅ ИСПРАВЛЕНО: Стрелка влево вместо домика */}
+          <svg viewBox="0 0 24 24" width={isSmallScreen ? "20" : "24"} height={isSmallScreen ? "20" : "24"}>
             <path d="M15 18l-6-6 6-6" stroke="white" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </button>
       )}
 
-      {/* ✅ ИСПРАВЛЕНО: Кнопка "Далее" с условной анимацией SVG */}
+      {/* ✅ Кнопка "Далее" с условной анимацией SVG */}
       {(currentStep <= 3 && !isProcessing && !isFinished && !isLoading) && (
         <button 
           className={`next-btn ${contentAnimated ? 'animate-next' : ''} ${isExiting ? 'animate-next-exit' : ''}`}
@@ -787,7 +849,6 @@ export default function AssessmentPage() {
             pointerEvents: canGoNext() ? 'auto' : 'none'
           }}
         >
-          {/* ✅ ИСПРАВЛЕНО: Анимация только при canGoNext() */}
           <div className={
             canGoNext() 
               ? (currentStep === 3 && currentQuestion === questions.length - 1 ? 'shaker pop-btn' : 'shaker shake-btn')
