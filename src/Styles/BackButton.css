@@ -5,7 +5,7 @@
 
 .back-btn {
   position: absolute;
-  top: 180px;
+  top: 140px;
   left: -60px;  /* за пределами видимой области */
   width: 64px;
   height: 64px;

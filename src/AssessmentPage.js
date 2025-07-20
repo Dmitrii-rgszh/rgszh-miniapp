@@ -1,24 +1,13 @@
-// AssessmentPage.js - ИСПРАВЛЕННАЯ ВЕРСИЯ
-// ✅ Исправлена ошибка "Cannot access 'currentStep' before initialization"
-// ✅ Правильный порядок объявления состояний
-// ✅ Приближена кнопка "Далее" к логотипу в десктопе
-// ✅ Добавлен отступ от логотипа
-// ✅ Центрированы все элементы в десктопе
+// AssessmentPage.js - СО СТИЛЕМ MainMenu
+// ✅ Применены стили из MainMenu.js
+// ✅ Анимация появления как в MainMenu
+// ✅ Убраны все внешние CSS файлы
+// ✅ Инлайн стили как в требованиях
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Autosuggest from 'react-autosuggest';
 import { useNavigate } from 'react-router-dom';
 import { apiCall } from './config';
-
-// Стили
-import './Styles/logo.css';
-import './Styles/Buttons.css';
-import './Styles/BackButton.css';
-import './Styles/NextButton.css';
-import './Styles/OptionButton.css';
-import './FeedbackPage.css';
-import './AssessmentPage.css';
-import './Styles/mobile-responsive.css';
 import logoImage from './components/logo.png';
 
 // JSON-файлы с ФИО
@@ -28,16 +17,14 @@ import patronymics from './components/autosuggest/lastname.json';
 
 export default function AssessmentPage() {
   const navigate = useNavigate();
-  const logoRef = useRef(null);
   const startTimeRef = useRef(null);
-  const containerRef = useRef(null);
-  const scrollableContentRef = useRef(null);
 
-  // ===== СОСТОЯНИЯ (В ПРАВИЛЬНОМ ПОРЯДКЕ) =====
-  const [containerHeight, setContainerHeight] = useState(window.innerHeight);
-  const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1024);
-  
-  // Основные состояния приложения
+  // ===== СОСТОЯНИЯ АНИМАЦИЙ (как в MainMenu) =====
+  const [logoAnimated, setLogoAnimated] = useState(false);
+  const [contentAnimated, setContentAnimated] = useState(false);
+  const [isExiting, setIsExiting] = useState(false);
+
+  // ===== ОСНОВНЫЕ СОСТОЯНИЯ =====
   const [currentStep, setCurrentStep] = useState(1);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState('');
@@ -64,50 +51,251 @@ export default function AssessmentPage() {
 
   const MAIN_QUESTIONNAIRE_ID = 1;
 
-  // ===== ФУНКЦИЯ ОБНОВЛЕНИЯ ВЫСОТЫ И ОПРЕДЕЛЕНИЯ УСТРОЙСТВА =====
-  const updateContainerHeight = useCallback(() => {
-    const newHeight = window.innerHeight;
-    const newWidth = window.innerWidth;
-    
-    setContainerHeight(newHeight);
-    setIsDesktop(newWidth >= 1024);
-    
-    // Дополнительно обновляем стиль контейнера напрямую
-    if (containerRef.current) {
-      containerRef.current.style.height = `${newHeight}px`;
-      containerRef.current.style.minHeight = `${newHeight}px`;
-    }
-  }, []);
+  // ===== ФУНКЦИИ И ЛОГИКА =====
 
-  // ===== ОБРАБОТЧИК ИЗМЕНЕНИЯ РАЗМЕРА ОКНА =====
-  useEffect(() => {
-    // Начальная установка высоты
-    updateContainerHeight();
-    
-    // Добавляем слушатели событий
-    window.addEventListener('resize', updateContainerHeight);
-    window.addEventListener('orientationchange', updateContainerHeight);
-    
-    // Дополнительная проверка через таймаут для orientationchange
-    const handleOrientationChange = () => {
-      setTimeout(updateContainerHeight, 100);
-    };
-    
-    window.addEventListener('orientationchange', handleOrientationChange);
-    
-    return () => {
-      window.removeEventListener('resize', updateContainerHeight);
-      window.removeEventListener('orientationchange', updateContainerHeight);
-      window.removeEventListener('orientationchange', handleOrientationChange);
-    };
-  }, [updateContainerHeight]);
+  // Определение возможности перехода далее (перенесено выше)
+  const canGoNext = () => {
+    if (currentStep === 1) return true;
+    if (currentStep === 2) return surname.trim() && firstName.trim() && patronymic.trim();
+    if (currentStep === 3) return selectedAnswer;
+    return false;
+  };
 
-  // ===== СКРОЛЛ В НАЧАЛО ПРИ СМЕНЕ ШАГА (ТЕПЕРЬ ПОСЛЕ ОБЪЯВЛЕНИЯ СОСТОЯНИЙ) =====
+  // Вычисление адаптивных размеров (перенесено выше стилей)
+  const isSmallScreen = window.innerHeight < 700 || window.innerWidth < 400;
+  const logoSize = isSmallScreen ? 96 : 128;
+  const logoTop = isSmallScreen ? 80 : 110;
+  const nextButtonSize = isSmallScreen ? 48 : 64;
+  const nextButtonGap = isSmallScreen ? 20 : 30;
+
+  // ===== СТИЛИ (как в MainMenu) =====
+
+  // Основной контейнер
+  const mainContainerStyle = {
+    position: 'relative',
+    width: '100%',
+    height: window.innerHeight + 'px',
+    minHeight: '100vh',
+    overflow: 'hidden',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    fontFamily: '"Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif'
+  };
+
+  // Логотип с анимацией (как в MainMenu)
+  const logoStyle = {
+    position: 'absolute',
+    top: logoAnimated && !isExiting ? `${logoTop}px` : isExiting ? '-200px' : '-200px',
+    left: '50%',
+    transform: 'translateX(-50%)',
+    width: `${logoSize}px`,
+    height: `${logoSize}px`,
+    backgroundColor: 'rgba(255, 255, 255, 0.10)',
+    backdropFilter: 'blur(8px)',
+    borderRadius: isSmallScreen ? '16px' : '20px',
+    boxShadow: '0 10px 25px rgba(0, 0, 0, 0.25)',
+    opacity: logoAnimated && !isExiting ? 1 : 0,
+    zIndex: 3,
+    transition: 'all 0.8s ease-out',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
+  };
+
+  // Изображение логотипа
+  const logoImageStyle = {
+    width: isSmallScreen ? '72px' : '96px',
+    height: isSmallScreen ? '72px' : '96px',
+    objectFit: 'contain'
+  };
+
+  // Контейнер контента (адаптивный отступ от логотипа)
+  const contentContainerStyle = {
+    position: 'absolute',
+    top: window.innerWidth < 768 ? '200px' : '200px', // Увеличен отступ для мобильных
+    left: '50%',
+    transform: 'translateX(-50%)',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    width: '100%',
+    maxWidth: '600px',
+    paddingLeft: '20px',
+    paddingRight: '20px',
+    paddingBottom: '40px',
+    boxSizing: 'border-box',
+    opacity: contentAnimated ? 1 : 0,
+    transition: 'all 0.8s ease-out 0.2s',
+    overflowY: 'auto',
+    maxHeight: `calc(${window.innerHeight}px - ${window.innerWidth < 768 ? '240px' : '220px'})`
+  };
+
+  // Стиль заголовка
+  const titleStyle = {
+    fontSize: '28px',
+    fontWeight: '700',
+    fontFamily: '"Segoe UI", sans-serif',
+    color: 'rgba(255, 255, 255, 0.95)',
+    textAlign: 'center',
+    marginBottom: '20px',
+    textShadow: '0 2px 10px rgba(0, 0, 0, 0.3)'
+  };
+
+  // Стиль текста
+  const textStyle = {
+    fontSize: '18px',
+    fontWeight: '400',
+    fontFamily: '"Segoe UI", sans-serif',
+    color: 'rgba(255, 255, 255, 0.9)',
+    textAlign: 'center',
+    lineHeight: '1.6',
+    marginBottom: '30px',
+    textShadow: '0 1px 5px rgba(0, 0, 0, 0.3)'
+  };
+
+  // Логотип с анимацией (как в MainMenu)
+  const logoStyle = {
+    position: 'absolute',
+    top: logoAnimated && !isExiting ? `${logoTop}px` : isExiting ? '-200px' : '-200px',
+    left: '50%',
+    transform: 'translateX(-50%)',
+    width: `${logoSize}px`,
+    height: `${logoSize}px`,
+    backgroundColor: 'rgba(255, 255, 255, 0.10)',
+    backdropFilter: 'blur(8px)',
+    borderRadius: isSmallScreen ? '16px' : '20px',
+    boxShadow: '0 10px 25px rgba(0, 0, 0, 0.25)',
+    opacity: logoAnimated && !isExiting ? 1 : 0,
+    zIndex: 3,
+    transition: 'all 0.8s ease-out',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
+  };
+
+  // Изображение логотипа
+  const logoImageStyle = {
+    width: isSmallScreen ? '72px' : '96px',
+    height: isSmallScreen ? '72px' : '96px',
+    objectFit: 'contain'
+  };
+  
+  // Стиль для кнопки "Далее" (зеркально от кнопки "Домой")
+  const nextButtonStyle = {
+    position: 'absolute',
+    top: `${logoTop + (logoSize - nextButtonSize) / 2}px`,
+    right: window.innerWidth < 400 
+      ? '20px'
+      : `calc(50% - ${logoSize/2}px - ${nextButtonGap}px - ${nextButtonSize}px)`,
+    width: `${nextButtonSize}px`,
+    height: `${nextButtonSize}px`,
+    background: 'rgba(248, 5, 62, 0.8)',
+    border: 'none',
+    borderRadius: '14px',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    color: 'white',
+    boxShadow: '0 4px 16px rgba(0, 0, 0, 0.2)',
+    transition: 'all 0.3s ease',
+    zIndex: 10,
+    backdropFilter: 'blur(10px)'
+  };
+
+  // Стиль для кнопки "Назад" 
+  const backButtonStyle = {
+    position: 'absolute',
+    top: `${logoTop + (logoSize - nextButtonSize) / 2}px`,
+    left: window.innerWidth < 400 
+      ? '20px'
+      : `calc(50% - ${logoSize/2}px - ${nextButtonGap}px - ${nextButtonSize}px)`,
+    width: `${nextButtonSize}px`,
+    height: `${nextButtonSize}px`,
+    background: 'rgba(255, 255, 255, 0.1)',
+    backdropFilter: 'blur(10px)',
+    borderRadius: '14px',
+    border: '1px solid rgba(255, 255, 255, 0.3)',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    color: 'white',
+    boxShadow: '0 4px 16px rgba(0, 0, 0, 0.2)',
+    transition: 'all 0.3s ease',
+    zIndex: 10
+  };
+
+  // Стиль для кнопки (как в MainMenu)
+  const buttonStyle = {
+    minWidth: '280px',
+    background: 'linear-gradient(135deg, rgba(180, 0, 55, 0.9) 0%, rgba(153, 0, 55, 0.85) 50%, rgba(0, 40, 130, 0.9) 100%)',
+    color: 'white',
+    border: 'none',
+    borderRadius: '12px',
+    padding: '18px 36px',
+    cursor: 'pointer',
+    boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)',
+    fontSize: '20px',
+    fontWeight: '600',
+    fontFamily: '"Segoe UI", sans-serif',
+    transition: 'all 0.3s ease',
+    marginTop: '20px'
+  };
+
+  // Стиль для полей ввода (адаптированный под стиль MainMenu)
+  const inputStyle = {
+    width: '100%',
+    padding: '16px 20px',
+    fontSize: '18px',
+    fontFamily: '"Segoe UI", sans-serif',
+    background: 'rgba(255, 255, 255, 0.15)',
+    backdropFilter: 'blur(10px)',
+    border: '1px solid rgba(255, 255, 255, 0.3)',
+    borderRadius: '12px',
+    color: 'white',
+    marginBottom: '15px',
+    transition: 'all 0.3s ease',
+    outline: 'none'
+  };
+
+  // Стиль для опций ответов (как кнопки в MainMenu)
+  const optionButtonStyle = (isSelected) => ({
+    width: '100%',
+    background: isSelected 
+      ? 'linear-gradient(135deg, rgba(180, 0, 55, 0.9) 0%, rgba(0, 40, 130, 0.9) 100%)'
+      : 'rgba(255, 255, 255, 0.15)',
+    backdropFilter: 'blur(10px)',
+    color: 'white',
+    border: isSelected ? '2px solid rgba(255, 255, 255, 0.8)' : '1px solid rgba(255, 255, 255, 0.3)',
+    borderRadius: '12px',
+    padding: '16px 24px',
+    cursor: 'pointer',
+    fontSize: '18px',
+    fontWeight: isSelected ? '600' : '400',
+    fontFamily: '"Segoe UI", sans-serif',
+    marginBottom: '12px',
+    transition: 'all 0.3s ease',
+    boxShadow: isSelected ? '0 6px 20px rgba(0, 0, 0, 0.3)' : '0 4px 15px rgba(0, 0, 0, 0.2)',
+    transform: isSelected ? 'scale(1.02)' : 'scale(1)'
+  });
+
+  // ===== АНИМАЦИЯ ВХОДА (как в MainMenu) =====
   useEffect(() => {
-    if (scrollableContentRef.current) {
-      scrollableContentRef.current.scrollTop = 0;
+    if (!isLoading) {
+      const timer1 = setTimeout(() => setLogoAnimated(true), 100);
+      const timer2 = setTimeout(() => setContentAnimated(true), 600);
+      
+      return () => {
+        clearTimeout(timer1);
+        clearTimeout(timer2);
+      };
     }
-  }, [currentStep, currentQuestion]);
+  }, [isLoading]);
+
+  // ===== ФУНКЦИИ И ЛОГИКА =====
 
   // Обработанные данные для автосаджестов
   const surnameList = surnames.map(item => item.male || item.female);
@@ -128,7 +316,7 @@ export default function AssessmentPage() {
     return shuffled;
   };
 
-  // ===== Загрузка опросника =====
+  // Загрузка опросника
   useEffect(() => {
     const loadQuestionnaire = async () => {
       try {
@@ -164,7 +352,7 @@ export default function AssessmentPage() {
     startTimeRef.current = Date.now();
   }, []);
 
-  // ===== Автосаджест функции =====
+  // Автосаджест функции
   const getSuggestions = (value, list) => {
     const inputValue = value.trim().toLowerCase();
     const inputLength = inputValue.length;
@@ -179,16 +367,41 @@ export default function AssessmentPage() {
       onSuggestionsFetchRequested={({ value }) => setSuggestions(getSuggestions(value, list))}
       onSuggestionsClearRequested={() => setSuggestions([])}
       getSuggestionValue={suggestion => suggestion}
-      renderSuggestion={suggestion => <div>{suggestion}</div>}
+      renderSuggestion={suggestion => <div style={{ padding: '10px' }}>{suggestion}</div>}
       inputProps={{
         placeholder,
         value,
-        onChange: (_, { newValue }) => setValue(newValue)
+        onChange: (_, { newValue }) => setValue(newValue),
+        style: inputStyle
+      }}
+      theme={{
+        container: { position: 'relative', width: '100%' },
+        suggestionsContainer: {
+          position: 'absolute',
+          top: '100%',
+          width: '100%',
+          background: 'rgba(0, 0, 0, 0.9)',
+          backdropFilter: 'blur(10px)',
+          borderRadius: '12px',
+          marginTop: '5px',
+          maxHeight: '200px',
+          overflowY: 'auto',
+          zIndex: 1000
+        },
+        suggestion: {
+          padding: '12px 20px',
+          cursor: 'pointer',
+          color: 'white',
+          transition: 'background 0.2s ease'
+        },
+        suggestionHighlighted: {
+          background: 'rgba(180, 0, 55, 0.5)'
+        }
       }}
     />
   );
 
-  // ===== Обработчики навигации =====
+  // Обработчики навигации
   const handleNext = useCallback(() => {
     if (currentStep === 1) {
       setCurrentStep(2);
@@ -245,7 +458,7 @@ export default function AssessmentPage() {
         }, 300);
       }
     }
-  }, [currentStep, surname, firstName, patronymic, selectedAnswer, currentQuestion, questions, userAnswers]);
+  }, [currentStep, surname, firstName, patronymic, selectedAnswer, currentQuestion, questions, userAnswers, shuffledQuestions]);
 
   const handleBack = useCallback(() => {
     if (currentStep === 2) {
@@ -255,8 +468,9 @@ export default function AssessmentPage() {
         setFadeTransition(true);
         setTimeout(() => {
           setCurrentQuestion(currentQuestion - 1);
-          if (userAnswers[currentQuestion - 1]) {
-            setSelectedAnswer(userAnswers[currentQuestion - 1].answer_text);
+          const prevAnswer = userAnswers.find(ans => ans.question_id === questions[currentQuestion - 1].id);
+          if (prevAnswer) {
+            setSelectedAnswer(prevAnswer.answer_text);
           }
           setFadeTransition(false);
         }, 300);
@@ -264,9 +478,9 @@ export default function AssessmentPage() {
         setCurrentStep(2);
       }
     }
-  }, [currentStep, currentQuestion, userAnswers]);
+  }, [currentStep, currentQuestion, userAnswers, questions]);
 
-  // ===== Завершение тестирования =====
+  // Завершение тестирования
   const finishAssessment = async (answers) => {
     try {
       setIsProcessing(true);
@@ -307,102 +521,40 @@ export default function AssessmentPage() {
   };
 
   const goHome = () => {
-    logoRef.current?.classList.replace('animate-logo', 'animate-logo-exit');
-    setTimeout(() => navigate('/'), 400);
+    setIsExiting(true);
+    setTimeout(() => navigate('/'), 800);
   };
 
-  // ===== Определение состояния кнопки Далее =====
-  const canGoNext = () => {
-    if (currentStep === 1) return true;
-    if (currentStep === 2) return surname.trim() && firstName.trim() && patronymic.trim();
-    if (currentStep === 3) return selectedAnswer;
-    return false;
+  // Hover эффекты (как в MainMenu)
+  const handleMouseEnter = (e) => {
+    e.target.style.transform = 'translateY(-2px) scale(1.02)';
+    e.target.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.4)';
   };
 
-  const getButtonIcon = () => {
-    if (currentStep === 3 && currentQuestion === questions.length - 1) {
-      return (
-        <svg viewBox="0 0 24 24" width="36" height="36">
-          <path d="M20 6L9 17l-5-5" stroke="white" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-      );
+  const handleMouseLeave = (e) => {
+    if (!isExiting) {
+      e.target.style.transform = 'translateY(0) scale(1)';
+      e.target.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.2)';
     }
-    return (
-      <svg viewBox="0 0 24 24" width="36" height="36">
-        <path d="M12 4l8 8-8 8" stroke="white" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
-      </svg>
-    );
   };
 
-  // ===== ИСПРАВЛЕННЫЕ СТИЛИ ДЛЯ ДЕСКТОПА =====
-  const containerStyle = {
-    position: 'relative',
-    width: '100%',
-    height: `${containerHeight}px`,
-    minHeight: `${containerHeight}px`,
-    overflow: 'hidden',
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'center',
-    alignItems: 'center',
-    fontFamily: '"Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif',
-    WebkitOverflowScrolling: 'touch',
-    overscrollBehavior: 'none',
-    // УБИРАЕМ: background, backgroundImage - фон теперь только в MainApp.js
-  };
-
-  // ИСПРАВЛЕНИЕ 1: Фиксированный логотип с правильными отступами
-  const logoContainerStyle = {
-    position: 'absolute',
-    top: '0',
-    left: '0',
-    right: '0',
-    zIndex: 1000,
-    display: 'flex',
-    justifyContent: 'center',
-    paddingTop: isDesktop ? '30px' : '40px',
-    paddingBottom: isDesktop ? '15px' : '20px',
-    background: 'transparent'
-  };
-
-  // ИСПРАВЛЕНИЕ 2: Увеличенный отступ от логотипа + центрирование для десктопа
-  const scrollableContentStyle = {
-    position: 'absolute',
-    top: isDesktop ? '200px' : '235px', // Меньший отступ для десктопа
-    left: '0',
-    right: '0',
-    bottom: '0',
-    overflowY: 'auto',
-    overflowX: 'hidden',
-    paddingLeft: isDesktop ? '40px' : '15px',
-    paddingRight: isDesktop ? '40px' : '15px',
-    paddingBottom: isDesktop ? '120px' : '100px',
-    zIndex: 2,
-    display: 'flex',
-    justifyContent: 'center',  // ЦЕНТРИРОВАНИЕ ДЛЯ ДЕСКТОПА
-    alignItems: isDesktop ? 'flex-start' : 'stretch'
-  };
-
-  // ИСПРАВЛЕНИЕ 3: Контейнер с центрированием для десктопа
-  const contentWrapperStyle = {
-    width: '100%',
-    maxWidth: isDesktop ? '700px' : '100%', // Ограничение ширины для десктопа
-    margin: '0 auto',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    textAlign: 'center' // ЦЕНТРИРОВАНИЕ ТЕКСТА
-  };
-
-  // ===== Рендер контента =====
+  // ===== РЕНДЕР КОНТЕНТА =====
   const renderStepContent = () => {
     if (isLoading) {
       return (
-        <div className="step-container">
-          <div className="assessment-loading">
-            <div className="loading-spinner"></div>
-            <div className="loading-text">Загрузка опросника...</div>
-            <div className="loading-subtext">Подготавливаем вопросы для оценки</div>
+        <div style={contentContainerStyle}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{
+              width: '60px',
+              height: '60px',
+              border: '3px solid rgba(255, 255, 255, 0.3)',
+              borderTopColor: 'white',
+              borderRadius: '50%',
+              margin: '0 auto 20px',
+              animation: 'spin 1s linear infinite'
+            }} />
+            <div style={titleStyle}>Загрузка опросника...</div>
+            <div style={textStyle}>Подготавливаем вопросы для оценки</div>
           </div>
         </div>
       );
@@ -410,11 +562,19 @@ export default function AssessmentPage() {
 
     if (isProcessing) {
       return (
-        <div className="step-container">
-          <div className="assessment-loading">
-            <div className="loading-spinner"></div>
-            <div className="loading-text">Обработка результатов...</div>
-            <div className="loading-subtext">Анализируем ваши ответы</div>
+        <div style={contentContainerStyle}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{
+              width: '60px',
+              height: '60px',
+              border: '3px solid rgba(255, 255, 255, 0.3)',
+              borderTopColor: 'white',
+              borderRadius: '50%',
+              margin: '0 auto 20px',
+              animation: 'spin 1s linear infinite'
+            }} />
+            <div style={titleStyle}>Обработка результатов...</div>
+            <div style={textStyle}>Анализируем ваши ответы</div>
           </div>
         </div>
       );
@@ -422,27 +582,19 @@ export default function AssessmentPage() {
 
     if (isFinished && result) {
       return (
-        <div className="step-container result-appear">
-          <div className="completion-message" style={{ textAlign: 'center' }}>
-            <h2>Спасибо за прохождение!</h2>
-            <p>
+        <div style={{...contentContainerStyle, opacity: 1}}>
+          <div style={{ textAlign: 'center' }}>
+            <h2 style={titleStyle}>Спасибо за прохождение!</h2>
+            <p style={textStyle}>
               {firstName}, благодарим за прохождение опроса.<br/>
               Свяжемся с вами в ближайшее время.<br/>
               Отличного дня!
             </p>
             <button 
-              className="home-button"
+              style={buttonStyle}
               onClick={goHome}
-              style={{
-                marginTop: '30px',
-                padding: '12px 24px',
-                background: 'rgba(255, 255, 255, 0.2)',
-                border: '1px solid rgba(255, 255, 255, 0.4)',
-                borderRadius: '8px',
-                color: 'white',
-                cursor: 'pointer',
-                fontSize: '16px'
-              }}
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
             >
               На главную
             </button>
@@ -454,51 +606,33 @@ export default function AssessmentPage() {
     switch (currentStep) {
       case 1:
         return (
-          <div className="step-container fade-in-up" style={{ textAlign: 'center' }}>
-            <h2 style={{ 
-              fontSize: isDesktop ? '28px' : '22px', 
-              marginBottom: '25px',
-              paddingTop: isDesktop ? '0px' : '20px'
-            }}>
-              Психологическая оценка
-            </h2>
-            <p className="instruction-text large-text" style={{ 
-              fontSize: isDesktop ? '20px' : '18px',
-              lineHeight: '1.6',
-              marginBottom: '20px',
-              textAlign: 'center'
-            }}>
+          <div style={contentContainerStyle}>
+            <h2 style={titleStyle}>Психологическая оценка</h2>
+            <p style={textStyle}>
               Пройдите короткий тест для определения ваших корпоративных ценностей.
               {questionnaire?.description && ` ${questionnaire.description}`}
             </p>
-            <p className="instruction-subtext large-text" style={{
-              fontSize: isDesktop ? '18px' : '16px',
-              lineHeight: '1.5',
-              marginBottom: '25px',
-              textAlign: 'center',
-              color: 'rgba(255, 255, 255, 0.9)'
-            }}>
+            <p style={{...textStyle, fontSize: '16px', opacity: 0.9}}>
               {questionnaire?.instructions || 
                'Здесь нет «правильных» или «неправильных» ответов — важно лишь понять ваш естественный стиль работы и взаимодействия.'}
             </p>
             {questionnaire && (
-              <div className="questionnaire-info" style={{
+              <div style={{
                 background: 'rgba(255, 255, 255, 0.1)',
+                backdropFilter: 'blur(10px)',
                 borderRadius: '12px',
-                padding: isDesktop ? '25px' : '15px',
-                marginTop: '25px',
-                textAlign: 'center',
-                maxWidth: isDesktop ? '500px' : '100%',
-                margin: '25px auto 0'
+                padding: '20px',
+                marginTop: '20px',
+                textAlign: 'center'
               }}>
-                <p style={{ margin: '10px 0', fontSize: isDesktop ? '16px' : '14px' }}>
+                <p style={{ ...textStyle, margin: '10px 0', fontSize: '16px' }}>
                   <strong>Опросник:</strong> {questionnaire.title}
                 </p>
-                <p style={{ margin: '10px 0', fontSize: isDesktop ? '16px' : '14px' }}>
+                <p style={{ ...textStyle, margin: '10px 0', fontSize: '16px' }}>
                   <strong>Количество вопросов:</strong> {questionnaire.questions_count}
                 </p>
                 {questionnaire.max_time_minutes && (
-                  <p style={{ margin: '10px 0', fontSize: isDesktop ? '16px' : '14px' }}>
+                  <p style={{ ...textStyle, margin: '10px 0', fontSize: '16px' }}>
                     <strong>Примерное время:</strong> {questionnaire.max_time_minutes} минут
                   </p>
                 )}
@@ -509,43 +643,49 @@ export default function AssessmentPage() {
 
       case 2:
         return (
-          <div className="step-container fade-in-up" style={{ textAlign: 'center' }}>
-            <h2 style={{ fontSize: isDesktop ? '26px' : '22px', marginBottom: '25px' }}>
-              Введите ваши ФИО
-            </h2>
-            {errorMessage && <div className="error-message">{errorMessage}</div>}
+          <div style={contentContainerStyle}>
+            <h2 style={titleStyle}>Введите ваши ФИО</h2>
+            {errorMessage && (
+              <div style={{
+                background: 'rgba(255, 0, 0, 0.2)',
+                border: '1px solid rgba(255, 0, 0, 0.5)',
+                borderRadius: '8px',
+                padding: '10px',
+                marginBottom: '20px',
+                color: 'white',
+                textAlign: 'center'
+              }}>
+                {errorMessage}
+              </div>
+            )}
             
-            <div className="form-fields" style={{
-              maxWidth: isDesktop ? '500px' : '400px',
-              margin: '0 auto',
-              textAlign: 'left'
-            }}>
-              <div className="autosuggest-container">
-                <label style={{ fontSize: isDesktop ? '18px' : '16px' }}>Фамилия</label>
-                {renderAutosuggest(
-                  surname, setSurname, 
-                  surnameSuggestions, setSurnameSuggestions, 
-                  surnameList, 'Введите фамилию'
-                )}
-              </div>
+            <div style={{ width: '100%', maxWidth: '400px' }}>
+              <label style={{ ...textStyle, fontSize: '16px', marginBottom: '5px', display: 'block', textAlign: 'left' }}>
+                Фамилия
+              </label>
+              {renderAutosuggest(
+                surname, setSurname, 
+                surnameSuggestions, setSurnameSuggestions, 
+                surnameList, 'Введите фамилию'
+              )}
               
-              <div className="autosuggest-container">
-                <label style={{ fontSize: isDesktop ? '18px' : '16px' }}>Имя</label>
-                {renderAutosuggest(
-                  firstName, setFirstName, 
-                  firstNameSuggestions, setFirstNameSuggestions, 
-                  firstNameList, 'Введите имя'
-                )}
-              </div>
+              <label style={{ ...textStyle, fontSize: '16px', marginBottom: '5px', display: 'block', textAlign: 'left' }}>
+                Имя
+              </label>
+              {renderAutosuggest(
+                firstName, setFirstName, 
+                firstNameSuggestions, setFirstNameSuggestions, 
+                firstNameList, 'Введите имя'
+              )}
               
-              <div className="autosuggest-container">
-                <label style={{ fontSize: isDesktop ? '18px' : '16px' }}>Отчество</label>
-                {renderAutosuggest(
-                  patronymic, setPatronymic, 
-                  patronymicSuggestions, setPatronymicSuggestions, 
-                  patronymicList, 'Введите отчество'
-                )}
-              </div>
+              <label style={{ ...textStyle, fontSize: '16px', marginBottom: '5px', display: 'block', textAlign: 'left' }}>
+                Отчество
+              </label>
+              {renderAutosuggest(
+                patronymic, setPatronymic, 
+                patronymicSuggestions, setPatronymicSuggestions, 
+                patronymicList, 'Введите отчество'
+              )}
             </div>
           </div>
         );
@@ -553,8 +693,15 @@ export default function AssessmentPage() {
       case 3:
         if (!questions.length || !shuffledQuestions.length) {
           return (
-            <div className="step-container">
-              <div className="error-message">
+            <div style={contentContainerStyle}>
+              <div style={{
+                background: 'rgba(255, 0, 0, 0.2)',
+                border: '1px solid rgba(255, 0, 0, 0.5)',
+                borderRadius: '8px',
+                padding: '20px',
+                color: 'white',
+                textAlign: 'center'
+              }}>
                 Не удалось загрузить вопросы опросника
               </div>
             </div>
@@ -563,74 +710,87 @@ export default function AssessmentPage() {
 
         const currentQuestionData = shuffledQuestions[currentQuestion];
         return (
-          <div className={`step-container ${fadeTransition ? 'fade-out' : 'fade-in'}`} style={{ textAlign: 'center' }}>
-            <div className="question-header" style={{ textAlign: 'center' }}>
-              <div className="progress-indicator">
-                {questions.map((_, idx) => (
-                  <div 
-                    key={idx} 
-                    className={`progress-dot ${
-                      idx < currentQuestion ? 'completed' : 
-                      idx === currentQuestion ? 'active' : ''
-                    }`}
-                  />
-                ))}
-              </div>
-              <div className="question-counter">
-                {currentQuestion + 1} / {questions.length}
-              </div>
-            </div>
-
-            <div className="question-content" style={{ textAlign: 'center' }}>
-              <h2 className="question-title" style={{ 
-                fontSize: isDesktop ? '24px' : '22px',
-                textAlign: 'center',
-                maxWidth: isDesktop ? '600px' : '100%',
-                margin: '20px auto 30px'
-              }}>
-                {currentQuestionData.question_text || currentQuestionData.text || 'Вопрос'}
-              </h2>
-              {errorMessage && <div className="error-message">{errorMessage}</div>}
-            </div>
-
-            <div className="options-container" style={{ 
-              overflow: 'visible', 
-              padding: '15px 10px',
-              maxWidth: isDesktop ? '600px' : '350px',
-              margin: '0 auto'
+          <div style={{
+            ...contentContainerStyle,
+            opacity: fadeTransition ? 0 : 1,
+            transition: 'opacity 0.3s ease'
+          }}>
+            {/* Прогресс индикатор */}
+            <div style={{
+              display: 'flex',
+              gap: '8px',
+              marginBottom: '20px'
             }}>
+              {questions.map((_, idx) => (
+                <div 
+                  key={idx} 
+                  style={{
+                    width: '8px',
+                    height: '8px',
+                    borderRadius: '50%',
+                    background: idx < currentQuestion ? 'rgba(180, 0, 55, 0.9)' : 
+                               idx === currentQuestion ? 'white' : 
+                               'rgba(255, 255, 255, 0.3)',
+                    transition: 'all 0.3s ease'
+                  }}
+                />
+              ))}
+            </div>
+
+            <div style={{
+              ...textStyle,
+              fontSize: '14px',
+              marginBottom: '20px',
+              opacity: 0.8
+            }}>
+              Вопрос {currentQuestion + 1} из {questions.length}
+            </div>
+
+            <h2 style={{...titleStyle, fontSize: '24px', marginBottom: '30px'}}>
+              {currentQuestionData.question_text || currentQuestionData.text || 'Вопрос'}
+            </h2>
+
+            {errorMessage && (
+              <div style={{
+                background: 'rgba(255, 0, 0, 0.2)',
+                border: '1px solid rgba(255, 0, 0, 0.5)',
+                borderRadius: '8px',
+                padding: '10px',
+                marginBottom: '20px',
+                color: 'white',
+                textAlign: 'center'
+              }}>
+                {errorMessage}
+              </div>
+            )}
+
+            <div style={{ width: '100%', maxWidth: '500px' }}>
               {currentQuestionData.shuffledOptions.map((option, idx) => (
                 <button
                   key={idx}
-                  className={`option-button ${selectedAnswer === option.text ? 'selected' : ''}`}
+                  style={optionButtonStyle(selectedAnswer === option.text)}
                   onClick={() => setSelectedAnswer(option.text)}
-                  style={{
-                    margin: '8px 0',
-                    overflow: 'visible',
-                    width: '100%',
-                    padding: isDesktop ? '16px 24px' : '14px 20px',
-                    fontSize: isDesktop ? '17px' : '16px',
-                    textAlign: 'center',
-                    ...(selectedAnswer === option.text ? {
-                      animation: 'selectedPulse 1.5s ease-in-out infinite',
-                      background: 'rgba(255, 255, 255, 0.35)',
-                      border: '2px solid rgba(255, 255, 255, 0.9)',
-                      boxShadow: '0 0 10px rgba(255, 255, 255, 0.7)',
-                      filter: 'brightness(1.2)'
-                    } : {})
+                  onMouseEnter={(e) => {
+                    e.target.style.transform = 'scale(1.02)';
+                    e.target.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.3)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.transform = selectedAnswer === option.text ? 'scale(1.02)' : 'scale(1)';
+                    e.target.style.boxShadow = selectedAnswer === option.text ? 
+                      '0 6px 20px rgba(0, 0, 0, 0.3)' : '0 4px 15px rgba(0, 0, 0, 0.2)';
                   }}
                 >
                   {option.text}
                 </button>
               ))}
-           </div>
+            </div>
 
             {currentQuestionData.description && (
-              <div className="question-description" style={{
-                textAlign: 'center',
-                maxWidth: isDesktop ? '500px' : '100%',
-                margin: '20px auto',
-                fontSize: isDesktop ? '16px' : '14px'
+              <div style={{
+                ...textStyle,
+                fontSize: '14px',
+                marginTop: '20px',
+                opacity: 0.7
               }}>
                 {currentQuestionData.description}
               </div>
@@ -643,118 +803,110 @@ export default function AssessmentPage() {
     }
   };
 
-  // ===== Основной рендер =====
+  // ===== ОСНОВНОЙ РЕНДЕР =====
   return (
-    <div 
-      ref={containerRef}
-      style={containerStyle}
-    >
-      {/* Встроенные CSS стили для адаптивности */}
+    <div style={mainContainerStyle}>
+      {/* CSS анимации */}
       <style>
         {`
-          .assessment-container-fixed {
-            -webkit-backface-visibility: hidden;
-            backface-visibility: hidden;
-            -webkit-transform: translate3d(0, 0, 0);
-            transform: translate3d(0, 0, 0);
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
           }
-
-          @supports (-webkit-touch-callout: none) {
-            .assessment-container-fixed {
-              height: -webkit-fill-available !important;
-              min-height: -webkit-fill-available !important;
-            }
+          
+          /* Скроллбар для контента */
+          .assessment-content::-webkit-scrollbar {
+            width: 4px;
           }
-
-          /* Кастомизация скроллбара */
-          .scrollable-content::-webkit-scrollbar {
-            width: ${isDesktop ? '6px' : '4px'};
-          }
-          .scrollable-content::-webkit-scrollbar-track {
+          .assessment-content::-webkit-scrollbar-track {
             background: rgba(255, 255, 255, 0.1);
-            border-radius: 3px;
           }
-          .scrollable-content::-webkit-scrollbar-thumb {
+          .assessment-content::-webkit-scrollbar-thumb {
             background: rgba(255, 255, 255, 0.3);
-            border-radius: 3px;
+            border-radius: 2px;
           }
-          .scrollable-content::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.5);
-          }
-
-          /* Адаптивные стили для кнопок */
-          .next-btn {
-            width: ${isDesktop ? '72px' : '64px'} !important;
-            height: ${isDesktop ? '72px' : '64px'} !important;
-            top: ${isDesktop ? '140px' : '110px'} !important;
-            right: ${isDesktop ? '40px' : '70px'} !important;
-          }
-
-          .back-btn {
-            width: ${isDesktop ? '50px' : '44px'} !important;
-            height: ${isDesktop ? '50px' : '44px'} !important;
-            top: ${isDesktop ? '145px' : '125px'} !important;
-            left: ${isDesktop ? '40px' : '20px'} !important;
-          }
-
-          /* Адаптивные размеры для полей ввода */
-          .autosuggest-container .react-autosuggest__input {
-            font-size: ${isDesktop ? '18px' : '16px'} !important;
-            padding: ${isDesktop ? '14px 18px' : '12px 16px'} !important;
+          
+          /* Адаптивные медиа запросы */
+          @media (max-width: 768px) {
+            .assessment-content {
+              padding-top: 180px !important;
+            }
           }
         `}
       </style>
 
-      {/* ФИКСИРОВАННЫЙ ЛОГОТИП ВВЕРХУ */}
-      <div style={logoContainerStyle}>
-        <div ref={logoRef} className="logo-wrapper">
-          <img 
-            src={logoImage} 
-            alt="Логотип" 
-            className="logo-image"
-            style={{
-              width: isDesktop ? '140px' : '120px',
-              height: isDesktop ? '140px' : '120px'
-            }}
-          />
-        </div>
+      {/* Логотип */}
+      <div style={logoStyle}>
+        <img
+          src={logoImage}
+          alt="Логотип РГС Жизнь"
+          style={logoImageStyle}
+        />
       </div>
 
-      {/* Кнопка "Назад" с адаптивным позиционированием */}
-      {(currentStep > 1 || (currentStep === 3 && currentQuestion > 0)) && !isFinished && !isLoading && (
+      {/* Кнопка "Назад" */}
+      {(currentStep > 1 || (currentStep === 3 && currentQuestion > 0)) && !isFinished && !isLoading && !isProcessing && (
         <button 
-          className="back-btn" 
+          style={backButtonStyle}
           onClick={handleBack}
+          onMouseEnter={(e) => {
+            e.target.style.background = 'rgba(255, 255, 255, 0.2)';
+            e.target.style.transform = 'scale(1.05)';
+            e.target.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.3)';
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.background = 'rgba(255, 255, 255, 0.1)';
+            e.target.style.transform = 'scale(1)';
+            e.target.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.2)';
+          }}
         >
-          <svg viewBox="0 0 24 24" width={isDesktop ? '28' : '24'} height={isDesktop ? '28' : '24'}>
-            <path d="M19 12H5M12 19l-7-7 7-7" stroke="white" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="white">
+            <path d="M12 20l-8-8 8-8" strokeWidth="1"/>
           </svg>
         </button>
       )}
 
-      {/* Кнопка "Далее" с адаптивным позиционированием */}
+      {/* Кнопка "Далее" в стиле кнопки "Домой" из PollsPage */}
       {(currentStep <= 3 && !isProcessing && !isFinished && !isLoading) && (
         <button 
-          className={`next-btn ${canGoNext() ? 'animate-next' : ''}`}
-          onClick={handleNext}
+          style={{
+            ...nextButtonStyle,
+            opacity: canGoNext() ? 1 : 0.5,
+            transform: canGoNext() ? 'scale(1)' : 'scale(0.9)',
+            pointerEvents: canGoNext() ? 'auto' : 'none',
+            background: canGoNext() ? 'rgba(248, 5, 62, 0.8)' : 'rgba(248, 5, 62, 0.4)'
+          }}
+          onClick={canGoNext() ? handleNext : undefined}
           disabled={!canGoNext()}
+          onMouseEnter={(e) => {
+            if (canGoNext()) {
+              e.target.style.background = 'rgba(248, 5, 62, 1)';
+              e.target.style.transform = 'scale(1.05)';
+              e.target.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.3)';
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (canGoNext()) {
+              e.target.style.background = 'rgba(248, 5, 62, 0.8)';
+              e.target.style.transform = 'scale(1)';
+              e.target.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.2)';
+            }
+          }}
         >
-          <div className={`shaker ${canGoNext() ? (currentStep === 3 && currentQuestion === questions.length - 1 ? 'pop-btn' : 'shake-btn') : ''}`}>
-            {getButtonIcon()}
-          </div>
+          {currentStep === 3 && currentQuestion === questions.length - 1 ? (
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="white">
+              <path d="M20 6L9 17l-5-5" strokeWidth="2"/>
+            </svg>
+          ) : (
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="white">
+              <path d="M12 4l8 8-8 8" strokeWidth="2"/>
+            </svg>
+          )}
         </button>
       )}
 
-      {/* СКРОЛЛИРУЕМЫЙ КОНТЕНТ С ЦЕНТРИРОВАНИЕМ */}
-      <div 
-        ref={scrollableContentRef}
-        className="scrollable-content"
-        style={scrollableContentStyle}
-      >
-        <div style={contentWrapperStyle}>
-          {renderStepContent()}
-        </div>
-      </div>
+      {/* Основной контент */}
+      {renderStepContent()}
     </div>
   );
 }

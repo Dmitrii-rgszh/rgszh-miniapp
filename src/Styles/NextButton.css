@@ -90,7 +90,6 @@
 /* Стили для мелких экранов       */
 @media (max-width: 768px) {
   .next-btn {
-    top: 140px !important;
     right: 70px !important;
     width: 64px;
     height: 64px;

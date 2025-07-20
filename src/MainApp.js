@@ -1,12 +1,10 @@
-// MainApp.js - БЕЗ АНИМАЦИИ ДВИЖЕНИЯ ФОНОВ
-// ✅ Простой цикл: background1 → background2 → background3 → background4 → background1...
-// ✅ Плавное растворение (crossfade) между фонами
-// ❌ ОТКЛЮЧЕНА анимация движения фонов
-// ✅ Автоматическая смена фонов каждые 15 секунд
-// ✅ 4 фона: background1.png, background2.png, background3.png, background4.png
+// MainApp.js - ИСПРАВЛЕННАЯ ВЕРСИЯ
+// ✅ Фоны загружаются во время экрана приветствия (без показа прогресса)
+// ✅ Автоматический переход на MainMenu через 3 секунды
+// ✅ Исправлены warnings о конфликте стилей
 
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 
 // Импорты компонентов
 import WelcomePage     from './WelcomePage';
@@ -142,6 +140,24 @@ class ErrorBoundary extends React.Component {
   }
 }
 
+// Компонент для автоматического перехода
+function AutoNavigator({ children }) {
+  const navigate = useNavigate();
+  
+  useEffect(() => {
+    // Автоматический переход на MainMenu через 3 секунды
+    const timer = setTimeout(() => {
+      if (window.location.pathname === '/') {
+        navigate('/main-menu');
+      }
+    }, 3000);
+    
+    return () => clearTimeout(timer);
+  }, [navigate]);
+  
+  return children;
+}
+
 function MainApp() {
   // ===== СОСТОЯНИЕ ДЛЯ УПРАВЛЕНИЯ ФОНАМИ =====
   const [activeBackgroundIndex, setActiveBackgroundIndex] = useState(0);
@@ -156,16 +172,15 @@ function MainApp() {
   
   // ===== СОСТОЯНИЕ ПРЕДЗАГРУЗКИ =====
   const [imagesLoaded, setImagesLoaded] = useState(false);
-  const [loadingProgress, setLoadingProgress] = useState(0);
 
-  // ===== ПРЕДЗАГРУЗКА ИЗОБРАЖЕНИЙ =====
-  const preloadImages = () => {
+  // ===== ПРЕДЗАГРУЗКА ИЗОБРАЖЕНИЙ (без показа прогресса) =====
+  useEffect(() => {
     if (availableBackgrounds.length === 0) {
       setImagesLoaded(true);
       return;
     }
 
-    console.log('Начинаем предзагрузку фоновых изображений...');
+    console.log('Предзагрузка фоновых изображений...');
     let loadedCount = 0;
     const totalImages = availableBackgrounds.length;
 
@@ -174,24 +189,17 @@ function MainApp() {
       
       img.onload = () => {
         loadedCount++;
-        const progress = Math.round((loadedCount / totalImages) * 100);
-        setLoadingProgress(progress);
-        
-        console.log(`Загружено изображение ${index + 1}/${totalImages} (${progress}%)`);
+        console.log(`Загружено изображение ${index + 1}/${totalImages}`);
         
         if (loadedCount === totalImages) {
           console.log('Все фоновые изображения предзагружены!');
-          setTimeout(() => {
-            setImagesLoaded(true);
-          }, 500);
+          setImagesLoaded(true);
         }
       };
       
       img.onerror = () => {
         console.warn(`Ошибка загрузки изображения ${index}`);
         loadedCount++;
-        const progress = Math.round((loadedCount / totalImages) * 100);
-        setLoadingProgress(progress);
         
         if (loadedCount === totalImages) {
           setImagesLoaded(true);
@@ -200,7 +208,7 @@ function MainApp() {
       
       img.src = imageSrc;
     });
-  };
+  }, []);
 
   // ===== ПРОСТАЯ ФУНКЦИЯ ПОЛУЧЕНИЯ СЛЕДУЮЩЕГО ИНДЕКСА =====
   const getNextBackgroundIndex = (currentIndex) => {
@@ -219,28 +227,47 @@ function MainApp() {
     
     setIsTransitioning(true);
     
-    // Запускаем переход
-    executeCrossfade(activeBackgroundIndex, nextIndex);
+    // Запускаем переход с усиленным Aurora эффектом
+    executeCrossfadeWithAurora(activeBackgroundIndex, nextIndex);
   };
 
-  // ===== РЕАЛИЗАЦИЯ CROSSFADE =====
-  const executeCrossfade = (fromIndex, toIndex) => {
-    const duration = 5000; // 5 секунд на переход
-    const steps = 200; // 200 шагов = 25ms на шаг
+  // ===== РЕАЛИЗАЦИЯ CROSSFADE С AURORA ЭФФЕКТОМ =====
+  const executeCrossfadeWithAurora = (fromIndex, toIndex) => {
+    const duration = 10000; // 10 секунд на переход для максимально плавного Aurora эффекта
+    const steps = 400; // Еще больше шагов для плавности
     
     let step = 0;
     const fadeInterval = setInterval(() => {
       step++;
       const progress = step / steps;
       
-      // Используем ease-in-out функцию для более плавного перехода
-      const easeProgress = 0.5 * (1 + Math.sin(Math.PI * (progress - 0.5)));
+      // Сложная функция для Aurora эффекта
+      const easeProgress = progress < 0.5
+        ? 2 * progress * progress
+        : 1 - Math.pow(-2 * progress + 2, 2) / 2;
       
-      // Обновляем массив opacity
+      // Многослойные волны для эффекта северного сияния
+      const auroraWave1 = Math.sin(progress * Math.PI * 3) * 0.15 + 0.85;
+      const auroraWave2 = Math.cos(progress * Math.PI * 2) * 0.1 + 0.9;
+      const auroraWave3 = Math.sin(progress * Math.PI * 4) * 0.05 + 0.95;
+      
+      // Комбинированная Aurora волна
+      const combinedAurora = (auroraWave1 + auroraWave2 + auroraWave3) / 3;
+      
+      // Обновляем массив opacity с Aurora эффектом
       setBackgroundOpacities(opacities => {
         const newOpacities = [...opacities];
-        newOpacities[fromIndex] = Math.max(0, Math.min(1, 1 - (easeProgress * 0.8))); // Оставляем 20% видимости
-        newOpacities[toIndex] = Math.max(0, Math.min(1, easeProgress));
+        
+        // Уходящий фон с волновым затуханием
+        newOpacities[fromIndex] = Math.max(0, Math.min(1, 
+          (1 - easeProgress) * combinedAurora * 0.95
+        ));
+        
+        // Появляющийся фон с Aurora свечением
+        newOpacities[toIndex] = Math.max(0, Math.min(1, 
+          easeProgress * (0.7 + combinedAurora * 0.3)
+        ));
+        
         return newOpacities;
       });
       
@@ -290,11 +317,6 @@ function MainApp() {
     };
   }, []);
 
-  // ===== ПРЕДЗАГРУЗКА ПРИ МОНТИРОВАНИИ =====
-  useEffect(() => {
-    preloadImages();
-  }, []);
-
   // ===== АВТОМАТИЧЕСКАЯ СМЕНА ФОНОВ КАЖДЫЕ 15 СЕКУНД =====
   useEffect(() => {
     if (!imagesLoaded || availableBackgrounds.length <= 1) return;
@@ -326,7 +348,7 @@ function MainApp() {
     .safe-bottom { margin-bottom: var(--safe-area-bottom) !important; }
     .safe-bottom-padding { padding-bottom: var(--safe-area-bottom) !important; }
     
-    /0* ✨ АВТОМАТИЧЕСКИЙ SAFE AREA ДЛЯ ОСНОВНЫХ ЭЛЕМЕНТОВ */
+    /* ✨ АВТОМАТИЧЕСКИЙ SAFE AREA ДЛЯ ОСНОВНЫХ ЭЛЕМЕНТОВ */
     .logo-safe { top: 110px !important; }
     .buttons-safe { top: 300px !important; }
     .title-safe { top: 260px !important; }
@@ -352,8 +374,9 @@ function MainApp() {
     overflow: 'hidden',
     fontFamily: '"Segoe UI", sans-serif',
     
-    // ✨ ПОСТОЯННЫЙ КОРПОРАТИВНЫЙ ФОН
-    background: `
+    // ✨ ПОСТОЯННЫЙ КОРПОРАТИВНЫЙ ФОН (исправлено для предотвращения warning)
+    backgroundColor: 'rgba(180, 0, 55, 0.95)',
+    backgroundImage: `
       linear-gradient(135deg, 
         rgba(180, 0, 55, 0.95) 0%,
         rgba(153, 0, 55, 0.9) 25%,
@@ -374,86 +397,40 @@ function MainApp() {
     }
   };
 
-  // ===== СТИЛЬ ДЛЯ СТАТИЧНЫХ ФОНОВ (БЕЗ АНИМАЦИИ) =====
-  const createBackgroundStyle = (backgroundImage, index) => ({
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: '100%',
-    height: '100%',
-    backgroundImage: `url(${backgroundImage})`,
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
-    backgroundRepeat: 'no-repeat',
-    opacity: backgroundOpacities[index] || 0,
-    filter: `brightness(${0.7 + (backgroundOpacities[index] || 0) * 0.3})`,
-    // ❌ УБРАНА АНИМАЦИЯ: animation: `moveBackground 80s linear infinite`,
-    transition: 'opacity 5s ease-in-out',
-    pointerEvents: 'none',
-    zIndex: 1
-  });
-
-  // ===== LOADER СТИЛИ =====
-  const loaderOverlayStyle = {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: '100%',
-    height: '100%',
-    background: `
-      linear-gradient(135deg, 
-        rgba(180, 0, 55, 0.95) 0%,
-        rgba(0, 40, 130, 0.95) 100%
-      )
-    `,
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 1000,
-    opacity: imagesLoaded ? 0 : 1,
-    visibility: imagesLoaded ? 'hidden' : 'visible',
-    transition: 'opacity 1s ease-out, visibility 1s ease-out'
-  };
-
-  const loaderTextStyle = {
-    color: 'white',
-    fontSize: '18px',
-    fontFamily: '"Segoe UI", sans-serif',
-    fontWeight: 'bold',
-    marginBottom: '20px',
-    textAlign: 'center'
-  };
-
-  const progressBarStyle = {
-    width: '200px',
-    height: '4px',
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
-    borderRadius: '2px',
-    overflow: 'hidden',
-    marginBottom: '10px'
-  };
-
-  const progressFillStyle = {
-    width: `${loadingProgress}%`,
-    height: '100%',
-    background: `linear-gradient(90deg, 
-      rgba(255, 255, 255, 0.8) 0%, 
-      rgba(255, 255, 255, 1) 100%
-    )`,
-    transition: 'width 0.5s ease-out'
-  };
-
-  const progressTextStyle = {
-    color: 'rgba(255, 255, 255, 0.8)',
-    fontSize: '14px',
-    fontFamily: '"Segoe UI", sans-serif'
+  // ===== СТИЛЬ ДЛЯ СТАТИЧНЫХ ФОНОВ С ПРОСТЫМ ЭФФЕКТОМ =====
+  const createBackgroundStyle = (backgroundImage, index) => {
+    const opacity = backgroundOpacities[index] || 0;
+    
+    return {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '100%',
+      backgroundImage: `url(${backgroundImage})`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat',
+      opacity: opacity,
+      
+      // Упрощенные фильтры для производительности
+      filter: `brightness(${0.7 + opacity * 0.1})`,
+      
+      // Упрощенные переходы
+      transition: 'opacity 3s ease-in-out',
+      
+      pointerEvents: 'none',
+      zIndex: 1,
+      
+      // Убрано свечение и анимации для производительности
+      willChange: 'opacity' // Оптимизация рендеринга
+    };
   };
 
   return (
     <ErrorBoundary>
       <div style={globalContainerStyle}>
-        {/* Создаем отдельный div для каждого фона БЕЗ АНИМАЦИИ ДВИЖЕНИЯ */}
+        {/* Создаем отдельный div для каждого фона со статичным положением */}
         {imagesLoaded && availableBackgrounds.map((background, index) => (
           <div
             key={index}
@@ -461,33 +438,24 @@ function MainApp() {
           />
         ))}
         
-        {/* Loader во время предзагрузки */}
-        <div style={loaderOverlayStyle}>
-          <div style={loaderTextStyle}>
-            Загрузка фоновых изображений...
-          </div>
-          <div style={progressBarStyle}>
-            <div style={progressFillStyle} />
-          </div>
-          <div style={progressTextStyle}>
-            {loadingProgress}%
-          </div>
-        </div>
-        
         {/* Роутер с компонентами */}
         <Router>
-          <Routes>
-            <Route path="/"           element={<WelcomePage />} />
-            <Route path="/main-menu"  element={<MainMenu />} />
-            <Route path="/polls"      element={<PollsPage />} />
-            <Route path="/snp"        element={<SNPPage />} />
-            <Route path="/employee"   element={<EmployeePage />} />
-            <Route path="/assessment" element={<AssessmentPage />} />
-            <Route path="/feedback"   element={<FeedbackPage />} />
-            <Route path="/justincase" element={<JustincasePage />} />
-            <Route path="/carefuture" element={<CareFuturePage />} />
-            <Route path="/marzapoll"  element={<MarzaPollPage />} />
-          </Routes>
+          <AutoNavigator>
+            <div style={{ position: 'relative', zIndex: 10, width: '100%', height: '100%' }}>
+              <Routes>
+                <Route path="/"           element={<WelcomePage />} />
+                <Route path="/main-menu"  element={<MainMenu />} />
+                <Route path="/polls"      element={<PollsPage />} />
+                <Route path="/snp"        element={<SNPPage />} />
+                <Route path="/employee"   element={<EmployeePage />} />
+                <Route path="/assessment" element={<AssessmentPage />} />
+                <Route path="/feedback"   element={<FeedbackPage />} />
+                <Route path="/justincase" element={<JustincasePage />} />
+                <Route path="/carefuture" element={<CareFuturePage />} />
+                <Route path="/marzapoll"  element={<MarzaPollPage />} />
+              </Routes>
+            </div>
+          </AutoNavigator>
         </Router>
       </div>
     </ErrorBoundary>
