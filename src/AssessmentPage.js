@@ -9,6 +9,7 @@ import Autosuggest from 'react-autosuggest';
 import { useNavigate } from 'react-router-dom';
 import { apiCall } from './config';
 import logoImage from './components/logo.png';
+import './Styles/NextButton.css';
 
 // JSON-файлы с ФИО
 import surnames from './components/autosuggest/surname.json';
@@ -831,48 +832,25 @@ export default function AssessmentPage() {
         </button>
       )}
 
-      {/* Кнопка "Далее" справа от логотипа */}
+      {/* Кнопка "Далее" */}
       {(currentStep <= 3 && !isProcessing && !isFinished && !isLoading) && (
         <button 
-          style={{
-            ...nextButtonStyle,
-            top: window.innerWidth < 768 ? '60px' : '60px',
-            right: window.innerWidth < 768 ? '15px' : '20px',
-            width: window.innerWidth < 768 ? '48px' : '56px',
-            height: window.innerWidth < 768 ? '48px' : '56px',
-            opacity: canGoNext() ? 1 : 0.5,
-            transform: canGoNext() ? 'scale(1)' : 'scale(0.9)',
-            pointerEvents: canGoNext() ? 'auto' : 'none'
-          }}
+          className={`next-btn ${contentAnimated ? 'animate-next' : ''} ${isExiting ? 'animate-next-exit' : ''}`}
           onClick={canGoNext() ? handleNext : undefined}
           disabled={!canGoNext()}
-          onMouseEnter={(e) => {
-            if (canGoNext()) {
-              e.target.style.transform = 'scale(1.1)';
-              e.target.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.4)';
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (canGoNext()) {
-              e.target.style.transform = 'scale(1)';
-              e.target.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.3)';
-            }
+          style={{
+            opacity: canGoNext() ? 1 : 0.5,
+            pointerEvents: canGoNext() ? 'auto' : 'none'
           }}
         >
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: '100%',
-            height: '100%'
-          }}>
+          <div className={currentStep === 3 && currentQuestion === questions.length - 1 ? 'shaker pop-btn' : 'shaker shake-btn'}>
             {currentStep === 3 && currentQuestion === questions.length - 1 ? (
-              <svg viewBox="0 0 24 24" width="24" height="24">
-                <path d="M20 6L9 17l-5-5" stroke="white" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+              <svg viewBox="0 0 24 24" fill="none">
+          <path d="M20 6L9 17l-5-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             ) : (
-              <svg viewBox="0 0 24 24" width="24" height="24">
-                <path d="M9 18l6-6-6-6" stroke="white" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M9 18l6-6-6-6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             )}
           </div>
