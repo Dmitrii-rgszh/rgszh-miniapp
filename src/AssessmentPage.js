@@ -7,6 +7,7 @@ import { apiCall } from './config';
 import logoImage from './components/logo.png';
 import './Styles/NextButton.css';
 import './Styles/BackButton.css';
+import './Styles/HomeButton.css';
 
 // JSON-файлы с ФИО
 import surnames from './components/autosuggest/surname.json';
@@ -60,6 +61,13 @@ export default function AssessmentPage() {
   const logoTop = isSmallScreen ? 80 : 110;
   const logoImageSize = isSmallScreen ? 72 : 96;
   const contentTop = isSmallScreen ? 200 : (isMediumScreen ? 240 : 268);
+  
+  // ✅ ДОБАВЛЕНО: Расчет позиций для кнопок (как в PollsPage)
+  const buttonSize = 64; // Все кнопки 64x64
+  const buttonTop = logoTop + (logoSize - buttonSize) / 2; // Центрируем по вертикали относительно логотипа
+  const buttonDistance = 30; // Расстояние от логотипа
+  const backButtonLeft = windowWidth < 400 ? '20px' : `calc(50% - ${logoSize/2}px - ${buttonDistance}px - ${buttonSize}px)`;
+  const nextButtonRight = windowWidth < 400 ? '20px' : `calc(50% - ${logoSize/2}px - ${buttonDistance}px - ${buttonSize}px)`;
 
   // ===== СОСТОЯНИЯ АНИМАЦИЙ =====
   const [logoAnimated, setLogoAnimated] = useState(false);
@@ -791,6 +799,19 @@ export default function AssessmentPage() {
             background: rgba(255, 255, 255, 0.3);
             border-radius: 2px;
           }
+          
+          /* ✅ CSS переменные для унификации позиционирования кнопок */
+          :root {
+            --home-button-size: ${buttonSize}px;
+            --back-button-size: ${buttonSize}px;
+            --next-button-size: ${buttonSize}px;
+            --home-button-top: ${buttonTop}px;
+            --home-button-left: ${backButtonLeft};
+            --back-button-top: ${buttonTop}px;
+            --back-button-left: ${backButtonLeft};
+            --next-button-top: ${buttonTop}px;
+            --next-button-right: ${nextButtonRight};
+          }
         `}
       </style>
 
@@ -809,34 +830,9 @@ export default function AssessmentPage() {
           ref={backRef}
           className={`back-btn ${contentAnimated ? 'animate-home' : ''} ${isExiting ? 'animate-home-exit' : ''}`}
           onClick={handleBack}
-          style={{
-            // ✅ ПРИНУДИТЕЛЬНО УСТАНАВЛИВАЕМ ПРАВИЛЬНЫЕ РАЗМЕРЫ И СТИЛИ
-            position: 'absolute',
-            top: logoTop + (logoSize - 64) / 2 + 'px',
-            left: windowWidth < 400 ? '20px' : `calc(50% - ${logoSize/2}px - 30px - 64px)`,
-            width: '64px !important',
-            height: '64px !important',
-            minWidth: '64px !important',
-            maxWidth: '64px !important',
-            minHeight: '64px !important',
-            maxHeight: '64px !important',
-            background: 'rgba(255, 255, 255, 0.10)',
-            backdropFilter: 'blur(8px)',
-            border: '1.5px solid rgba(255,255,255,0.17)',
-            borderRadius: '16px !important',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-            zIndex: 5,
-            padding: '0 !important',
-            margin: '0 !important',
-            boxSizing: 'border-box',
-            transition: 'background 0.25s, border 0.25s'
-          }}
         >
           {/* ✅ ИСПРАВЛЕНО: Стрелка влево вместо домика */}
-          <svg viewBox="0 0 24 24" width={isSmallScreen ? "20" : "24"} height={isSmallScreen ? "20" : "24"}>
+          <svg viewBox="0 0 24 24">
             <path d="M15 18l-6-6 6-6" stroke="white" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </button>
@@ -845,13 +841,9 @@ export default function AssessmentPage() {
       {/* ✅ Кнопка "Далее" с условной анимацией SVG */}
       {(currentStep <= 3 && !isProcessing && !isFinished && !isLoading) && (
         <button 
-          className={`next-btn ${contentAnimated ? 'animate-next' : ''} ${isExiting ? 'animate-next-exit' : ''}`}
+          className={`next-btn ${contentAnimated ? 'animate-next' : ''} ${isExiting ? 'animate-next-exit' : ''} ${!canGoNext() ? 'disabled' : ''}`}
           onClick={canGoNext() ? handleNext : undefined}
           disabled={!canGoNext()}
-          style={{
-            opacity: canGoNext() ? 1 : 0.5,
-            pointerEvents: canGoNext() ? 'auto' : 'none'
-          }}
         >
           <div className={
             canGoNext() 
@@ -868,6 +860,19 @@ export default function AssessmentPage() {
               </svg>
             )}
           </div>
+        </button>
+      )}
+
+      {/* Кнопка домой для финального экрана */}
+      {isFinished && result && (
+        <button 
+          className={`home-button-polls ${contentAnimated ? 'animate-home' : ''} ${isExiting ? 'animate-home-exit' : ''}`}
+          onClick={goHome}
+        >
+          <svg viewBox="0 0 24 24" fill="white">
+            <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
         </button>
       )}
 

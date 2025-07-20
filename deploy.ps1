@@ -117,7 +117,7 @@ function Build-And-Push-Images {
         
         Write-Success "Серверный образ собран и отправлен (тег: $DEPLOY_TAG)"
         
-        # Сборка клиентского образа с уникальным тегом (ИСПРАВЛЕНА ОШИБКА В SOCKET_URL)
+        # Сборка клиентского образа с уникальным тегом
         Write-Log "📦 Сборка клиентского образа..."
         $cmd = "docker build --no-cache -f Dockerfile.client --build-arg REACT_APP_SOCKET_URL=`"$SOCKET_URL`" -t ${DOCKER_REGISTRY}/${PROJECT_NAME}:$DEPLOY_TAG -t ${DOCKER_REGISTRY}/${PROJECT_NAME}:latest ."
         
@@ -171,9 +171,15 @@ function Copy-Files-To-VM {
         if ($Verbose) { Write-Info "Выполняем: $cmd" }
         Invoke-Expression $cmd
         
+        # Создаем папку для nginx конфигурации
+        $cmd = "ssh ${VM_USER}@${VM_HOST} 'mkdir -p /home/${VM_USER}/${PROJECT_NAME}/nginx'"
+        if ($Verbose) { Write-Info "Выполняем: $cmd" }
+        Invoke-Expression $cmd
+        
         foreach ($file in $files) {
             if (Test-Path $file) {
                 Write-Log "📋 Копируем $file..."
+                # ИСПРАВЛЕНО: убрана лишняя 'p' в пути
                 $cmd = "scp $file ${VM_USER}@${VM_HOST}:/home/${VM_USER}/${PROJECT_NAME}/"
                 
                 if ($Verbose) { Write-Info "Выполняем: $cmd" }
@@ -186,6 +192,53 @@ function Copy-Files-To-VM {
                 Write-Warning "Файл $file не найден, пропускаем"
             }
         }
+        
+        # Создаем базовую nginx конфигурацию на сервере
+        Write-Log "📋 Создаем nginx конфигурацию..."
+        $nginxConfig = @'
+server {
+    listen 80;
+    server_name rgszh-miniapp.org;
+
+    location / {
+        proxy_pass http://frontend:80;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location /api {
+        proxy_pass http://server:4000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location /socket.io {
+        proxy_pass http://server:4000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+'@
+        
+        # Сохраняем конфигурацию в временный файл
+        $tempNginxConfig = New-TemporaryFile
+        [System.IO.File]::WriteAllText($tempNginxConfig.FullName, $nginxConfig, [System.Text.Encoding]::UTF8)
+        
+        # Копируем nginx конфигурацию
+        $cmd = "scp $($tempNginxConfig.FullName) ${VM_USER}@${VM_HOST}:/home/${VM_USER}/${PROJECT_NAME}/nginx/default.conf"
+        if ($Verbose) { Write-Info "Выполняем: $cmd" }
+        Invoke-Expression $cmd
+        
+        Remove-Item $tempNginxConfig.FullName -ErrorAction SilentlyContinue
         
         Write-Success "Все файлы скопированы на ВМ"
         
@@ -204,23 +257,29 @@ function Deploy-To-VM {
     
     Write-Log "🚀 Деплой на виртуальную машину (тег: $DEPLOY_TAG)..."
     
-    # Создаем временный файл скрипта с правильными переводами строк
-    $tempScript = New-TemporaryFile
+    # Создаем bash скрипт для выполнения на сервере
     $scriptContent = @"
 #!/bin/bash
 set -e
+
 cd /home/${VM_USER}/${PROJECT_NAME}
 
 echo "🛑 Остановка контейнеров..."
 docker compose down || echo "Контейнеры уже остановлены"
 
-echo "🗑️ Принудительное удаление всех связанных образов..."
-docker image rm ${DOCKER_REGISTRY}/${PROJECT_NAME}-api:latest || true
-docker image rm ${DOCKER_REGISTRY}/${PROJECT_NAME}:latest || true
-docker image rm ${DOCKER_REGISTRY}/${PROJECT_NAME}-api:$DEPLOY_TAG || true
-docker image rm ${DOCKER_REGISTRY}/${PROJECT_NAME}:$DEPLOY_TAG || true
+echo "🗑️ Удаление старых контейнеров..."
+docker container prune -f
 
-echo "🧹 Очистка Docker кэша..."
+echo "🗑️ Принудительное удаление старых образов..."
+docker rmi ${DOCKER_REGISTRY}/${PROJECT_NAME}-api:latest || true
+docker rmi ${DOCKER_REGISTRY}/${PROJECT_NAME}:latest || true
+docker rmi ${DOCKER_REGISTRY}/${PROJECT_NAME}-api:$DEPLOY_TAG || true
+docker rmi ${DOCKER_REGISTRY}/${PROJECT_NAME}:$DEPLOY_TAG || true
+
+echo "🧹 Очистка неиспользуемых образов..."
+docker image prune -f
+
+echo "🧹 Очистка Docker системы..."
 docker system prune -f
 
 echo "📥 Принудительное получение новых образов..."
@@ -228,33 +287,41 @@ docker pull ${DOCKER_REGISTRY}/${PROJECT_NAME}-api:latest
 docker pull ${DOCKER_REGISTRY}/${PROJECT_NAME}:latest
 
 echo "🚀 Запуск контейнеров с обновленными образами..."
-docker compose up -d --force-recreate
+docker compose up -d --force-recreate --remove-orphans
 
 echo "⏳ Ожидание запуска контейнеров..."
-sleep 10
+sleep 15
 
 echo "📊 Проверка статуса контейнеров..."
 docker compose ps
 
-echo "📋 Показ логов последних 20 строк..."
-docker compose logs --tail=20
+echo "📋 Показ логов последних 30 строк..."
+docker compose logs --tail=30
 
 echo "🎉 Деплой завершен! Тег образов: $DEPLOY_TAG"
 "@
     
-    # Записываем скрипт с Unix переводами строк
-    [System.IO.File]::WriteAllText($tempScript.FullName, $scriptContent, [System.Text.Encoding]::UTF8)
+    # Создаем временный файл с правильными Unix переводами строк
+    $tempScriptPath = [System.IO.Path]::GetTempFileName()
+    
+    # Записываем скрипт с LF переводами строк
+    $scriptBytes = [System.Text.Encoding]::UTF8.GetBytes($scriptContent.Replace("`r`n", "`n"))
+    [System.IO.File]::WriteAllBytes($tempScriptPath, $scriptBytes)
     
     try {
         Write-Log "🔗 Подключение к ВМ и выполнение деплоя..."
         
         # Копируем скрипт на ВМ
-        $cmd = "scp $($tempScript.FullName) ${VM_USER}@${VM_HOST}:/tmp/deploy_script.sh"
+        $cmd = "scp `"$tempScriptPath`" ${VM_USER}@${VM_HOST}:/tmp/deploy_script.sh"
         if ($Verbose) { Write-Info "Копируем скрипт на ВМ: $cmd" }
         Invoke-Expression $cmd
         
+        if ($LASTEXITCODE -ne 0) {
+            throw "Ошибка копирования скрипта на ВМ"
+        }
+        
         # Выполняем скрипт на ВМ
-        $cmd = "ssh ${VM_USER}@${VM_HOST} 'chmod +x /tmp/deploy_script.sh && /tmp/deploy_script.sh'"
+        $cmd = "ssh ${VM_USER}@${VM_HOST} 'chmod +x /tmp/deploy_script.sh && bash /tmp/deploy_script.sh'"
         if ($Verbose) { Write-Info "Выполняем скрипт на ВМ: $cmd" }
         Invoke-Expression $cmd
         
@@ -274,13 +341,21 @@ echo "🎉 Деплой завершен! Тег образов: $DEPLOY_TAG"
         exit 1
     } finally {
         # Удаляем временный файл
-        Remove-Item $tempScript.FullName -ErrorAction SilentlyContinue
+        Remove-Item $tempScriptPath -ErrorAction SilentlyContinue
     }
 }
 
-# Улучшенная проверка работоспособности
+# Проверка работоспособности
 function Test-Deployment {
     Write-Log "🏥 Проверка работоспособности..."
+    
+    # Очистка кэша Telegram
+    Write-Log "🧹 Очистка кэша Telegram..."
+    Write-Info "Для обновления в Telegram:"
+    Write-Info "1. Закройте MiniApp в Telegram"
+    Write-Info "2. Очистите кэш Telegram: Настройки → Данные и память → Очистить кэш"
+    Write-Info "3. Перезапустите Telegram"
+    Write-Info "4. Откройте MiniApp заново"
     
     try {
         # Проверяем HTTP

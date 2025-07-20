@@ -152,7 +152,7 @@
 @media (max-width: 768px) {
   .next-btn {
     /* Позиционирование для мобильных */
-    right: var(--home-button-left, calc(50% - 64px - 30px - 64px)) !important;
+    right: var(--next-button-right, calc(50% - 64px - 30px - 64px)) !important;
     top: var(--home-button-top, 142px) !important;
     
     /* Размеры остаются 64x64 */
