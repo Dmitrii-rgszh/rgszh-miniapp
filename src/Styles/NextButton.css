@@ -4,13 +4,13 @@
 /* Базовые стили кнопки «Далее»   */
 .next-btn {
   position: absolute;
-  top: 180px;
-  right: 70px;
-  width: 64px;
-  height: 64px;
+  top: 92px !important;
+  right: calc(50% - 64px - 30px - 64px) !important;
+  width: 64px !important;
+  height: 64px !important;
   border: 1.5px solid rgba(255, 255, 255, 0.17);
   background: rgba(255, 255, 255, 0.12);
-  border-radius: 10px;
+  border-radius: 16px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -93,7 +93,7 @@
     right: 70px !important;
     width: 64px;
     height: 64px;
-    border: 1.5px solid rgba(255, 255, 255, 0.17);
+    border: 1px solid rgba(255, 255, 255, 0.17);
   }
 
   .next-btn svg {
