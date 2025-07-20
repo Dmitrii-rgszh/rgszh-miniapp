@@ -1,30 +1,55 @@
-/* NextButton.css */
+/* NextButton.css - В СТИЛЕ HomeButton.css */
 
 /* ——————————————————————————— */
-/* Базовые стили кнопки «Далее»   */
+/* Базовые стили кнопки «Далее» - КАК HomeButton */
 .next-btn {
   position: absolute;
-  top: 92px !important;
-  right: calc(50% - 64px - 30px - 64px) !important;
-  width: 64px !important;
-  height: 64px !important;
-  min-width: 64px !important;  /* Добавить */
-  max-width: 64px !important;  /* Добавить */
-  min-height: 64px !important; /* Добавить */
-  max-height: 64px !important;
-  border: 1.5px solid rgba(255, 255, 255, 0.17);
-  background: rgba(255, 255, 255, 0.12);
-  border-radius: 16px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  
+  /* Размеры как у HomeButton */
+  width: var(--next-button-size, 64px) !important;
+  height: var(--next-button-size, 64px) !important;
+  min-width: var(--next-button-size, 64px) !important;
+  max-width: var(--next-button-size, 64px) !important;
+  min-height: var(--next-button-size, 64px) !important;
+  max-height: var(--next-button-size, 64px) !important;
+  
+  /* Позиционирование - CSS переменные */
+  top: var(--next-button-top, 92px) !important;
+  right: var(--next-button-right, calc(50% - 64px - 30px - 64px)) !important;
+  
+  /* Стиль как у HomeButton - стеклянный эффект */
+  background: rgba(255, 255, 255, 0.10) !important;
+  backdrop-filter: blur(8px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.17) !important;
+  border-radius: 16px !important;
+  
+  /* Flexbox для центрирования иконки */
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  
+  /* Анимация и поведение */
+  cursor: pointer !important;
   opacity: 1;
   transform: translateX(0);
-  transition: opacity 0.6s ease, transform 0.6s ease;
-  z-index: 10;
+  transition: opacity 0.6s ease, transform 0.6s ease, background 0.3s ease, border-color 0.3s ease;
+  z-index: 10 !important;
+  
+  /* Сброс стилей для гарантии квадрата */
+  padding: 0 !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+  outline: none !important;
+  text-decoration: none !important;
+  font-size: 0 !important;
+  line-height: 0 !important;
+  overflow: hidden !important;
+  aspect-ratio: 1 / 1 !important;
+  flex-shrink: 0 !important;
+  flex-grow: 0 !important;
 }
 
+/* Ripple эффект */
 .ripple {
   position: absolute;
   border-radius: 50%;
@@ -42,23 +67,45 @@
   }
 }
 
-/* появление и скрытие кнопки по классам */
+/* Появление и скрытие кнопки */
 .next-btn.animate-next {
   opacity: 1;
   transform: translateX(0);
 }
+
 .next-btn.animate-next-exit {
   opacity: 0;
   transform: translateX(100px);
-  transition: opacity 0.4s, transform 0.4s;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+/* Hover эффект (только для устройств с курсором) */
+@media (hover: hover) {
+  .next-btn:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.15) !important;
+    border-color: rgba(255, 255, 255, 0.25) !important;
+    transform: translateX(0) scale(1.05);
+  }
+}
+
+/* Disabled состояние */
+.next-btn:disabled {
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
 }
 
 /* Стили для svg внутри кнопки */
 .next-btn svg {
-  width: 36px;
-  height: 36px;
+  width: 28px;
+  height: 28px;
   stroke: white;
   fill: none;
+  transition: transform 0.2s ease;
+}
+
+.next-btn:hover:not(:disabled) svg {
+  transform: scale(1.1);
 }
 
 /* Контейнер иконки внутри кнопки */
@@ -70,49 +117,75 @@
 
 /* Тряска для шагов 1–8 */
 @keyframes shake {
-  0%   { transform: translateX(-2px); }
-  20%  { transform: translateX(-2px); }
-  50%  { transform: translateX(3px); }
-  80%  { transform: translateX(-2px); }
-  100% { transform: translateX(-2px); }
+  0%   { transform: translateX(-1px); }
+  20%  { transform: translateX(-1px); }
+  50%  { transform: translateX(2px); }
+  80%  { transform: translateX(-1px); }
+  100% { transform: translateX(-1px); }
 }
+
 .shaker.shake-btn {
   animation: shake 0.5s infinite alternate;
 }
 
-/* Поп‑анимация для галочки на шаге 9 */
+/* Поп‑анимация для галочки на последнем шаге */
 @keyframes pop {
   0%   { transform: scale(1); }
-  50%  { transform: scale(1.2); }
+  50%  { transform: scale(1.15); }
   100% { transform: scale(1); }
 }
+
 .shaker.pop-btn {
   animation: pop 0.4s ease-out infinite;
 }
 
-/* ——————————————————————————— */
-/* Стили для мелких экранов       */
+/* ===== АДАПТИВНОСТЬ ===== */
+
+/* Мобильные экраны (≤768px) */
 @media (max-width: 768px) {
   .next-btn {
-    right: 70px !important;
-    width: 64px;
-    height: 64px;
-    border: 1px solid rgba(255, 255, 255, 0.17);
+    /* Позиционирование для мобильных */
+    right: var(--home-button-left, calc(50% - 64px - 30px - 64px)) !important;
+    top: var(--next-button-top-mobile, 90px) !important;
+    
+    /* Размеры остаются 64x64 */
+    width: 64px !important;
+    height: 64px !important;
+    min-width: 64px !important;
+    max-width: 64px !important;
+    min-height: 64px !important;
+    max-height: 64px !important;
+    
+    /* Бордер чуть тоньше на мобильных */
+    border: 1px solid rgba(255, 255, 255, 0.17) !important;
   }
 
   .next-btn svg {
     width: 24px;
     height: 24px;
-    stroke: white;
-    fill: none;
   }
 
   .shaker.shake-btn {
     animation: shake 0.25s infinite alternate !important;
   }
 
-  /* Поп‑анимация и на маленьких экранах */
   .shaker.pop-btn {
     animation: pop 0.4s ease-out infinite !important;
   }
+}
+
+/* Маленькие экраны - более скругленные углы */
+@media (max-height: 700px), (max-width: 400px) {
+  .next-btn {
+    border-radius: 12px !important;
+  }
+}
+
+/* Убираем все text-related стили чтобы гарантировать квадрат */
+.next-btn * {
+  font-size: 0 !important;
+  line-height: 0 !important;
+  letter-spacing: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
 }
