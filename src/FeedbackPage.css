@@ -54,64 +54,8 @@
   text-align: center;
 }
 
-/* ------------------------------------------------------------------------
-   3) Кнопка «Вперёд» (next-btn) справа от логотипа (зеркально кнопке «Домой»)
-   ------------------------------------------------------------------------ */
-/*
-   Используем position:absolute и такой же top, что и у home-btn в PollsPage,
-   но зеркально: вместо left=calc(50% - 154px) ставим right=calc(50% - 154px).
-   Отрегулируйте «154px» под собственный размер логотипа / отступ.
-*/
-.next-btn {
-  position: absolute !important;
-  top: 180px;                 /* То же, что и у home-btn в PollsPage */
-  right: 70px;   /* Зеркально home-btn.left:calc(50% - 154px) */
-  width: 64px !important;
-  height: 64px !important;
-  background-color: rgba(255, 255, 255, 0.12) !important;
-  border: none !important;
-  border-radius: 10px !important;
-  box-shadow: none !important;
-  cursor: pointer !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  opacity: 0 !important;
-  transform: translateX(20px) !important; /* Появляется «справа», потому чуть смещаем влево */
-  transition: opacity 0.6s ease, transform 0.6s ease !important;
-}
-
-/* Въезд кнопки (аналог home-btn.animate-home) */
-.next-btn.animate-next {
-  opacity: 1 !important;
-  transform: translateX(0) !important;
-}
-
-/* Уезд кнопки при клике (аналог home-btn.animate-home-exit) */
-.next-btn.animate-next-exit {
-  opacity: 0 !important;
-  transform: translateX(20px) !important;
-  transition: opacity 0.4s ease, transform 0.4s ease !important;
-}
-
-/* Размер SVG-стрелки внутри кнопки */
-.next-btn svg {
-  width: 36px !important;
-  height: 36px !important;
-  stroke: white !important;
-  fill: none !important;
-}
-
-/* ------------------------------------------------------------------------
-   4) Анимация «покачивания» (shake-btn) для кнопки «Вперёд»
------------------------------------------------------------------------- */
 .shake-btn {
   animation: shake 0.5s infinite alternate ease-in-out !important;
-}
-
-@keyframes shake {
-  from { transform: translateX(0); }
-  to   { transform: translateX(6px); }
 }
 
 /* ------------------------------------------------------------------------
@@ -125,10 +69,6 @@
   }
   .feedback-container .autosuggest-container .react-autosuggest__container {
     max-width: 320px;
-  }
-  .next-btn {
-    top: 120px; /* Сдвигаем, если логотип меньше на мобилках */
-    right: 70px;
   }
 }
 
@@ -655,30 +595,6 @@
 
 .impression-btn.selected {
   animation: pulseEmoji 1.5s ease-in-out infinite;
-}
-
-/* в конце FeedbackPage.css */
-.next-btn {
-  /* отменяем «скрытые» стили */
-  opacity: 1 !important;
-  transform: translateX(0) !important;
-  /* отключаем transition, чтобы при обычном отображении ничего не дергалось */
-  transition: none !important;
-}
-
-/* но оставляем выход (exit) — кнопка будет уезжать по нажатию */
-.next-btn.animate-next-exit {
-  opacity: 0 !important;
-  transform: translateX(20px) !important;
-  transition: opacity 0.4s ease, transform 0.4s ease !important;
-}
-
-/* анимация «въезда» теперь остаётся только при canGoNext() */
-.next-btn.animate-next {
-  opacity: 1 !important;
-  transform: translateX(0) !important;
-  /* если хотите, можно вернуть transition здесь */
-  transition: opacity 0.6s ease, transform 0.6s ease !important;
 }
 
 .thank-you-text {

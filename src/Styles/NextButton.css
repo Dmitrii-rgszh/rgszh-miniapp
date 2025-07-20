@@ -8,6 +8,10 @@
   right: calc(50% - 64px - 30px - 64px) !important;
   width: 64px !important;
   height: 64px !important;
+  min-width: 64px !important;  /* Добавить */
+  max-width: 64px !important;  /* Добавить */
+  min-height: 64px !important; /* Добавить */
+  max-height: 64px !important;
   border: 1.5px solid rgba(255, 255, 255, 0.17);
   background: rgba(255, 255, 255, 0.12);
   border-radius: 16px;
