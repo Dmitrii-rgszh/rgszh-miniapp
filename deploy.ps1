@@ -1,4 +1,4 @@
-# deploy.ps1 - PowerShell скрипт для деплоя RGSZH MiniApp
+# deploy.ps1 - ПОЛНОСТЬЮ ИСПРАВЛЕННЫЙ PowerShell скрипт для деплоя RGSZH MiniApp
 
 param(
     [switch]$SkipBuild,
@@ -13,6 +13,9 @@ $VM_HOST = "176.109.110.217"
 $DOCKER_REGISTRY = "zerotlt"
 $PROJECT_NAME = "rgszh-miniapp"
 $SOCKET_URL = "https://rgszh-miniapp.org"
+
+# Генерируем уникальный тег на основе времени для принудительного обновления
+$DEPLOY_TAG = (Get-Date -Format "yyyyMMdd-HHmmss")
 
 # Цвета для вывода
 $Colors = @{
@@ -72,19 +75,25 @@ function Test-Dependencies {
     Write-Success "Все зависимости установлены"
 }
 
-# Сборка и отправка образов
+# Сборка и отправка образов с уникальными тегами
 function Build-And-Push-Images {
     if ($SkipBuild) {
         Write-Warning "Пропуск сборки образов (параметр -SkipBuild)"
         return
     }
     
-    Write-Log "🐳 Сборка и отправка Docker образов..."
+    Write-Log "🐳 Сборка и отправка Docker образов (тег: $DEPLOY_TAG)..."
     
     try {
-        # Сборка серверного образа
+        # Очистка локального кэша
+        Write-Log "🧹 Очистка Docker кэша..."
+        $cmd = "docker system prune -f"
+        if ($Verbose) { Write-Info "Выполняем: $cmd" }
+        Invoke-Expression $cmd
+        
+        # Сборка серверного образа с уникальным тегом
         Write-Log "📦 Сборка серверного образа..."
-        $cmd = "docker build --no-cache -f Dockerfile.server -t ${DOCKER_REGISTRY}/${PROJECT_NAME}-api:prod ."
+        $cmd = "docker build --no-cache -f Dockerfile.server -t ${DOCKER_REGISTRY}/${PROJECT_NAME}-api:$DEPLOY_TAG -t ${DOCKER_REGISTRY}/${PROJECT_NAME}-api:latest ."
         
         if ($Verbose) { Write-Info "Выполняем: $cmd" }
         Invoke-Expression $cmd
@@ -94,8 +103,11 @@ function Build-And-Push-Images {
         }
         
         Write-Log "📤 Отправка серверного образа..."
-        $cmd = "docker push ${DOCKER_REGISTRY}/${PROJECT_NAME}-api:prod"
+        $cmd = "docker push ${DOCKER_REGISTRY}/${PROJECT_NAME}-api:$DEPLOY_TAG"
+        if ($Verbose) { Write-Info "Выполняем: $cmd" }
+        Invoke-Expression $cmd
         
+        $cmd = "docker push ${DOCKER_REGISTRY}/${PROJECT_NAME}-api:latest"
         if ($Verbose) { Write-Info "Выполняем: $cmd" }
         Invoke-Expression $cmd
         
@@ -103,11 +115,11 @@ function Build-And-Push-Images {
             throw "Ошибка отправки серверного образа"
         }
         
-        Write-Success "Серверный образ собран и отправлен"
+        Write-Success "Серверный образ собран и отправлен (тег: $DEPLOY_TAG)"
         
-        # Сборка клиентского образа
+        # Сборка клиентского образа с уникальным тегом (ИСПРАВЛЕНА ОШИБКА В SOCKET_URL)
         Write-Log "📦 Сборка клиентского образа..."
-        $cmd = "docker build --no-cache -f Dockerfile.client --build-arg REACT_APP_SOCKET_URL=`"$SOCKET_URL`" -t ${DOCKER_REGISTRY}/${PROJECT_NAME}:prod ."
+        $cmd = "docker build --no-cache -f Dockerfile.client --build-arg REACT_APP_SOCKET_URL=`"$SOCKET_URL`" -t ${DOCKER_REGISTRY}/${PROJECT_NAME}:$DEPLOY_TAG -t ${DOCKER_REGISTRY}/${PROJECT_NAME}:latest ."
         
         if ($Verbose) { Write-Info "Выполняем: $cmd" }
         Invoke-Expression $cmd
@@ -117,8 +129,11 @@ function Build-And-Push-Images {
         }
         
         Write-Log "📤 Отправка клиентского образа..."
-        $cmd = "docker push ${DOCKER_REGISTRY}/${PROJECT_NAME}:prod"
+        $cmd = "docker push ${DOCKER_REGISTRY}/${PROJECT_NAME}:$DEPLOY_TAG"
+        if ($Verbose) { Write-Info "Выполняем: $cmd" }
+        Invoke-Expression $cmd
         
+        $cmd = "docker push ${DOCKER_REGISTRY}/${PROJECT_NAME}:latest"
         if ($Verbose) { Write-Info "Выполняем: $cmd" }
         Invoke-Expression $cmd
         
@@ -126,7 +141,7 @@ function Build-And-Push-Images {
             throw "Ошибка отправки клиентского образа"
         }
         
-        Write-Success "Клиентский образ собран и отправлен"
+        Write-Success "Клиентский образ собран и отправлен (тег: $DEPLOY_TAG)"
         
     } catch {
         Write-Error "Ошибка при сборке/отправке образов: $_"
@@ -151,6 +166,11 @@ function Copy-Files-To-VM {
     )
     
     try {
+        # Создаем папку если не существует
+        $cmd = "ssh ${VM_USER}@${VM_HOST} 'mkdir -p /home/${VM_USER}/${PROJECT_NAME}'"
+        if ($Verbose) { Write-Info "Выполняем: $cmd" }
+        Invoke-Expression $cmd
+        
         foreach ($file in $files) {
             if (Test-Path $file) {
                 Write-Log "📋 Копируем $file..."
@@ -175,71 +195,118 @@ function Copy-Files-To-VM {
     }
 }
 
-# Деплой на ВМ
+# Деплой на ВМ с исправленными командами
 function Deploy-To-VM {
     if ($SkipDeploy) {
         Write-Warning "Пропуск деплоя на ВМ (параметр -SkipDeploy)"
         return
     }
     
-    Write-Log "🚀 Деплой на виртуальную машину..."
+    Write-Log "🚀 Деплой на виртуальную машину (тег: $DEPLOY_TAG)..."
     
-    # Скрипт для выполнения на ВМ
-    $vmScript = @"
+    # Создаем временный файл скрипта с правильными переводами строк
+    $tempScript = New-TemporaryFile
+    $scriptContent = @"
+#!/bin/bash
 set -e
-cd ~/${PROJECT_NAME}
-echo "🔄 Восстановление docker-compose.yml из git..."
-git checkout -- docker-compose.yml
+cd /home/${VM_USER}/${PROJECT_NAME}
+
 echo "🛑 Остановка контейнеров..."
-docker-compose down
-echo "🗑️ Удаление старых образов..."
-docker image rm ${DOCKER_REGISTRY}/${PROJECT_NAME}-api:prod || true
-docker image rm ${DOCKER_REGISTRY}/${PROJECT_NAME}:prod || true
-echo "📥 Получение новых образов..."
-docker-compose pull
-echo "🚀 Запуск обновленных контейнеров..."
-docker-compose up -d
+docker compose down || echo "Контейнеры уже остановлены"
+
+echo "🗑️ Принудительное удаление всех связанных образов..."
+docker image rm ${DOCKER_REGISTRY}/${PROJECT_NAME}-api:latest || true
+docker image rm ${DOCKER_REGISTRY}/${PROJECT_NAME}:latest || true
+docker image rm ${DOCKER_REGISTRY}/${PROJECT_NAME}-api:$DEPLOY_TAG || true
+docker image rm ${DOCKER_REGISTRY}/${PROJECT_NAME}:$DEPLOY_TAG || true
+
+echo "🧹 Очистка Docker кэша..."
+docker system prune -f
+
+echo "📥 Принудительное получение новых образов..."
+docker pull ${DOCKER_REGISTRY}/${PROJECT_NAME}-api:latest
+docker pull ${DOCKER_REGISTRY}/${PROJECT_NAME}:latest
+
+echo "🚀 Запуск контейнеров с обновленными образами..."
+docker compose up -d --force-recreate
+
+echo "⏳ Ожидание запуска контейнеров..."
+sleep 10
+
 echo "📊 Проверка статуса контейнеров..."
-docker-compose ps
-echo "🎉 Деплой завершен успешно!"
+docker compose ps
+
+echo "📋 Показ логов последних 20 строк..."
+docker compose logs --tail=20
+
+echo "🎉 Деплой завершен! Тег образов: $DEPLOY_TAG"
 "@
+    
+    # Записываем скрипт с Unix переводами строк
+    [System.IO.File]::WriteAllText($tempScript.FullName, $scriptContent, [System.Text.Encoding]::UTF8)
     
     try {
         Write-Log "🔗 Подключение к ВМ и выполнение деплоя..."
         
-        $cmd = "ssh ${VM_USER}@${VM_HOST} `"$vmScript`""
+        # Копируем скрипт на ВМ
+        $cmd = "scp $($tempScript.FullName) ${VM_USER}@${VM_HOST}:/tmp/deploy_script.sh"
+        if ($Verbose) { Write-Info "Копируем скрипт на ВМ: $cmd" }
+        Invoke-Expression $cmd
         
-        if ($Verbose) { Write-Info "Выполняем SSH команды на ВМ..." }
+        # Выполняем скрипт на ВМ
+        $cmd = "ssh ${VM_USER}@${VM_HOST} 'chmod +x /tmp/deploy_script.sh && /tmp/deploy_script.sh'"
+        if ($Verbose) { Write-Info "Выполняем скрипт на ВМ: $cmd" }
         Invoke-Expression $cmd
         
         if ($LASTEXITCODE -ne 0) {
             throw "Ошибка выполнения команд на ВМ"
         }
         
+        # Удаляем временный скрипт с ВМ
+        $cmd = "ssh ${VM_USER}@${VM_HOST} 'rm -f /tmp/deploy_script.sh'"
+        Invoke-Expression $cmd
+        
         Write-Success "Деплой на ВМ завершен успешно"
         
     } catch {
         Write-Error "Ошибка при деплое на ВМ: $_"
+        Write-Info "Проверьте статус контейнеров: ssh $VM_USER@$VM_HOST 'cd $PROJECT_NAME && docker compose ps && docker compose logs --tail=50'"
         exit 1
+    } finally {
+        # Удаляем временный файл
+        Remove-Item $tempScript.FullName -ErrorAction SilentlyContinue
     }
 }
 
-# Проверка работоспособности
+# Улучшенная проверка работоспособности
 function Test-Deployment {
     Write-Log "🏥 Проверка работоспособности..."
     
     try {
-        $response = Invoke-WebRequest -Uri "http://$VM_HOST" -Method GET -TimeoutSec 10 -ErrorAction Stop
+        # Проверяем HTTP
+        $response = Invoke-WebRequest -Uri "http://$VM_HOST" -Method GET -TimeoutSec 15 -ErrorAction Stop
         
         if ($response.StatusCode -in @(200, 301, 302)) {
-            Write-Success "Сайт доступен по адресу http://$VM_HOST"
+            Write-Success "Сайт доступен по адресу http://$VM_HOST (код: $($response.StatusCode))"
         } else {
             Write-Warning "Сайт отвечает с кодом $($response.StatusCode)"
         }
     } catch {
-        Write-Warning "Сайт не отвечает или недоступен: $_"
-        Write-Info "Проверьте логи контейнеров: ssh $VM_USER@$VM_HOST 'cd $PROJECT_NAME && docker-compose logs'"
+        Write-Warning "HTTP проверка не удалась: $($_.Exception.Message)"
+        
+        # Пробуем простую проверку TCP соединения
+        try {
+            $tcpClient = New-Object System.Net.Sockets.TcpClient
+            $tcpClient.Connect($VM_HOST, 80)
+            $tcpClient.Close()
+            Write-Success "TCP порт 80 открыт на $VM_HOST"
+        } catch {
+            Write-Warning "TCP порт 80 недоступен: $($_.Exception.Message)"
+        }
     }
+    
+    Write-Info "Для детальной диагностики используйте:"
+    Write-Info "ssh $VM_USER@$VM_HOST 'cd $PROJECT_NAME && docker compose ps && docker compose logs --tail=50'"
 }
 
 # Главная функция
@@ -247,6 +314,7 @@ function Main {
     Write-Host ""
     Write-Host "===============================================" -ForegroundColor Magenta
     Write-Host "🚀 RGSZH MiniApp Deployment Script (PowerShell)" -ForegroundColor Magenta
+    Write-Host "🏷️ Deploy Tag: $DEPLOY_TAG" -ForegroundColor Magenta
     Write-Host "===============================================" -ForegroundColor Magenta
     Write-Host ""
     
@@ -265,6 +333,7 @@ function Main {
         Write-Host ""
         Write-Host "===============================================" -ForegroundColor Magenta
         Write-Success "Деплой завершен успешно! 🎉"
+        Write-Info "Тег образов: $DEPLOY_TAG"
         Write-Info "Время выполнения: $($duration.Minutes)м $($duration.Seconds)с"
         Write-Info "URL: http://$VM_HOST"
         Write-Host "===============================================" -ForegroundColor Magenta

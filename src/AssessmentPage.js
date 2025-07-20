@@ -554,14 +554,6 @@ export default function AssessmentPage() {
               Свяжемся с вами в ближайшее время.<br/>
               Отличного дня!
             </p>
-            <button 
-              style={buttonStyle}
-              onClick={goHome}
-              onMouseEnter={handleMouseEnter}
-              onMouseLeave={handleMouseLeave}
-            >
-              На главную
-            </button>
           </div>
         </div>
       );
@@ -698,8 +690,8 @@ export default function AssessmentPage() {
                   <div 
                     key={idx} 
                     style={{
-                      width: isSmallScreen ? '6px' : '8px',
-                      height: isSmallScreen ? '6px' : '8px',
+                      width: isMobileWidth ? '6px' : '8px',
+                      height: isMobileWidth ? '6px' : '8px',
                       borderRadius: '50%',
                       background: idx < currentQuestion ? 'rgba(180, 0, 55, 0.9)' : 
                                  idx === currentQuestion ? 'white' : 
@@ -713,14 +705,14 @@ export default function AssessmentPage() {
 
             <div style={{
               ...textStyle,
-              fontSize: isSmallScreen ? '12px' : '14px',
+              fontSize: isMobileWidth ? '16px' : '18px',
               marginBottom: '20px',
               opacity: 0.8
             }}>
-              Вопрос {currentQuestion + 1} из {questions.length}
+              Вопрос: {currentQuestion + 1} из {questions.length}
             </div>
 
-            <h2 style={{...titleStyle, fontSize: isSmallScreen ? '20px' : '24px', marginBottom: '30px'}}>
+            <h2 style={{...titleStyle, fontSize: isMobileWidth ? '20px' : '24px', marginBottom: '30px'}}>
               {currentQuestionData.question_text || currentQuestionData.text || 'Вопрос'}
             </h2>
 
@@ -738,7 +730,7 @@ export default function AssessmentPage() {
               </div>
             )}
 
-            <div style={{ width: '100%', maxWidth: isSmallScreen ? '80%' : '500px' }}>
+            <div style={{ width: '100%', maxWidth: isMobileWidth ? '80%' : '500px' }}>
               {currentQuestionData.shuffledOptions.map((option, idx) => (
                 <button
                   key={idx}
