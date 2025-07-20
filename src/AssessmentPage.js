@@ -61,13 +61,6 @@ export default function AssessmentPage() {
     return false;
   };
 
-  // Вычисление адаптивных размеров (перенесено выше стилей)
-  const isSmallScreen = window.innerHeight < 700 || window.innerWidth < 400;
-  const logoSize = isSmallScreen ? 96 : 128;
-  const logoTop = isSmallScreen ? 80 : 110;
-  const nextButtonSize = isSmallScreen ? 48 : 64;
-  const nextButtonGap = isSmallScreen ? 20 : 30;
-
   // ===== СТИЛИ (как в MainMenu) =====
 
   // Основной контейнер
@@ -87,14 +80,14 @@ export default function AssessmentPage() {
   // Логотип с анимацией (как в MainMenu)
   const logoStyle = {
     position: 'absolute',
-    top: logoAnimated && !isExiting ? `${logoTop}px` : isExiting ? '-200px' : '-200px',
+    top: logoAnimated && !isExiting ? '60px' : isExiting ? '-200px' : '-200px',
     left: '50%',
     transform: 'translateX(-50%)',
-    width: `${logoSize}px`,
-    height: `${logoSize}px`,
+    width: '128px',
+    height: '128px',
     backgroundColor: 'rgba(255, 255, 255, 0.10)',
     backdropFilter: 'blur(8px)',
-    borderRadius: isSmallScreen ? '16px' : '20px',
+    borderRadius: '20px',
     boxShadow: '0 10px 25px rgba(0, 0, 0, 0.25)',
     opacity: logoAnimated && !isExiting ? 1 : 0,
     zIndex: 3,
@@ -106,15 +99,15 @@ export default function AssessmentPage() {
 
   // Изображение логотипа
   const logoImageStyle = {
-    width: isSmallScreen ? '72px' : '96px',
-    height: isSmallScreen ? '72px' : '96px',
+    width: '96px',
+    height: '96px',
     objectFit: 'contain'
   };
 
   // Контейнер контента (адаптивный отступ от логотипа)
   const contentContainerStyle = {
     position: 'absolute',
-    top: window.innerWidth < 768 ? '200px' : '200px', // Увеличен отступ для мобильных
+    top: window.innerWidth < 768 ? '200px' : '200px',
     left: '50%',
     transform: 'translateX(-50%)',
     display: 'flex',
@@ -129,7 +122,7 @@ export default function AssessmentPage() {
     opacity: contentAnimated ? 1 : 0,
     transition: 'all 0.8s ease-out 0.2s',
     overflowY: 'auto',
-    maxHeight: `calc(${window.innerHeight}px - ${window.innerWidth < 768 ? '240px' : '220px'})`
+    maxHeight: `calc(${window.innerHeight}px - 220px)`
   };
 
   // Стиль заголовка
@@ -155,74 +148,40 @@ export default function AssessmentPage() {
     textShadow: '0 1px 5px rgba(0, 0, 0, 0.3)'
   };
 
-  // Логотип с анимацией (как в MainMenu)
-  const logoStyle = {
-    position: 'absolute',
-    top: logoAnimated && !isExiting ? `${logoTop}px` : isExiting ? '-200px' : '-200px',
-    left: '50%',
-    transform: 'translateX(-50%)',
-    width: `${logoSize}px`,
-    height: `${logoSize}px`,
-    backgroundColor: 'rgba(255, 255, 255, 0.10)',
-    backdropFilter: 'blur(8px)',
-    borderRadius: isSmallScreen ? '16px' : '20px',
-    boxShadow: '0 10px 25px rgba(0, 0, 0, 0.25)',
-    opacity: logoAnimated && !isExiting ? 1 : 0,
-    zIndex: 3,
-    transition: 'all 0.8s ease-out',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center'
-  };
-
-  // Изображение логотипа
-  const logoImageStyle = {
-    width: isSmallScreen ? '72px' : '96px',
-    height: isSmallScreen ? '72px' : '96px',
-    objectFit: 'contain'
-  };
-  
-  // Стиль для кнопки "Далее" (зеркально от кнопки "Домой")
+  // Стиль для кнопки "Далее" (справа от логотипа)
   const nextButtonStyle = {
     position: 'absolute',
-    top: `${logoTop + (logoSize - nextButtonSize) / 2}px`,
-    right: window.innerWidth < 400 
-      ? '20px'
-      : `calc(50% - ${logoSize/2}px - ${nextButtonGap}px - ${nextButtonSize}px)`,
-    width: `${nextButtonSize}px`,
-    height: `${nextButtonSize}px`,
-    background: 'rgba(248, 5, 62, 0.8)',
+    top: '60px',
+    right: '20px',
+    width: '56px',
+    height: '56px',
+    background: 'linear-gradient(145deg, rgba(180, 0, 55, 0.95), rgba(0, 40, 130, 0.9))',
+    borderRadius: '50%',
     border: 'none',
-    borderRadius: '14px',
     cursor: 'pointer',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    color: 'white',
-    boxShadow: '0 4px 16px rgba(0, 0, 0, 0.2)',
-    transition: 'all 0.3s ease',
-    zIndex: 10,
-    backdropFilter: 'blur(10px)'
+    boxShadow: '0 6px 20px rgba(0, 0, 0, 0.3)',
+    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+    zIndex: 10
   };
 
-  // Стиль для кнопки "Назад" 
+  // Стиль для кнопки "Назад" (слева от логотипа)
   const backButtonStyle = {
     position: 'absolute',
-    top: `${logoTop + (logoSize - nextButtonSize) / 2}px`,
-    left: window.innerWidth < 400 
-      ? '20px'
-      : `calc(50% - ${logoSize/2}px - ${nextButtonGap}px - ${nextButtonSize}px)`,
-    width: `${nextButtonSize}px`,
-    height: `${nextButtonSize}px`,
+    top: '70px',
+    left: '20px',
+    width: '44px',
+    height: '44px',
     background: 'rgba(255, 255, 255, 0.1)',
     backdropFilter: 'blur(10px)',
-    borderRadius: '14px',
+    borderRadius: '50%',
     border: '1px solid rgba(255, 255, 255, 0.3)',
     cursor: 'pointer',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    color: 'white',
     boxShadow: '0 4px 16px rgba(0, 0, 0, 0.2)',
     transition: 'all 0.3s ease',
     zIndex: 10
@@ -550,7 +509,7 @@ export default function AssessmentPage() {
               border: '3px solid rgba(255, 255, 255, 0.3)',
               borderTopColor: 'white',
               borderRadius: '50%',
-              margin: '0 auto 20px',
+              margin: '0 auto 30px',
               animation: 'spin 1s linear infinite'
             }} />
             <div style={titleStyle}>Загрузка опросника...</div>
@@ -847,11 +806,17 @@ export default function AssessmentPage() {
       {/* Кнопка "Назад" */}
       {(currentStep > 1 || (currentStep === 3 && currentQuestion > 0)) && !isFinished && !isLoading && !isProcessing && (
         <button 
-          style={backButtonStyle}
+          style={{
+            ...backButtonStyle,
+            top: window.innerWidth < 768 ? '70px' : '70px',
+            left: window.innerWidth < 768 ? '15px' : '20px',
+            width: window.innerWidth < 768 ? '40px' : '44px',
+            height: window.innerWidth < 768 ? '40px' : '44px'
+          }}
           onClick={handleBack}
           onMouseEnter={(e) => {
             e.target.style.background = 'rgba(255, 255, 255, 0.2)';
-            e.target.style.transform = 'scale(1.05)';
+            e.target.style.transform = 'scale(1.1)';
             e.target.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.3)';
           }}
           onMouseLeave={(e) => {
@@ -860,48 +825,57 @@ export default function AssessmentPage() {
             e.target.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.2)';
           }}
         >
-          <svg viewBox="0 0 24 24" width="24" height="24" fill="white">
-            <path d="M12 20l-8-8 8-8" strokeWidth="1"/>
+          <svg viewBox="0 0 24 24" width="20" height="20">
+            <path d="M15 18l-6-6 6-6" stroke="white" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </button>
       )}
 
-      {/* Кнопка "Далее" в стиле кнопки "Домой" из PollsPage */}
+      {/* Кнопка "Далее" справа от логотипа */}
       {(currentStep <= 3 && !isProcessing && !isFinished && !isLoading) && (
         <button 
           style={{
             ...nextButtonStyle,
+            top: window.innerWidth < 768 ? '60px' : '60px',
+            right: window.innerWidth < 768 ? '15px' : '20px',
+            width: window.innerWidth < 768 ? '48px' : '56px',
+            height: window.innerWidth < 768 ? '48px' : '56px',
             opacity: canGoNext() ? 1 : 0.5,
             transform: canGoNext() ? 'scale(1)' : 'scale(0.9)',
-            pointerEvents: canGoNext() ? 'auto' : 'none',
-            background: canGoNext() ? 'rgba(248, 5, 62, 0.8)' : 'rgba(248, 5, 62, 0.4)'
+            pointerEvents: canGoNext() ? 'auto' : 'none'
           }}
           onClick={canGoNext() ? handleNext : undefined}
           disabled={!canGoNext()}
           onMouseEnter={(e) => {
             if (canGoNext()) {
-              e.target.style.background = 'rgba(248, 5, 62, 1)';
-              e.target.style.transform = 'scale(1.05)';
-              e.target.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.3)';
+              e.target.style.transform = 'scale(1.1)';
+              e.target.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.4)';
             }
           }}
           onMouseLeave={(e) => {
             if (canGoNext()) {
-              e.target.style.background = 'rgba(248, 5, 62, 0.8)';
               e.target.style.transform = 'scale(1)';
-              e.target.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.2)';
+              e.target.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.3)';
             }
           }}
         >
-          {currentStep === 3 && currentQuestion === questions.length - 1 ? (
-            <svg viewBox="0 0 24 24" width="24" height="24" fill="white">
-              <path d="M20 6L9 17l-5-5" strokeWidth="2"/>
-            </svg>
-          ) : (
-            <svg viewBox="0 0 24 24" width="24" height="24" fill="white">
-              <path d="M12 4l8 8-8 8" strokeWidth="2"/>
-            </svg>
-          )}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '100%',
+            height: '100%'
+          }}>
+            {currentStep === 3 && currentQuestion === questions.length - 1 ? (
+              <svg viewBox="0 0 24 24" width="24" height="24">
+                <path d="M20 6L9 17l-5-5" stroke="white" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            ) : (
+              <svg viewBox="0 0 24 24" width="24" height="24">
+                <path d="M9 18l6-6-6-6" stroke="white" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            )}
+          </div>
         </button>
       )}
 
