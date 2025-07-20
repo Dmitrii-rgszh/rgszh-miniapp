@@ -623,7 +623,10 @@ export default function AssessmentPage() {
               </div>
             )}
             
-            <div style={{ width: '100%', maxWidth: '400px' }}>
+            <div style={{ 
+              width: '100%', 
+              maxWidth: isMobileWidth ? '80%' : '400px'  // Для мобильных - 80%, для больших экранов - 400px
+            }}>
               <label style={{ ...textStyle, fontSize: isSmallScreen ? '18px' : '20px', marginBottom: '5px', display: 'block', textAlign: 'center' }}>
                 Фамилия
               </label>
@@ -632,7 +635,7 @@ export default function AssessmentPage() {
                 surnameSuggestions, setSurnameSuggestions, 
                 surnameList, 'Введите фамилию'
               )}
-              
+  
               <label style={{ ...textStyle, fontSize: isSmallScreen ? '18px' : '20px', marginBottom: '5px', display: 'block', textAlign: 'center' }}>
                 Имя
               </label>
@@ -641,7 +644,7 @@ export default function AssessmentPage() {
                 firstNameSuggestions, setFirstNameSuggestions, 
                 firstNameList, 'Введите имя'
               )}
-              
+  
               <label style={{ ...textStyle, fontSize: isSmallScreen ? '18px' : '20px', marginBottom: '5px', display: 'block', textAlign: 'center' }}>
                 Отчество
               </label>
@@ -679,26 +682,33 @@ export default function AssessmentPage() {
             opacity: fadeTransition ? 0 : 1,
             transition: 'opacity 0.3s ease'
           }}>
-            {/* Прогресс индикатор */}
+            {/* Прогресс индикатор с адаптивной шириной */}
             <div style={{
+              width: '100%',
+              maxWidth: isMobileWidth ? '80%' : '500px',  // ← ДОБАВЛЕНА АДАПТИВНАЯ ШИРИНА
               display: 'flex',
-              gap: isSmallScreen ? '6px' : '8px',
+              justifyContent: 'center',
               marginBottom: '20px'
             }}>
-              {questions.map((_, idx) => (
-                <div 
-                  key={idx} 
-                  style={{
-                    width: isSmallScreen ? '6px' : '8px',
-                    height: isSmallScreen ? '6px' : '8px',
-                    borderRadius: '50%',
-                    background: idx < currentQuestion ? 'rgba(180, 0, 55, 0.9)' : 
-                               idx === currentQuestion ? 'white' : 
-                               'rgba(255, 255, 255, 0.3)',
-                    transition: 'all 0.3s ease'
-                  }}
-                />
-              ))}
+              <div style={{
+                display: 'flex',
+                gap: isSmallScreen ? '6px' : '8px',
+              }}>
+                {questions.map((_, idx) => (
+                  <div 
+                    key={idx} 
+                    style={{
+                      width: isSmallScreen ? '6px' : '8px',
+                      height: isSmallScreen ? '6px' : '8px',
+                      borderRadius: '50%',
+                      background: idx < currentQuestion ? 'rgba(180, 0, 55, 0.9)' : 
+                                 idx === currentQuestion ? 'white' : 
+                                 'rgba(255, 255, 255, 0.3)',
+                      transition: 'all 0.3s ease'
+                    }}
+                  />
+                ))}
+              </div>
             </div>
 
             <div style={{
@@ -728,7 +738,7 @@ export default function AssessmentPage() {
               </div>
             )}
 
-            <div style={{ width: '100%', maxWidth: isSmallScreen ? '400px' : '500px' }}>
+            <div style={{ width: '100%', maxWidth: isSmallScreen ? '80%' : '500px' }}>
               {currentQuestionData.shuffledOptions.map((option, idx) => (
                 <button
                   key={idx}
