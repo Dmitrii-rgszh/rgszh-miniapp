@@ -164,6 +164,7 @@ export default function AssessmentPage() {
     opacity: contentAnimated ? 1 : 0,
     transition: 'all 0.8s ease-out 0.2s',
     overflowY: 'auto',
+    overflowX: 'none',
     maxHeight: `calc(${windowHeight}px - ${contentTop + 40}px)`
   };
 
@@ -211,8 +212,9 @@ export default function AssessmentPage() {
   const inputStyle = {
     width: '100%',
     padding: isSmallScreen ? '14px 18px' : '16px 20px',
-    fontSize: isSmallScreen ? '16px' : '18px',
+    fontSize: isSmallScreen ? '18px' : '20px',
     fontFamily: '"Segoe UI", sans-serif',
+    textAlign: 'center',
     background: 'rgba(255, 255, 255, 0.15)',
     backdropFilter: 'blur(10px)',
     border: '1px solid rgba(255, 255, 255, 0.3)',
@@ -622,7 +624,7 @@ export default function AssessmentPage() {
             )}
             
             <div style={{ width: '100%', maxWidth: '400px' }}>
-              <label style={{ ...textStyle, fontSize: isSmallScreen ? '14px' : '16px', marginBottom: '5px', display: 'block', textAlign: 'left' }}>
+              <label style={{ ...textStyle, fontSize: isSmallScreen ? '18px' : '20px', marginBottom: '5px', display: 'block', textAlign: 'center' }}>
                 Фамилия
               </label>
               {renderAutosuggest(
@@ -631,7 +633,7 @@ export default function AssessmentPage() {
                 surnameList, 'Введите фамилию'
               )}
               
-              <label style={{ ...textStyle, fontSize: isSmallScreen ? '14px' : '16px', marginBottom: '5px', display: 'block', textAlign: 'left' }}>
+              <label style={{ ...textStyle, fontSize: isSmallScreen ? '18px' : '20px', marginBottom: '5px', display: 'block', textAlign: 'center' }}>
                 Имя
               </label>
               {renderAutosuggest(
@@ -640,7 +642,7 @@ export default function AssessmentPage() {
                 firstNameList, 'Введите имя'
               )}
               
-              <label style={{ ...textStyle, fontSize: isSmallScreen ? '14px' : '16px', marginBottom: '5px', display: 'block', textAlign: 'left' }}>
+              <label style={{ ...textStyle, fontSize: isSmallScreen ? '18px' : '20px', marginBottom: '5px', display: 'block', textAlign: 'center' }}>
                 Отчество
               </label>
               {renderAutosuggest(

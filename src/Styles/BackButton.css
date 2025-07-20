@@ -1,136 +1,104 @@
-/* =============================================================================
-   src/Styles/HomeButton.css
-   Анимированная glass-кнопка «домой», выезжает из левого края, без объёма!
-============================================================================= */
+/* BackButton.css - АДАПТИВНАЯ ВЕРСИЯ С CSS ПЕРЕМЕННЫМИ (как HomeButton.css) */
 
 .back-btn {
   position: absolute;
-  /* Размеры как у HomeButton */
-  width: var(--next-button-size, 64px) !important;
-  height: var(--next-button-size, 64px) !important;
-  min-width: var(--next-button-size, 64px) !important;
-  max-width: var(--next-button-size, 64px) !important;
-  min-height: var(--next-button-size, 64px) !important;
-  max-height: var(--next-button-size, 64px) !important;
-  background: rgba(255, 255, 255, 0.10);
-  backdrop-filter: blur(8px);
-  border: 1.5px solid rgba(255,255,255,0.17); /* лёгкая стеклянная рамка */
-  border-radius: 16px;
-  z-index: 5;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  /* Размеры кнопки - используем CSS переменную или fallback с !important */
+  width: var(--back-button-size, 64px) !important;
+  height: var(--back-button-size, 64px) !important;
+  min-width: var(--back-button-size, 64px) !important;
+  max-width: var(--back-button-size, 64px) !important;
+  min-height: var(--back-button-size, 64px) !important;
+  max-height: var(--back-button-size, 64px) !important;
+  
+  /* Позиционирование - используем CSS переменные с !important */
+  top: var(--back-button-top, 142px) !important;
+  left: var(--back-button-left, calc(50% - 64px - 30px - 64px)) !important;
+  
+  /* Стили */
+  background: rgba(255, 255, 255, 0.10) !important;
+  backdrop-filter: blur(8px) !important;
+  border: 1px solid rgba(255,255,255,0.17) !important;
+  border-radius: 16px !important;
+  z-index: 5 !important;
+  
+  /* Flexbox для центрирования иконки */
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  
+  /* Анимация - выезжает СЛЕВА */
+  transform: translateX(-100px);
   opacity: 0;
-  cursor: pointer;
-  transition: background 0.25s, border 0.25s;
+  transition: all 0.8s cubic-bezier(0.22,1,0.36,1);
+  cursor: pointer !important;
+  
+  /* Сброс стилей для гарантии квадрата */
+  padding: 0 !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+  outline: none !important;
+  text-decoration: none !important;
+  font-size: 0 !important;
+  line-height: 0 !important;
+  overflow: hidden !important;
+  aspect-ratio: 1 / 1 !important;
+  flex-shrink: 0 !important;
+  flex-grow: 0 !important;
 }
 
-.ripple {
-  position: absolute;
-  border-radius: 50%;
-  transform: scale(0);
-  background: rgba(255, 255, 255, 0.5); /* Белый полупрозрачный */
-  animation: ripple-animation 600ms linear;
-  pointer-events: none;
-  z-index: 2;
-}
-
-@keyframes ripple-animation {
-  to {
-    transform: scale(4);
-    opacity: 0;
-  }
-}
-
-.back-btn svg {
-  width: 36px;
-  height: 36px;
-  stroke: white;
-  fill: none;
-}
-
-/* === Анимация ВЪЕЗДА кнопки (из левого края) === */
+/* Анимация входа */
 .back-btn.animate-home {
-  animation: slideInHomeLeft 0.8s cubic-bezier(0.22,1,0.36,1) forwards;
-}
-@keyframes slideInHomeLeft {
-  from {
-    left: -90px;
-    opacity: 0;
-  }
-  to {
-    left: calc(50% - 200px);  /* Рядом с логотипом по центру */
-    opacity: 1;
-  }
-}
-
-/* === Анимация ВЫЕЗДА кнопки (обратно за левый край) === */
-.back-btn.animate-home-exit {
-  animation: slideOutHomeLeft 0.7s cubic-bezier(0.65,0.05,0.36,1) forwards;
-}
-@keyframes slideOutHomeLeft {
-  from {
-    left: calc(50% - 90px);
-    opacity: 1;
-  }
-  to {
-    left: -90px;
-    opacity: 0;
-  }
-}
-
-/* Плавное появление SVG-иконки */
-.back-btn .home-icon {
-  width: 36px;
-  height: 36px;
-  fill: #ffffff;
-  opacity: 0;
-  transition: opacity 0.4s;
-}
-.back-btn.animate-home .home-icon {
+  transform: translateX(0);
   opacity: 1;
 }
 
-/* --- Мобильная версия (≤768px) --- */
-@media (max-width: 768px) {
+/* Анимация выхода */
+.back-btn.animate-home-exit {
+  transform: translateX(-100px);
+  opacity: 0;
+  transition: all 0.7s cubic-bezier(0.65,0.05,0.36,1);
+}
+
+/* ✅ ИКОНКА СТРЕЛКИ ВЛЕВО (вместо домика) */
+.back-btn svg {
+  width: 30px;
+  height: 30px;
+  stroke: #ffffff;
+  fill: none;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ===== АДАПТИВНОСТЬ ===== */
+
+/* Маленькие экраны - иконка и border-radius */
+@media (max-height: 700px), (max-width: 400px) {
   .back-btn {
-    top: 140px;
-    left: 70px !important;    /* Сдвинута к левому краю экрана */
-    width: 65px;
-    height: 65px;
     border-radius: 12px;
-    border: 1.2px solid rgba(255,255,255,0.18);
   }
-  .back-btn.animate-home {
-    animation: slideInHomeLeftMobile 0.8s cubic-bezier(0.22,1,0.36,1) forwards;
+  
+  .back-btn svg {
+    width: 24px;
+    height: 24px;
   }
-  @keyframes slideInHomeLeftMobile {
-    from {
-      left: -60px;
-      opacity: 0;
-    }
-    to {
-      left: 24px;     /* ВЫРОВНЯТЬ С next-btn! */
-      opacity: 1;
-    }
+}
+
+/* Hover эффект (только для устройств с курсором) */
+@media (hover: hover) {
+  .back-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255,255,255,0.25);
   }
-  .back-btn.animate-home-exit {
-    animation: slideOutHomeLeftMobile 0.7s cubic-bezier(0.65,0.05,0.36,1) forwards;
-  }
-  @keyframes slideOutHomeLeftMobile {
-    from {
-      left: 60px;     /* ВЫРОВНЯТЬ С next-btn! */
-      opacity: 1;
-    }
-    to {
-      left: -60px;
-      opacity: 0;
-    }
-  }
-  .back-btn .home-icon {
-    width: 32px;
-    height: 32px;
-  }
+}
+
+/* Убираем все text-related стили чтобы гарантировать квадрат */
+.back-btn * {
+  font-size: 0 !important;
+  line-height: 0 !important;
+  letter-spacing: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
 }
 
 

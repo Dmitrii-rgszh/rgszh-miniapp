@@ -97,8 +97,8 @@
 
 /* Стили для svg внутри кнопки */
 .next-btn svg {
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   stroke: white;
   fill: none;
   transition: transform 0.2s ease;
@@ -168,8 +168,8 @@
   }
 
   .next-btn svg {
-    width: 24px;
-    height: 24px;
+    width: 30px;
+    height: 30px;
   }
 
   .shaker.shake-btn {
