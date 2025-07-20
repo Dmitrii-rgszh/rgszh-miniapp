@@ -9,7 +9,6 @@ import './Styles/Buttons.css';      // базовые стили кнопок
  // правки специфичные для FeedbackPage (контент, next-btn и т.д.)
 import './Styles/BackButton.css';
 import './Styles/OptionButton.css';
-import './FeedbackPage.css';
 import './Styles/NextButton.css';
 import logoImage       from './components/logo.png';
 

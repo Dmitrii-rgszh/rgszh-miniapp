@@ -1,8 +1,4 @@
-// AssessmentPage.js - СО СТИЛЕМ MainMenu
-// ✅ Применены стили из MainMenu.js
-// ✅ Анимация появления как в MainMenu
-// ✅ Убраны все внешние CSS файлы
-// ✅ Инлайн стили как в требованиях
+// AssessmentPage.js - ИСПРАВЛЕНО: BackButton.css + условная анимация SVG
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Autosuggest from 'react-autosuggest';
@@ -10,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { apiCall } from './config';
 import logoImage from './components/logo.png';
 import './Styles/NextButton.css';
+import './Styles/BackButton.css'; // ✅ ДОБАВЛЕНО: импорт стилей кнопки "Назад"
 
 // JSON-файлы с ФИО
 import surnames from './components/autosuggest/surname.json';
@@ -149,44 +146,7 @@ export default function AssessmentPage() {
     textShadow: '0 1px 5px rgba(0, 0, 0, 0.3)'
   };
 
-  // Стиль для кнопки "Далее" (справа от логотипа)
-  const nextButtonStyle = {
-    position: 'absolute',
-    top: '60px',
-    right: '20px',
-    width: '56px',
-    height: '56px',
-    background: 'linear-gradient(145deg, rgba(180, 0, 55, 0.95), rgba(0, 40, 130, 0.9))',
-    borderRadius: '50%',
-    border: 'none',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    boxShadow: '0 6px 20px rgba(0, 0, 0, 0.3)',
-    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-    zIndex: 10
-  };
-
-  // Стиль для кнопки "Назад" (слева от логотипа)
-  const backButtonStyle = {
-    position: 'absolute',
-    top: '70px',
-    left: '20px',
-    width: '44px',
-    height: '44px',
-    background: 'rgba(255, 255, 255, 0.1)',
-    backdropFilter: 'blur(10px)',
-    borderRadius: '50%',
-    border: '1px solid rgba(255, 255, 255, 0.3)',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    boxShadow: '0 4px 16px rgba(0, 0, 0, 0.2)',
-    transition: 'all 0.3s ease',
-    zIndex: 10
-  };
+  // ❌ УДАЛЕН: backButtonStyle - теперь используется CSS класс
 
   // Стиль для кнопки (как в MainMenu)
   const buttonStyle = {
@@ -804,27 +764,11 @@ export default function AssessmentPage() {
         />
       </div>
 
-      {/* Кнопка "Назад" */}
+      {/* ✅ ИСПРАВЛЕНО: Кнопка "Назад" в стиле BackButton.css */}
       {(currentStep > 1 || (currentStep === 3 && currentQuestion > 0)) && !isFinished && !isLoading && !isProcessing && (
         <button 
-          style={{
-            ...backButtonStyle,
-            top: window.innerWidth < 768 ? '70px' : '70px',
-            left: window.innerWidth < 768 ? '15px' : '20px',
-            width: window.innerWidth < 768 ? '40px' : '44px',
-            height: window.innerWidth < 768 ? '40px' : '44px'
-          }}
+          className={`back-btn ${contentAnimated ? 'animate-home' : ''} ${isExiting ? 'animate-home-exit' : ''}`}
           onClick={handleBack}
-          onMouseEnter={(e) => {
-            e.target.style.background = 'rgba(255, 255, 255, 0.2)';
-            e.target.style.transform = 'scale(1.1)';
-            e.target.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.3)';
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.background = 'rgba(255, 255, 255, 0.1)';
-            e.target.style.transform = 'scale(1)';
-            e.target.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.2)';
-          }}
         >
           <svg viewBox="0 0 24 24" width="20" height="20">
             <path d="M15 18l-6-6 6-6" stroke="white" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
@@ -832,7 +776,7 @@ export default function AssessmentPage() {
         </button>
       )}
 
-      {/* Кнопка "Далее" */}
+      {/* ✅ ИСПРАВЛЕНО: Кнопка "Далее" с условной анимацией SVG */}
       {(currentStep <= 3 && !isProcessing && !isFinished && !isLoading) && (
         <button 
           className={`next-btn ${contentAnimated ? 'animate-next' : ''} ${isExiting ? 'animate-next-exit' : ''}`}
@@ -843,10 +787,15 @@ export default function AssessmentPage() {
             pointerEvents: canGoNext() ? 'auto' : 'none'
           }}
         >
-          <div className={currentStep === 3 && currentQuestion === questions.length - 1 ? 'shaker pop-btn' : 'shaker shake-btn'}>
+          {/* ✅ ИСПРАВЛЕНО: Анимация только при canGoNext() */}
+          <div className={
+            canGoNext() 
+              ? (currentStep === 3 && currentQuestion === questions.length - 1 ? 'shaker pop-btn' : 'shaker shake-btn')
+              : 'shaker'
+          }>
             {currentStep === 3 && currentQuestion === questions.length - 1 ? (
               <svg viewBox="0 0 24 24" fill="none">
-          <path d="M20 6L9 17l-5-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M20 6L9 17l-5-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             ) : (
               <svg viewBox="0 0 24 24" fill="none">

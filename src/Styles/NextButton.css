@@ -124,6 +124,13 @@
   100% { transform: translateX(-1px); }
 }
 
+/* Mobile - меньшая амплитуда */
+@keyframes shakeMobile {
+  0%   { transform: translateX(-1px); }
+  50%  { transform: translateX(1.5px); }
+  100% { transform: translateX(-1px); }
+}
+
 .shaker.shake-btn {
   animation: shake 0.5s infinite alternate;
 }
@@ -166,7 +173,7 @@
   }
 
   .shaker.shake-btn {
-    animation: shake 0.25s infinite alternate !important;
+    animation: shake 0.5s infinite alternate !important;
   }
 
   .shaker.pop-btn {
