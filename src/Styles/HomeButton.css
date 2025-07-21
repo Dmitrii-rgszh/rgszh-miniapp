@@ -74,7 +74,7 @@
   .home-button-polls {
     border-radius: 12px !important;
     /* На маленьких экранах - всегда 20px от края */
-    left: max(env(safe-area-inset-left, 20px), 20px) !important;
+    left: max(env(safe-area-inset-left, 20px), 40px) !important;
   }
   
   .home-button-polls svg {

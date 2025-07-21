@@ -1,20 +1,22 @@
-// WelcomePage.js - УПРОЩЕННАЯ ВЕРСИЯ С АНИМАЦИЕЙ КАК В MainMenu
-// ✅ Логотип спускается сверху
-// ✅ Текст поднимается снизу
-// ✅ Без гласморфизм контейнера
+// WelcomePage.js - ИСПРАВЛЕННАЯ ВЕРСИЯ
+// ✅ Логотип управляется через CSS классы
+// ✅ Правильные отступы для текста
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logoImage from './components/logo.png';
+import './Styles/logo.css'; // Импортируем стили логотипа
 
 const WelcomePage = () => {
   const navigate = useNavigate();
   
   // Состояния анимаций
-  const [logoAnimated, setLogoAnimated] = useState(false);
   const [textAnimated, setTextAnimated] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
   const [greeting, setGreeting] = useState('');
+  
+  // Ref для логотипа
+  const logoRef = useRef(null);
 
   // ===== HAPTIC FEEDBACK ФУНКЦИЯ =====
   const triggerHaptic = useCallback((type = 'light') => {
@@ -51,7 +53,11 @@ const WelcomePage = () => {
     triggerHaptic('success');
     setIsExiting(true);
     
-    // Анимация выхода происходит автоматически через MainApp
+    // Анимируем выход логотипа через CSS класс
+    if (logoRef.current) {
+      logoRef.current.classList.remove('animate-logo');
+      logoRef.current.classList.add('animate-logo-exit');
+    }
   }, [isExiting, triggerHaptic]);
 
   // ===== ИНИЦИАЛИЗАЦИЯ И АНИМАЦИЯ =====
@@ -60,7 +66,9 @@ const WelcomePage = () => {
     
     // Запускаем анимации последовательно
     const timer1 = setTimeout(() => {
-      setLogoAnimated(true);
+      if (logoRef.current) {
+        logoRef.current.classList.add('animate-logo');
+      }
       triggerHaptic('light');
     }, 100);
     
@@ -93,37 +101,17 @@ const WelcomePage = () => {
     userSelect: 'none'
   };
 
-  // Логотип с анимацией (как в MainMenu)
-  const logoStyle = {
-    position: 'absolute',
-    top: logoAnimated && !isExiting ? '200px' : '-200px',
-    left: '50%',
-    transform: 'translateX(-50%)',
-    width: '128px',
-    height: '128px',
-    backgroundColor: 'rgba(255, 255, 255, 0.10)',
-    backdropFilter: 'blur(8px)',
-    borderRadius: '20px',
-    boxShadow: '0 10px 25px rgba(0, 0, 0, 0.25)',
-    opacity: logoAnimated && !isExiting ? 1 : 0,
-    zIndex: 3,
-    transition: 'all 0.8s ease-out',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center'
-  };
-
   // Изображение логотипа
   const logoImageStyle = {
-    width: '96px',
-    height: '96px',
+    width: '100%',
+    height: '100%',
     objectFit: 'contain'
   };
 
-  // Контейнер для текста
+  // Контейнер для текста с правильным отступом от логотипа
   const textContainerStyle = {
     position: 'absolute',
-    top: textAnimated && !isExiting ? '380px' : '100%',
+    top: textAnimated && !isExiting ? '320px' : '100%', // Изменено с 380px на 320px (80 + 102 + 50 + 88 для отступа)
     left: '50%',
     transform: 'translateX(-50%)',
     display: 'flex',
@@ -167,11 +155,12 @@ const WelcomePage = () => {
       style={mainContainerStyle}
       onClick={handleNavigation}
     >
-      {/* Логотип спускается сверху */}
-      <div style={logoStyle}>
+      {/* Логотип - управляется через CSS классы */}
+      <div ref={logoRef} className="logo-wrapper">
         <img
           src={logoImage}
           alt="Логотип РГС Жизнь"
+          className="logo-image"
           style={logoImageStyle}
         />
       </div>

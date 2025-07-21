@@ -356,7 +356,7 @@ function MainApp() {
     
     /* ✨ АВТОМАТИЧЕСКИЙ SAFE AREA ДЛЯ ОСНОВНЫХ ЭЛЕМЕНТОВ */
     .logo-safe { top: 110px !important; }
-    .buttons-safe { top: 300px !important; }
+    .buttons-safe { top 300px !important; }
     .title-safe { top: 260px !important; }
   `;
 
@@ -371,28 +371,16 @@ function MainApp() {
     }
   }, []);
 
-  // ===== ГЛОБАЛЬНЫЕ СТИЛИ КОНТЕЙНЕРА =====
-  // ===== ЗАМЕНИТЕ ВАШ globalContainerStyle НА ЭТО: =====
-
+  // ===== ГЛОБАЛЬНЫЕ СТИЛИ КОНТЕЙНЕРА ====
   const globalContainerStyle = {
-    // ✅ ИЗМЕНЕНО: fixed вместо relative для полного покрытия экрана
-    position: 'fixed',
-    top: 0,
-    left: 0,
-  
-    // ✅ ИЗМЕНЕНО: используем viewport units для полного покрытия
-    width: '100vw',
-    height: '100vh',
+    position: 'relative', // ← Вернули relative для производительности
+    width: '100%',
+    height: `${viewportHeight}px`,
     minHeight: '100vh',
-  
     overflow: 'hidden',
     fontFamily: '"Segoe UI", sans-serif',
   
-    // ❌ УБРАНО: фон переносим в createBackgroundStyle
-    // backgroundColor: 'rgba(180, 0, 55, 0.95)', // ← УДАЛИТЬ
-    // backgroundImage: `...`, // ← УДАЛИТЬ
-  
-    // ✅ СОХРАНЕНО: Safe Area отступы для КОНТЕНТА (НЕ для фона)
+    // ✅ ПРОСТОЕ Safe Area решение без calc()
     paddingTop: 'env(safe-area-inset-top, 50px)',
     paddingBottom: 'env(safe-area-inset-bottom, 0px)',
     paddingLeft: 'env(safe-area-inset-left, 0px)',
@@ -400,11 +388,11 @@ function MainApp() {
   
     boxSizing: 'border-box',
   
-    // ✅ СОХРАНЕНО: мобильная адаптивность
+    // Мобильная адаптивность 
     '@supports (-webkit-touch-callout: none)': {
-      height: '100vh', // ✅ ИЗМЕНЕНО: используем vh вместо -webkit-fill-available
-      minHeight: '100vh'
-    }
+      height: `${viewportHeight}px`, // Используем состояние вместо vh
+      minHeight: `${viewportHeight}px`
+  }
   };
 
   // ===== СТИЛЬ ДЛЯ СТАТИЧНЫХ ФОНОВ С ПРОСТЫМ ЭФФЕКТОМ =====
@@ -412,15 +400,18 @@ function MainApp() {
     const opacity = backgroundOpacities[index] || 0;
   
     return {
-      position: 'absolute',
+      position: 'fixed', // ← fixed только для фона
+      top: 0,            // ← простые значения без calc()
+      left: 0,
+      right: 0,
+      bottom: 0,
+      width: '100vw',
+      height: '100vh',
     
-      // ✅ КЛЮЧЕВОЕ ИЗМЕНЕНИЕ: фон распространяется ЗА Safe Area
-      top: `calc(-1 * env(safe-area-inset-top, 0px))`,      // Поднимается В статус-бар
-      left: `calc(-1 * env(safe-area-inset-left, 0px))`,    // Распространяется влево ЗА вырез
-      right: `calc(-1 * env(safe-area-inset-right, 0px))`,  // Распространяется вправо ЗА вырез  
-      bottom: `calc(-1 * env(safe-area-inset-bottom, 0px))`, // Распространяется вниз ЗА bottom area
+      // ✅ Фон покрывает весь экран включая Safe Area
+      zIndex: opacity > 0 ? 1 : 0, // Оптимизация z-index
     
-      // ✅ КОРПОРАТИВНЫЙ ФОН: если нет изображения - используем градиент
+      // Корпоративный фон или изображение
       backgroundImage: backgroundSrc 
         ? `url(${backgroundSrc})` 
         : `linear-gradient(135deg, 
@@ -431,20 +422,19 @@ function MainApp() {
             rgba(0, 40, 130, 0.95) 100%
           )`,
     
-      // ✅ FALLBACK: корпоративный цвет если нет изображения
       backgroundColor: 'rgba(180, 0, 55, 0.95)',
-    
       backgroundSize: 'cover',
       backgroundPosition: 'center',
       backgroundRepeat: 'no-repeat',
     
       opacity: opacity,
-      filter: `brightness(${0.7 + opacity * 0.1})`,
-      transition: 'opacity 3s ease-in-out',
+    
+      // ✅ УПРОЩЕННЫЕ эффекты для производительности
+      filter: opacity > 0.5 ? `brightness(0.8)` : 'brightness(0.7)',
+      transition: 'opacity 2s ease-in-out', // ← короче для быстроты
     
       pointerEvents: 'none',
-      zIndex: 1,
-      willChange: 'opacity'
+      willChange: opacity > 0 ? 'opacity' : 'auto' // Оптимизация
     };
   };
 
