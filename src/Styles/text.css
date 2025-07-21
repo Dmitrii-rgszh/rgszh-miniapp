@@ -245,10 +245,10 @@
 @media (min-width: 375px) and (max-width: 768px) {
   :root {
     --text-size-h1: 28px;
-    --text-size-h2: 22px;
-    --text-size-h3: 18px;
-    --text-size-body: 15px;
-    --text-size-small: 13px;
+    --text-size-h2: 24px;
+    --text-size-h3: 20px;
+    --text-size-body: 16px;
+    --text-size-small: 14px;
   }
   
   .text-greeting {
@@ -273,11 +273,11 @@
    ====================================== */
 @media (max-width: 374px) {
   :root {
-    --text-size-h1: 24px;
-    --text-size-h2: 20px;
-    --text-size-h3: 16px;
-    --text-size-body: 14px;
-    --text-size-small: 12px;
+    --text-size-h1: 28px;
+    --text-size-h2: 24px;
+    --text-size-h3: 20px;
+    --text-size-body: 16px;
+    --text-size-small: 14px;
   }
   
   .text-greeting {

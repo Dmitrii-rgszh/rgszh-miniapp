@@ -211,8 +211,8 @@
   
   /* Кнопки */
   .button-container {
-    max-width: 280px;
-    gap: 12px;
+    max-width: 300px;
+    gap: 10px;
     padding: 0 12px;
   }
   
@@ -411,9 +411,10 @@
 /* Адаптивность для welcome-text-container */
 @media (min-width: 375px) and (max-width: 768px) {
   .welcome-text-container {
-    top: 220px;
+    top: 180px;
     gap: 16px;
     padding: 0 16px;
+    max-width: 320px;
   }
 }
 

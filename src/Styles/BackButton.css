@@ -1,84 +1,159 @@
-/* BackButton.css - ИСПРАВЛЕНО: унифицированное позиционирование + Safe Area для Telegram miniapp */
+/* ============================================================================
+   BackButton.css - УНИФИЦИРОВАННЫЕ СТИЛИ КНОПКИ "НАЗАД"
+   ----------------------------------------------------------------------------
+   ✅ Центрирование по высоте с логотипом (слева от логотипа)
+   ✅ Адаптивность для 3 разрешений: >768px, 375-768px, <375px
+   ✅ Поддержка Safe Area для Telegram MiniApp
+   ✅ Корпоративные стили
+   ✅ Аналогично NextButton.css, но слева
+   ============================================================================ */
 
+/* ======================================
+   БАЗОВЫЕ СТИЛИ КНОПКИ "НАЗАД"
+   ====================================== */
 .back-btn {
   position: absolute;
   
-  /* Размеры кнопки - используем CSS переменную или fallback */
-  width: var(--back-button-size, 64px) !important;
-  height: var(--back-button-size, 64px) !important;
-  min-width: var(--back-button-size, 64px) !important;
-  max-width: var(--back-button-size, 64px) !important;
-  min-height: var(--back-button-size, 64px) !important;
-  max-height: var(--back-button-size, 64px) !important;
+  /* Размеры кнопки */
+  width: 64px;
+  height: 64px;
   
-  /* ИСПРАВЛЕНО: Позиционирование с поддержкой Safe Area */
-  top: var(--back-button-top, 142px) !important;
-  left: var(--back-button-left, max(env(safe-area-inset-left, 20px), 20px)) !important;
+  /* Запрет изменения размера */
+  min-width: 64px;
+  max-width: 64px;
+  min-height: 64px;
+  max-height: 64px;
+  flex-shrink: 0;
+  flex-grow: 0;
+  
+  /* Позиционирование - слева от логотипа с адаптивным отступом */
+  /* Desktop: логотип по центру (left: 50%), кнопка слева от него */
+  top: 87px; /* Центр по высоте с логотипом: 55 + 128/2 - 64/2 = 87px */
+  left: calc(50% - 128px - 50px); /* 50% - ширина_логотипа - отступ */
   
   /* Стили */
-  background: rgba(255, 255, 255, 0.10) !important;
-  backdrop-filter: blur(8px) !important;
-  border: 1px solid rgba(255,255,255,0.17) !important;
-  border-radius: 16px !important;
-  z-index: 5 !important;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
   
-  /* Flexbox для центрирования иконки */
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
+  /* Центрирование иконки */
+  display: flex;
+  align-items: center;
+  justify-content: center;
   
-  /* Анимация - выезжает СЛЕВА */
-  transform: translateX(-100px);
+  /* Интерактивность */
+  cursor: pointer;
+  z-index: 5;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* Сброс стандартных стилей */
+  padding: 0;
+  margin: 0;
+  outline: none;
+  text-decoration: none;
+  box-sizing: border-box;
+  
+  /* Начальное состояние для анимации */
   opacity: 0;
-  transition: all 0.8s cubic-bezier(0.22,1,0.36,1);
-  cursor: pointer !important;
-  
-  /* Сброс стилей для гарантии квадрата */
-  padding: 0 !important;
-  margin: 0 !important;
-  box-sizing: border-box !important;
-  outline: none !important;
-  text-decoration: none !important;
-  font-size: 0 !important;
-  line-height: 0 !important;
-  overflow: hidden !important;
-  aspect-ratio: 1 / 1 !important;
-  flex-shrink: 0 !important;
-  flex-grow: 0 !important;
+  transform: translateX(-30px);
 }
 
-/* Анимация входа */
+/* ======================================
+   ИКОНКА ВНУТРИ КНОПКИ
+   ====================================== */
+.back-btn svg {
+  width: 28px;
+  height: 28px;
+  stroke: white;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+  transition: transform 0.2s ease;
+}
+
+/* ======================================
+   СОСТОЯНИЯ И АНИМАЦИИ
+   ====================================== */
+
+/* Анимация появления */
 .back-btn.animate-home {
-  transform: translateX(0);
   opacity: 1;
+  transform: translateX(0);
+  animation: backButtonSlideIn 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes backButtonSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 /* Анимация выхода */
 .back-btn.animate-home-exit {
-  transform: translateX(-100px);
-  opacity: 0;
-  transition: all 0.7s cubic-bezier(0.65,0.05,0.36,1);
+  animation: backButtonSlideOut 0.6s cubic-bezier(0.65, 0.05, 0.36, 1) forwards;
 }
 
-/* ✅ ИКОНКА СТРЕЛКИ ВЛЕВО (вместо домика) */
-.back-btn svg {
-  width: 30px;
-  height: 30px;
-  stroke: #ffffff;
-  fill: none;
-  stroke-width: 2.5;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+@keyframes backButtonSlideOut {
+  to {
+    opacity: 0;
+    transform: translateX(-50px);
+  }
 }
 
-/* ===== АДАПТИВНОСТЬ ===== */
+/* Состояние неактивной кнопки */
+.back-btn.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
 
-/* Маленькие экраны - иконка и border-radius */
-@media (max-height: 700px), (max-width: 375px) {
+/* Hover эффект */
+.back-btn:hover:not(.disabled) {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateX(0) scale(1.05);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+}
+
+.back-btn:hover:not(.disabled) svg {
+  transform: scale(1.1);
+}
+
+/* Active состояние */
+.back-btn:active:not(.disabled) {
+  transform: translateX(0) scale(0.95);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* ======================================
+   АДАПТИВНОСТЬ: ПЛАНШЕТЫ (375-768px)
+   ====================================== */
+@media (min-width: 375px) and (max-width: 768px) {
   .back-btn {
-    border-radius: 12px !important;
-    /* На маленьких экранах - всегда 20px от края с учетом Safe Area */
-    left: max(env(safe-area-inset-left, 20px), 20px) !important;
+    /* Размеры кнопки */
+    width: 56px;
+    height: 56px;
+    min-width: 56px;
+    max-width: 56px;
+    min-height: 56px;
+    max-height: 56px;
+    
+    /* Позиционирование - центр совпадает с логотипом */
+    /* Tablet: логотип top: 40px + height: 96px / 2 = 88px */
+    top: 60px; /* 88px - 56px/2 = 60px */
+    left: 24px;
+    
+    /* Стили */
+    border-radius: 14px;
   }
   
   .back-btn svg {
@@ -87,30 +162,201 @@
   }
 }
 
-/* Специальная поддержка для Telegram WebApp */
-@supports (env(safe-area-inset-left)) {
+/* ======================================
+   АДАПТИВНОСТЬ: МОБИЛЬНЫЕ (<375px)
+   ====================================== */
+@media (max-width: 374px) {
   .back-btn {
-    /* Для iPhone с вырезом/dynamic island - отступ от safe area */
-    left: var(--back-button-left, max(env(safe-area-inset-left), 20px)) !important;
+    /* Размеры кнопки */
+    width: 60px;
+    height: 60px;
+    min-width: 60px;
+    max-width: 60px;
+    min-height: 60px;
+    max-height: 60px;
+    
+    /* Позиционирование - на маленьких экранах фиксированно слева */
+    /* Mobile: логотип top: 25px + height: 80px / 2 = 65px */
+    top: 82px; /* 65px - 48px/2 = 41px */
+    left: 20px; /* Фиксированный отступ на маленьких экранах */
+    
+    /* Стили */
+    border-radius: 12px;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.15);
+  }
+  
+  .back-btn svg {
+    width: 22px;
+    height: 22px;
   }
 }
 
-/* Hover эффект (только для устройств с курсором) */
-@media (hover: hover) {
-  .back-btn:hover {
-    background: rgba(255, 255, 255, 0.15) !important;
-    border-color: rgba(255,255,255,0.25) !important;
+/* ======================================
+   SAFE AREA ПОДДЕРЖКА (Telegram MiniApp)
+   ====================================== */
+@supports (padding: max(0px)) {
+  .back-btn {
+    left: max(30px, env(safe-area-inset-left, 30px));
+  }
+  
+  @media (max-width: 768px) and (min-width: 375px) {
+    .back-btn {
+      left: max(70px, env(safe-area-inset-left, 70px));
+    }
+  }
+  
+  @media (max-width: 374px) {
+    .back-btn {
+      left: max(60px, env(safe-area-inset-left, 60px));
+    }
   }
 }
 
-/* Убираем все text-related стили чтобы гарантировать квадрат */
-.back-btn * {
-  font-size: 0 !important;
-  line-height: 0 !important;
-  letter-spacing: 0 !important;
-  padding: 0 !important;
-  margin: 0 !important;
+/* ======================================
+   СПЕЦИАЛЬНЫЕ ВАРИАНТЫ
+   ====================================== */
+
+/* Кнопка назад справа (альтернативное расположение) */
+.back-btn.right {
+  left: auto;
+  right: 30px;
 }
+
+@media (max-width: 768px) and (min-width: 375px) {
+  .back-btn.right {
+    right: 24px;
+  }
+}
+
+@media (max-width: 374px) {
+  .back-btn.right {
+    right: 20px;
+  }
+}
+
+/* ======================================
+   УТИЛИТАРНЫЕ КЛАССЫ
+   ====================================== */
+
+/* Скрытая кнопка */
+.back-btn.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Кнопка без анимации */
+.back-btn.no-animation {
+  transition: none;
+  animation: none;
+}
+
+/* Альтернативные стили */
+.back-btn.primary {
+  background: linear-gradient(
+    135deg, 
+    rgba(180, 0, 55, 0.3) 0%, 
+    rgba(153, 0, 55, 0.3) 100%
+  );
+  border-color: rgba(180, 0, 55, 0.3);
+}
+
+.back-btn.primary:hover:not(.disabled) {
+  background: linear-gradient(
+    135deg, 
+    rgba(180, 0, 55, 0.5) 0%, 
+    rgba(153, 0, 55, 0.5) 100%
+  );
+  border-color: rgba(180, 0, 55, 0.5);
+}
+
+/* ======================================
+   АДАПТИВНОСТЬ ДЛЯ БОЛЬШИХ ЭКРАНОВ
+   ====================================== */
+/* Очень большие экраны (>1400px) */
+@media (min-width: 1400px) {
+  .back-btn {
+    /* Максимальное расстояние от центра */
+    left: calc(50% - 200px);
+  }
+}
+
+/* Широкие экраны (1200-1400px) */
+@media (min-width: 1200px) and (max-width: 1399px) {
+  .back-btn {
+    left: calc(50% - 180px);
+  }
+}
+
+/* Средние экраны (992-1199px) */
+@media (min-width: 992px) and (max-width: 1199px) {
+  .back-btn {
+    left: calc(50% - 160px);
+  }
+}
+
+/* ======================================
+   ПОЗИЦИОНИРОВАНИЕ ДЛЯ РАЗНЫХ СТРАНИЦ
+   ====================================== */
+
+/* Для страниц с логотипом наверху */
+.with-top-logo .back-btn {
+  /* Desktop позиции уже установлены выше */
+}
+
+/* Для страниц без логотипа */
+.no-logo .back-btn {
+  top: 30px;
+}
+
+@media (max-width: 768px) and (min-width: 375px) {
+  .no-logo .back-btn {
+    top: 24px;
+  }
+}
+
+@media (max-width: 374px) {
+  .no-logo .back-btn {
+    top: 20px;
+  }
+}
+
+/* ======================================
+   ПОДДЕРЖКА CSS ПЕРЕМЕННЫХ (legacy)
+   ====================================== */
+.back-btn {
+  /* Поддержка старых CSS переменных для обратной совместимости */
+  width: var(--back-button-size, 64px);
+  height: var(--back-button-size, 64px);
+  min-width: var(--back-button-size, 64px);
+  max-width: var(--back-button-size, 64px);
+  min-height: var(--back-button-size, 64px);
+  max-height: var(--back-button-size, 64px);
+  
+  top: var(--back-button-top, 87px);
+  left: var(--back-button-left, calc(50% - 128px - 50px));
+}
+
+/* ======================================
+   РАСЧЕТ ПОЗИЦИЙ (комментарий)
+   --------------------------------------
+   Desktop (>768px):
+   - Логотип: top: 55px, height: 128px
+   - Центр логотипа: 55 + 128/2 = 119px
+   - Кнопка: height: 64px
+   - Top кнопки: 119 - 64/2 = 87px
+   
+   Tablet (375-768px):
+   - Логотип: top: 40px, height: 96px
+   - Центр логотипа: 40 + 96/2 = 88px
+   - Кнопка: height: 56px
+   - Top кнопки: 88 - 56/2 = 60px
+   
+   Mobile (<375px):
+   - Логотип: top: 25px, height: 80px
+   - Центр логотипа: 25 + 80/2 = 65px
+   - Кнопка: height: 48px
+   - Top кнопки: 65 - 48/2 = 41px
+   ====================================== */
 
 
 

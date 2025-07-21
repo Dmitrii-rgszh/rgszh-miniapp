@@ -127,16 +127,16 @@
 @media (min-width: 375px) and (max-width: 768px) {
   .home-button {
     /* Размеры кнопки */
-    width: 56px;
-    height: 56px;
-    min-width: 56px;
-    max-width: 56px;
-    min-height: 56px;
-    max-height: 56px;
+    width: 64px;
+    height: 64px;
+    min-width: 64px;
+    max-width: 64px;
+    min-height: 64px;
+    max-height: 64px;
     
     /* Позиционирование - центр совпадает с логотипом */
     /* Tablet: логотип top: 40px + height: 96px / 2 = 88px */
-    top: 82px; /* 88px - 56px/2 = 60px */
+    top: 77px; /* 88px - 56px/2 = 60px */
     left: 24px;
     
     /* Стили */
@@ -155,16 +155,16 @@
 @media (max-width: 374px) {
   .home-button {
     /* Размеры кнопки */
-    width: 48px;
-    height: 48px;
-    min-width: 48px;
-    max-width: 48px;
-    min-height: 48px;
-    max-height: 48px;
+    width: 60px;
+    height: 60px;
+    min-width: 60px;
+    max-width: 60px;
+    min-height: 60px;
+    max-height: 60px;
     
     /* Позиционирование - на маленьких экранах фиксированно слева */
     /* Mobile: логотип top: 25px + height: 80px / 2 = 65px */
-    top: 64px; /* 65px - 48px/2 = 41px */
+    top: 82px; /* 65px - 48px/2 = 41px */
     left: 20px; /* Фиксированный отступ на маленьких экранах */
     
     /* Стили */
@@ -173,8 +173,8 @@
   }
   
   .home-button svg {
-    width: 20px;
-    height: 20px;
+    width: 30px;
+    height: 30px;
   }
 }
 
@@ -194,7 +194,7 @@
   
   @media (max-width: 374px) {
     .home-button {
-      left: max(75px, env(safe-area-inset-left, 75px));
+      left: max(60px, env(safe-area-inset-left, 60px));
     }
   }
 }

@@ -4,6 +4,7 @@
    ✅ Рабочие анимации входа и выхода
    ✅ Гласморфизм и анимации
    ✅ Адаптивность для 3 разрешений: >768px, 375-768px, <375px
+   ✅ Убраны анимации потряхивания
    ============================================================================ */
 
 /* ======================================
@@ -82,37 +83,6 @@
 }
 
 /* ======================================
-   ПОСТОЯННЫЕ АНИМАЦИИ (ВСТРЯСКИ)
-   ====================================== */
-.logo-wrapper.animate-logo {
-  animation: 
-    slideDown 0.8s ease-out forwards,
-    shakeX 25s ease-in-out infinite 2s,
-    shakeY 30s ease-in-out infinite 5s;
-}
-
-/* Встряски отключаются при выходе */
-.logo-wrapper.animate-logo-exit {
-  animation: slideUp 0.8s ease-in forwards !important;
-}
-
-@keyframes shakeX {
-  0%, 50%, 100% { transform: translateX(-50%); }
-  10% { transform: translateX(calc(-50% - 10px)); }
-  20% { transform: translateX(calc(-50% + 10px)); }
-  30% { transform: translateX(calc(-50% - 6px)); }
-  40% { transform: translateX(calc(-50% + 6px)); }
-}
-
-@keyframes shakeY {
-  0%, 50%, 100% { transform: translateX(-50%) translateY(0); }
-  10% { transform: translateX(-50%) translateY(-8px); }
-  20% { transform: translateX(-50%) translateY(8px); }
-  30% { transform: translateX(-50%) translateY(-5px); }
-  40% { transform: translateX(-50%) translateY(5px); }
-}
-
-/* ======================================
    СОСТОЯНИЯ БЕЗ АНИМАЦИИ
    ====================================== */
 .logo-wrapper.animated {
@@ -164,30 +134,30 @@
    ====================================== */
 @media (max-width: 374px) {
   .logo-wrapper {
-    width: 80px;
-    height: 80px;
+    width: 100px;
+    height: 100px;
     border-radius: 12px;
   }
   
   .logo-image {
-    width: 60px;
-    height: 60px;
+    width: 80px;
+    height: 80px;
   }
   
   .logo-wrapper.animated {
-    top: 50px;
+    top: 60px;
   }
   
   @keyframes slideDown {
     to {
-      top: 25px;
+      top: 60px;
       opacity: 1;
     }
   }
   
   @keyframes slideUp {
     from {
-      top: 25px;
+      top: 60px;
       opacity: 1;
     }
   }

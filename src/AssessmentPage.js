@@ -1,7 +1,6 @@
-// AssessmentPage.js - С УНИФИЦИРОВАННЫМИ МОДУЛЬНЫМИ СТИЛЯМИ
-// ✅ Использует существующие CSS модули: containers.css, logo.css, text.css, buttons.css
-// ✅ Унифицированное позиционирование кнопок через CSS переменные
-// ✅ Корпоративные цвета и шрифты из модульной системы
+// AssessmentPage.js - С УНИФИЦИРОВАННЫМИ МОДУЛЬНЫМИ СТИЛЯМИ КАК В PollsPage
+// ✅ Точно следует структуре PollsPage.js
+// ✅ Использует те же CSS классы и подходы
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Autosuggest from 'react-autosuggest';
@@ -9,14 +8,13 @@ import { useNavigate } from 'react-router-dom';
 import { apiCall } from './config';
 import logoImage from './components/logo.png';
 
-// Подключаем модульные CSS файлы
-import './Styles/containers.css';   // Контейнеры и позиционирование
-import './Styles/logo.css';         // Логотип с анимациями
-import './Styles/text.css';         // Типографика
-import './Styles/buttons.css';      // Универсальные кнопки
-import './Styles/NextButton.css';   // Кнопка "Далее"
-import './Styles/BackButton.css';   // Кнопка "Назад"
-import './Styles/HomeButton.css';   // Кнопка "Домой"
+// Подключаем модульные CSS файлы КАК В PollsPage
+import './Styles/containers.css';    // Универсальные контейнеры
+import './Styles/buttons.css';       // Универсальные кнопки
+import './Styles/logo.css';          // Логотип
+import './Styles/NextButton.css';    // Кнопка "Далее"
+import './Styles/BackButton.css';    // Кнопка "Назад"
+import './Styles/HomeButton.css';    // Кнопка "Домой"
 
 // JSON-файлы с ФИО
 import surnames from './components/autosuggest/surname.json';
@@ -29,57 +27,8 @@ export default function AssessmentPage() {
   const backRef = useRef(null);
   const homeRef = useRef(null);
   const logoRef = useRef(null);
-  const contentRef = useRef(null);
 
-  // ===== АДАПТИВНОСТЬ =====
-  const [windowHeight, setWindowHeight] = useState(window.innerHeight);
-  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
-
-  // Обработчик изменения размера окна
-  useEffect(() => {
-    const handleResize = () => {
-      setWindowHeight(window.innerHeight);
-      setWindowWidth(window.innerWidth);
-      setTimeout(() => {
-        setWindowHeight(window.innerHeight);
-        setWindowWidth(window.innerWidth);
-      }, 100);
-    };
-
-    window.addEventListener('resize', handleResize);
-    window.addEventListener('orientationchange', handleResize);
-    
-    const checkMobile = () => {
-      if (windowWidth < 768) {
-        handleResize();
-      }
-    };
-    
-    setTimeout(checkMobile, 300);
-    
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      window.removeEventListener('orientationchange', handleResize);
-    };
-  }, [windowWidth]);
-
-  // ===== АДАПТИВНЫЕ ПАРАМЕТРЫ =====
-  const isSmallScreen = windowHeight < 700 || windowWidth < 375;
-  const isMobileWidth = windowWidth < 768;
-  const isMediumScreen = windowHeight >= 700 && windowHeight < 900;
-  
-  // Адаптивные значения для логотипа
-  const logoSize = isSmallScreen ? 96 : 128;
-  const logoTop = isSmallScreen ? 80 : 110;
-  const logoImageSize = isSmallScreen ? 72 : 96;
-  const contentTop = isSmallScreen ? 200 : (isMediumScreen ? 240 : 268);
-  
-  // Расчет позиций для кнопок
-  const buttonSize = 64;
-  const buttonTop = logoTop + (logoSize - buttonSize) / 2;
-  const buttonDistance = 30;
-
-  // ===== СОСТОЯНИЯ АНИМАЦИЙ =====
+  // ===== СОСТОЯНИЯ КАК В PollsPage =====
   const [logoAnimated, setLogoAnimated] = useState(false);
   const [contentAnimated, setContentAnimated] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
@@ -111,34 +60,7 @@ export default function AssessmentPage() {
 
   const MAIN_QUESTIONNAIRE_ID = 1;
 
-  // ===== УСТАНОВКА CSS ПЕРЕМЕННЫХ ДЛЯ ПОЗИЦИОНИРОВАНИЯ =====
-  useEffect(() => {
-    // Устанавливаем CSS переменные для кнопки "Назад" 
-    if (backRef.current) {
-      const top = buttonTop;
-      const left = windowWidth < 375 
-        ? 'max(env(safe-area-inset-left, 20px), 20px)'
-        : `calc(50% - ${logoSize/2}px - ${buttonDistance}px - ${buttonSize}px)`;
-      
-      backRef.current.style.setProperty('--back-button-top', `${top}px`);
-      backRef.current.style.setProperty('--back-button-left', left);
-      backRef.current.style.setProperty('--back-button-size', `${buttonSize}px`);
-    }
-
-    // Устанавливаем CSS переменные для кнопки "Домой"
-    if (homeRef.current) {
-      const top = buttonTop;
-      const left = windowWidth < 375 
-        ? 'max(env(safe-area-inset-left, 20px), 20px)'
-        : `max(calc(50% - ${logoSize/2}px - ${buttonDistance}px - ${buttonSize}px), env(safe-area-inset-left, 20px))`;
-      
-      homeRef.current.style.setProperty('--home-button-top', `${top}px`);
-      homeRef.current.style.setProperty('--home-button-left', left);
-      homeRef.current.style.setProperty('--home-button-size', `${buttonSize}px`);
-    }
-  }, [logoSize, logoTop, buttonTop, buttonDistance, buttonSize, windowWidth, windowHeight, contentTop, logoImageSize]);
-
-  // ===== АНИМАЦИЯ ВХОДА =====
+  // ===== АНИМАЦИЯ ВХОДА КАК В PollsPage =====
   useEffect(() => {
     if (!isLoading) {
       const timer1 = setTimeout(() => {
@@ -159,8 +81,7 @@ export default function AssessmentPage() {
     }
   }, [isLoading]);
 
-  // ===== ФУНКЦИИ ЛОГИКИ =====
-
+  // ===== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ =====
   // Определение возможности перехода далее
   const canGoNext = () => {
     if (currentStep === 1) return true;
@@ -188,42 +109,6 @@ export default function AssessmentPage() {
     return shuffled;
   };
 
-  // Загрузка опросника
-  useEffect(() => {
-    const loadQuestionnaire = async () => {
-      try {
-        setIsLoading(true);
-        setErrorMessage('');
-        
-        const data = await apiCall(`/api/questionnaire/${MAIN_QUESTIONNAIRE_ID}?include_questions=true`);
-        
-        setQuestionnaire(data);
-        const loadedQuestions = data.questions || [];
-        
-        if (loadedQuestions.length === 0) {
-          throw new Error('No questions found in questionnaire');
-        }
-        
-        setQuestions(loadedQuestions);
-        
-        const questionsWithShuffledOptions = loadedQuestions.map(question => ({
-          ...question,
-          shuffledOptions: shuffleOptions(question.options || [])
-        }));
-        setShuffledQuestions(questionsWithShuffledOptions);
-        
-      } catch (error) {
-        console.error('❌ Error loading questionnaire:', error);
-        setErrorMessage(`Ошибка загрузки опросника: ${error.message}`);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadQuestionnaire();
-    startTimeRef.current = Date.now();
-  }, []);
-
   // Автосаджест функции
   const getSuggestions = (value, list) => {
     const inputValue = value.trim().toLowerCase();
@@ -246,8 +131,8 @@ export default function AssessmentPage() {
         onChange: (_, { newValue }) => setValue(newValue),
         style: {
           width: '100%',
-          padding: isSmallScreen ? '14px 18px' : '16px 20px',
-          fontSize: isSmallScreen ? '18px' : '20px',
+          padding: '16px 20px',
+          fontSize: '20px',
           fontFamily: '"Segoe UI", sans-serif',
           textAlign: 'center',
           background: 'rgba(255, 255, 255, 0.15)',
@@ -288,7 +173,7 @@ export default function AssessmentPage() {
     />
   );
 
-  // Обработчики навигации
+  // ===== ОБРАБОТЧИКИ КАК В PollsPage =====
   const handleNext = useCallback(() => {
     if (currentStep === 1) {
       setCurrentStep(2);
@@ -367,6 +252,18 @@ export default function AssessmentPage() {
     }
   }, [currentStep, currentQuestion, userAnswers, questions]);
 
+  const goHome = () => {
+    if (isExiting) return;
+    
+    setIsExiting(true);
+    
+    if (logoRef.current) {
+      logoRef.current.classList.add('animate-logo-exit');
+    }
+    
+    setTimeout(() => navigate('/'), 800);
+  };
+
   // Завершение тестирования
   const finishAssessment = async (answers) => {
     try {
@@ -407,58 +304,85 @@ export default function AssessmentPage() {
     }
   };
 
-  const goHome = () => {
-    setIsExiting(true);
-    if (logoRef.current) {
-      logoRef.current.classList.add('animate-logo-exit');
-    }
-    setTimeout(() => navigate('/'), 800);
-  };
+  // Загрузка опросника
+  useEffect(() => {
+    const loadQuestionnaire = async () => {
+      try {
+        setIsLoading(true);
+        setErrorMessage('');
+        
+        const data = await apiCall(`/api/questionnaire/${MAIN_QUESTIONNAIRE_ID}?include_questions=true`);
+        
+        setQuestionnaire(data);
+        const loadedQuestions = data.questions || [];
+        
+        if (loadedQuestions.length === 0) {
+          throw new Error('No questions found in questionnaire');
+        }
+        
+        setQuestions(loadedQuestions);
+        
+        const questionsWithShuffledOptions = loadedQuestions.map(question => ({
+          ...question,
+          shuffledOptions: shuffleOptions(question.options || [])
+        }));
+        setShuffledQuestions(questionsWithShuffledOptions);
+        
+      } catch (error) {
+        console.error('❌ Error loading questionnaire:', error);
+        setErrorMessage(`Ошибка загрузки опросника: ${error.message}`);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadQuestionnaire();
+    startTimeRef.current = Date.now();
+  }, []);
+
+  // ===== КЛАССЫ ДЛЯ ЭЛЕМЕНТОВ КАК В PollsPage =====
+  const getContainerClasses = () => [
+    'main-container',
+    isExiting ? 'exiting' : ''
+  ].filter(Boolean).join(' ');
+
+  const getLogoClasses = () => [
+    'logo-wrapper',
+    logoAnimated ? 'animated' : '',
+    isExiting ? 'exiting' : ''
+  ].filter(Boolean).join(' ');
+
+  const getHomeButtonClasses = () => [
+    'home-button',
+    contentAnimated ? 'animate-in' : '',
+    isExiting ? 'animate-out' : ''
+  ].filter(Boolean).join(' ');
 
   // ===== РЕНДЕР КОНТЕНТА =====
   const renderStepContent = () => {
     if (isLoading) {
       return (
-        <div className="content-container centered" style={{ top: contentTop + 'px' }}>
-          <div style={{
-            width: '60px',
-            height: '60px',
-            border: '3px solid rgba(255, 255, 255, 0.3)',
-            borderTopColor: 'white',
-            borderRadius: '50%',
-            margin: '0 auto 30px',
-            animation: 'spin 1s linear infinite'
-          }} />
-          <div className="text-h2">Загрузка опросника...</div>
-          <div className="text-body">Подготавливаем вопросы для оценки</div>
+        <div className="welcome-text-container">
+          <div className="assessment-spinner" />
+          <h2 className="text-h2 text-center">Загрузка опросника...</h2>
+          <p className="text-body text-center">Подготавливаем вопросы для оценки</p>
         </div>
       );
     }
 
     if (isProcessing) {
       return (
-        <div className="content-container centered" style={{ top: contentTop + 'px' }}>
-          <div style={{
-            width: '60px',
-            height: '60px',
-            border: '3px solid rgba(255, 255, 255, 0.3)',
-            borderTopColor: 'white',
-            borderRadius: '50%',
-            margin: '0 auto 20px',
-            animation: 'spin 1s linear infinite'
-          }} />
-          <div className="text-h2">Обработка результатов...</div>
-          <div className="text-body">Анализируем ваши ответы</div>
+        <div className="welcome-text-container">
+          <div className="assessment-spinner" />
+          <h2 className="text-h2 text-center">Обработка результатов...</h2>
+          <p className="text-body text-center">Анализируем ваши ответы</p>
         </div>
       );
     }
 
     if (isFinished && result) {
       return (
-        <div 
-          className={`content-container centered ${contentAnimated ? 'animated' : ''}`} 
-          style={{ top: contentTop + 'px' }}
-        >
+        <div className="welcome-text-container">
           <h2 className="text-h2 text-center">Спасибо за прохождение!</h2>
           <p className="text-body text-center">
             {firstName}, благодарим за прохождение опроса.<br/>
@@ -469,32 +393,30 @@ export default function AssessmentPage() {
       );
     }
 
+    // Рендер контента по шагам
     switch (currentStep) {
       case 1:
         return (
-          <div 
-            className={`content-container centered ${contentAnimated ? 'animated' : ''}`} 
-            style={{ top: contentTop + 'px' }}
-          >
+          <div className={`welcome-text-container ${contentAnimated ? 'animated' : ''}`}>
             <h2 className="text-h2 text-center">Психологическая оценка</h2>
             <p className="text-body text-center">
               Пройдите короткий тест для определения ваших корпоративных ценностей.
               {questionnaire?.description && ` ${questionnaire.description}`}
             </p>
-            <p className="text-body text-center" style={{ fontSize: isSmallScreen ? '14px' : '16px', opacity: 0.9 }}>
+            <p className="text-small text-center" style={{ opacity: 0.9, marginBottom: '30px' }}>
               {questionnaire?.instructions || 
                'Здесь нет «правильных» или «неправильных» ответов — важно лишь понять ваш естественный стиль работы и взаимодействия.'}
             </p>
             {questionnaire && (
-              <div className="card-container" style={{ marginTop: '20px' }}>
-                <p className="text-body text-center" style={{ margin: '10px 0', fontSize: isSmallScreen ? '14px' : '16px' }}>
+              <div className="card-container">
+                <p className="text-body text-center">
                   <strong>Опросник:</strong> {questionnaire.title}
                 </p>
-                <p className="text-body text-center" style={{ margin: '10px 0', fontSize: isSmallScreen ? '14px' : '16px' }}>
+                <p className="text-body text-center">
                   <strong>Количество вопросов:</strong> {questionnaire.questions_count}
                 </p>
                 {questionnaire.max_time_minutes && (
-                  <p className="text-body text-center" style={{ margin: '10px 0', fontSize: isSmallScreen ? '14px' : '16px' }}>
+                  <p className="text-body text-center">
                     <strong>Примерное время:</strong> {questionnaire.max_time_minutes} минут
                   </p>
                 )}
@@ -505,27 +427,16 @@ export default function AssessmentPage() {
 
       case 2:
         return (
-          <div 
-            className={`content-container centered ${contentAnimated ? 'animated' : ''}`} 
-            style={{ top: contentTop + 'px' }}
-          >
+          <div className={`welcome-text-container ${contentAnimated ? 'animated' : ''}`}>
             <h2 className="text-h2 text-center">Введите ваши ФИО</h2>
             {errorMessage && (
-              <div style={{
-                background: 'rgba(255, 0, 0, 0.2)',
-                border: '1px solid rgba(255, 0, 0, 0.5)',
-                borderRadius: '8px',
-                padding: '10px',
-                marginBottom: '20px',
-                color: 'white',
-                textAlign: 'center'
-              }}>
+              <div className="assessment-error">
                 {errorMessage}
               </div>
             )}
             
             <div className="form-container">
-              <label className="text-body text-center" style={{ fontSize: isSmallScreen ? '18px' : '20px', marginBottom: '5px', display: 'block' }}>
+              <label className="text-body text-center" style={{ marginBottom: '5px', display: 'block' }}>
                 Фамилия
               </label>
               {renderAutosuggest(
@@ -534,7 +445,7 @@ export default function AssessmentPage() {
                 surnameList, 'Введите фамилию'
               )}
   
-              <label className="text-body text-center" style={{ fontSize: isSmallScreen ? '18px' : '20px', marginBottom: '5px', display: 'block' }}>
+              <label className="text-body text-center" style={{ marginBottom: '5px', display: 'block' }}>
                 Имя
               </label>
               {renderAutosuggest(
@@ -543,7 +454,7 @@ export default function AssessmentPage() {
                 firstNameList, 'Введите имя'
               )}
   
-              <label className="text-body text-center" style={{ fontSize: isSmallScreen ? '18px' : '20px', marginBottom: '5px', display: 'block' }}>
+              <label className="text-body text-center" style={{ marginBottom: '5px', display: 'block' }}>
                 Отчество
               </label>
               {renderAutosuggest(
@@ -558,18 +469,8 @@ export default function AssessmentPage() {
       case 3:
         if (!questions.length || !shuffledQuestions.length) {
           return (
-            <div 
-              className={`content-container centered ${contentAnimated ? 'animated' : ''}`} 
-              style={{ top: contentTop + 'px' }}
-            >
-              <div style={{
-                background: 'rgba(255, 0, 0, 0.2)',
-                border: '1px solid rgba(255, 0, 0, 0.5)',
-                borderRadius: '8px',
-                padding: '20px',
-                color: 'white',
-                textAlign: 'center'
-              }}>
+            <div className={`welcome-text-container ${contentAnimated ? 'animated' : ''}`}>
+              <div className="assessment-error">
                 Не удалось загрузить вопросы опросника
               </div>
             </div>
@@ -578,32 +479,25 @@ export default function AssessmentPage() {
 
         const currentQuestionData = shuffledQuestions[currentQuestion];
         return (
-          <div 
-            className={`content-container centered ${contentAnimated ? 'animated' : ''} ${fadeTransition ? '' : 'visible'}`}
-            style={{ 
-              top: contentTop + 'px',
-              opacity: fadeTransition ? 0 : 1,
-              transition: 'opacity 0.3s ease'
-            }}
-          >
+          <div className={`welcome-text-container ${contentAnimated && !fadeTransition ? 'animated' : ''}`}>
             {/* Прогресс индикатор */}
             <div style={{
               width: '100%',
-              maxWidth: isMobileWidth ? '80%' : '500px',
+              maxWidth: '500px',
               display: 'flex',
               justifyContent: 'center',
               marginBottom: '20px'
             }}>
               <div style={{
                 display: 'flex',
-                gap: isSmallScreen ? '6px' : '8px',
+                gap: '8px',
               }}>
                 {questions.map((_, idx) => (
                   <div 
                     key={idx} 
                     style={{
-                      width: isMobileWidth ? '6px' : '8px',
-                      height: isMobileWidth ? '6px' : '8px',
+                      width: '8px',
+                      height: '8px',
                       borderRadius: '50%',
                       background: idx < currentQuestion ? 'rgba(180, 0, 55, 0.9)' : 
                                  idx === currentQuestion ? 'white' : 
@@ -615,37 +509,24 @@ export default function AssessmentPage() {
               </div>
             </div>
 
-            <div className="text-body text-center" style={{
-              fontSize: isMobileWidth ? '16px' : '18px',
-              marginBottom: '20px',
-              opacity: 0.8
-            }}>
+            <div className="text-small text-center" style={{ marginBottom: '20px', opacity: 0.8 }}>
               Вопрос: {currentQuestion + 1} из {questions.length}
             </div>
 
-            <h2 className="text-h2 text-center" style={{ fontSize: isMobileWidth ? '20px' : '24px', marginBottom: '30px' }}>
+            <h2 className="text-h2 text-center" style={{ marginBottom: '30px' }}>
               {currentQuestionData.question_text || currentQuestionData.text || 'Вопрос'}
             </h2>
 
             {errorMessage && (
-              <div style={{
-                background: 'rgba(255, 0, 0, 0.2)',
-                border: '1px solid rgba(255, 0, 0, 0.5)',
-                borderRadius: '8px',
-                padding: '10px',
-                marginBottom: '20px',
-                color: 'white',
-                textAlign: 'center'
-              }}>
+              <div className="assessment-error">
                 {errorMessage}
               </div>
             )}
 
-            <div style={{ width: '100%', maxWidth: isMobileWidth ? '80%' : '500px' }}>
+            <div style={{ width: '100%', maxWidth: '500px' }}>
               {currentQuestionData.shuffledOptions.map((option, idx) => (
                 <button
                   key={idx}
-                  className={`btn-universal ${selectedAnswer === option.text ? 'btn-primary' : ''}`}
                   style={{
                     width: '100%',
                     background: selectedAnswer === option.text 
@@ -655,16 +536,33 @@ export default function AssessmentPage() {
                     color: 'white',
                     border: selectedAnswer === option.text ? '2px solid rgba(255, 255, 255, 0.8)' : '1px solid rgba(255, 255, 255, 0.3)',
                     borderRadius: '12px',
-                    padding: isSmallScreen ? '14px 20px' : '16px 24px',
-                    fontSize: isSmallScreen ? '16px' : '18px',
+                    padding: '16px 24px',
+                    fontSize: '18px',
                     fontWeight: selectedAnswer === option.text ? '600' : '400',
                     marginBottom: '12px',
                     transition: 'all 0.3s ease',
                     boxShadow: selectedAnswer === option.text ? '0 6px 20px rgba(0, 0, 0, 0.3)' : '0 4px 15px rgba(0, 0, 0, 0.2)',
                     transform: selectedAnswer === option.text ? 'scale(1.02)' : 'scale(1)',
-                    textAlign: 'left'
+                    textAlign: 'left',
+                    cursor: 'pointer',
+                    outline: 'none',
+                    fontFamily: '"Segoe UI", sans-serif'
                   }}
                   onClick={() => setSelectedAnswer(option.text)}
+                  onMouseEnter={(e) => {
+                    if (selectedAnswer !== option.text) {
+                      e.target.style.transform = 'scale(1.02)';
+                      e.target.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.3)';
+                      e.target.style.background = 'rgba(255, 255, 255, 0.2)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (selectedAnswer !== option.text) {
+                      e.target.style.transform = 'scale(1)';
+                      e.target.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.2)';
+                      e.target.style.background = 'rgba(255, 255, 255, 0.15)';
+                    }
+                  }}
                 >
                   {option.text}
                 </button>
@@ -672,11 +570,7 @@ export default function AssessmentPage() {
             </div>
 
             {currentQuestionData.description && (
-              <div className="text-small text-center" style={{
-                fontSize: isSmallScreen ? '12px' : '14px',
-                marginTop: '20px',
-                opacity: 0.7
-              }}>
+              <div className="text-small text-center" style={{ marginTop: '20px', opacity: 0.7 }}>
                 {currentQuestionData.description}
               </div>
             )}
@@ -688,9 +582,9 @@ export default function AssessmentPage() {
     }
   };
 
-  // ===== ОСНОВНОЙ РЕНДЕР =====
+  // ===== ОСНОВНОЙ РЕНДЕР КАК В PollsPage =====
   return (
-    <div className="main-container" style={{ height: windowHeight + 'px' }}>
+    <div className={getContainerClasses()}>
       {/* CSS анимации */}
       <style>
         {`
@@ -698,32 +592,43 @@ export default function AssessmentPage() {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
           }
+          
+          .assessment-spinner {
+            width: 60px;
+            height: 60px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            margin: 0 auto 30px;
+            animation: spin 1s linear infinite;
+          }
+          
+          .assessment-error {
+            background: rgba(255, 0, 0, 0.2);
+            border: 1px solid rgba(255, 0, 0, 0.5);
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 20px;
+            color: white;
+            text-align: center;
+            font-family: "Segoe UI", sans-serif;
+          }
         `}
       </style>
 
-      {/* Логотип */}
+      {/* ===== ЛОГОТИП КАК В PollsPage ===== */}
       <div 
-        className="logo-wrapper"
-        ref={logoRef}
-        style={{
-          width: `${logoSize}px`,
-          height: `${logoSize}px`,
-          top: logoAnimated && !isExiting ? `${logoTop}px` : '-200px',
-          opacity: logoAnimated && !isExiting ? 1 : 0
-        }}
+        ref={logoRef} 
+        className={getLogoClasses()}
       >
         <img
           src={logoImage}
           alt="Логотип РГС Жизнь"
           className="logo-image"
-          style={{
-            width: `${logoImageSize}px`,
-            height: `${logoImageSize}px`
-          }}
         />
       </div>
 
-      {/* Кнопка "Назад" */}
+      {/* ===== КНОПКА "НАЗАД" ===== */}
       {(currentStep > 1 || (currentStep === 3 && currentQuestion > 0)) && !isFinished && !isLoading && !isProcessing && (
         <button 
           ref={backRef}
@@ -736,7 +641,7 @@ export default function AssessmentPage() {
         </button>
       )}
 
-      {/* Кнопка "Далее" */}
+      {/* ===== КНОПКА "ДАЛЕЕ" ===== */}
       {(currentStep <= 3 && !isProcessing && !isFinished && !isLoading) && (
         <button 
           className={`next-btn ${contentAnimated ? 'animate-next' : ''} ${isExiting ? 'animate-next-exit' : ''} ${!canGoNext() ? 'disabled' : ''}`}
@@ -761,21 +666,21 @@ export default function AssessmentPage() {
         </button>
       )}
 
-      {/* Кнопка домой для финального экрана */}
+      {/* ===== КНОПКА "ДОМОЙ" КАК В PollsPage ===== */}
       {isFinished && result && (
         <button 
           ref={homeRef}
-          className={`home-button ${contentAnimated ? 'animate-in' : ''} ${isExiting ? 'animate-out' : ''}`}
           onClick={goHome}
+          className={getHomeButtonClasses()}
+          title="Назад в главное меню"
         >
-          <svg viewBox="0 0 24 24" fill="white">
-            <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
-            <polyline points="9 22 9 12 15 12 15 22"/>
+          <svg viewBox="0 0 24 24">
+            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
           </svg>
         </button>
       )}
 
-      {/* Основной контент */}
+      {/* ===== ОСНОВНОЙ КОНТЕНТ ===== */}
       {renderStepContent()}
     </div>
   );
