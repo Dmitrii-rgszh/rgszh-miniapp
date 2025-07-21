@@ -59,7 +59,7 @@ export default function PollsPage() {
   // ===== АДАПТИВНЫЕ ПАРАМЕТРЫ =====
 
   // Определяем размеры в зависимости от размера экрана
-  const isSmallScreen = windowHeight < 700 || windowWidth < 400;
+  const isSmallScreen = windowHeight < 700 || windowWidth < 375;
   const isMobileWidth = windowWidth < 768;
   const isMediumScreen = windowHeight >= 700 && windowHeight < 900;
   
@@ -236,9 +236,9 @@ export default function PollsPage() {
       
       // Вычисляем позицию
       const top = logoTop + (logoSize - homeButtonSize) / 2;
-      const left = windowWidth < 400 
-        ? '20px'
-        : `calc(50% - ${logoSize/2}px - ${homeButtonGap}px - ${homeButtonSize}px)`;
+      const left = windowWidth < 375 
+        ? 'max(env(safe-area-inset-left, 20px), 20px)'  // Safe area support для мобильных
+        : `max(calc(50% - ${logoSize/2}px - ${homeButtonGap}px - ${homeButtonSize}px), env(safe-area-inset-left, 20px))`;
       
       // Устанавливаем CSS переменные
       homeRef.current.style.setProperty('--home-button-top', `${top}px`);

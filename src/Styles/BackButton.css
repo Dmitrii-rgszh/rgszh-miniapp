@@ -1,8 +1,9 @@
-/* BackButton.css - АДАПТИВНАЯ ВЕРСИЯ С CSS ПЕРЕМЕННЫМИ (как HomeButton.css) */
+/* BackButton.css - ИСПРАВЛЕНО: унифицированное позиционирование + Safe Area для Telegram miniapp */
 
 .back-btn {
   position: absolute;
-  /* Размеры кнопки - используем CSS переменную или fallback с !important */
+  
+  /* Размеры кнопки - используем CSS переменную или fallback */
   width: var(--back-button-size, 64px) !important;
   height: var(--back-button-size, 64px) !important;
   min-width: var(--back-button-size, 64px) !important;
@@ -10,9 +11,9 @@
   min-height: var(--back-button-size, 64px) !important;
   max-height: var(--back-button-size, 64px) !important;
   
-  /* Позиционирование - используем CSS переменные с !important */
+  /* ИСПРАВЛЕНО: Позиционирование с поддержкой Safe Area */
   top: var(--back-button-top, 142px) !important;
-  left: var(--back-button-left, calc(50% - 64px - 30px - 64px)) !important;
+  left: var(--back-button-left, max(env(safe-area-inset-left, 20px), 20px)) !important;
   
   /* Стили */
   background: rgba(255, 255, 255, 0.10) !important;
@@ -73,9 +74,11 @@
 /* ===== АДАПТИВНОСТЬ ===== */
 
 /* Маленькие экраны - иконка и border-radius */
-@media (max-height: 700px), (max-width: 400px) {
+@media (max-height: 700px), (max-width: 375px) {
   .back-btn {
-    border-radius: 12px;
+    border-radius: 12px !important;
+    /* На маленьких экранах - всегда 20px от края с учетом Safe Area */
+    left: max(env(safe-area-inset-left, 20px), 20px) !important;
   }
   
   .back-btn svg {
@@ -84,11 +87,19 @@
   }
 }
 
+/* Специальная поддержка для Telegram WebApp */
+@supports (env(safe-area-inset-left)) {
+  .back-btn {
+    /* Для iPhone с вырезом/dynamic island - отступ от safe area */
+    left: var(--back-button-left, max(env(safe-area-inset-left), 20px)) !important;
+  }
+}
+
 /* Hover эффект (только для устройств с курсором) */
 @media (hover: hover) {
   .back-btn:hover {
-    background: rgba(255, 255, 255, 0.15);
-    border-color: rgba(255,255,255,0.25);
+    background: rgba(255, 255, 255, 0.15) !important;
+    border-color: rgba(255,255,255,0.25) !important;
   }
 }
 

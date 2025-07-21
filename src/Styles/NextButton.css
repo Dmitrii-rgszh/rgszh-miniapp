@@ -1,4 +1,4 @@
-/* NextButton.css - В СТИЛЕ HomeButton.css */
+/* NextButton.css - ИСПРАВЛЕНО: унифицированное позиционирование + Safe Area для Telegram miniapp */
 
 /* ——————————————————————————— */
 /* Базовые стили кнопки «Далее» - КАК HomeButton */
@@ -13,9 +13,9 @@
   min-height: var(--next-button-size, 64px) !important;
   max-height: var(--next-button-size, 64px) !important;
   
-  /* Позиционирование - CSS переменные */
-  top: var(--home-button-top, 142px) !important;
-  right: var(--next-button-right, calc(50% - 64px - 30px - 64px)) !important;
+  /* ИСПРАВЛЕНО: Позиционирование с поддержкой Safe Area и правильными переменными */
+  top: var(--next-button-top, 142px) !important;
+  right: var(--next-button-right, max(env(safe-area-inset-right, 20px), 20px)) !important;
   
   /* Стиль как у HomeButton - стеклянный эффект */
   background: rgba(255, 255, 255, 0.10) !important;
@@ -49,25 +49,8 @@
   flex-grow: 0 !important;
 }
 
-/* Ripple эффект */
-.ripple {
-  position: absolute;
-  border-radius: 50%;
-  transform: scale(0);
-  background: rgba(255, 255, 255, 0.5);
-  animation: ripple-animation 600ms linear;
-  pointer-events: none;
-  z-index: 2;
-}
-
-@keyframes ripple-animation {
-  to {
-    transform: scale(4);
-    opacity: 0;
-  }
-}
-
-/* Появление и скрытие кнопки */
+/* ——————————————————————————— */
+/* Анимации появления/скрытия */
 .next-btn.animate-next {
   opacity: 1;
   transform: translateX(0);
@@ -76,55 +59,48 @@
 .next-btn.animate-next-exit {
   opacity: 0;
   transform: translateX(100px);
-  transition: opacity 0.4s ease, transform 0.4s ease;
+  transition: opacity 0.7s ease, transform 0.7s ease;
 }
 
-/* Hover эффект (только для устройств с курсором) */
-@media (hover: hover) {
-  .next-btn:hover:not(:disabled) {
-    background: rgba(255, 255, 255, 0.15) !important;
-    border-color: rgba(255, 255, 255, 0.25) !important;
-    transform: translateX(0) scale(1.05);
-  }
-}
-
-/* Disabled состояние */
-.next-btn:disabled {
-  opacity: 0.5 !important;
+/* ——————————————————————————— */
+/* Состояние неактивной кнопки */
+.next-btn.disabled {
+  opacity: 0.4 !important;
   cursor: not-allowed !important;
   pointer-events: none !important;
 }
 
-/* Стили для svg внутри кнопки */
+/* ——————————————————————————— */
+/* Иконка стрелки */
 .next-btn svg {
   width: 30px;
   height: 30px;
   stroke: white;
   fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
   transition: transform 0.2s ease;
 }
 
-.next-btn:hover:not(:disabled) svg {
-  transform: scale(1.1);
-}
-
-/* Контейнер иконки внутри кнопки */
+/* ——————————————————————————— */
+/* Контейнер для анимации иконки */
 .shaker {
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 100%;
+  height: 100%;
 }
 
-/* Тряска для шагов 1–8 */
+/* Тряска для обычных шагов */
 @keyframes shake {
   0%   { transform: translateX(-1px); }
-  20%  { transform: translateX(-1px); }
-  50%  { transform: translateX(2px); }
-  80%  { transform: translateX(-1px); }
+  50%  { transform: translateX(1.5px); }
   100% { transform: translateX(-1px); }
 }
 
-/* Mobile - меньшая амплитуда */
+/* Для мобильных устройств тряска тоньше */
 @keyframes shakeMobile {
   0%   { transform: translateX(-1px); }
   50%  { transform: translateX(1.5px); }
@@ -148,32 +124,22 @@
 
 /* ===== АДАПТИВНОСТЬ ===== */
 
-/* Мобильные экраны (≤768px) */
-@media (max-width: 768px) {
+/* Маленькие экраны - иконка и border-radius */
+@media (max-height: 700px), (max-width: 375px) {
   .next-btn {
-    /* Позиционирование для мобильных */
-    right: var(--next-button-right, calc(50% - 64px - 30px - 64px)) !important;
-    top: var(--home-button-top, 142px) !important;
-    
-    /* Размеры остаются 64x64 */
-    width: 64px !important;
-    height: 64px !important;
-    min-width: 64px !important;
-    max-width: 64px !important;
-    min-height: 64px !important;
-    max-height: 64px !important;
-    
-    /* Бордер чуть тоньше на мобильных */
-    border: 1px solid rgba(255, 255, 255, 0.17) !important;
+    border-radius: 12px !important;
+    /* На маленьких экранах - всегда 20px от края с учетом Safe Area */
+    right: max(env(safe-area-inset-right, 20px), 20px) !important;
+    top: var(--next-button-top, 142px) !important;
   }
-
+  
   .next-btn svg {
-    width: 30px;
-    height: 30px;
+    width: 24px;
+    height: 24px;
   }
 
   .shaker.shake-btn {
-    animation: shake 0.5s infinite alternate !important;
+    animation: shakeMobile 0.5s infinite alternate !important;
   }
 
   .shaker.pop-btn {
@@ -181,10 +147,23 @@
   }
 }
 
-/* Маленькие экраны - более скругленные углы */
-@media (max-height: 700px), (max-width: 400px) {
+/* Специальная поддержка для Telegram WebApp */
+@supports (env(safe-area-inset-right)) {
   .next-btn {
-    border-radius: 12px !important;
+    /* Для iPhone с вырезом/dynamic island - отступ от safe area */
+    right: var(--next-button-right, max(env(safe-area-inset-right), 20px)) !important;
+  }
+}
+
+/* Hover эффект (только для устройств с курсором) */
+@media (hover: hover) {
+  .next-btn:hover:not(.disabled) {
+    background: rgba(255, 255, 255, 0.15) !important;
+    border-color: rgba(255, 255, 255, 0.25) !important;
+  }
+  
+  .next-btn:hover:not(.disabled) svg {
+    transform: scale(1.1);
   }
 }
 

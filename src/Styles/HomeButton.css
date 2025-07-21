@@ -1,10 +1,9 @@
-/* HomeButton.css - АДАПТИВНАЯ ВЕРСИЯ С CSS ПЕРЕМЕННЫМИ */
-
-/* HomeButton.css - АДАПТИВНАЯ ВЕРСИЯ С CSS ПЕРЕМЕННЫМИ */
+/* HomeButton.css - ИСПРАВЛЕНО: унифицированное позиционирование + Safe Area для Telegram miniapp */
 
 .home-button-polls {
   position: absolute;
-  /* Размеры кнопки - используем CSS переменную или fallback с !important */
+  
+  /* Размеры кнопки - используем CSS переменную или fallback */
   width: var(--home-button-size, 64px) !important;
   height: var(--home-button-size, 64px) !important;
   min-width: var(--home-button-size, 64px) !important;
@@ -12,9 +11,9 @@
   min-height: var(--home-button-size, 64px) !important;
   max-height: var(--home-button-size, 64px) !important;
   
-  /* Позиционирование - используем CSS переменные с !important */
+  /* ИСПРАВЛЕНО: Позиционирование с поддержкой Safe Area */
   top: var(--home-button-top, 142px) !important;
-  left: var(--home-button-left, calc(50% - 64px - 30px - 64px)) !important;
+  left: var(--home-button-left, max(env(safe-area-inset-left, 20px), 20px)) !important;
   
   /* Стили */
   background: rgba(255, 255, 255, 0.10) !important;
@@ -73,7 +72,9 @@
 /* Маленькие экраны - иконка и border-radius */
 @media (max-height: 700px), (max-width: 400px) {
   .home-button-polls {
-    border-radius: 12px;
+    border-radius: 12px !important;
+    /* На маленьких экранах - всегда 20px от края */
+    left: max(env(safe-area-inset-left, 20px), 20px) !important;
   }
   
   .home-button-polls svg {
@@ -82,17 +83,24 @@
   }
 }
 
+/* Специальная поддержка для Telegram WebApp */
+@supports (env(safe-area-inset-left)) {
+  .home-button-polls {
+    /* Для iPhone с вырезом/dynamic island - отступ от safe area */
+    left: var(--home-button-left, max(env(safe-area-inset-left), 20px)) !important;
+  }
+}
+
 /* Hover эффект (только для устройств с курсором) */
 @media (hover: hover) {
   .home-button-polls:hover {
-    background: rgba(255, 255, 255, 0.15);
-    border-color: rgba(255,255,255,0.25);
+    background: rgba(255, 255, 255, 0.15) !important;
+    border-color: rgba(255,255,255,0.25) !important;
   }
 }
 
 /* Убираем все text-related стили чтобы гарантировать квадрат */
 .home-button-polls * {
-  top: var(--home-button-top, 142px) !important;
   font-size: 0 !important;
   line-height: 0 !important;
   letter-spacing: 0 !important;

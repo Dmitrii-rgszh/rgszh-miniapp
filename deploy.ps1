@@ -1,9 +1,11 @@
-# deploy.ps1 - ПОЛНОСТЬЮ ИСПРАВЛЕННЫЙ PowerShell скрипт для деплоя RGSZH MiniApp
+# deploy.ps1 - ОБНОВЛЕННЫЙ PowerShell скрипт для деплоя RGSZH MiniApp
+# ЗАЩИТА SSL СЕРТИФИКАТОВ И NGINX КОНФИГУРАЦИИ
 
 param(
     [switch]$SkipBuild,
     [switch]$SkipCopy,
     [switch]$SkipDeploy,
+    [switch]$ForceConfig,  # ← НОВЫЙ ПАРАМЕТР: принудительно перезаписать конфигурации
     [switch]$Verbose
 )
 
@@ -149,7 +151,7 @@ function Build-And-Push-Images {
     }
 }
 
-# Копирование файлов на ВМ
+# Копирование файлов на ВМ С ЗАЩИТОЙ КОНФИГУРАЦИЙ
 function Copy-Files-To-VM {
     if ($SkipCopy) {
         Write-Warning "Пропуск копирования файлов (параметр -SkipCopy)"
@@ -158,7 +160,8 @@ function Copy-Files-To-VM {
     
     Write-Log "📁 Копирование файлов на ВМ..."
     
-    $files = @(
+    # Основные файлы, которые ВСЕГДА копируем
+    $alwaysCopyFiles = @(
         "docker-compose.yml",
         "Dockerfile.client", 
         "Dockerfile.server",
@@ -171,15 +174,10 @@ function Copy-Files-To-VM {
         if ($Verbose) { Write-Info "Выполняем: $cmd" }
         Invoke-Expression $cmd
         
-        # Создаем папку для nginx конфигурации
-        $cmd = "ssh ${VM_USER}@${VM_HOST} 'mkdir -p /home/${VM_USER}/${PROJECT_NAME}/nginx'"
-        if ($Verbose) { Write-Info "Выполняем: $cmd" }
-        Invoke-Expression $cmd
-        
-        foreach ($file in $files) {
+        # Копируем основные файлы
+        foreach ($file in $alwaysCopyFiles) {
             if (Test-Path $file) {
                 Write-Log "📋 Копируем $file..."
-                # ИСПРАВЛЕНО: убрана лишняя 'p' в пути
                 $cmd = "scp $file ${VM_USER}@${VM_HOST}:/home/${VM_USER}/${PROJECT_NAME}/"
                 
                 if ($Verbose) { Write-Info "Выполняем: $cmd" }
@@ -193,52 +191,67 @@ function Copy-Files-To-VM {
             }
         }
         
-        # Создаем базовую nginx конфигурацию на сервере
-        Write-Log "📋 Создаем nginx конфигурацию..."
-        $nginxConfig = @'
-server {
-    listen 80;
-    server_name rgszh-miniapp.org;
-
-    location / {
-        proxy_pass http://frontend:80;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-
-    location /api {
-        proxy_pass http://server:4000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-
-    location /socket.io {
-        proxy_pass http://server:4000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-}
-'@
+        # ===== ЗАЩИТА NGINX КОНФИГУРАЦИИ =====
+        Write-Log "🔐 Проверка nginx конфигурации на сервере..."
         
-        # Сохраняем конфигурацию в временный файл
-        $tempNginxConfig = New-TemporaryFile
-        [System.IO.File]::WriteAllText($tempNginxConfig.FullName, $nginxConfig, [System.Text.Encoding]::UTF8)
+        # Проверяем существует ли nginx/default.conf на сервере
+        $nginxExists = ssh ${VM_USER}@${VM_HOST} "test -f /home/${VM_USER}/${PROJECT_NAME}/nginx/default.conf && echo 'exists' || echo 'not exists'"
         
-        # Копируем nginx конфигурацию
-        $cmd = "scp $($tempNginxConfig.FullName) ${VM_USER}@${VM_HOST}:/home/${VM_USER}/${PROJECT_NAME}/nginx/default.conf"
-        if ($Verbose) { Write-Info "Выполняем: $cmd" }
-        Invoke-Expression $cmd
+        if ($nginxExists -eq "exists" -and -not $ForceConfig) {
+            Write-Warning "nginx/default.conf уже существует на сервере. Пропускаем копирование."
+            Write-Info "Используйте -ForceConfig для принудительного обновления"
+        } else {
+            if (Test-Path "nginx/default.conf") {
+                Write-Log "📋 Копируем nginx конфигурацию..."
+                
+                # Создаем директорию nginx если её нет
+                $cmd = "ssh ${VM_USER}@${VM_HOST} 'mkdir -p /home/${VM_USER}/${PROJECT_NAME}/nginx'"
+                if ($Verbose) { Write-Info "Выполняем: $cmd" }
+                Invoke-Expression $cmd
+                
+                # Копируем конфигурацию
+                $cmd = "scp nginx/default.conf ${VM_USER}@${VM_HOST}:/home/${VM_USER}/${PROJECT_NAME}/nginx/"
+                if ($Verbose) { Write-Info "Выполняем: $cmd" }
+                Invoke-Expression $cmd
+                
+                Write-Success "nginx конфигурация обновлена"
+            } else {
+                Write-Warning "nginx/default.conf не найден локально"
+            }
+        }
         
-        Remove-Item $tempNginxConfig.FullName -ErrorAction SilentlyContinue
+        # ===== ЗАЩИТА SSL СЕРТИФИКАТОВ =====
+        Write-Log "🔐 Проверка SSL сертификатов на сервере..."
+        
+        # Проверяем существуют ли сертификаты на сервере
+        $certsExist = ssh ${VM_USER}@${VM_HOST} "test -f /home/${VM_USER}/${PROJECT_NAME}/certs/fullchain.pem && echo 'exists' || echo 'not exists'"
+        
+        if ($certsExist -eq "exists" -and -not $ForceConfig) {
+            Write-Success "SSL сертификаты Let's Encrypt найдены на сервере. НЕ трогаем их!"
+            Write-Info "Сертификаты автоматически обновляются через certbot"
+        } else {
+            if (Test-Path "certs") {
+                Write-Warning "Копирование локальных сертификатов (самоподписанные?)"
+                
+                # Создаем директорию certs если её нет
+                $cmd = "ssh ${VM_USER}@${VM_HOST} 'mkdir -p /home/${VM_USER}/${PROJECT_NAME}/certs'"
+                if ($Verbose) { Write-Info "Выполняем: $cmd" }
+                Invoke-Expression $cmd
+                
+                # Копируем сертификаты
+                $certFiles = @("privkey.pem", "fullchain.pem")
+                foreach ($certFile in $certFiles) {
+                    if (Test-Path "certs/$certFile") {
+                        Write-Log "📋 Копируем certs/$certFile..."
+                        $cmd = "scp certs/$certFile ${VM_USER}@${VM_HOST}:/home/${VM_USER}/${PROJECT_NAME}/certs/"
+                        if ($Verbose) { Write-Info "Выполняем: $cmd" }
+                        Invoke-Expression $cmd
+                    }
+                }
+            } else {
+                Write-Info "Локальная директория certs не найдена. Используем существующие сертификаты на сервере."
+            }
+        }
         
         Write-Success "Все файлы скопированы на ВМ"
         
@@ -248,7 +261,7 @@ server {
     }
 }
 
-# Деплой на ВМ с исправленными командами
+# Деплой на ВМ
 function Deploy-To-VM {
     if ($SkipDeploy) {
         Write-Warning "Пропуск деплоя на ВМ (параметр -SkipDeploy)"
@@ -267,27 +280,19 @@ cd /home/${VM_USER}/${PROJECT_NAME}
 echo "🛑 Остановка контейнеров..."
 docker compose down || echo "Контейнеры уже остановлены"
 
-echo "🗑️ Удаление старых контейнеров..."
-docker container prune -f
+echo "🗑️ Удаление старых образов..."
+docker image rm ${DOCKER_REGISTRY}/${PROJECT_NAME}-api:latest || true
+docker image rm ${DOCKER_REGISTRY}/${PROJECT_NAME}:latest || true
 
-echo "🗑️ Принудительное удаление старых образов..."
-docker rmi ${DOCKER_REGISTRY}/${PROJECT_NAME}-api:latest || true
-docker rmi ${DOCKER_REGISTRY}/${PROJECT_NAME}:latest || true
-docker rmi ${DOCKER_REGISTRY}/${PROJECT_NAME}-api:$DEPLOY_TAG || true
-docker rmi ${DOCKER_REGISTRY}/${PROJECT_NAME}:$DEPLOY_TAG || true
-
-echo "🧹 Очистка неиспользуемых образов..."
-docker image prune -f
-
-echo "🧹 Очистка Docker системы..."
+echo "🧹 Очистка Docker кэша..."
 docker system prune -f
 
-echo "📥 Принудительное получение новых образов..."
+echo "📥 Получение новых образов..."
 docker pull ${DOCKER_REGISTRY}/${PROJECT_NAME}-api:latest
 docker pull ${DOCKER_REGISTRY}/${PROJECT_NAME}:latest
 
-echo "🚀 Запуск контейнеров с обновленными образами..."
-docker compose up -d --force-recreate --remove-orphans
+echo "🚀 Запуск контейнеров..."
+docker compose up -d --force-recreate
 
 echo "⏳ Ожидание запуска контейнеров..."
 sleep 15
@@ -350,33 +355,38 @@ function Test-Deployment {
     Write-Log "🏥 Проверка работоспособности..."
     
     # Очистка кэша Telegram
-    Write-Log "🧹 Очистка кэша Telegram..."
+    Write-Log "🧹 Напоминание про кэш Telegram..."
     Write-Info "Для обновления в Telegram:"
     Write-Info "1. Закройте MiniApp в Telegram"
     Write-Info "2. Очистите кэш Telegram: Настройки → Данные и память → Очистить кэш"
     Write-Info "3. Перезапустите Telegram"
     Write-Info "4. Откройте MiniApp заново"
     
+    # Проверка SSL статуса
+    Write-Log "🔐 Проверка SSL..."
+    $sslCheck = ssh ${VM_USER}@${VM_HOST} "cd ${PROJECT_NAME} && test -f certs/fullchain.pem && echo 'SSL OK' || echo 'NO SSL'"
+    if ($sslCheck -eq "SSL OK") {
+        Write-Success "SSL сертификаты на месте"
+    } else {
+        Write-Warning "SSL сертификаты не найдены!"
+    }
+    
     try {
-        # Проверяем HTTP
-        $response = Invoke-WebRequest -Uri "http://$VM_HOST" -Method GET -TimeoutSec 15 -ErrorAction Stop
+        # Проверяем HTTPS
+        $response = Invoke-WebRequest -Uri "https://$VM_HOST" -Method GET -TimeoutSec 15 -SkipCertificateCheck -ErrorAction Stop
         
         if ($response.StatusCode -in @(200, 301, 302)) {
-            Write-Success "Сайт доступен по адресу http://$VM_HOST (код: $($response.StatusCode))"
-        } else {
-            Write-Warning "Сайт отвечает с кодом $($response.StatusCode)"
+            Write-Success "HTTPS сайт доступен: https://rgszh-miniapp.org"
         }
     } catch {
-        Write-Warning "HTTP проверка не удалась: $($_.Exception.Message)"
+        Write-Warning "HTTPS проверка не удалась: $($_.Exception.Message)"
         
-        # Пробуем простую проверку TCP соединения
+        # Проверяем HTTP
         try {
-            $tcpClient = New-Object System.Net.Sockets.TcpClient
-            $tcpClient.Connect($VM_HOST, 80)
-            $tcpClient.Close()
-            Write-Success "TCP порт 80 открыт на $VM_HOST"
+            $response = Invoke-WebRequest -Uri "http://$VM_HOST" -Method GET -TimeoutSec 15 -ErrorAction Stop
+            Write-Success "HTTP сайт доступен (должен редиректить на HTTPS)"
         } catch {
-            Write-Warning "TCP порт 80 недоступен: $($_.Exception.Message)"
+            Write-Warning "HTTP проверка тоже не удалась"
         }
     }
     
@@ -390,6 +400,7 @@ function Main {
     Write-Host "===============================================" -ForegroundColor Magenta
     Write-Host "🚀 RGSZH MiniApp Deployment Script (PowerShell)" -ForegroundColor Magenta
     Write-Host "🏷️ Deploy Tag: $DEPLOY_TAG" -ForegroundColor Magenta
+    Write-Host "🔐 SSL Protection: ENABLED" -ForegroundColor Green
     Write-Host "===============================================" -ForegroundColor Magenta
     Write-Host ""
     
@@ -410,7 +421,7 @@ function Main {
         Write-Success "Деплой завершен успешно! 🎉"
         Write-Info "Тег образов: $DEPLOY_TAG"
         Write-Info "Время выполнения: $($duration.Minutes)м $($duration.Seconds)с"
-        Write-Info "URL: http://$VM_HOST"
+        Write-Info "URL: https://rgszh-miniapp.org"
         Write-Host "===============================================" -ForegroundColor Magenta
         
     } catch {
@@ -425,19 +436,27 @@ function Show-Help {
 RGSZH MiniApp Deployment Script
 
 ИСПОЛЬЗОВАНИЕ:
-    .\deploy.ps1 [-SkipBuild] [-SkipCopy] [-SkipDeploy] [-Verbose]
+    .\deploy.ps1 [-SkipBuild] [-SkipCopy] [-SkipDeploy] [-ForceConfig] [-Verbose]
 
 ПАРАМЕТРЫ:
-    -SkipBuild   Пропустить сборку и отправку Docker образов
-    -SkipCopy    Пропустить копирование файлов на ВМ
-    -SkipDeploy  Пропустить деплой на ВМ
-    -Verbose     Подробный вывод команд
+    -SkipBuild    Пропустить сборку и отправку Docker образов
+    -SkipCopy     Пропустить копирование файлов на ВМ
+    -SkipDeploy   Пропустить деплой на ВМ
+    -ForceConfig  ПРИНУДИТЕЛЬНО перезаписать nginx и SSL сертификаты
+    -Verbose      Подробный вывод команд
 
 ПРИМЕРЫ:
-    .\deploy.ps1                        # Полный деплой
-    .\deploy.ps1 -SkipBuild            # Только копирование и деплой
-    .\deploy.ps1 -SkipCopy -SkipDeploy # Только сборка образов
-    .\deploy.ps1 -Verbose              # С подробным выводом
+    .\deploy.ps1                         # Полный деплой (защита SSL)
+    .\deploy.ps1 -SkipBuild             # Только копирование и деплой
+    .\deploy.ps1 -ForceConfig           # Перезаписать ВСЕ конфигурации
+    .\deploy.ps1 -Verbose               # С подробным выводом
+
+ЗАЩИТА SSL:
+    По умолчанию скрипт НЕ трогает:
+    - /nginx/default.conf (если существует на сервере)
+    - /certs/* (SSL сертификаты Let's Encrypt)
+    
+    Используйте -ForceConfig только если точно знаете что делаете!
 
 ТРЕБОВАНИЯ:
     - Docker Desktop

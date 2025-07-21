@@ -89,6 +89,12 @@ if (availableBackgrounds.length === 0 && defaultBackground) {
   availableBackgrounds.push(defaultBackground);
 }
 
+// ✅ НОВОЕ: Если нет вообще никаких изображений - добавляем null для корпоративного градиента
+if (availableBackgrounds.length === 0) {
+  availableBackgrounds.push(null); // null покажет корпоративный градиент из createBackgroundStyle
+  console.log('📍 Используем корпоративный градиент как основной фон');
+}
+
 console.log(`Найдено фоновых изображений: ${availableBackgrounds.length}`);
 
 // Компонент обработки ошибок
@@ -366,64 +372,79 @@ function MainApp() {
   }, []);
 
   // ===== ГЛОБАЛЬНЫЕ СТИЛИ КОНТЕЙНЕРА =====
+  // ===== ЗАМЕНИТЕ ВАШ globalContainerStyle НА ЭТО: =====
+
   const globalContainerStyle = {
-    position: 'relative',
-    width: '100%',
-    height: `${viewportHeight}px`,
-    minHeight: `${viewportHeight}px`,
+    // ✅ ИЗМЕНЕНО: fixed вместо relative для полного покрытия экрана
+    position: 'fixed',
+    top: 0,
+    left: 0,
+  
+    // ✅ ИЗМЕНЕНО: используем viewport units для полного покрытия
+    width: '100vw',
+    height: '100vh',
+    minHeight: '100vh',
+  
     overflow: 'hidden',
     fontFamily: '"Segoe UI", sans-serif',
-    
-    // ✨ ПОСТОЯННЫЙ КОРПОРАТИВНЫЙ ФОН (исправлено для предотвращения warning)
-    backgroundColor: 'rgba(180, 0, 55, 0.95)',
-    backgroundImage: `
-      linear-gradient(135deg, 
-        rgba(180, 0, 55, 0.95) 0%,
-        rgba(153, 0, 55, 0.9) 25%,
-        rgba(152, 164, 174, 0.8) 50%,
-        rgba(118, 143, 146, 0.85) 75%,
-        rgba(0, 40, 130, 0.95) 100%
-      )
-    `,
-    
-    // ✨ SAFE AREA: отступ сверху для безопасной зоны
+  
+    // ❌ УБРАНО: фон переносим в createBackgroundStyle
+    // backgroundColor: 'rgba(180, 0, 55, 0.95)', // ← УДАЛИТЬ
+    // backgroundImage: `...`, // ← УДАЛИТЬ
+  
+    // ✅ СОХРАНЕНО: Safe Area отступы для КОНТЕНТА (НЕ для фона)
     paddingTop: 'env(safe-area-inset-top, 50px)',
+    paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+    paddingLeft: 'env(safe-area-inset-left, 0px)',
+    paddingRight: 'env(safe-area-inset-right, 0px)',
+  
     boxSizing: 'border-box',
-    
-    // Адаптивность для мобильных
+  
+    // ✅ СОХРАНЕНО: мобильная адаптивность
     '@supports (-webkit-touch-callout: none)': {
-      height: '-webkit-fill-available',
-      minHeight: '-webkit-fill-available'
+      height: '100vh', // ✅ ИЗМЕНЕНО: используем vh вместо -webkit-fill-available
+      minHeight: '100vh'
     }
   };
 
   // ===== СТИЛЬ ДЛЯ СТАТИЧНЫХ ФОНОВ С ПРОСТЫМ ЭФФЕКТОМ =====
-  const createBackgroundStyle = (backgroundImage, index) => {
+  const createBackgroundStyle = (backgroundSrc, index) => {
     const opacity = backgroundOpacities[index] || 0;
-    
+  
     return {
       position: 'absolute',
-      top: 0,
-      left: 0,
-      width: '100%',
-      height: '100%',
-      backgroundImage: `url(${backgroundImage})`,
+    
+      // ✅ КЛЮЧЕВОЕ ИЗМЕНЕНИЕ: фон распространяется ЗА Safe Area
+      top: `calc(-1 * env(safe-area-inset-top, 0px))`,      // Поднимается В статус-бар
+      left: `calc(-1 * env(safe-area-inset-left, 0px))`,    // Распространяется влево ЗА вырез
+      right: `calc(-1 * env(safe-area-inset-right, 0px))`,  // Распространяется вправо ЗА вырез  
+      bottom: `calc(-1 * env(safe-area-inset-bottom, 0px))`, // Распространяется вниз ЗА bottom area
+    
+      // ✅ КОРПОРАТИВНЫЙ ФОН: если нет изображения - используем градиент
+      backgroundImage: backgroundSrc 
+        ? `url(${backgroundSrc})` 
+        : `linear-gradient(135deg, 
+            rgba(180, 0, 55, 0.95) 0%,
+            rgba(153, 0, 55, 0.9) 25%,
+            rgba(152, 164, 174, 0.8) 50%,
+            rgba(118, 143, 146, 0.85) 75%,
+            rgba(0, 40, 130, 0.95) 100%
+          )`,
+    
+      // ✅ FALLBACK: корпоративный цвет если нет изображения
+      backgroundColor: 'rgba(180, 0, 55, 0.95)',
+    
       backgroundSize: 'cover',
       backgroundPosition: 'center',
       backgroundRepeat: 'no-repeat',
+    
       opacity: opacity,
-      
-      // Упрощенные фильтры для производительности
       filter: `brightness(${0.7 + opacity * 0.1})`,
-      
-      // Упрощенные переходы
       transition: 'opacity 3s ease-in-out',
-      
+    
       pointerEvents: 'none',
       zIndex: 1,
-      
-      // Убрано свечение и анимации для производительности
-      willChange: 'opacity' // Оптимизация рендеринга
+      willChange: 'opacity'
     };
   };
 

@@ -1,4 +1,4 @@
-// AssessmentPage.js - ПОЛНОЕ ИСПРАВЛЕНИЕ: адаптивность + правильная кнопка "Назад"
+// AssessmentPage.js - ИСПРАВЛЕНО: унифицированное позиционирование кнопок как в PollsPage
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Autosuggest from 'react-autosuggest';
@@ -18,6 +18,7 @@ export default function AssessmentPage() {
   const navigate = useNavigate();
   const startTimeRef = useRef(null);
   const backRef = useRef(null);
+  const homeRef = useRef(null);
 
   // ===== АДАПТИВНОСТЬ (как в PollsPage) =====
   const [windowHeight, setWindowHeight] = useState(window.innerHeight);
@@ -52,7 +53,7 @@ export default function AssessmentPage() {
   }, [windowWidth]);
 
   // ===== АДАПТИВНЫЕ ПАРАМЕТРЫ (как в PollsPage) =====
-  const isSmallScreen = windowHeight < 700 || windowWidth < 400;
+  const isSmallScreen = windowHeight < 700 || windowWidth < 375;
   const isMobileWidth = windowWidth < 768;
   const isMediumScreen = windowHeight >= 700 && windowHeight < 900;
   
@@ -62,12 +63,10 @@ export default function AssessmentPage() {
   const logoImageSize = isSmallScreen ? 72 : 96;
   const contentTop = isSmallScreen ? 200 : (isMediumScreen ? 240 : 268);
   
-  // ✅ ДОБАВЛЕНО: Расчет позиций для кнопок (как в PollsPage)
+  // ✅ ИСПРАВЛЕНО: Расчет позиций для кнопок (как в PollsPage)
   const buttonSize = 64; // Все кнопки 64x64
   const buttonTop = logoTop + (logoSize - buttonSize) / 2; // Центрируем по вертикали относительно логотипа
   const buttonDistance = 30; // Расстояние от логотипа
-  const backButtonLeft = windowWidth < 400 ? '20px' : `calc(50% - ${logoSize/2}px - ${buttonDistance}px - ${buttonSize}px)`;
-  const nextButtonRight = windowWidth < 400 ? '20px' : `calc(50% - ${logoSize/2}px - ${buttonDistance}px - ${buttonSize}px)`;
 
   // ===== СОСТОЯНИЯ АНИМАЦИЙ =====
   const [logoAnimated, setLogoAnimated] = useState(false);
@@ -100,6 +99,35 @@ export default function AssessmentPage() {
   const [shuffledQuestions, setShuffledQuestions] = useState([]);
 
   const MAIN_QUESTIONNAIRE_ID = 1;
+
+  // ✅ ИСПРАВЛЕНО: Эффект для установки CSS переменных позиционирования (как в PollsPage)
+  useEffect(() => {
+    // Устанавливаем CSS переменные для кнопки "Назад" 
+    if (backRef.current) {
+      const top = buttonTop;
+      const left = windowWidth < 375 
+        ? 'max(env(safe-area-inset-left, 20px), 20px)'  // Safe area support
+        : `calc(50% - ${logoSize/2}px - ${buttonDistance}px - ${buttonSize}px)`;
+      
+      backRef.current.style.setProperty('--back-button-top', `${top}px`);
+      backRef.current.style.setProperty('--back-button-left', left);
+      backRef.current.style.setProperty('--back-button-size', `${buttonSize}px`);
+    }
+
+    // Устанавливаем CSS переменные для кнопки "Домой" на финальном экране
+    if (homeRef.current) {
+      const top = buttonTop;
+      
+      // ✅ ИСПРАВЛЕНО: Добавлена поддержка Safe Area как у BackButton  
+      const left = windowWidth < 375 
+        ? 'max(env(safe-area-inset-left, 20px), 20px)'  // Safe area support
+        : `max(calc(50% - ${logoSize/2}px - ${buttonDistance}px - ${buttonSize}px), env(safe-area-inset-left, 20px))`;
+      
+      homeRef.current.style.setProperty('--home-button-top', `${top}px`);
+      homeRef.current.style.setProperty('--home-button-left', left);
+      homeRef.current.style.setProperty('--home-button-size', `${buttonSize}px`);
+    }
+  }, [logoSize, logoTop, buttonTop, buttonDistance, buttonSize, windowWidth, isSmallScreen]);
 
   // ===== ФУНКЦИИ И ЛОГИКА =====
 
@@ -625,7 +653,7 @@ export default function AssessmentPage() {
             
             <div style={{ 
               width: '100%', 
-              maxWidth: isMobileWidth ? '80%' : '400px'  // Для мобильных - 80%, для больших экранов - 400px
+              maxWidth: isMobileWidth ? '80%' : '400px'
             }}>
               <label style={{ ...textStyle, fontSize: isSmallScreen ? '18px' : '20px', marginBottom: '5px', display: 'block', textAlign: 'center' }}>
                 Фамилия
@@ -685,7 +713,7 @@ export default function AssessmentPage() {
             {/* Прогресс индикатор с адаптивной шириной */}
             <div style={{
               width: '100%',
-              maxWidth: isMobileWidth ? '80%' : '500px',  // ← ДОБАВЛЕНА АДАПТИВНАЯ ШИРИНА
+              maxWidth: isMobileWidth ? '80%' : '500px',
               display: 'flex',
               justifyContent: 'center',
               marginBottom: '20px'
@@ -799,19 +827,6 @@ export default function AssessmentPage() {
             background: rgba(255, 255, 255, 0.3);
             border-radius: 2px;
           }
-          
-          /* ✅ CSS переменные для унификации позиционирования кнопок */
-          :root {
-            --home-button-size: ${buttonSize}px;
-            --back-button-size: ${buttonSize}px;
-            --next-button-size: ${buttonSize}px;
-            --home-button-top: ${buttonTop}px;
-            --home-button-left: ${backButtonLeft};
-            --back-button-top: ${buttonTop}px;
-            --back-button-left: ${backButtonLeft};
-            --next-button-top: ${buttonTop}px;
-            --next-button-right: ${nextButtonRight};
-          }
         `}
       </style>
 
@@ -824,14 +839,13 @@ export default function AssessmentPage() {
         />
       </div>
 
-      {/* ✅ ИСПРАВЛЕНО: Кнопка "Назад" с правильной иконкой стрелки влево */}
+      {/* ✅ ИСПРАВЛЕНО: Кнопка "Назад" ТОЛЬКО с CSS классами (без inline стилей) */}
       {(currentStep > 1 || (currentStep === 3 && currentQuestion > 0)) && !isFinished && !isLoading && !isProcessing && (
         <button 
           ref={backRef}
           className={`back-btn ${contentAnimated ? 'animate-home' : ''} ${isExiting ? 'animate-home-exit' : ''}`}
           onClick={handleBack}
         >
-          {/* ✅ ИСПРАВЛЕНО: Стрелка влево вместо домика */}
           <svg viewBox="0 0 24 24">
             <path d="M15 18l-6-6 6-6" stroke="white" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
@@ -863,9 +877,10 @@ export default function AssessmentPage() {
         </button>
       )}
 
-      {/* Кнопка домой для финального экрана */}
+      {/* ✅ ИСПРАВЛЕНО: Кнопка домой для финального экрана с унифицированным позиционированием */}
       {isFinished && result && (
         <button 
+          ref={homeRef}
           className={`home-button-polls ${contentAnimated ? 'animate-home' : ''} ${isExiting ? 'animate-home-exit' : ''}`}
           onClick={goHome}
         >

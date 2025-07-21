@@ -1,409 +1,202 @@
-/* index.css - ОПТИМИЗИРОВАННЫЕ СТИЛИ ДЛЯ ДЕСКТОПА */
-/* ✅ Segoe UI как основной шрифт */
-/* ✅ Корпоративные цвета */
-/* ✅ Исправление наслоения компонентов */
-/* ✅ Поддержка всех устройств */
+/* index.css - ОБНОВЛЕННАЯ ВЕРСИЯ с полной поддержкой Safe Area */
 
-/* === CSS RESET И БАЗА === */
+/* ===== RESET И ГЛОБАЛЬНЫЕ СТИЛИ ===== */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-*::before,
-*::after {
-  box-sizing: border-box;
-}
-
-/* === ОСНОВНЫЕ ШРИФТЫ === */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-
-/* === HTML И BODY === */
+/* ===== ПОЛНОЕ ПОКРЫТИЕ SAFE AREA ===== */
 html {
-  font-size: 16px;
-  line-height: 1.5;
-  -webkit-text-size-adjust: 100%;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
+  width: 100%;
+  height: 100%;
+  /* ✅ Фон покрывает всю область включая Safe Area */
+  background: transparent;
+  
+  /* ✅ Поддержка Safe Area для всех браузеров */
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+  
+  /* ✅ Альтернативная поддержка для старых браузеров */
+  padding-top: constant(safe-area-inset-top, 0px);
+  padding-bottom: constant(safe-area-inset-bottom, 0px);
+  padding-left: constant(safe-area-inset-left, 0px);
+  padding-right: constant(safe-area-inset-right, 0px);
 }
 
 body {
-  /* ОСНОВНОЙ ШРИФТ: Segoe UI */
-  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Inter', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  font-weight: 400;
-  font-size: 16px;
-  line-height: 1.6;
-  color: #ffffff;
-  
-  /* Убираем стандартные стили */
   margin: 0;
   padding: 0;
-  
-  /* Предотвращаем скролл */
-  overflow: hidden;
-  position: fixed;
   width: 100%;
   height: 100%;
+  background: transparent;
   
-  /* Отключаем выделение текста где не нужно */
+  /* ✅ Основной шрифт */
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
+  
+  /* ✅ Отключаем overscroll и zoom на мобильных */
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+  touch-action: manipulation;
+  
+  /* ✅ Отключаем выделение текста */
+  -webkit-touch-callout: none;
   -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
   user-select: none;
   
-  /* Отключаем подсветку касаний на мобильных */
-  -webkit-tap-highlight-color: transparent;
-  -webkit-touch-callout: none;
-  
-  /* Улучшенное отображение шрифтов */
-  font-variant-ligatures: common-ligatures;
-  font-feature-settings: "kern", "liga", "clig", "calt";
+  /* ✅ Сглаживание шрифтов */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* === ROOT КОНТЕЙНЕР === */
+/* ===== ROOT КОНТЕЙНЕР ===== */
 #root {
-  width: 100%;
+  width: 100vw;
   height: 100vh;
-  height: calc(var(--vh, 1vh) * 100);
-  position: relative;
-  overflow: hidden;
-  
-  /* Стандартный z-index для основного контейнера */
-  z-index: 1;
-}
-
-/* === ТИПОГРАФИКА === */
-
-/* Заголовки - Segoe UI Bold */
-h1, h2, h3, h4, h5, h6 {
-  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
-  font-weight: bold;
-  line-height: 1.2;
   margin: 0;
-  color: inherit;
-}
-
-h1 {
-  font-size: clamp(24px, 5vw, 32px);
-}
-
-h2 {
-  font-size: clamp(20px, 4vw, 28px);
-}
-
-h3 {
-  font-size: clamp(18px, 3.5vw, 24px);
-}
-
-h4 {
-  font-size: clamp(16px, 3vw, 20px);
-}
-
-h5, h6 {
-  font-size: clamp(14px, 2.5vw, 18px);
-}
-
-/* Основной текст - Segoe UI Regular */
-p, span, div {
-  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
-  font-weight: 400;
-  line-height: 1.6;
-}
-
-/* === ИНТЕРАКТИВНЫЕ ЭЛЕМЕНТЫ === */
-
-/* Кнопки */
-button {
-  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
-  font-weight: 600;
-  cursor: pointer;
-  border: none;
-  outline: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-  
-  /* Корпоративные стили кнопок */
-  background: linear-gradient(135deg, rgba(180, 0, 55, 0.9) 0%, rgba(153, 0, 55, 0.85) 50%, rgba(0, 40, 130, 0.9) 100%);
-  color: white;
-  border-radius: 12px;
-  padding: 14px 28px;
-  font-size: 16px;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
-  filter: brightness(1.1);
-}
-
-button:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-
-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-}
-
-/* Поля ввода */
-input, textarea, select {
-  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
-  font-size: 16px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-radius: 8px;
-  padding: 12px 16px;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  color: white;
-  outline: none;
-  transition: all 0.3s ease;
-}
-
-input::placeholder,
-textarea::placeholder {
-  color: rgba(255, 255, 255, 0.7);
-}
-
-input:focus,
-textarea:focus,
-select:focus {
-  border-color: rgba(180, 0, 55, 0.8);
-  box-shadow: 0 0 0 3px rgba(180, 0, 55, 0.2);
-  background: rgba(255, 255, 255, 0.15);
-}
-
-/* === КОРПОРАТИВНЫЕ ЦВЕТОВЫЕ КЛАССЫ === */
-
-/* Красные элементы */
-.corporate-red {
-  color: rgb(180, 0, 55);
-}
-
-.corporate-red-bg {
-  background: linear-gradient(135deg, rgba(180, 0, 55, 0.9), rgba(153, 0, 55, 0.9));
-}
-
-/* Серые элементы */
-.corporate-gray {
-  color: rgb(152, 164, 174);
-}
-
-.corporate-gray-bg {
-  background: linear-gradient(135deg, rgba(152, 164, 174, 0.8), rgba(118, 143, 146, 0.8));
-}
-
-/* Синие элементы */
-.corporate-blue {
-  color: rgb(0, 40, 130);
-}
-
-.corporate-blue-bg {
-  background: linear-gradient(135deg, rgba(0, 40, 130, 0.9), rgba(0, 32, 104, 0.9));
-}
-
-/* === АДАПТИВНОСТЬ === */
-
-/* Мобильные устройства */
-@media (max-width: 767px) {
-  body {
-    font-size: 14px;
-  }
-  
-  button {
-    padding: 12px 24px;
-    font-size: 14px;
-  }
-  
-  input, textarea, select {
-    font-size: 16px; /* Предотвращаем зум на iOS */
-    padding: 10px 14px;
-  }
-}
-
-/* Планшеты */
-@media (min-width: 768px) and (max-width: 1023px) {
-  body {
-    font-size: 15px;
-  }
-  
-  button {
-    padding: 13px 26px;
-    font-size: 15px;
-  }
-}
-
-/* Десктопы */
-@media (min-width: 1024px) {
-  body {
-    font-size: 16px;
-    /* Включаем выделение текста на десктопе */
-    -webkit-user-select: text;
-    -moz-user-select: text;
-    -ms-user-select: text;
-    user-select: text;
-  }
-  
-  button {
-    padding: 16px 32px;
-    font-size: 16px;
-  }
-  
-  /* Более плавные переходы на десктопе */
-  * {
-    transition-duration: 0.3s;
-  }
-}
-
-/* Большие экраны */
-@media (min-width: 1440px) {
-  body {
-    font-size: 18px;
-  }
-  
-  button {
-    padding: 18px 36px;
-    font-size: 18px;
-  }
-}
-
-/* === УТИЛИТАРНЫЕ КЛАССЫ === */
-
-/* Стекломорфизм */
-.glass {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-/* Скрытие элементов */
-.hidden {
-  display: none !important;
-}
-
-.invisible {
-  visibility: hidden !important;
-}
-
-/* Флекс утилиты */
-.flex-center {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.flex-column {
-  flex-direction: column;
-}
-
-/* Отступы */
-.no-margin {
-  margin: 0 !important;
-}
-
-.no-padding {
-  padding: 0 !important;
-}
-
-/* === ИСПРАВЛЕНИЯ ДЛЯ СТАРЫХ БРАУЗЕРОВ === */
-
-/* Internet Explorer 11 */
-@media screen and (-ms-high-contrast: active), (-ms-high-contrast: none) {
-  #root {
-    height: 100vh;
-  }
-}
-
-/* === АНИМАЦИИ === */
-
-/* Плавные переходы для всех интерактивных элементов */
-button,
-input,
-textarea,
-select,
-a,
-[role="button"] {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Пульсация для загрузки */
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
-}
-
-.pulse {
-  animation: pulse 2s infinite;
-}
-
-/* Появление элементов */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.fade-in {
-  animation: fadeIn 0.6s ease-out;
-}
-
-/* === ИСПРАВЛЕНИЯ ДЛЯ NASLOINENIE === */
-
-/* Обеспечиваем правильную иерархию z-index */
-.modal-overlay {
-  z-index: 9999;
-}
-
-.modal-content {
-  z-index: 10000;
-}
-
-.tooltip {
-  z-index: 10001;
-}
-
-/* Принудительный сброс z-index для проблемных элементов */
-.component-container {
+  padding: 0;
+  background: transparent;
+  overflow: hidden;
   position: relative;
-  z-index: auto;
 }
 
-/* === ДОСТУПНОСТЬ === */
-
-/* Улучшенный фокус для клавиатурной навигации */
-*:focus-visible {
-  outline: 2px solid rgba(180, 0, 55, 0.8);
-  outline-offset: 2px;
+/* ===== ГЛОБАЛЬНЫЕ CSS ПЕРЕМЕННЫЕ ДЛЯ SAFE AREA ===== */
+:root {
+  --safe-area-top: env(safe-area-inset-top, 0px);
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-left: env(safe-area-inset-left, 0px);
+  --safe-area-right: env(safe-area-inset-right, 0px);
+  
+  /* ✅ Корпоративные цвета */
+  --color-red-primary: rgb(180, 0, 55);
+  --color-red-secondary: rgb(153, 0, 55);
+  --color-gray-primary: rgb(152, 164, 174);
+  --color-gray-secondary: rgb(118, 143, 146);
+  --color-blue-primary: rgb(0, 40, 130);
+  --color-blue-secondary: rgb(0, 32, 104);
 }
 
-/* Отключаем outline для мыши, оставляем для клавиатуры */
-*:focus:not(:focus-visible) {
-  outline: none;
+/* ===== УТИЛИТАРНЫЕ КЛАССЫ ДЛЯ SAFE AREA ===== */
+.safe-top { 
+  margin-top: var(--safe-area-top) !important; 
+}
+.safe-top-padding { 
+  padding-top: var(--safe-area-top) !important; 
+}
+.safe-bottom { 
+  margin-bottom: var(--safe-area-bottom) !important; 
+}
+.safe-bottom-padding { 
+  padding-bottom: var(--safe-area-bottom) !important; 
+}
+.safe-left { 
+  margin-left: var(--safe-area-left) !important; 
+}
+.safe-left-padding { 
+  padding-left: var(--safe-area-left) !important; 
+}
+.safe-right { 
+  margin-right: var(--safe-area-right) !important; 
+}
+.safe-right-padding { 
+  padding-right: var(--safe-area-right) !important; 
 }
 
-/* Увеличенная область клика для мобильных */
-@media (max-width: 1023px) {
-  button,
-  [role="button"],
-  input[type="checkbox"],
-  input[type="radio"] {
-    min-height: 44px;
-    min-width: 44px;
+/* ===== КРОССБРАУЗЕРНАЯ ПОДДЕРЖКА SAFE AREA ===== */
+
+/* Safari iOS */
+@supports (padding: max(0px)) {
+  html {
+    padding-top: max(env(safe-area-inset-top, 0px), 0px) !important;
+    padding-bottom: max(env(safe-area-inset-bottom, 0px), 0px) !important;
+    padding-left: max(env(safe-area-inset-left, 0px), 0px) !important;
+    padding-right: max(env(safe-area-inset-right, 0px), 0px) !important;
   }
+}
+
+/* Chrome Android */
+@supports (padding: env(safe-area-inset-top)) {
+  body {
+    padding-top: env(safe-area-inset-top, 0px) !important;
+    padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+    padding-left: env(safe-area-inset-left, 0px) !important;
+    padding-right: env(safe-area-inset-right, 0px) !important;
+  }
+}
+
+/* Старые браузеры с constant() */
+@supports (padding: constant(safe-area-inset-top)) {
+  html {
+    padding-top: constant(safe-area-inset-top) !important;
+    padding-bottom: constant(safe-area-inset-bottom) !important;
+    padding-left: constant(safe-area-inset-left) !important;
+    padding-right: constant(safe-area-inset-right) !important;
+  }
+}
+
+/* ===== СПЕЦИАЛЬНЫЕ СТИЛИ ДЛЯ TELEGRAM MINIAPP ===== */
+
+/* Telegram WebApp на iOS */
+@media screen and (device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) {
+  html {
+    padding-top: env(safe-area-inset-top, 50px) !important;
+  }
+}
+
+/* Telegram WebApp на Android */
+@media screen and (min-device-width: 360px) and (max-device-width: 430px) {
+  html {
+    padding-top: env(safe-area-inset-top, 24px) !important;
+  }
+}
+
+/* ===== ОТКЛЮЧЕНИЕ НЕЖЕЛАТЕЛЬНОГО ПОВЕДЕНИЯ ===== */
+
+/* Отключаем выделение текста глобально */
+* {
+  -webkit-touch-callout: none !important;
+  -webkit-user-select: none !important;
+  user-select: none !important;
+}
+
+/* Разрешаем выделение только для input полей */
+input, textarea {
+  -webkit-user-select: text !important;
+  user-select: text !important;
+}
+
+/* Отключаем zoom при фокусе на input на iOS */
+input[type="text"], 
+input[type="email"], 
+input[type="tel"], 
+textarea {
+  font-size: 16px !important;
+}
+
+/* Отключаем автофокус на мобильных */
+@media (pointer: coarse) {
+  input, textarea, select {
+    font-size: 16px !important;
+  }
+}
+
+/* ===== СКРОЛЛБАР СТИЛИ (для элементов с overflow) ===== */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
 }
