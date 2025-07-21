@@ -26,6 +26,11 @@
   --placeholder-font-size-desktop: 22px;
   --placeholder-font-size-tablet: 20px;
   --placeholder-font-size-mobile: 18px;
+  
+  /* Расстояние между полями ввода */
+  --form-field-gap-desktop: 32px;
+  --form-field-gap-tablet: 24px;
+  --form-field-gap-mobile: 20px;
 }
 
 /* ======================================
@@ -94,7 +99,7 @@
   color: white;
   
   /* Отступы и анимации */
-  margin-bottom: 16px;
+  margin-bottom: 0;
   transition: all 0.3s ease;
   outline: none;
   box-sizing: border-box;
@@ -412,4 +417,49 @@ hr,
 /* Восстанавливаем нужные псевдо-элементы */
 .autosuggest-input::placeholder {
   border: none !important;
+}
+
+/* ======================================
+   РАССТОЯНИЕ МЕЖДУ ПОЛЯМИ ВВОДА
+   ====================================== */
+/* Desktop (>768px) */
+.autosuggest-wrapper {
+  margin-bottom: var(--form-field-gap-desktop, 32px) !important;
+}
+
+.autosuggest-wrapper:last-child {
+  margin-bottom: 0 !important;
+}
+
+/* Tablet (375-768px) */
+@media (max-width: 768px) and (min-width: 375px) {
+  .autosuggest-wrapper {
+    margin-bottom: var(--form-field-gap-tablet, 24px) !important;
+  }
+}
+
+/* Mobile (<375px) */
+@media (max-width: 374px) {
+  .autosuggest-wrapper {
+    margin-bottom: var(--form-field-gap-mobile, 20px) !important;
+  }
+}
+
+/* Убираем старые стили */
+.autosuggest-wrapper + .autosuggest-wrapper {
+  margin-top: 0 !important;
+}
+
+.autosuggest-wrapper + .autosuggest-wrapper::before {
+  display: none !important;
+}
+
+/* Специфично для вашей структуры */
+.form-container > div:not(.autosuggest-wrapper) {
+  display: none !important;
+}
+
+/* Убираем любые элементы между wrapper'ами */
+.autosuggest-wrapper ~ :not(.autosuggest-wrapper) {
+  display: none !important;
 }

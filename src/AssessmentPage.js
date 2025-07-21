@@ -82,6 +82,85 @@ export default function AssessmentPage() {
     }
   }, [isLoading]);
 
+  // ===== УДАЛЕНИЕ СЕРЫХ ЛИНИЙ =====
+  useEffect(() => {
+    if (currentStep === 2) {
+      const removeLines = () => {
+        // Удаляем все HR элементы
+        document.querySelectorAll('hr').forEach(hr => hr.remove());
+        
+        // Добавляем агрессивные стили
+        const style = document.createElement('style');
+        style.setAttribute('data-remove-lines', 'true');
+        style.innerHTML = `
+          /* УДАЛЯЕМ ВСЕ ЛИНИИ В ФОРМЕ */
+          .form-container hr,
+          .form-container .divider,
+          .form-container .separator,
+          .form-container > div:empty,
+          .form-container > div[style*="border"],
+          .form-container > div[style*="height: 1px"],
+          .form-container > div[style*="height:1px"] {
+            display: none !important;
+            visibility: hidden !important;
+            height: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+          
+          /* Убираем псевдоэлементы которые могут быть линиями */
+          .form-container > *::before,
+          .form-container > *::after,
+          .autosuggest-wrapper::before,
+          .autosuggest-wrapper::after,
+          .autosuggest-container::before,
+          .autosuggest-container::after {
+            display: none !important;
+            content: none !important;
+          }
+          
+          /* Убираем границы у всех элементов кроме input */
+          .form-container * {
+            border-top: none !important;
+            border-bottom: none !important;
+          }
+          
+          /* Восстанавливаем границы только для input */
+          .autosuggest-input,
+          .react-autosuggest__input {
+            border: 1px solid rgba(255, 255, 255, 0.25) !important;
+          }
+          
+          /* Убираем отступы между wrapper'ами которые могут создавать линии */
+          .autosuggest-wrapper + * {
+            margin-top: 0 !important;
+          }
+          
+          .autosuggest-wrapper {
+            margin-bottom: 24px !important;
+          }
+          
+          .autosuggest-wrapper:last-child {
+            margin-bottom: 0 !important;
+          }
+        `;
+        document.head.appendChild(style);
+      };
+      
+      // Запускаем сразу
+      removeLines();
+      
+      // И еще раз через небольшую задержку
+      const timeout = setTimeout(removeLines, 100);
+      
+      // Cleanup
+      return () => {
+        clearTimeout(timeout);
+        document.querySelectorAll('style[data-remove-lines]').forEach(s => s.remove());
+      };
+    }
+  }, [currentStep]);
+
   // ===== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ =====
   // Определение возможности перехода далее
   const canGoNext = () => {
@@ -413,30 +492,6 @@ export default function AssessmentPage() {
             )}
       
             <div className="form-container">
-              <style>
-                {`
-                  /* Локальные стили для удаления полосок */
-                  .form-container > * {
-                    border: none !important;
-                  }
-                  .form-container label + div {
-                    margin-top: 0 !important;
-                  }
-                  .autosuggest-wrapper {
-                    margin-bottom: 20px;
-                  }
-                  .autosuggest-wrapper:last-child {
-                    margin-bottom: 0;
-                  }
-                  /* Принудительно убираем любые горизонтальные линии */
-                  .form-container hr,
-                  .form-container > div > hr,
-                  .react-autosuggest__container hr {
-                    display: none !important;
-                  }
-                `}
-              </style>
-        
               <div className="autosuggest-wrapper">
                 <label className="form-label">
                   Фамилия
