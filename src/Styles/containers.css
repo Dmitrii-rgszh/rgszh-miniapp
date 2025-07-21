@@ -262,14 +262,26 @@
    СОСТОЯНИЯ АНИМАЦИИ КОНТЕЙНЕРОВ
    ====================================== */
 
-/* Анимация появления */
-.button-container.animated {
-  opacity: 1;
-  transition: opacity 0.6s ease-in-out;
+/* Начальное состояние контейнера кнопок */
+.button-container {
+  opacity: 0;
+  transform: translateX(-50%) translateY(30px);
 }
 
-.button-container:not(.animated) {
-  opacity: 0;
+/* Анимация появления контейнера */
+.button-container.animated {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  transition: all 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.3s;
+}
+
+.button-container.with-logo {
+  transform: translateX(-50%);
+}
+
+.button-container.with-logo.animated {
+  opacity: 1;
+  transform: translateX(-50%);
 }
 
 /* Анимация выхода */
@@ -279,9 +291,9 @@
 }
 
 .button-container.exiting {
-  transform: translate(-50%, calc(-50% + 50px));
   opacity: 0;
-  transition: all 0.8s ease-in-out;
+  transform: translateX(-50%) translateY(50px);
+  transition: all 0.6s ease-in-out;
 }
 
 .button-container.with-logo.exiting {

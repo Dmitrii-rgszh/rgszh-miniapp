@@ -1,11 +1,11 @@
 /* ============================================================================
-   buttons.css - УНИВЕРСАЛЬНЫЕ СТИЛИ КНОПОК
+   buttons.css - УНИВЕРСАЛЬНЫЕ СТИЛИ КНОПОК С АНИМАЦИЯМИ
    ----------------------------------------------------------------------------
    ✅ Корпоративные цвета: R:180 G:0 B:055 + R:153 G:0 B:055 (красный),
        R:152 G:164 B:174 + R:118 G:143 B:146 (серый), R:0 G:40 B:130 + R:0 G:32 B:104 (синий)
    ✅ Шрифты: Segoe UI Bold для заголовков, Segoe UI Regular для текста
    ✅ Адаптивность для 3 разрешений: >768px, 375-768px, <375px
-   ✅ Универсальный класс для использования в любых JS компонентах
+   ✅ Включает анимации появления/скрытия для MainMenu
    ============================================================================ */
 
 /* ======================================
@@ -37,7 +37,7 @@
   
   /* Типографика */
   font-family: var(--btn-font-family);
-  font-weight: 350;
+  font-weight: 600;
   text-align: center;
   text-decoration: none;
   white-space: nowrap;
@@ -153,38 +153,6 @@
   );
 }
 
-/* Прозрачная кнопка */
-.btn-universal.btn-transparent {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  color: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-}
-
-.btn-universal.btn-transparent:hover {
-  background: rgba(255, 255, 255, 0.2);
-  border-color: rgba(255, 255, 255, 0.5);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
-}
-
-/* Outline кнопка */
-.btn-universal.btn-outline {
-  background: transparent;
-  border: 2px solid var(--btn-red-primary);
-  color: var(--btn-red-primary);
-  border-radius: 12px;
-}
-
-.btn-universal.btn-outline:hover {
-  background: var(--btn-red-primary);
-  color: white;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(180, 0, 55, 0.3);
-}
-
 /* ======================================
    РАЗМЕРЫ КНОПОК
    ====================================== */
@@ -227,6 +195,55 @@
 }
 
 /* ======================================
+   АНИМАЦИИ ПОЯВЛЕНИЯ И СКРЫТИЯ
+   ====================================== */
+
+/* Скрытое состояние кнопки - ВАЖНО для MainMenu */
+.btn-universal.button-hidden {
+  opacity: 0;
+  transform: translateY(50px);
+}
+
+/* Анимированное появление кнопки */
+.btn-universal.button-animated {
+  opacity: 1;
+  transform: translateY(0);
+  transition: all 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Поочередная анимация для нескольких кнопок */
+.btn-universal.button-animated[data-index="0"] {
+  transition-delay: 0.1s;
+}
+
+.btn-universal.button-animated[data-index="1"] {
+  transition-delay: 0.2s;
+}
+
+.btn-universal.button-animated[data-index="2"] {
+  transition-delay: 0.3s;
+}
+
+.btn-universal.button-animated[data-index="3"] {
+  transition-delay: 0.4s;
+}
+
+.btn-universal.button-animated[data-index="4"] {
+  transition-delay: 0.5s;
+}
+
+.btn-universal.button-animated[data-index="5"] {
+  transition-delay: 0.6s;
+}
+
+/* Анимация выхода кнопки */
+.btn-universal.button-exiting {
+  opacity: 0;
+  transform: translateY(-30px);
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ======================================
    СОСТОЯНИЯ КНОПОК
    ====================================== */
 
@@ -257,6 +274,7 @@
   border-top: 2px solid white;
   border-radius: 50%;
   animation: button-loading-spinner 1s ease infinite;
+  inset: 0;
 }
 
 @keyframes button-loading-spinner {
@@ -271,7 +289,7 @@
   position: absolute;
   border-radius: 50%;
   transform: scale(0);
-  background: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.7);
   animation: ripple-effect 600ms linear;
   pointer-events: none;
 }
@@ -415,17 +433,6 @@
   flex-direction: column;
 }
 
-.btn-group.btn-group-attached .btn-universal:not(:last-child) {
-  border-top-right-radius: 0;
-  border-bottom-right-radius: 0;
-  margin-right: -1px;
-}
-
-.btn-group.btn-group-attached .btn-universal:not(:first-child) {
-  border-top-left-radius: 0;
-  border-bottom-left-radius: 0;
-}
-
 /* ======================================
    УТИЛИТАРНЫЕ КЛАССЫ
    ====================================== */
@@ -452,6 +459,7 @@
   z-index: -1;
   opacity: 0;
   transition: opacity 0.3s ease;
+  filter: blur(4px);
 }
 
 .btn-universal.btn-glow:hover::before {

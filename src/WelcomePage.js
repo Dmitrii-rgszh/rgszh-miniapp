@@ -1,7 +1,8 @@
-// WelcomePage.js - С УНИФИЦИРОВАННЫМИ СТИЛЯМИ
+// WelcomePage.js - С УНИФИЦИРОВАННЫМИ СТИЛЯМИ И РАБОЧИМИ АНИМАЦИЯМИ
 // ✅ Использует containers.css для позиционирования
-// ✅ Использует logo.css для логотипа
-// ✅ Минимум инлайн стилей
+// ✅ Использует logo.css для логотипа (с анимациями)
+// ✅ Использует text.css для текста
+// ✅ Рабочий автопереход и анимации выхода
 
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -9,7 +10,7 @@ import logoImage from './components/logo.png';
 
 // Подключаем CSS файлы
 import './Styles/containers.css'; // Универсальные контейнеры
-import './Styles/logo.css';       // Стили логотипа
+import './Styles/logo.css';       // Стили логотипа с анимациями
 import './Styles/text.css';        // Стили текста
 
 const WelcomePage = () => {
@@ -61,11 +62,13 @@ const WelcomePage = () => {
     
     // Анимируем выход логотипа через CSS класс
     if (logoRef.current) {
+      // Убираем класс входной анимации
       logoRef.current.classList.remove('animate-logo');
+      // Добавляем класс выходной анимации
       logoRef.current.classList.add('animate-logo-exit');
     }
     
-    // Переход на следующую страницу
+    // Переход на следующую страницу после анимации
     setTimeout(() => {
       navigate('/main-menu');
     }, 800);
@@ -88,7 +91,7 @@ const WelcomePage = () => {
       setTextAnimated(true);
     }, 600);
     
-    // Автоматический переход через 3 секунды (уменьшил для тестирования)
+    // Автоматический переход через 3 секунды
     const autoNavigate = setTimeout(() => {
       handleNavigation();
     }, 3000);
@@ -98,7 +101,7 @@ const WelcomePage = () => {
       clearTimeout(timer2);
       clearTimeout(autoNavigate);
     };
-  }, [triggerHaptic]); // Убрал handleNavigation из зависимостей чтобы избежать циклов
+  }, []); // Пустой массив зависимостей для однократного выполнения
 
   // ===== КЛАССЫ ДЛЯ ЭЛЕМЕНТОВ =====
   const getContainerClasses = () => [
@@ -108,9 +111,8 @@ const WelcomePage = () => {
   ].filter(Boolean).join(' ');
 
   const getLogoClasses = () => [
-    'logo-wrapper',
-    logoAnimated ? 'animated' : '',
-    isExiting ? 'exiting' : ''
+    'logo-wrapper'
+    // НЕ добавляем здесь animated и exiting, так как управляем через classList
   ].filter(Boolean).join(' ');
 
   const getTextContainerClasses = () => [

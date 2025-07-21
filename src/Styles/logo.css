@@ -1,7 +1,7 @@
 /* ============================================================================
-   logo.css - СТИЛИ ЛОГОТИПА С ИСПРАВЛЕННЫМИ АНИМАЦИЯМИ
+   logo.css - СТИЛИ ЛОГОТИПА С РАБОЧИМИ АНИМАЦИЯМИ
    ----------------------------------------------------------------------------
-   ✅ Исправлены анимации выхода
+   ✅ Рабочие анимации входа и выхода
    ✅ Гласморфизм и анимации
    ✅ Адаптивность для 3 разрешений: >768px, 375-768px, <375px
    ============================================================================ */
@@ -11,10 +11,6 @@
    ====================================== */
 .logo-wrapper {
   position: absolute;
-  
-  /* Уменьшенные позиции в 2 раза */
-  top: 25px;  /* было 50px */
-  
   left: 50%;
   transform: translateX(-50%);
   
@@ -26,7 +22,8 @@
   border-radius: 20px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
   
-  /* Начальное состояние */
+  /* Начальное состояние - скрыт вверху */
+  top: -200px;
   opacity: 0;
   z-index: 3;
   
@@ -34,254 +31,165 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  
+  /* Переход для состояний без анимации */
+  transition: all 0.8s ease-out;
 }
 
 /* ======================================
    ИЗОБРАЖЕНИЕ ЛОГОТИПА
    ====================================== */
 .logo-image {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
   width: 96px;
   height: 96px;
   object-fit: contain;
-  z-index: 11;
 }
 
 /* ======================================
-   ENTRY АНИМАЦИЯ
+   ENTRY АНИМАЦИЯ (ПОЯВЛЕНИЕ)
    ====================================== */
 .logo-wrapper.animate-logo {
-  animation: slideDownWrapper 0.8s ease-out forwards;
+  animation: slideDown 0.8s ease-out forwards;
 }
 
-@keyframes slideDownWrapper {
-  0% {
-    opacity: 0;
+@keyframes slideDown {
+  from {
     top: -200px;
-    transform: translateX(-50%);
+    opacity: 0;
   }
-  100% {
+  to {
+    top: 55px;
     opacity: 1;
-    top: 55px;  /* финальная позиция: было 110px, стало 55px */
-    transform: translateX(-50%);
   }
 }
 
 /* ======================================
-   EXIT АНИМАЦИЯ - ИСПРАВЛЕНО
+   EXIT АНИМАЦИЯ (ИСЧЕЗНОВЕНИЕ)
    ====================================== */
 .logo-wrapper.animate-logo-exit {
-  /* Останавливаем все предыдущие анимации */
-  animation: none !important;
-  /* Применяем анимацию выхода */
-  animation: slideUpLogoExit 0.8s ease-in forwards !important;
+  animation: slideUp 0.8s ease-in forwards;
 }
 
-@keyframes slideUpLogoExit {
-  0% { 
-    opacity: 1; 
-    top: 55px; /* Начинаем с текущей позиции */
-    transform: translateX(-50%);
+@keyframes slideUp {
+  from {
+    top: 55px;
+    opacity: 1;
   }
-  100% { 
-    opacity: 0; 
-    top: -200px; /* Улетаем вверх */
-    transform: translateX(-50%);
+  to {
+    top: -200px;
+    opacity: 0;
   }
 }
 
 /* ======================================
    ПОСТОЯННЫЕ АНИМАЦИИ (ВСТРЯСКИ)
    ====================================== */
-/* Эти анимации отключаются при выходе */
-.logo-wrapper.animate-logo:not(.animate-logo-exit) {
+.logo-wrapper.animate-logo {
   animation: 
-    slideDownWrapper 0.8s ease-out forwards,
-    shakeLeftRight 25s ease-in-out infinite 2s,
-    shakeUpDown 30s ease-in-out infinite 5s;
+    slideDown 0.8s ease-out forwards,
+    shakeX 25s ease-in-out infinite 2s,
+    shakeY 30s ease-in-out infinite 5s;
 }
 
-@keyframes shakeLeftRight {
-  0%   { transform: translateX(-50%) translateX(0); }
-  10%  { transform: translateX(-50%) translateX(-10px); }
-  20%  { transform: translateX(-50%) translateX(10px); }
-  30%  { transform: translateX(-50%) translateX(-6px); }
-  40%  { transform: translateX(-50%) translateX(6px); }
-  50%  { transform: translateX(-50%) translateX(0); }
-  100% { transform: translateX(-50%) translateX(0); }
+/* Встряски отключаются при выходе */
+.logo-wrapper.animate-logo-exit {
+  animation: slideUp 0.8s ease-in forwards !important;
 }
 
-@keyframes shakeUpDown {
-  0%   { transform: translateX(-50%) translateY(0); }
-  10%  { transform: translateX(-50%) translateY(-8px); }
-  20%  { transform: translateX(-50%) translateY(8px); }
-  30%  { transform: translateX(-50%) translateY(-5px); }
-  40%  { transform: translateX(-50%) translateY(5px); }
-  50%  { transform: translateX(-50%) translateY(0); }
-  100% { transform: translateX(-50%) translateY(0); }
+@keyframes shakeX {
+  0%, 50%, 100% { transform: translateX(-50%); }
+  10% { transform: translateX(calc(-50% - 10px)); }
+  20% { transform: translateX(calc(-50% + 10px)); }
+  30% { transform: translateX(calc(-50% - 6px)); }
+  40% { transform: translateX(calc(-50% + 6px)); }
+}
+
+@keyframes shakeY {
+  0%, 50%, 100% { transform: translateX(-50%) translateY(0); }
+  10% { transform: translateX(-50%) translateY(-8px); }
+  20% { transform: translateX(-50%) translateY(8px); }
+  30% { transform: translateX(-50%) translateY(-5px); }
+  40% { transform: translateX(-50%) translateY(5px); }
 }
 
 /* ======================================
-   СОСТОЯНИЯ АНИМАЦИИ
+   СОСТОЯНИЯ БЕЗ АНИМАЦИИ
    ====================================== */
 .logo-wrapper.animated {
-  top: 55px;  /* финальная позиция */
+  top: 55px;
   opacity: 1;
 }
 
-/* Убираем конфликтующий класс exiting */
 .logo-wrapper.exiting {
-  /* Не используем этот класс для логотипа */
-  pointer-events: none;
+  top: -200px;
+  opacity: 0;
 }
 
 /* ======================================
-   АДАПТИВНОСТЬ ДЛЯ 3 РАЗРЕШЕНИЙ
+   АДАПТИВНОСТЬ: ПЛАНШЕТЫ (375-768px)
    ====================================== */
-
-/* 1. Экраны свыше 768px (DESKTOP) */
-@media (min-width: 769px) {
+@media (max-width: 768px) and (min-width: 375px) {
   .logo-wrapper {
-    top: 25px;
-    width: 128px;
-    height: 128px;
-    border-radius: 20px;
-  }
-
-  .logo-wrapper.animated {
-    top: 55px;
-  }
-  
-  .logo-wrapper.animate-logo-exit {
-    animation: slideUpLogoExitDesktop 0.8s ease-in forwards !important;
-  }
-  
-  @keyframes slideUpLogoExitDesktop {
-    0% { 
-      opacity: 1; 
-      top: 55px;
-      transform: translateX(-50%);
-    }
-    100% { 
-      opacity: 0; 
-      top: -200px;
-      transform: translateX(-50%);
-    }
-  }
-
-  .logo-image {
-    width: 96px;
-    height: 96px;
-  }
-}
-
-/* 2. Экраны от 375px до 768px (TABLET) */
-@media (min-width: 375px) and (max-width: 768px) {
-  .logo-wrapper {
-    top: 10px;
     width: 96px;
     height: 96px;
     border-radius: 16px;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
-  }
-
-  .logo-wrapper.animated {
-    top: 40px;
   }
   
-  .logo-wrapper.animate-logo-exit {
-    animation: slideUpLogoExitTablet 0.8s ease-in forwards !important;
-  }
-  
-  @keyframes slideUpLogoExitTablet {
-    0% { 
-      opacity: 1; 
-      top: 40px;
-      transform: translateX(-50%);
-    }
-    100% { 
-      opacity: 0; 
-      top: -150px;
-      transform: translateX(-50%);
-    }
-  }
-
   .logo-image {
     width: 72px;
     height: 72px;
   }
-
-  @keyframes slideDownWrapperTablet {
-    from {
-      opacity: 0;
-      top: -150px;
-      transform: translateX(-50%);
-    }
+  
+  .logo-wrapper.animated {
+    top: 40px;
+  }
+  
+  @keyframes slideDown {
     to {
-      opacity: 1;
       top: 40px;
-      transform: translateX(-50%);
+      opacity: 1;
     }
   }
   
-  .logo-wrapper.animate-logo {
-    animation: slideDownWrapperTablet 0.8s ease-out forwards;
+  @keyframes slideUp {
+    from {
+      top: 40px;
+      opacity: 1;
+    }
   }
 }
 
-/* 3. Экраны менее 375px (MOBILE) */
+/* ======================================
+   АДАПТИВНОСТЬ: МОБИЛЬНЫЕ (<375px)
+   ====================================== */
 @media (max-width: 374px) {
   .logo-wrapper {
-    top: 5px;
     width: 80px;
     height: 80px;
     border-radius: 12px;
   }
-
-  .logo-wrapper.animated {
-    top: 25px;
-  }
   
-  .logo-wrapper.animate-logo-exit {
-    animation: slideUpLogoExitMobile 0.8s ease-in forwards !important;
-  }
-  
-  @keyframes slideUpLogoExitMobile {
-    0% { 
-      opacity: 1; 
-      top: 25px;
-      transform: translateX(-50%);
-    }
-    100% { 
-      opacity: 0; 
-      top: -120px;
-      transform: translateX(-50%);
-    }
-  }
-
   .logo-image {
     width: 60px;
     height: 60px;
   }
-
-  @keyframes slideDownWrapperMobile {
-    from {
-      opacity: 0;
-      top: -120px;
-      transform: translateX(-50%);
-    }
+  
+  .logo-wrapper.animated {
+    top: 25px;
+  }
+  
+  @keyframes slideDown {
     to {
-      opacity: 1;
       top: 25px;
-      transform: translateX(-50%);
+      opacity: 1;
     }
   }
   
-  .logo-wrapper.animate-logo {
-    animation: slideDownWrapperMobile 0.8s ease-out forwards;
+  @keyframes slideUp {
+    from {
+      top: 25px;
+      opacity: 1;
+    }
   }
 }
 
@@ -289,16 +197,12 @@
    УТИЛИТАРНЫЕ КЛАССЫ
    ====================================== */
 .logo-wrapper.hidden {
-  opacity: 0;
-  pointer-events: none;
+  display: none;
 }
 
 .logo-wrapper.no-animation {
   animation: none !important;
-}
-
-.logo-wrapper.fast-animation {
-  animation-duration: 0.4s !important;
+  transition: all 0.3s ease-out;
 }
 
 
