@@ -1,7 +1,6 @@
-// MainApp.js - ИСПРАВЛЕННАЯ ВЕРСИЯ
-// ✅ Фоны загружаются во время экрана приветствия (без показа прогресса)
-// ✅ Автоматический переход на MainMenu через 3 секунды
-// ✅ Исправлены warnings о конфликте стилей
+// MainApp.js - ЧИСТАЯ ВЕРСИЯ
+// ✅ ТОЛЬКО смена фонов в MainApp.js
+// ✅ ВСЕ остальные стили - через CSS файлы
 
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
@@ -18,12 +17,9 @@ import JustincasePage  from './JustincasePage';
 import CareFuturePage  from './CareFuturePage';
 import MarzaPollPage   from './MarzaPollPage';
 
-// ===== ЦЕНТРАЛИЗОВАННЫЕ ИМПОРТЫ ФОНОВ =====
-
-// Безопасные импорты фоновых изображений из папки background/
+// ===== ИМПОРТ ФОНОВЫХ ИЗОБРАЖЕНИЙ =====
 let backgroundImage1, backgroundImage2, backgroundImage3, backgroundImage4, defaultBackground;
 
-// Импорт основного фона (fallback)
 try {
   defaultBackground = require('./components/background.png');
 } catch (error) {
@@ -31,14 +27,12 @@ try {
   defaultBackground = null;
 }
 
-// Импорт фонов из папки background/ с проверкой разных названий
 try {
   backgroundImage1 = require('./components/background/background1.png');
 } catch (error) {
   try {
     backgroundImage1 = require('./components/background/background (1).png');
   } catch (error2) {
-    console.warn('Background 1 not found with either name');
     backgroundImage1 = null;
   }
 }
@@ -49,7 +43,6 @@ try {
   try {
     backgroundImage2 = require('./components/background/background (2).png');
   } catch (error2) {
-    console.warn('Background 2 not found with either name');
     backgroundImage2 = null;
   }
 }
@@ -60,7 +53,6 @@ try {
   try {
     backgroundImage3 = require('./components/background/background (3).png');
   } catch (error2) {
-    console.warn('Background 3 not found with either name');
     backgroundImage3 = null;
   }
 }
@@ -71,33 +63,25 @@ try {
   try {
     backgroundImage4 = require('./components/background/background (4).png');
   } catch (error2) {
-    console.warn('Background 4 not found with either name');
     backgroundImage4 = null;
   }
 }
 
-// Создаем массив доступных фонов
+// Массив доступных фонов
 const availableBackgrounds = [
-  backgroundImage1, 
-  backgroundImage2, 
+  defaultBackground,
+  backgroundImage1,
+  backgroundImage2,
   backgroundImage3,
   backgroundImage4
 ].filter(Boolean);
 
-// Добавляем defaultBackground только если других фонов нет
-if (availableBackgrounds.length === 0 && defaultBackground) {
-  availableBackgrounds.push(defaultBackground);
-}
-
-// ✅ НОВОЕ: Если нет вообще никаких изображений - добавляем null для корпоративного градиента
+// Если нет изображений - используем корпоративный градиент
 if (availableBackgrounds.length === 0) {
-  availableBackgrounds.push(null); // null покажет корпоративный градиент из createBackgroundStyle
-  console.log('📍 Используем корпоративный градиент как основной фон');
+  availableBackgrounds.push(null);
 }
 
-console.log(`Найдено фоновых изображений: ${availableBackgrounds.length}`);
-
-// Компонент обработки ошибок
+// ===== ERROR BOUNDARY =====
 class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
@@ -108,37 +92,16 @@ class ErrorBoundary extends React.Component {
     return { error };
   }
   
-  componentDidCatch(error, info) {
-    console.error("ErrorBoundary caught:", error, info);
+  componentDidCatch(error, errorInfo) {
+    console.error('React Error Boundary:', error, errorInfo);
   }
   
   render() {
     if (this.state.error) {
       return (
-        <div style={{
-          padding: '20px',
-          fontFamily: '"Segoe UI", sans-serif',
-          color: 'rgb(180, 0, 55)',
-          backgroundColor: 'white',
-          border: '2px solid rgb(180, 0, 55)',
-          borderRadius: '8px',
-          margin: '20px',
-          textAlign: 'center'
-        }}>
-          <h2 style={{ 
-            fontFamily: '"Segoe UI", sans-serif',
-            fontWeight: 'bold',
-            color: 'rgb(180, 0, 55)' 
-          }}>
-            Произошла ошибка
-          </h2>
-          <pre style={{ 
-            fontSize: '14px',
-            color: 'rgb(0, 40, 130)',
-            fontFamily: '"Segoe UI", sans-serif'
-          }}>
-            {this.state.error.toString()}
-          </pre>
+        <div className="error-boundary">
+          <h2>Произошла ошибка</h2>
+          <pre>{this.state.error.toString()}</pre>
         </div>
       );
     }
@@ -146,12 +109,11 @@ class ErrorBoundary extends React.Component {
   }
 }
 
-// Компонент для автоматического перехода
+// ===== АВТОНАВИГАЦИЯ =====
 function AutoNavigator({ children }) {
   const navigate = useNavigate();
   
   useEffect(() => {
-    // Автоматический переход на MainMenu через 3 секунды
     const timer = setTimeout(() => {
       if (window.location.pathname === '/') {
         navigate('/main-menu');
@@ -164,299 +126,181 @@ function AutoNavigator({ children }) {
   return children;
 }
 
+// ===== ГЛАВНЫЙ КОМПОНЕНТ =====
 function MainApp() {
-  // ===== СОСТОЯНИЕ ДЛЯ УПРАВЛЕНИЯ ФОНАМИ =====
+  // ===== СОСТОЯНИЕ ДЛЯ ФОНОВ =====
   const [activeBackgroundIndex, setActiveBackgroundIndex] = useState(0);
   const [viewportHeight, setViewportHeight] = useState(window.innerHeight);
-  const [isTransitioning, setIsTransitioning] = useState(false);
-  
-  // ===== СОСТОЯНИЕ ДЛЯ ПЛАВНЫХ ПЕРЕХОДОВ =====
-  // Массив opacity для каждого фона
   const [backgroundOpacities, setBackgroundOpacities] = useState(
     availableBackgrounds.map((_, index) => index === 0 ? 1 : 0)
   );
-  
-  // ===== СОСТОЯНИЕ ПРЕДЗАГРУЗКИ =====
   const [imagesLoaded, setImagesLoaded] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
-  // ===== ПРЕДЗАГРУЗКА ИЗОБРАЖЕНИЙ (без показа прогресса) =====
+  // ===== ПРЕДЗАГРУЗКА ИЗОБРАЖЕНИЙ =====
   useEffect(() => {
     if (availableBackgrounds.length === 0) {
       setImagesLoaded(true);
       return;
     }
 
-    console.log('Предзагрузка фоновых изображений...');
     let loadedCount = 0;
     const totalImages = availableBackgrounds.length;
 
     availableBackgrounds.forEach((imageSrc, index) => {
+      if (!imageSrc) {
+        loadedCount++;
+        if (loadedCount === totalImages) {
+          setImagesLoaded(true);
+        }
+        return;
+      }
+
       const img = new Image();
-      
       img.onload = () => {
         loadedCount++;
-        console.log(`Загружено изображение ${index + 1}/${totalImages}`);
-        
         if (loadedCount === totalImages) {
-          console.log('Все фоновые изображения предзагружены!');
           setImagesLoaded(true);
         }
       };
-      
       img.onerror = () => {
-        console.warn(`Ошибка загрузки изображения ${index}`);
         loadedCount++;
-        
         if (loadedCount === totalImages) {
           setImagesLoaded(true);
         }
       };
-      
       img.src = imageSrc;
     });
   }, []);
 
-  // ===== ПРОСТАЯ ФУНКЦИЯ ПОЛУЧЕНИЯ СЛЕДУЮЩЕГО ИНДЕКСА =====
-  const getNextBackgroundIndex = (currentIndex) => {
-    if (availableBackgrounds.length === 0) return 0;
-    return (currentIndex + 1) % availableBackgrounds.length;
-  };
-
-  // ===== ГЛАВНАЯ ФУНКЦИЯ ПЕРЕХОДА =====
-  const startTransition = () => {
-    if (!imagesLoaded || isTransitioning || availableBackgrounds.length < 2) {
-      return;
-    }
-    
-    const nextIndex = getNextBackgroundIndex(activeBackgroundIndex);
-    console.log(`🔄 Переход: фон ${activeBackgroundIndex + 1} → ${nextIndex + 1}`);
-    
-    setIsTransitioning(true);
-    
-    // Запускаем переход с усиленным Aurora эффектом
-    executeCrossfadeWithAurora(activeBackgroundIndex, nextIndex);
-  };
-
-  // ===== РЕАЛИЗАЦИЯ CROSSFADE С AURORA ЭФФЕКТОМ =====
-  const executeCrossfadeWithAurora = (fromIndex, toIndex) => {
-    const duration = 10000; // 10 секунд на переход для максимально плавного Aurora эффекта
-    const steps = 400; // Еще больше шагов для плавности
-    
-    let step = 0;
-    const fadeInterval = setInterval(() => {
-      step++;
-      const progress = step / steps;
-      
-      // Сложная функция для Aurora эффекта
-      const easeProgress = progress < 0.5
-        ? 2 * progress * progress
-        : 1 - Math.pow(-2 * progress + 2, 2) / 2;
-      
-      // Многослойные волны для эффекта северного сияния
-      const auroraWave1 = Math.sin(progress * Math.PI * 3) * 0.15 + 0.85;
-      const auroraWave2 = Math.cos(progress * Math.PI * 2) * 0.1 + 0.9;
-      const auroraWave3 = Math.sin(progress * Math.PI * 4) * 0.05 + 0.95;
-      
-      // Комбинированная Aurora волна
-      const combinedAurora = (auroraWave1 + auroraWave2 + auroraWave3) / 3;
-      
-      // Обновляем массив opacity с Aurora эффектом
-      setBackgroundOpacities(opacities => {
-        const newOpacities = [...opacities];
-        
-        // Уходящий фон с волновым затуханием
-        newOpacities[fromIndex] = Math.max(0, Math.min(1, 
-          (1 - easeProgress) * combinedAurora * 0.95
-        ));
-        
-        // Появляющийся фон с Aurora свечением
-        newOpacities[toIndex] = Math.max(0, Math.min(1, 
-          easeProgress * (0.7 + combinedAurora * 0.3)
-        ));
-        
-        return newOpacities;
-      });
-      
-      if (step >= steps) {
-        clearInterval(fadeInterval);
-        finalizeTransition(toIndex);
-      }
-    }, 25);
-  };
-
-  // ===== ФИНАЛИЗАЦИЯ ПЕРЕХОДА =====
-  const finalizeTransition = (newActiveIndex) => {
-    console.log(`✅ Переход завершен: активен фон ${newActiveIndex + 1}`);
-    
-    // Обновляем активный индекс
-    setActiveBackgroundIndex(newActiveIndex);
-    
-    // Устанавливаем финальные значения opacity
-    setBackgroundOpacities(opacities => {
-      const newOpacities = opacities.map((_, index) => index === newActiveIndex ? 1 : 0);
-      return newOpacities;
-    });
-    
-    setIsTransitioning(false);
-  };
-
-  // ===== ФУНКЦИЯ ОБНОВЛЕНИЯ ВЫСОТЫ =====
-  const updateViewportHeight = () => {
-    setViewportHeight(window.innerHeight);
-  };
-
-  // ===== ОБРАБОТЧИК ИЗМЕНЕНИЯ РАЗМЕРА ОКНА =====
+  // ===== ОБРАБОТКА ИЗМЕНЕНИЯ РАЗМЕРА ОКНА =====
   useEffect(() => {
-    window.addEventListener('resize', updateViewportHeight);
-    window.addEventListener('orientationchange', updateViewportHeight);
-    
-    const handleOrientationChange = () => {
-      setTimeout(updateViewportHeight, 100);
+    const handleResize = () => {
+      setViewportHeight(window.innerHeight);
     };
-    
+
+    const handleOrientationChange = () => {
+      setTimeout(() => {
+        setViewportHeight(window.innerHeight);
+      }, 100);
+    };
+
+    window.addEventListener('resize', handleResize);
     window.addEventListener('orientationchange', handleOrientationChange);
-    
+
     return () => {
-      window.removeEventListener('resize', updateViewportHeight);
-      window.removeEventListener('orientationchange', updateViewportHeight);
+      window.removeEventListener('resize', handleResize);
       window.removeEventListener('orientationchange', handleOrientationChange);
     };
   }, []);
 
-  // ===== АВТОМАТИЧЕСКАЯ СМЕНА ФОНОВ КАЖДЫЕ 15 СЕКУНД =====
+  // ===== СМЕНА ФОНОВ КАЖДЫЕ 30 СЕКУНД =====
   useEffect(() => {
     if (!imagesLoaded || availableBackgrounds.length <= 1) return;
-    
-    console.log('🚀 Запуск системы смены фонов: каждые 15 секунд');
-    
-    const repeatTimer = setInterval(() => {
-      startTransition();
-    }, 15000);
 
-    return () => {
-      clearInterval(repeatTimer);
-    };
+    const changeTimer = setTimeout(() => {
+      setIsTransitioning(true);
+      
+      const nextIndex = (activeBackgroundIndex + 1) % availableBackgrounds.length;
+      
+      setBackgroundOpacities(prev => 
+        prev.map((opacity, index) => 
+          index === nextIndex ? 1 : index === activeBackgroundIndex ? 0 : 0
+        )
+      );
+      
+      setTimeout(() => {
+        setActiveBackgroundIndex(nextIndex);
+        setIsTransitioning(false);
+      }, 2000);
+      
+    }, 30000);
+
+    return () => clearTimeout(changeTimer);
   }, [imagesLoaded, activeBackgroundIndex]);
 
-  // ===== CSS СТИЛИ БЕЗ АНИМАЦИИ ДВИЖЕНИЯ =====
-  const staticStyles = `
-    /* ✨ ГЛОБАЛЬНЫЕ CSS ПЕРЕМЕННЫЕ ДЛЯ SAFE AREA */
-    :root {
-      --safe-area-top: env(safe-area-inset-top, 50px);
-      --safe-area-bottom: env(safe-area-inset-bottom, 0px);
-      --safe-area-left: env(safe-area-inset-left, 0px);
-      --safe-area-right: env(safe-area-inset-right, 0px);
-    }
-    
-    /* ✨ ГЛОБАЛЬНЫЕ УТИЛИТАРНЫЕ КЛАССЫ ДЛЯ SAFE AREA */
-    .safe-top { margin-top: var(--safe-area-top) !important; }
-    .safe-top-padding { padding-top: var(--safe-area-top) !important; }
-    .safe-bottom { margin-bottom: var(--safe-area-bottom) !important; }
-    .safe-bottom-padding { padding-bottom: var(--safe-area-bottom) !important; }
-    
-    /* ✨ АВТОМАТИЧЕСКИЙ SAFE AREA ДЛЯ ОСНОВНЫХ ЭЛЕМЕНТОВ */
-    .logo-safe { top: 110px !important; }
-    .buttons-safe { top 300px !important; }
-    .title-safe { top: 260px !important; }
-  `;
-
-  // Добавляем стили в head
-  useEffect(() => {
-    const styleId = 'static-styles';
-    if (!document.getElementById(styleId)) {
-      const style = document.createElement('style');
-      style.id = styleId;
-      style.textContent = staticStyles;
-      document.head.appendChild(style);
-    }
-  }, []);
-
-  // ===== ГЛОБАЛЬНЫЕ СТИЛИ КОНТЕЙНЕРА ====
-  const globalContainerStyle = {
-    position: 'relative', // ← Вернули relative для производительности
+  // ===== ТОЛЬКО СТИЛИ ДЛЯ ФОНОВ (никаких других!) =====
+  
+  // Основной контейнер - минимальные стили
+  const mainContainerStyle = {
+    position: 'relative',
     width: '100%',
     height: `${viewportHeight}px`,
     minHeight: '100vh',
     overflow: 'hidden',
-    fontFamily: '"Segoe UI", sans-serif',
-  
-    // ✅ ПРОСТОЕ Safe Area решение без calc()
-    paddingTop: 'env(safe-area-inset-top, 50px)',
-    paddingBottom: 'env(safe-area-inset-bottom, 0px)',
-    paddingLeft: 'env(safe-area-inset-left, 0px)',
-    paddingRight: 'env(safe-area-inset-right, 0px)',
-    boxSizing: 'border-box',
+    fontFamily: '"Segoe UI", sans-serif'
   };
 
-  // ===== СТИЛЬ ДЛЯ СТАТИЧНЫХ ФОНОВ С ПРОСТЫМ ЭФФЕКТОМ =====
+  // Стили фоновых слоев
   const createBackgroundStyle = (backgroundSrc, index) => {
     const opacity = backgroundOpacities[index] || 0;
-  
+    
     return {
-      position: 'fixed', // ← fixed только для фона
-      top: 0,            // ← простые значения без calc()
+      position: 'fixed',
+      top: 0,
       left: 0,
       right: 0,
       bottom: 0,
       width: '100vw',
       height: '100vh',
-    
-      // ✅ Фон покрывает весь экран включая Safe Area
-      zIndex: opacity > 0 ? 1 : 0, // Оптимизация z-index
-    
-      // Корпоративный фон или изображение
+      zIndex: opacity > 0 ? 1 : 0,
+      
+      // Фон: изображение или корпоративный градиент
       backgroundImage: backgroundSrc 
         ? `url(${backgroundSrc})` 
-        : `linear-gradient(135deg, 
-            rgba(180, 0, 55, 0.95) 0%,
-            rgba(153, 0, 55, 0.9) 25%,
-            rgba(152, 164, 174, 0.8) 50%,
-            rgba(118, 143, 146, 0.85) 75%,
-            rgba(0, 40, 130, 0.95) 100%
-          )`,
-    
-      backgroundColor: 'rgba(180, 0, 55, 0.95)',
+        : 'linear-gradient(135deg, rgb(180, 0, 55) 0%, rgb(153, 0, 55) 25%, rgb(152, 164, 174) 50%, rgb(118, 143, 146) 75%, rgb(0, 40, 130) 100%)',
+      
       backgroundSize: 'cover',
       backgroundPosition: 'center',
       backgroundRepeat: 'no-repeat',
-    
+      backgroundAttachment: 'fixed',
+      
+      // Плавный переход
       opacity: opacity,
-    
-      // ✅ УПРОЩЕННЫЕ эффекты для производительности
-      filter: opacity > 0.5 ? `brightness(0.8)` : 'brightness(0.7)',
-      transition: 'opacity 2s ease-in-out', // ← короче для быстроты
-    
-      pointerEvents: 'none',
-      willChange: opacity > 0 ? 'opacity' : 'auto' // Оптимизация
+      transition: isTransitioning ? 'opacity 2.0s ease-in-out' : 'none',
+      
+      // Оптимизация
+      willChange: isTransitioning ? 'opacity' : 'auto',
+      transform: 'translateZ(0)',
+      pointerEvents: 'none'
     };
+  };
+
+  // Контейнер контента - минимальные стили
+  const contentContainerStyle = {
+    position: 'relative',
+    zIndex: 10,
+    width: '100%',
+    height: '100%'
   };
 
   return (
     <ErrorBoundary>
-      <div style={globalContainerStyle}>
-        {/* Создаем отдельный div для каждого фона со статичным положением */}
-        {imagesLoaded && availableBackgrounds.map((background, index) => (
+      <div className="main-app-container" style={mainContainerStyle}>
+        {/* ===== ФОНОВЫЕ СЛОИ ===== */}
+        {availableBackgrounds.map((backgroundSrc, index) => (
           <div
-            key={index}
-            style={createBackgroundStyle(background, index)}
+            key={`background-${index}`}
+            className="background-layer"
+            style={createBackgroundStyle(backgroundSrc, index)}
           />
         ))}
         
-        {/* Роутер с компонентами */}
+        {/* ===== ОСНОВНОЙ КОНТЕНТ ===== */}
         <Router>
           <AutoNavigator>
-            <div style={{ position: 'relative', zIndex: 10, width: '100%', height: '100%' }}>
+            <div style={contentContainerStyle}>
               <Routes>
-                <Route path="/"           element={<WelcomePage />} />
-                <Route path="/main-menu"  element={<MainMenu />} />
-                <Route path="/polls"      element={<PollsPage />} />
-                <Route path="/snp"        element={<SNPPage />} />
-                <Route path="/employee"   element={<EmployeePage />} />
+                <Route path="/" element={<WelcomePage />} />
+                <Route path="/main-menu" element={<MainMenu />} />
+                <Route path="/polls" element={<PollsPage />} />
+                <Route path="/employee" element={<EmployeePage />} />
+                <Route path="/snp" element={<SNPPage />} />
                 <Route path="/assessment" element={<AssessmentPage />} />
-                <Route path="/feedback"   element={<FeedbackPage />} />
+                <Route path="/feedback" element={<FeedbackPage />} />
                 <Route path="/justincase" element={<JustincasePage />} />
-                <Route path="/carefuture" element={<CareFuturePage />} />
-                <Route path="/marzapoll"  element={<MarzaPollPage />} />
+                <Route path="/care-future" element={<CareFuturePage />} />
+                <Route path="/marza-poll" element={<MarzaPollPage />} />
               </Routes>
             </div>
           </AutoNavigator>

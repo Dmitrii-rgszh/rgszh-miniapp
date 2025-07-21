@@ -1,114 +1,37 @@
-// MainMenu.js - БЕЗ МАГНИТНЫХ КНОПОК
-// Обычные кнопки с корпоративными стилями
+// MainMenu.js - ЧИСТАЯ ВЕРСИЯ
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logoImage from './components/logo.png';
+import './Styles/logo.css';      
 
 export default function MainMenu() {
   const navigate = useNavigate();
   
-  // Состояния анимаций
+  // ===== СОСТОЯНИЯ =====
   const [logoAnimated, setLogoAnimated] = useState(false);
   const [buttonsAnimated, setButtonsAnimated] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
+  const logoRef = useRef(null);
 
-  // ===== СТИЛИ =====
-
-  // Основной контейнер
-  const mainContainerStyle = {
-    position: 'relative',
-    width: '100%',
-    height: window.innerHeight + 'px',
-    minHeight: '100vh',
-    overflow: 'hidden',
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'center',
-    alignItems: 'center',
-    fontFamily: '"Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif'
-  };
-
-  // Логотип с анимацией
-  const logoStyle = {
-    position: 'absolute',
-    top: logoAnimated && !isExiting ? '110px' : isExiting ? '-200px' : '-200px',
-    left: '50%',
-    transform: 'translateX(-50%)',
-    width: '128px',
-    height: '128px',
-    backgroundColor: 'rgba(255, 255, 255, 0.10)',
-    backdropFilter: 'blur(8px)',
-    borderRadius: '20px',
-    boxShadow: '0 10px 25px rgba(0, 0, 0, 0.25)',
-    opacity: logoAnimated && !isExiting ? 1 : 0,
-    zIndex: 3,
-    transition: 'all 0.8s ease-out',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center'
-  };
-
-  // Изображение логотипа
-  const logoImageStyle = {
-    width: '96px',
-    height: '96px',
-    objectFit: 'contain'
-  };
-
-  // Контейнер кнопок
-  const buttonContainerStyle = {
-    position: 'absolute',
-    top: buttonsAnimated ? '268px' : '368px',
-    left: '50%',
-    transform: 'translateX(-50%)',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '20px',
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: '100%',
-    maxWidth: '400px',
-    zIndex: 3,
-    paddingLeft: '20px',
-    paddingRight: '20px',
-    boxSizing: 'border-box',
-    opacity: buttonsAnimated ? 1 : 0,
-    transition: 'all 0.8s ease-out 0.2s'
-  };
-
-  // Стиль для обычных кнопок
-  const getButtonStyle = (index, animated) => ({
-    minWidth: '280px',
-    background: 'linear-gradient(135deg, rgba(180, 0, 55, 0.9) 0%, rgba(153, 0, 55, 0.85) 50%, rgba(0, 40, 130, 0.9) 100%)',
-    color: 'white',
-    border: 'none',
-    borderRadius: '12px',
-    padding: '18px 36px',
-    cursor: 'pointer',
-    transform: animated && !isExiting ? 'translateY(0)' : isExiting ? 'translateY(100px)' : 'translateY(50px)',
-    opacity: animated && !isExiting ? 1 : 0,
-    transition: `all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) ${0.1 + index * 0.15}s`,
-    zIndex: 2,
-    boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)',
-    fontSize: '20px',
-    fontWeight: '600',
-    fontFamily: '"Segoe UI", sans-serif',
-    boxSizing: 'border-box',
-    outline: 'none',
-    textDecoration: 'none'
-  });
-
-  // Кнопки меню
+  // ===== ДАННЫЕ КНОПОК =====
   const buttons = [
     { label: 'Опросы', to: '/polls' },
     { label: 'Сотрудники', to: '/employee' },
   ];
 
-  // Анимация входа
+  // ===== АНИМАЦИЯ ВХОДА =====
   useEffect(() => {
-    const timer1 = setTimeout(() => setLogoAnimated(true), 100);
-    const timer2 = setTimeout(() => setButtonsAnimated(true), 600);
+    const timer1 = setTimeout(() => {
+      setLogoAnimated(true);
+      if (logoRef.current) {
+        logoRef.current.classList.add('animate-logo');
+      }
+    }, 100);
+    
+    const timer2 = setTimeout(() => {
+      setButtonsAnimated(true);
+    }, 600);
     
     return () => {
       clearTimeout(timer1);
@@ -116,50 +39,92 @@ export default function MainMenu() {
     };
   }, []);
 
-  // Обработка клика по кнопке
+  // ===== ОБРАБОТКА КЛИКА ПО КНОПКЕ =====
   const handleClick = (path) => {
     if (isExiting) return;
     
     setIsExiting(true);
+    
+    // Добавляем CSS классы для exit анимации
+    if (logoRef.current) {
+      logoRef.current.classList.add('animate-logo-exit');
+    }
     
     setTimeout(() => {
       navigate(path);
     }, 800);
   };
 
-  // Hover эффект для кнопок (JavaScript реализация)
-  const handleMouseEnter = (e) => {
-    e.target.style.transform = e.target.style.transform.replace('translateY(0)', 'translateY(-2px)');
-    e.target.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.3)';
+  // ===== RIPPLE ЭФФЕКТ =====
+  const createRipple = (event) => {
+    const button = event.currentTarget;
+    const circle = document.createElement('span');
+    const diameter = Math.max(button.clientWidth, button.clientHeight);
+    const radius = diameter / 2;
+    
+    circle.style.width = circle.style.height = `${diameter}px`;
+    circle.style.left = `${event.clientX - button.offsetLeft - radius}px`;
+    circle.style.top = `${event.clientY - button.offsetTop - radius}px`;
+    circle.classList.add('ripple');
+    
+    const ripple = button.getElementsByClassName('ripple')[0];
+    if (ripple) {
+      ripple.remove();
+    }
+    
+    button.appendChild(circle);
   };
 
-  const handleMouseLeave = (e) => {
-    if (!isExiting) {
-      e.target.style.transform = e.target.style.transform.replace('translateY(-2px)', 'translateY(0)');
-      e.target.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.2)';
-    }
-  };
+  // ===== КЛАССЫ ДЛЯ ЭЛЕМЕНТОВ =====
+  const getContainerClasses = () => [
+    'main-container',
+    isExiting ? 'exiting' : ''
+  ].filter(Boolean).join(' ');
+
+  const getLogoClasses = () => [
+    'logo-wrapper',
+    logoAnimated ? 'animated' : '',
+    isExiting ? 'exiting' : ''
+  ].filter(Boolean).join(' ');
+
+  const getButtonContainerClasses = () => [
+    'button-container',
+    buttonsAnimated ? 'animated' : '',
+    isExiting ? 'exiting' : ''
+  ].filter(Boolean).join(' ');
+
+  const getButtonClasses = (index) => [
+    'btn-custom',
+    'btn-main-menu',
+    buttonsAnimated ? 'animated' : '',
+    isExiting ? 'exiting' : ''
+  ].filter(Boolean).join(' ');
 
   return (
-    <div style={mainContainerStyle}>
-      {/* Логотип */}
-      <div style={logoStyle}>
+    <div className={getContainerClasses()}>
+      {/* ===== ЛОГОТИП ===== */}
+      <div 
+        ref={logoRef} 
+        className={getLogoClasses()}
+      >
         <img
           src={logoImage}
           alt="Логотип РГС Жизнь"
-          style={logoImageStyle}
+          className="logo-image"
         />
       </div>
 
-      {/* Обычные кнопки меню */}
-      <div style={buttonContainerStyle}>
+      {/* ===== КНОПКИ ===== */}
+      <div className={getButtonContainerClasses()}>
         {buttons.map((btn, index) => (
           <button
             key={btn.to}
-            style={getButtonStyle(index, buttonsAnimated)}
-            onClick={() => handleClick(btn.to)}
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
+            className={getButtonClasses(index)}
+            data-index={index}
+            onClick={(e) => {
+              createRipple(e);
+              handleClick(btn.to);
+            }}
           >
             {btn.label}
           </button>
