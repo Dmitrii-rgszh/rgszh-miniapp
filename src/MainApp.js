@@ -1,10 +1,13 @@
-// MainApp.js - ИСПРАВЛЕННАЯ ВЕРСИЯ
-// ✅ УБРАН BrowserRouter (перенесен в index.js)
-// ✅ ТОЛЬКО смена фонов в MainApp.js
-// ✅ ВСЕ остальные стили - через CSS файлы
+// MainApp.js - ПРОСТАЯ ВЕРСИЯ С WEBP
+// ✅ Один размер WebP для всех устройств
+// ✅ Автоматический fallback на PNG
+// ✅ Простая и быстрая загрузка
 
 import React, { useState, useEffect } from 'react';
-import { Routes, Route, useNavigate } from 'react-router-dom'; // ← БЕЗ BrowserRouter
+import { Routes, Route, useNavigate } from 'react-router-dom';
+
+// Импорт CSS для фонов
+import './Styles/backgrounds.css';
 
 // Импорты компонентов
 import WelcomePage     from './WelcomePage';
@@ -18,70 +21,12 @@ import JustincasePage  from './JustincasePage';
 import CareFuturePage  from './CareFuturePage';
 import MarzaPollPage   from './MarzaPollPage';
 
-// ===== ИМПОРТ ФОНОВЫХ ИЗОБРАЖЕНИЙ =====
-let backgroundImage1, backgroundImage2, backgroundImage3, backgroundImage4, defaultBackground;
-
-try {
-  defaultBackground = require('./components/background.png');
-} catch (error) {
-  console.log('ℹ️ Default background not found, using gradient');
-  defaultBackground = null;
-}
-
-try {
-  backgroundImage1 = require('./components/background/background1.png');
-} catch (error) {
-  try {
-    backgroundImage1 = require('./components/background/background (1).png');
-  } catch (error2) {
-    backgroundImage1 = null;
-  }
-}
-
-try {
-  backgroundImage2 = require('./components/background/background2.png');
-} catch (error) {
-  try {
-    backgroundImage2 = require('./components/background/background (2).png');
-  } catch (error2) {
-    backgroundImage2 = null;
-  }
-}
-
-try {
-  backgroundImage3 = require('./components/background/background3.png');
-} catch (error) {
-  try {
-    backgroundImage3 = require('./components/background/background (3).png');
-  } catch (error2) {
-    backgroundImage3 = null;
-  }
-}
-
-try {
-  backgroundImage4 = require('./components/background/background4.png');
-} catch (error) {
-  try {
-    backgroundImage4 = require('./components/background/background (4).png');
-  } catch (error2) {
-    backgroundImage4 = null;
-  }
-}
-
-// Массив доступных фонов
-const availableBackgrounds = [
-  defaultBackground,
-  backgroundImage1,
-  backgroundImage2,
-  backgroundImage3,
-  backgroundImage4
-].filter(Boolean);
-
-// Если нет изображений - используем корпоративный градиент
-if (availableBackgrounds.length === 0) {
-  console.log('📱 Using gradient background');
-  availableBackgrounds.push(null);
-}
+// ===== КОНФИГУРАЦИЯ =====
+const BACKGROUNDS_CONFIG = {
+  backgrounds: ['1', '2', '3', '4'],
+  changeInterval: 15000, // 15 секунд
+  transitionDuration: 2000 // 2 секунды на переход
+};
 
 // ===== ERROR BOUNDARY =====
 class ErrorBoundary extends React.Component {
@@ -128,63 +73,137 @@ function AutoNavigator({ children }) {
   return children;
 }
 
-// ===== ГЛАВНЫЙ КОМПОНЕНТ =====
-function MainApp() {
-  // ===== СОСТОЯНИЕ ДЛЯ ФОНОВ =====
-  const [activeBackgroundIndex, setActiveBackgroundIndex] = useState(0);
-  const [viewportHeight, setViewportHeight] = useState(window.innerHeight);
-  const [backgroundOpacities, setBackgroundOpacities] = useState(
-    availableBackgrounds.map((_, index) => index === 0 ? 1 : 0)
-  );
-  const [imagesLoaded, setImagesLoaded] = useState(false);
-  const [isTransitioning, setIsTransitioning] = useState(false);
+// ===== КОМПОНЕНТ УПРАВЛЕНИЯ ФОНАМИ =====
+function BackgroundManager() {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isLoaded, setIsLoaded] = useState(false);
+  const { backgrounds, changeInterval, transitionDuration } = BACKGROUNDS_CONFIG;
 
-  // ===== ПРЕДЗАГРУЗКА ИЗОБРАЖЕНИЙ =====
+  // Детекция поддержки WebP
   useEffect(() => {
-    if (availableBackgrounds.length === 0) {
-      setImagesLoaded(true);
-      return;
-    }
-
-    let loadedCount = 0;
-    const totalImages = availableBackgrounds.length;
-
-    availableBackgrounds.forEach((imageSrc, index) => {
-      if (!imageSrc) {
-        loadedCount++;
-        if (loadedCount === totalImages) {
-          setImagesLoaded(true);
-        }
-        return;
-      }
-
-      const img = new Image();
-      img.onload = () => {
-        loadedCount++;
-        if (loadedCount === totalImages) {
-          setImagesLoaded(true);
-        }
+    const checkWebP = () => {
+      const webP = new Image();
+      webP.onload = webP.onerror = function () {
+        const isSupported = webP.height === 2;
+        document.documentElement.classList.add(isSupported ? 'webp' : 'no-webp');
+        console.log(`🎨 WebP поддержка: ${isSupported ? 'Да ✅' : 'Нет ❌ (используем PNG)'}`);
       };
-      img.onerror = () => {
-        loadedCount++;
-        if (loadedCount === totalImages) {
-          setImagesLoaded(true);
-        }
-      };
-      img.src = imageSrc;
-    });
+      webP.src = 'data:image/webp;base64,UklGRjoAAABXRUJQVlA4IC4AAACyAgCdASoCAAIALmk0mk0iIiIiIgBoSygABc6WWgAA/veff/0PP8bA//LwYAAA';
+    };
+    
+    checkWebP();
   }, []);
 
-  // ===== ОБРАБОТКА ИЗМЕНЕНИЯ РАЗМЕРА ОКНА =====
+  // Проверка загрузки первого фона
+  useEffect(() => {
+    const isWebP = document.documentElement.classList.contains('webp');
+    const extension = isWebP ? '.webp' : '.png';
+    const imagePath = `/components/background/background1${extension}`;
+    
+    const testImg = new Image();
+    
+    testImg.onload = () => {
+      setIsLoaded(true);
+      const skeleton = document.querySelector('.backgrounds-skeleton');
+      if (skeleton) {
+        skeleton.classList.add('loaded');
+      }
+      console.log(`✅ Первый фон загружен: background1${extension}`);
+    };
+    
+    testImg.onerror = () => {
+      console.warn(`❌ Не удалось загрузить фон, используем градиент`);
+      setIsLoaded(true);
+      const firstLayer = document.querySelector('.background-layer');
+      if (firstLayer) {
+        firstLayer.classList.add('gradient-fallback');
+      }
+    };
+    
+    // Небольшая задержка для определения WebP
+    setTimeout(() => {
+      testImg.src = imagePath;
+    }, 100);
+  }, []);
+
+  // Смена фонов
+  useEffect(() => {
+    if (!isLoaded || backgrounds.length <= 1) return;
+
+    const interval = setInterval(() => {
+      setCurrentIndex(prevIndex => {
+        const nextIndex = (prevIndex + 1) % backgrounds.length;
+        
+        // Обновляем классы для анимации
+        const layers = document.querySelectorAll('.background-layer');
+        
+        // Убираем active у всех
+        layers.forEach(layer => {
+          layer.classList.remove('active', 'transitioning');
+        });
+        
+        // Текущий слой остается видимым во время перехода
+        if (layers[prevIndex]) {
+          layers[prevIndex].classList.add('active');
+        }
+        
+        // Новый слой начинает появляться
+        if (layers[nextIndex]) {
+          layers[nextIndex].classList.add('transitioning');
+          
+          // Через небольшую задержку делаем его активным
+          setTimeout(() => {
+            layers[nextIndex].classList.add('active');
+            layers[nextIndex].classList.remove('transitioning');
+            
+            // Убираем старый слой после завершения анимации
+            setTimeout(() => {
+              if (layers[prevIndex]) {
+                layers[prevIndex].classList.remove('active');
+              }
+            }, transitionDuration);
+          }, 50);
+        }
+        
+        console.log(`🔄 Смена фона: ${prevIndex + 1} → ${nextIndex + 1}`);
+        return nextIndex;
+      });
+    }, changeInterval);
+
+    return () => clearInterval(interval);
+  }, [isLoaded, backgrounds, changeInterval, transitionDuration]);
+
+  return (
+    <>
+      {/* Skeleton loader */}
+      <div className="backgrounds-skeleton" />
+      
+      {/* Контейнер для фонов */}
+      <div className="backgrounds-container">
+        {backgrounds.map((bg, index) => (
+          <div
+            key={`bg-${bg}`}
+            className={`background-layer ${index === 0 ? 'active' : ''}`}
+            data-bg={bg}
+          />
+        ))}
+      </div>
+    </>
+  );
+}
+
+// ===== ГЛАВНЫЙ КОМПОНЕНТ =====
+function MainApp() {
+  const [viewportHeight, setViewportHeight] = useState(window.innerHeight);
+
+  // Обработка изменения размера окна (для Safari iOS)
   useEffect(() => {
     const handleResize = () => {
       setViewportHeight(window.innerHeight);
     };
 
     const handleOrientationChange = () => {
-      setTimeout(() => {
-        setViewportHeight(window.innerHeight);
-      }, 100);
+      setTimeout(handleResize, 100);
     };
 
     window.addEventListener('resize', handleResize);
@@ -196,34 +215,7 @@ function MainApp() {
     };
   }, []);
 
-  // ===== СМЕНА ФОНОВ КАЖДЫЕ 30 СЕКУНД =====
-  useEffect(() => {
-    if (!imagesLoaded || availableBackgrounds.length <= 1) return;
-
-    const changeTimer = setTimeout(() => {
-      setIsTransitioning(true);
-      
-      const nextIndex = (activeBackgroundIndex + 1) % availableBackgrounds.length;
-      
-      setBackgroundOpacities(prev => 
-        prev.map((opacity, index) => 
-          index === nextIndex ? 1 : index === activeBackgroundIndex ? 0 : 0
-        )
-      );
-      
-      setTimeout(() => {
-        setActiveBackgroundIndex(nextIndex);
-        setIsTransitioning(false);
-      }, 2000);
-      
-    }, 30000);
-
-    return () => clearTimeout(changeTimer);
-  }, [imagesLoaded, activeBackgroundIndex]);
-
-  // ===== ТОЛЬКО СТИЛИ ДЛЯ ФОНОВ (никаких других!) =====
-  
-  // Основной контейнер - минимальные стили
+  // Стили контейнера
   const mainContainerStyle = {
     position: 'relative',
     width: '100%',
@@ -233,42 +225,6 @@ function MainApp() {
     fontFamily: '"Segoe UI", sans-serif'
   };
 
-  // Стили фоновых слоев
-  const createBackgroundStyle = (backgroundSrc, index) => {
-    const opacity = backgroundOpacities[index] || 0;
-    
-    return {
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      width: '100vw',
-      height: '100vh',
-      zIndex: opacity > 0 ? 1 : 0,
-      
-      // Фон: изображение или корпоративный градиент
-      backgroundImage: backgroundSrc 
-        ? `url(${backgroundSrc})` 
-        : 'linear-gradient(135deg, rgb(180, 0, 55) 0%, rgb(153, 0, 55) 25%, rgb(152, 164, 174) 50%, rgb(118, 143, 146) 75%, rgb(0, 40, 130) 100%)',
-      
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
-      backgroundRepeat: 'no-repeat',
-      backgroundAttachment: 'fixed',
-      
-      // Плавный переход
-      opacity: opacity,
-      transition: isTransitioning ? 'opacity 2.0s ease-in-out' : 'none',
-      
-      // Оптимизация
-      willChange: isTransitioning ? 'opacity' : 'auto',
-      transform: 'translateZ(0)',
-      pointerEvents: 'none'
-    };
-  };
-
-  // Контейнер контента - минимальные стили
   const contentContainerStyle = {
     position: 'relative',
     zIndex: 10,
@@ -279,16 +235,10 @@ function MainApp() {
   return (
     <ErrorBoundary>
       <div className="main-app-container" style={mainContainerStyle}>
-        {/* ===== ФОНОВЫЕ СЛОИ ===== */}
-        {availableBackgrounds.map((backgroundSrc, index) => (
-          <div
-            key={`background-${index}`}
-            className="background-layer"
-            style={createBackgroundStyle(backgroundSrc, index)}
-          />
-        ))}
+        {/* Управление фонами */}
+        <BackgroundManager />
         
-        {/* ===== ОСНОВНОЙ КОНТЕНТ БЕЗ Router ===== */}
+        {/* Основной контент */}
         <AutoNavigator>
           <div style={contentContainerStyle}>
             <Routes>
@@ -302,7 +252,6 @@ function MainApp() {
               <Route path="/justincase" element={<JustincasePage />} />
               <Route path="/care-future" element={<CareFuturePage />} />
               <Route path="/marza-poll" element={<MarzaPollPage />} />
-              {/* Fallback для неизвестных маршрутов */}
               <Route path="*" element={<WelcomePage />} />
             </Routes>
           </div>
