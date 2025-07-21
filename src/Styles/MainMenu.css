@@ -1,0 +1,360 @@
+/* ============================================================================
+   MainMenu.css - ПОЛНЫЕ СТИЛИ ДЛЯ ГЛАВНОГО МЕНЮ
+   ----------------------------------------------------------------------------
+   ✅ Корпоративные цвета: красный, серый, синий
+   ✅ Шрифты: Segoe UI Bold для заголовков, Regular для текста
+   ✅ Анимации входа и выхода
+   ✅ Ripple эффекты
+   ✅ Мобильная адаптация
+   ============================================================================ */
+
+/* ======================================
+   CSS ПЕРЕМЕННЫЕ - КОРПОРАТИВНЫЕ ЦВЕТА
+   ====================================== */
+:root {
+  /* Красные оттенки */
+  --primary-red: rgb(180, 0, 55);
+  --primary-red-dark: rgb(153, 0, 55);
+  
+  /* Серые оттенки */
+  --secondary-gray: rgb(152, 164, 174);
+  --secondary-gray-dark: rgb(118, 143, 146);
+  
+  /* Синие оттенки */
+  --accent-blue: rgb(0, 40, 130);
+  --accent-blue-dark: rgb(0, 32, 104);
+  
+  /* Основные шрифты */
+  --font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+}
+
+/* ======================================
+   ОСНОВНОЙ КОНТЕЙНЕР
+   ====================================== */
+.main-container {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  min-height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-family: var(--font-family);
+}
+
+/* ======================================
+   ЛОГОТИП
+   ====================================== */
+.logo-wrapper {
+  position: absolute;
+  top: 50px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 128px;
+  height: 128px;
+  background-color: rgba(255, 255, 255, 0.10);
+  backdrop-filter: blur(8px);
+  border-radius: 20px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+  opacity: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.8s ease-out;
+}
+
+.logo-wrapper.animated {
+  top: 110px;
+  opacity: 1;
+}
+
+.logo-wrapper.exiting {
+  top: -200px;
+  opacity: 0;
+  transition: all 0.8s ease-out;
+}
+
+.logo-image {
+  width: 96px;
+  height: 96px;
+  object-fit: contain;
+}
+
+/* ======================================
+   КОНТЕЙНЕР КНОПОК
+   ====================================== */
+.button-container {
+  position: absolute;
+  top: 368px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  max-width: 400px;
+  z-index: 3;
+  padding-left: 20px;
+  padding-right: 20px;
+  box-sizing: border-box;
+  opacity: 0;
+  transition: all 0.8s ease-out 0.2s;
+}
+
+.button-container.animated {
+  top: 268px;
+  opacity: 1;
+}
+
+.button-container.exiting {
+  opacity: 0;
+  transform: translateX(-50%) translateY(100px);
+}
+
+/* ======================================
+   КНОПКИ ГЛАВНОГО МЕНЮ
+   ====================================== */
+.btn-main-menu {
+  min-width: 280px;
+  
+  /* Корпоративный градиент красный -> синий */
+  background: linear-gradient(
+    135deg, 
+    rgba(180, 0, 55, 0.9) 0%, 
+    rgba(153, 0, 55, 0.85) 50%, 
+    rgba(0, 40, 130, 0.9) 100%
+  );
+  
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 18px 36px;
+  cursor: pointer;
+  
+  /* Начальное состояние для анимации */
+  transform: translateY(50px);
+  opacity: 0;
+  
+  /* Анимация появления */
+  transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  
+  z-index: 2;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  
+  /* Типографика - Segoe UI */
+  font-size: 20px;
+  font-weight: 600;
+  font-family: var(--font-family);
+  
+  box-sizing: border-box;
+  outline: none;
+  text-decoration: none;
+  
+  /* Для Ripple эффекта */
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-main-menu.animated {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.btn-main-menu.exiting {
+  transform: translateY(100px);
+  opacity: 0;
+}
+
+/* Индивидуальные задержки для кнопок */
+.btn-main-menu[data-index="0"] {
+  transition-delay: 0.1s;
+}
+
+.btn-main-menu[data-index="1"] {
+  transition-delay: 0.25s;
+}
+
+.btn-main-menu[data-index="2"] {
+  transition-delay: 0.4s;
+}
+
+.btn-main-menu[data-index="3"] {
+  transition-delay: 0.55s;
+}
+
+/* ======================================
+   HOVER И ACTIVE ЭФФЕКТЫ
+   ====================================== */
+.btn-main-menu:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+  
+  /* Более яркий градиент при hover */
+  background: linear-gradient(
+    135deg, 
+    rgba(180, 0, 55, 1) 0%, 
+    rgba(153, 0, 55, 1) 50%, 
+    rgba(0, 40, 130, 1) 100%
+  );
+}
+
+.btn-main-menu:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.btn-main-menu:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.6);
+}
+
+/* ======================================
+   RIPPLE ЭФФЕКТ
+   ====================================== */
+.btn-main-menu .ripple {
+  position: absolute;
+  border-radius: 50%;
+  transform: scale(0);
+  background: rgba(255, 255, 255, 0.8);
+  animation: ripple-animation 600ms linear;
+  pointer-events: none;
+}
+
+@keyframes ripple-animation {
+  to {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+/* ======================================
+   АНИМАЦИЯ ЛОГОТИПА
+   ====================================== */
+.animate-logo {
+  animation: slideDownLogo 0.8s ease-out forwards;
+}
+
+@keyframes slideDownLogo {
+  0% {
+    top: 50px;
+    opacity: 0;
+  }
+  100% {
+    top: 110px;
+    opacity: 1;
+  }
+}
+
+.animate-logo-exit {
+  animation: slideUpLogoExit 0.8s ease-in forwards;
+}
+
+@keyframes slideUpLogoExit {
+  0% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-150px);
+  }
+}
+
+/* ======================================
+   МОБИЛЬНАЯ АДАПТАЦИЯ
+   ====================================== */
+@media (max-width: 768px) {
+  .logo-wrapper {
+    width: 100px;
+    height: 100px;
+    top: 40px;
+  }
+  
+  .logo-wrapper.animated {
+    top: 80px;
+  }
+  
+  .logo-image {
+    width: 75px;
+    height: 75px;
+  }
+  
+  .button-container {
+    top: 300px;
+    max-width: 320px;
+    gap: 16px;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  
+  .button-container.animated {
+    top: 220px;
+  }
+  
+  .btn-main-menu {
+    min-width: 260px;
+    padding: 16px 32px;
+    font-size: 18px;
+    border-radius: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .logo-wrapper {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .logo-image {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .btn-main-menu {
+    min-width: 240px;
+    padding: 14px 28px;
+    font-size: 16px;
+  }
+  
+  .button-container {
+    gap: 14px;
+  }
+}
+
+/* ======================================
+   АЛЬТЕРНАТИВНЫЕ СТИЛИ КНОПОК
+   ====================================== */
+
+/* Серый стиль (если понадобится) */
+.btn-main-menu.secondary {
+  background: linear-gradient(
+    135deg, 
+    var(--secondary-gray) 0%, 
+    var(--secondary-gray-dark) 100%
+  );
+}
+
+/* Синий стиль (если понадобится) */
+.btn-main-menu.accent {
+  background: linear-gradient(
+    135deg, 
+    var(--accent-blue) 0%, 
+    var(--accent-blue-dark) 100%
+  );
+}
+
+/* Прозрачный стиль (если понадобится) */
+.btn-main-menu.transparent {
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(10px);
+}
+
+.btn-main-menu.transparent:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.5);
+}

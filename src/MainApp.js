@@ -385,14 +385,7 @@ function MainApp() {
     paddingBottom: 'env(safe-area-inset-bottom, 0px)',
     paddingLeft: 'env(safe-area-inset-left, 0px)',
     paddingRight: 'env(safe-area-inset-right, 0px)',
-  
     boxSizing: 'border-box',
-  
-    // Мобильная адаптивность 
-    '@supports (-webkit-touch-callout: none)': {
-      height: `${viewportHeight}px`, // Используем состояние вместо vh
-      minHeight: `${viewportHeight}px`
-  }
   };
 
   // ===== СТИЛЬ ДЛЯ СТАТИЧНЫХ ФОНОВ С ПРОСТЫМ ЭФФЕКТОМ =====
