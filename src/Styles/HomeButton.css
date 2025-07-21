@@ -25,10 +25,10 @@
   flex-shrink: 0;
   flex-grow: 0;
   
-  /* Позиционирование - центр совпадает с логотипом */
-  /* Desktop: логотип top: 55px + height: 128px / 2 = 119px */
-  top: 87px; /* 119px - 64px/2 = 87px */
-  left: 30px;
+  /* Позиционирование - слева от логотипа с адаптивным отступом */
+  /* Desktop: логотип по центру (left: 50%), кнопка слева от него */
+  top: 87px; /* Центр по высоте с логотипом: 55 + 128/2 - 64/2 = 87px */
+  left: calc(50% - 128px - 50px); /* 50% - ширина_логотипа - отступ */
   
   /* Стили */
   background: rgba(255, 255, 255, 0.1);
@@ -53,7 +53,6 @@
   outline: none;
   text-decoration: none;
   box-sizing: border-box;
-  border: 1px solid rgba(255, 255, 255, 0.2);
   
   /* Начальное состояние для анимации */
   opacity: 0;
@@ -137,7 +136,7 @@
     
     /* Позиционирование - центр совпадает с логотипом */
     /* Tablet: логотип top: 40px + height: 96px / 2 = 88px */
-    top: 80px; /* 88px - 56px/2 = 60px */
+    top: 82px; /* 88px - 56px/2 = 60px */
     left: 24px;
     
     /* Стили */
@@ -163,10 +162,10 @@
     min-height: 48px;
     max-height: 48px;
     
-    /* Позиционирование - центр совпадает с логотипом */
+    /* Позиционирование - на маленьких экранах фиксированно слева */
     /* Mobile: логотип top: 25px + height: 80px / 2 = 65px */
-    top: 41px; /* 65px - 48px/2 = 41px */
-    left: 20px;
+    top: 64px; /* 65px - 48px/2 = 41px */
+    left: 20px; /* Фиксированный отступ на маленьких экранах */
     
     /* Стили */
     border-radius: 12px;
@@ -189,13 +188,13 @@
   
   @media (max-width: 768px) and (min-width: 375px) {
     .home-button {
-      left: max(70px, env(safe-area-inset-left, 24px));
+      left: max(70px, env(safe-area-inset-left, 70px));
     }
   }
   
   @media (max-width: 374px) {
     .home-button {
-      left: max(20px, env(safe-area-inset-left, 20px));
+      left: max(75px, env(safe-area-inset-left, 75px));
     }
   }
 }
@@ -232,7 +231,7 @@
 .home-button.with-text span {
   margin-left: 8px;
   font-family: "Segoe UI", sans-serif;
-  font-weight: 600;
+  font-weight: 350;
   font-size: 16px;
   color: white;
 }
@@ -270,6 +269,31 @@
     rgba(153, 0, 55, 0.5) 100%
   );
   border-color: rgba(180, 0, 55, 0.5);
+}
+
+/* ======================================
+   АДАПТИВНОСТЬ ДЛЯ БОЛЬШИХ ЭКРАНОВ
+   ====================================== */
+/* Очень большие экраны (>1400px) */
+@media (min-width: 1400px) {
+  .home-button {
+    /* Максимальное расстояние от центра */
+    left: calc(50% - 200px);
+  }
+}
+
+/* Широкие экраны (1200-1400px) */
+@media (min-width: 1200px) and (max-width: 1399px) {
+  .home-button {
+    left: calc(50% - 180px);
+  }
+}
+
+/* Средние экраны (992-1199px) */
+@media (min-width: 992px) and (max-width: 1199px) {
+  .home-button {
+    left: calc(50% - 160px);
+  }
 }
 
 /* ======================================

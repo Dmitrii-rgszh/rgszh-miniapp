@@ -141,19 +141,19 @@
   }
   
   .logo-wrapper.animated {
-    top: 40px;
+    top: 60px;
   }
   
   @keyframes slideDown {
     to {
-      top: 40px;
+      top: 60px;
       opacity: 1;
     }
   }
   
   @keyframes slideUp {
     from {
-      top: 40px;
+      top: 60px;
       opacity: 1;
     }
   }
@@ -175,7 +175,7 @@
   }
   
   .logo-wrapper.animated {
-    top: 25px;
+    top: 50px;
   }
   
   @keyframes slideDown {
