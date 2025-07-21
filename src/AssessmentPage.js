@@ -330,7 +330,7 @@ export default function AssessmentPage() {
 
       const uniqueAnswers = answers.slice(0, 25);
       const answersTextArray = uniqueAnswers.map(answer => answer.answer_text);
-      
+    
       if (uniqueAnswers.length !== 25) {
         throw new Error(`Expected 25 answers, got ${uniqueAnswers.length}`);
       }
@@ -352,12 +352,15 @@ export default function AssessmentPage() {
         body: JSON.stringify(sessionData)
       });
 
+      // ✅ ПРИНУДИТЕЛЬНО УСТАНАВЛИВАЕМ СОСТОЯНИЯ
+      console.log('✅ Assessment saved successfully, setting finished state');
       setResult({ success: true });
       setIsFinished(true);
+      setIsProcessing(false); // ← ДОБАВЛЕНО: убираем processing сразу после успеха
+    
     } catch (error) {
       console.error('❌ Error submitting assessment:', error);
       setErrorMessage('Ошибка при отправке результатов. Попробуйте еще раз.');
-    } finally {
       setIsProcessing(false);
     }
   };
@@ -438,11 +441,11 @@ export default function AssessmentPage() {
       );
     }
 
-    if (isFinished && result) {
+    if (isFinished) {
       return (
-        <div className="welcome-text-container">
-          <h2 className="text-h2 text-center">Спасибо за прохождение!</h2>
-          <p className="text-body text-center">
+        <div className={`welcome-text-container ${contentAnimated ? 'animated' : ''}`}>
+          <h2 className="text-thank-you-title">Спасибо за прохождение!</h2>
+          <p className="text-thank-you-body">
             {firstName}, благодарим за прохождение опроса.<br/>
             Свяжемся с вами в ближайшее время.<br/>
             Отличного дня!
@@ -578,42 +581,8 @@ export default function AssessmentPage() {
               {currentQuestionData.shuffledOptions.map((option, idx) => (
                 <button
                   key={idx}
-                  style={{
-                    width: '100%',
-                    background: selectedAnswer === option.text 
-                      ? 'linear-gradient(135deg, rgba(180, 0, 55, 0.9) 0%, rgba(0, 40, 130, 0.9) 100%)'
-                      : 'rgba(255, 255, 255, 0.15)',
-                    backdropFilter: 'blur(10px)',
-                    color: 'white',
-                    border: selectedAnswer === option.text ? '2px solid rgba(255, 255, 255, 0.8)' : '1px solid rgba(255, 255, 255, 0.3)',
-                    borderRadius: '12px',
-                    padding: '16px 24px',
-                    fontSize: '18px',
-                    fontWeight: selectedAnswer === option.text ? '600' : '400',
-                    marginBottom: '12px',
-                    transition: 'all 0.3s ease',
-                    boxShadow: selectedAnswer === option.text ? '0 6px 20px rgba(0, 0, 0, 0.3)' : '0 4px 15px rgba(0, 0, 0, 0.2)',
-                    transform: selectedAnswer === option.text ? 'scale(1.02)' : 'scale(1)',
-                    textAlign: 'left',
-                    cursor: 'pointer',
-                    outline: 'none',
-                    fontFamily: '"Segoe UI", sans-serif'
-                  }}
+                  className={`answer-option ${selectedAnswer === option.text ? 'selected' : ''}`}
                   onClick={() => setSelectedAnswer(option.text)}
-                  onMouseEnter={(e) => {
-                    if (selectedAnswer !== option.text) {
-                      e.target.style.transform = 'scale(1.02)';
-                      e.target.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.3)';
-                      e.target.style.background = 'rgba(255, 255, 255, 0.2)';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (selectedAnswer !== option.text) {
-                      e.target.style.transform = 'scale(1)';
-                      e.target.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.2)';
-                      e.target.style.background = 'rgba(255, 255, 255, 0.15)';
-                    }
-                  }}
                 >
                   {option.text}
                 </button>
@@ -765,20 +734,6 @@ export default function AssessmentPage() {
               </svg>
             )}
           </div>
-        </button>
-      )}
-
-      {/* ===== КНОПКА "ДОМОЙ" КАК В PollsPage ===== */}
-      {isFinished && result && (
-        <button 
-          ref={homeRef}
-          onClick={goHome}
-          className={getHomeButtonClasses()}
-          title="Назад в главное меню"
-        >
-          <svg viewBox="0 0 24 24">
-            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
-          </svg>
         </button>
       )}
 

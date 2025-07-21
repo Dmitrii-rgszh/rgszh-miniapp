@@ -376,7 +376,10 @@
    СПЕЦИАЛЬНЫЕ КОНТЕЙНЕРЫ
    ====================================== */
 
-/* Контейнер текста на приветственной странице */
+/* ======================================
+   ПРОКРУЧИВАЕМЫЙ КОНТЕЙНЕР ДЛЯ ВОПРОСОВ
+   ====================================== */
+/* Контейнер текста на приветственной странице с прокруткой */
 .welcome-text-container {
   position: absolute;
   top: 280px;
@@ -391,10 +394,43 @@
   padding: 0 20px;
   box-sizing: border-box;
   
-  /* Начальное состояние */
+  /* ПРОКРУТКА - основные параметры */
+  max-height: calc(100vh - 200px); /* <-- ИЗМЕНИТЕ ЗНАЧЕНИЕ ЕСЛИ НУЖНО */
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 10px;
+  -webkit-overflow-scrolling: touch; /* Плавная прокрутка на iOS */
+  
+  /* Начальное состояние анимации */
   opacity: 0;
   transform: translateX(-50%) translateY(50px);
   transition: all 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Кастомный скроллбар для Chrome/Edge */
+.welcome-text-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.welcome-text-container::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+}
+
+.welcome-text-container::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
+  transition: background 0.2s ease;
+}
+
+.welcome-text-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* Для Firefox */
+.welcome-text-container {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) rgba(255, 255, 255, 0.05);
 }
 
 .welcome-text-container.animated {
@@ -415,6 +451,8 @@
     gap: 16px;
     padding: 0 16px;
     max-width: 320px;
+    max-height: calc(100vh - 180px); /* <-- ИЗМЕНИТЕ ДЛЯ ПЛАНШЕТОВ */
+    padding-right: 5px;
   }
 }
 
@@ -424,6 +462,11 @@
     gap: 12px;
     padding: 0 12px;
     max-width: 320px;
+    max-height: calc(100vh - 180px); /* <-- ИЗМЕНИТЕ ДЛЯ МОБИЛЬНЫХ */
+  }
+  
+  .welcome-text-container::-webkit-scrollbar {
+    width: 4px;
   }
 }
 

@@ -1,9 +1,10 @@
-// MainApp.js - ЧИСТАЯ ВЕРСИЯ
+// MainApp.js - ИСПРАВЛЕННАЯ ВЕРСИЯ
+// ✅ УБРАН BrowserRouter (перенесен в index.js)
 // ✅ ТОЛЬКО смена фонов в MainApp.js
 // ✅ ВСЕ остальные стили - через CSS файлы
 
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import { Routes, Route, useNavigate } from 'react-router-dom'; // ← БЕЗ BrowserRouter
 
 // Импорты компонентов
 import WelcomePage     from './WelcomePage';
@@ -23,7 +24,7 @@ let backgroundImage1, backgroundImage2, backgroundImage3, backgroundImage4, defa
 try {
   defaultBackground = require('./components/background.png');
 } catch (error) {
-  console.warn('Default background not found');
+  console.log('ℹ️ Default background not found, using gradient');
   defaultBackground = null;
 }
 
@@ -78,6 +79,7 @@ const availableBackgrounds = [
 
 // Если нет изображений - используем корпоративный градиент
 if (availableBackgrounds.length === 0) {
+  console.log('📱 Using gradient background');
   availableBackgrounds.push(null);
 }
 
@@ -286,25 +288,25 @@ function MainApp() {
           />
         ))}
         
-        {/* ===== ОСНОВНОЙ КОНТЕНТ ===== */}
-        <Router>
-          <AutoNavigator>
-            <div style={contentContainerStyle}>
-              <Routes>
-                <Route path="/" element={<WelcomePage />} />
-                <Route path="/main-menu" element={<MainMenu />} />
-                <Route path="/polls" element={<PollsPage />} />
-                <Route path="/employee" element={<EmployeePage />} />
-                <Route path="/snp" element={<SNPPage />} />
-                <Route path="/assessment" element={<AssessmentPage />} />
-                <Route path="/feedback" element={<FeedbackPage />} />
-                <Route path="/justincase" element={<JustincasePage />} />
-                <Route path="/care-future" element={<CareFuturePage />} />
-                <Route path="/marza-poll" element={<MarzaPollPage />} />
-              </Routes>
-            </div>
-          </AutoNavigator>
-        </Router>
+        {/* ===== ОСНОВНОЙ КОНТЕНТ БЕЗ Router ===== */}
+        <AutoNavigator>
+          <div style={contentContainerStyle}>
+            <Routes>
+              <Route path="/" element={<WelcomePage />} />
+              <Route path="/main-menu" element={<MainMenu />} />
+              <Route path="/polls" element={<PollsPage />} />
+              <Route path="/employee" element={<EmployeePage />} />
+              <Route path="/snp" element={<SNPPage />} />
+              <Route path="/assessment" element={<AssessmentPage />} />
+              <Route path="/feedback" element={<FeedbackPage />} />
+              <Route path="/justincase" element={<JustincasePage />} />
+              <Route path="/care-future" element={<CareFuturePage />} />
+              <Route path="/marza-poll" element={<MarzaPollPage />} />
+              {/* Fallback для неизвестных маршрутов */}
+              <Route path="*" element={<WelcomePage />} />
+            </Routes>
+          </div>
+        </AutoNavigator>
       </div>
     </ErrorBoundary>
   );

@@ -32,13 +32,19 @@
     "css-minimizer-webpack-plugin": "^4.2.2",
     "file-loader": "^6.2.0",
     "http-proxy-middleware": "^3.0.5",
-    "react-app-rewired": "^2.2.1"
+    "react-app-rewired": "^2.2.1",
+    "rimraf": "^3.0.2"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "cross-env GENERATE_SOURCEMAP=false react-scripts start",
+    "start:clean": "rimraf node_modules/.cache && npm start",
+    "start:fresh": "rimraf node_modules/.cache && rimraf build && npm start",
     "build": "craco build",
     "test": "craco test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "clean:cache": "rimraf node_modules/.cache",
+    "clean:build": "rimraf build",
+    "clean:all": "rimraf node_modules/.cache && rimraf build"
   },
   "eslintConfig": {
     "extends": [
@@ -46,6 +52,8 @@
       "react-app/jest"
     ]
   },
+  "homepage": "./",
+  "proxy": "http://localhost:4000",
   "browserslist": {
     "production": [
       "last 2 iOS versions",
