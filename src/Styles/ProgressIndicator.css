@@ -1,0 +1,166 @@
+/* ============================================================================
+   ProgressIndicator.css - СТИЛИ ДЛЯ ИНДИКАТОРА ПРОГРЕССА
+   ----------------------------------------------------------------------------
+   ✅ Точки показывающие прогресс прохождения опроса
+   ✅ Адаптивность для 3 разрешений
+   ✅ Анимированные переходы между состояниями
+   ============================================================================ */
+
+/* ======================================
+   КОНТЕЙНЕР ИНДИКАТОРА
+   ====================================== */
+.progress-indicator-wrapper {
+  width: 100%;
+  max-width: 500px;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 8px; /* <-- ИЗМЕНИТЬ ОТСТУП ЗДЕСЬ (было 20px) */
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.progress-indicator {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* ======================================
+   ТОЧКИ ПРОГРЕССА
+   ====================================== */
+.progress-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  cursor: default;
+}
+
+/* Пройденный вопрос */
+.progress-dot.completed {
+  background: rgba(180, 0, 55, 0.9);
+  transform: scale(1);
+}
+
+/* Текущий вопрос */
+.progress-dot.current {
+  background: white;
+  transform: scale(1.2);
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
+}
+
+/* Предстоящий вопрос */
+.progress-dot.pending {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1);
+}
+
+/* ======================================
+   HOVER ЭФФЕКТЫ
+   ====================================== */
+.progress-dot:hover {
+  transform: scale(1.3);
+  transition: transform 0.2s ease;
+}
+
+.progress-dot.completed:hover {
+  background: rgba(180, 0, 55, 1);
+}
+
+.progress-dot.pending:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* ======================================
+   АДАПТИВНОСТЬ: ПЛАНШЕТЫ (375-768px)
+   ====================================== */
+@media (max-width: 768px) and (min-width: 375px) {
+  .progress-indicator-wrapper {
+    max-width: 80%;
+    margin-bottom: 0px; /* <-- ИЗМЕНИТЬ ОТСТУП ДЛЯ ПЛАНШЕТОВ ЗДЕСЬ (было 16px) */
+  }
+  
+  .progress-indicator {
+    gap: 6px;
+  }
+  
+  .progress-dot {
+    width: 6px;
+    height: 6px;
+  }
+}
+
+/* ======================================
+   АДАПТИВНОСТЬ: МОБИЛЬНЫЕ (<375px)
+   ====================================== */
+@media (max-width: 374px) {
+  .progress-indicator-wrapper {
+    max-width: 90%;
+    margin-bottom: 0px; /* <-- ИЗМЕНИТЬ ОТСТУП ДЛЯ МОБИЛЬНЫХ ЗДЕСЬ (было 14px) */
+  }
+  
+  .progress-indicator {
+    gap: 5px;
+  }
+  
+  .progress-dot {
+    width: 5px;
+    height: 5px;
+  }
+  
+  /* На маленьких экранах уменьшаем эффект hover */
+  .progress-dot:hover {
+    transform: scale(1.2);
+  }
+  
+  .progress-dot.current {
+    transform: scale(1.15);
+  }
+}
+
+/* ======================================
+   АНИМАЦИЯ ПОЯВЛЕНИЯ
+   ====================================== */
+@keyframes fadeInDot {
+  from {
+    opacity: 0;
+    transform: scale(0);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.progress-dot {
+  animation: fadeInDot 0.3s ease-out backwards;
+}
+
+/* Задержка для каждой точки */
+.progress-dot:nth-child(1) { animation-delay: 0.05s; }
+.progress-dot:nth-child(2) { animation-delay: 0.1s; }
+.progress-dot:nth-child(3) { animation-delay: 0.15s; }
+.progress-dot:nth-child(4) { animation-delay: 0.2s; }
+.progress-dot:nth-child(5) { animation-delay: 0.25s; }
+/* ... продолжить для всех 25 точек если нужно */
+
+/* ======================================
+   АЛЬТЕРНАТИВНЫЙ СТИЛЬ - ЛИНИЯ ПРОГРЕССА
+   ====================================== */
+.progress-line-wrapper {
+  width: 100%;
+  max-width: 500px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+.progress-line-fill {
+  height: 100%;
+  background: linear-gradient(90deg, rgba(180, 0, 55, 0.9) 0%, rgba(180, 0, 55, 1) 100%);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+  box-shadow: 0 0 10px rgba(180, 0, 55, 0.5);
+}

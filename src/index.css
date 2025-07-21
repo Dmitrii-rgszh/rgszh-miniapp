@@ -200,3 +200,48 @@ textarea {
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.5);
 }
+
+/* ======================================
+   ГЛОБАЛЬНОЕ УДАЛЕНИЕ ГОЛУБОГО OUTLINE
+   ====================================== */
+* {
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+*:focus {
+  outline: none !important;
+  outline-width: 0 !important;
+  outline-color: transparent !important;
+  box-shadow: none !important;
+}
+
+*:focus-visible {
+  outline: none !important;
+}
+
+/* Специально для input элементов */
+input:focus,
+input:focus-visible,
+textarea:focus,
+textarea:focus-visible,
+select:focus,
+select:focus-visible {
+  outline: none !important;
+  outline-offset: 0 !important;
+}
+
+/* Для кнопок */
+button:focus,
+button:focus-visible {
+  outline: none !important;
+}
+
+/* Убираем выделение при тапе на мобильных устройствах */
+input,
+textarea,
+button,
+select,
+a {
+  -webkit-tap-highlight-color: transparent !important;
+  -webkit-touch-callout: none !important;
+}

@@ -7,7 +7,7 @@ import Autosuggest from 'react-autosuggest';
 import { useNavigate } from 'react-router-dom';
 import { apiCall } from './config';
 import logoImage from './components/logo.png';
-import './Styles/Autosuggest.css';
+
 
 // Подключаем модульные CSS файлы КАК В PollsPage
 import './Styles/containers.css';    // Универсальные контейнеры
@@ -16,6 +16,8 @@ import './Styles/logo.css';          // Логотип
 import './Styles/NextButton.css';    // Кнопка "Далее"
 import './Styles/BackButton.css';    // Кнопка "Назад"
 import './Styles/HomeButton.css';    // Кнопка "Домой"
+import './Styles/ProgressIndicator.css';
+import './Styles/Autosuggest.css';
 
 // JSON-файлы с ФИО
 import surnames from './components/autosuggest/surname.json';
@@ -543,39 +545,26 @@ export default function AssessmentPage() {
         return (
           <div className={`welcome-text-container ${contentAnimated && !fadeTransition ? 'animated' : ''}`}>
             {/* Прогресс индикатор */}
-            <div style={{
-              width: '100%',
-              maxWidth: '500px',
-              display: 'flex',
-              justifyContent: 'center',
-              marginBottom: '20px'
-            }}>
-              <div style={{
-                display: 'flex',
-                gap: '8px',
-              }}>
+            <div className="progress-indicator-wrapper">
+              <div className="progress-indicator">
                 {questions.map((_, idx) => (
                   <div 
                     key={idx} 
-                    style={{
-                      width: '8px',
-                      height: '8px',
-                      borderRadius: '50%',
-                      background: idx < currentQuestion ? 'rgba(180, 0, 55, 0.9)' : 
-                                 idx === currentQuestion ? 'white' : 
-                                 'rgba(255, 255, 255, 0.3)',
-                      transition: 'all 0.3s ease'
-                    }}
+                    className={`progress-dot ${
+                      idx < currentQuestion ? 'completed' : 
+                      idx === currentQuestion ? 'current' : 
+                      'pending'
+                    }`}
                   />
                 ))}
               </div>
             </div>
 
-            <div className="text-small text-center" style={{ marginBottom: '20px', opacity: 0.8 }}>
+            <div className="text-small text-center" style={{ marginBottom: '0px', opacity: 0.8 }}>
               Вопрос: {currentQuestion + 1} из {questions.length}
             </div>
 
-            <h2 className="text-h2 text-center" style={{ marginBottom: '30px' }}>
+            <h2 className="text-h2 text-center" style={{ marginBottom: '10px' }}>
               {currentQuestionData.question_text || currentQuestionData.text || 'Вопрос'}
             </h2>
 

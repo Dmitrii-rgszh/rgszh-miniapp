@@ -28,9 +28,79 @@
   --placeholder-font-size-mobile: 18px;
   
   /* Расстояние между полями ввода */
-  --form-field-gap-desktop: 32px;
-  --form-field-gap-tablet: 24px;
-  --form-field-gap-mobile: 20px;
+  --form-field-gap-desktop: 20px;
+  --form-field-gap-tablet: 10px;
+  --form-field-gap-mobile: 5px;
+}
+
+/* ======================================
+   ПРИМЕНЕНИЕ ПЕРЕМЕННЫХ С ВЫСОКОЙ СПЕЦИФИЧНОСТЬЮ
+   ====================================== */
+/* Форсируем применение переменных */
+html body .form-label,
+html body .assessment-page .form-label,
+html body .welcome-text-container .form-label {
+  font-size: var(--label-font-size-desktop) !important;
+}
+
+html body .autosuggest-input,
+html body .react-autosuggest__input {
+  font-size: var(--input-font-size-desktop) !important;
+}
+
+html body .autosuggest-input::placeholder,
+html body .react-autosuggest__input::placeholder {
+  font-size: var(--placeholder-font-size-desktop) !important;
+}
+
+html body .autosuggest-wrapper {
+  margin-bottom: var(--form-field-gap-desktop) !important;
+}
+
+html body .autosuggest-wrapper:last-child {
+  margin-bottom: 0 !important;
+}
+
+/* Tablet */
+@media (max-width: 768px) and (min-width: 375px) {
+  html body .form-label {
+    font-size: var(--label-font-size-tablet) !important;
+  }
+  
+  html body .autosuggest-input,
+  html body .react-autosuggest__input {
+    font-size: var(--input-font-size-tablet) !important;
+  }
+  
+  html body .autosuggest-input::placeholder,
+  html body .react-autosuggest__input::placeholder {
+    font-size: var(--placeholder-font-size-tablet) !important;
+  }
+  
+  html body .autosuggest-wrapper {
+    margin-bottom: var(--form-field-gap-tablet) !important;
+  }
+}
+
+/* Mobile */
+@media (max-width: 374px) {
+  html body .form-label {
+    font-size: var(--label-font-size-mobile) !important;
+  }
+  
+  html body .autosuggest-input,
+  html body .react-autosuggest__input {
+    font-size: var(--input-font-size-mobile) !important;
+  }
+  
+  html body .autosuggest-input::placeholder,
+  html body .react-autosuggest__input::placeholder {
+    font-size: var(--placeholder-font-size-mobile) !important;
+  }
+  
+  html body .autosuggest-wrapper {
+    margin-bottom: var(--form-field-gap-mobile) !important;
+  }
 }
 
 /* ======================================
