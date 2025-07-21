@@ -1,0 +1,415 @@
+/* ============================================================================
+   Autosuggest.css - СТИЛИ ДЛЯ ПОЛЕЙ ВВОДА ФИО
+   ----------------------------------------------------------------------------
+   ✅ Увеличенные шрифты с переменными для легкой настройки
+   ✅ Светлый цвет placeholder  
+   ✅ Более прозрачный фон
+   ✅ Адаптивность для 3 разрешений
+   ✅ Убраны серые полоски
+   ============================================================================ */
+
+/* ======================================
+   CSS ПЕРЕМЕННЫЕ ДЛЯ ЛЕГКОЙ НАСТРОЙКИ
+   ====================================== */
+:root {
+  /* Размеры шрифтов для заголовков */
+  --label-font-size-desktop: 22px;
+  --label-font-size-tablet: 20px;
+  --label-font-size-mobile: 18px;
+  
+  /* Размеры шрифтов для полей ввода */
+  --input-font-size-desktop: 24px;
+  --input-font-size-tablet: 22px;
+  --input-font-size-mobile: 20px;
+  
+  /* Размеры шрифтов для placeholder */
+  --placeholder-font-size-desktop: 22px;
+  --placeholder-font-size-tablet: 20px;
+  --placeholder-font-size-mobile: 18px;
+}
+
+/* ======================================
+   УБИРАЕМ СЕРЫЕ ПОЛОСКИ - АГРЕССИВНЫЙ ПОДХОД
+   ====================================== */
+/* Убираем все возможные разделители */
+.form-container hr,
+.form-container .divider,
+.form-container .separator,
+.autosuggest-container hr,
+.autosuggest-container::before,
+.autosuggest-container::after,
+.react-autosuggest__container::before,
+.react-autosuggest__container::after {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  border: none !important;
+}
+
+/* Специфично для react-autosuggest */
+.react-autosuggest__container {
+  position: relative;
+  border: none !important;
+}
+
+.react-autosuggest__container--open::before,
+.react-autosuggest__container--open::after {
+  display: none !important;
+}
+
+/* Убираем псевдоэлементы которые могут создавать линии */
+.autosuggest-container > *::before,
+.autosuggest-container > *::after {
+  border: none !important;
+  background: none !important;
+}
+
+/* Убираем отступы между полями */
+.autosuggest-container + .autosuggest-container {
+  margin-top: 0;
+}
+
+/* ======================================
+   БАЗОВЫЕ СТИЛИ INPUT
+   ====================================== */
+.autosuggest-input,
+.react-autosuggest__input {
+  width: 100%;
+  padding: 18px 24px;
+  font-size: var(--input-font-size-desktop);
+  font-family: "Segoe UI", sans-serif;
+  font-weight: 400;
+  text-align: center;
+  
+  /* Более прозрачный фон */
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  
+  /* Граница */
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 12px;
+  
+  /* Цвет текста */
+  color: white;
+  
+  /* Отступы и анимации */
+  margin-bottom: 16px;
+  transition: all 0.3s ease;
+  outline: none;
+  box-sizing: border-box;
+  
+  /* Убираем стандартные стили браузера */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+/* Placeholder - светлее и с настраиваемым размером */
+.autosuggest-input::placeholder,
+.react-autosuggest__input::placeholder {
+  color: rgba(255, 255, 255, 0.65);
+  font-weight: 300;
+  font-size: var(--placeholder-font-size-desktop);
+}
+
+/* Состояние фокуса */
+.autosuggest-input:focus,
+.react-autosuggest__input:focus {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+}
+
+/* Состояние hover */
+.autosuggest-input:hover:not(:focus),
+.react-autosuggest__input:hover:not(:focus) {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* ======================================
+   КОНТЕЙНЕР AUTOSUGGEST
+   ====================================== */
+.autosuggest-container {
+  position: relative;
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+/* ======================================
+   ВЫПАДАЮЩИЙ СПИСОК
+   ====================================== */
+.autosuggest-suggestions-container,
+.react-autosuggest__suggestions-container,
+.react-autosuggest__suggestions-container--open {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  
+  /* Стили контейнера */
+  background: rgba(20, 20, 20, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  margin-top: 4px;
+  
+  /* Макс высота и скролл */
+  max-height: 240px;
+  overflow-y: auto;
+  
+  /* Тень */
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  
+  /* Z-index для отображения поверх других элементов */
+  z-index: 1000;
+  
+  /* Анимация появления */
+  animation: suggestionsFadeIn 0.2s ease-out;
+}
+
+/* Список подсказок */
+.react-autosuggest__suggestions-list {
+  margin: 0;
+  padding: 0;
+  list-style-type: none;
+}
+
+@keyframes suggestionsFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ======================================
+   ЭЛЕМЕНТЫ СПИСКА
+   ====================================== */
+.autosuggest-suggestion,
+.react-autosuggest__suggestion {
+  padding: 14px 20px;
+  cursor: pointer;
+  color: white;
+  font-size: 18px;
+  font-family: "Segoe UI", sans-serif;
+  transition: all 0.2s ease;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.autosuggest-suggestion:last-child,
+.react-autosuggest__suggestion:last-child {
+  border-bottom: none;
+}
+
+/* Hover на suggestion */
+.autosuggest-suggestion:hover,
+.autosuggest-suggestion--highlighted,
+.react-autosuggest__suggestion--highlighted {
+  background: rgba(180, 0, 55, 0.5);
+  padding-left: 24px;
+}
+
+/* ======================================
+   LABEL СТИЛИ
+   ====================================== */
+.form-label {
+  display: block;
+  font-size: var(--label-font-size-desktop);
+  font-family: "Segoe UI", sans-serif;
+  font-weight: 500;
+  color: white;
+  margin-bottom: 8px;
+  text-align: center;
+  opacity: 0.95;
+}
+
+/* ======================================
+   FORM CONTAINER
+   ====================================== */
+.form-container {
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* Убираем любые линии между элементами формы */
+.form-container > * {
+  border: none;
+}
+
+.form-container::before,
+.form-container::after {
+  display: none;
+}
+
+/* ======================================
+   CUSTOM SCROLLBAR
+   ====================================== */
+.autosuggest-suggestions-container::-webkit-scrollbar,
+.react-autosuggest__suggestions-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.autosuggest-suggestions-container::-webkit-scrollbar-track,
+.react-autosuggest__suggestions-container::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+.autosuggest-suggestions-container::-webkit-scrollbar-thumb,
+.react-autosuggest__suggestions-container::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+
+.autosuggest-suggestions-container::-webkit-scrollbar-thumb:hover,
+.react-autosuggest__suggestions-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* ======================================
+   АДАПТИВНОСТЬ: ПЛАНШЕТЫ (375-768px)
+   ====================================== */
+@media (max-width: 768px) and (min-width: 375px) {
+  .autosuggest-input,
+  .react-autosuggest__input {
+    padding: 16px 20px;
+    font-size: var(--input-font-size-tablet);
+  }
+  
+  .autosuggest-input::placeholder,
+  .react-autosuggest__input::placeholder {
+    font-size: var(--placeholder-font-size-tablet);
+  }
+  
+  .autosuggest-suggestion,
+  .react-autosuggest__suggestion {
+    font-size: 16px;
+    padding: 12px 18px;
+  }
+  
+  .form-label {
+    font-size: var(--label-font-size-tablet);
+  }
+  
+  .autosuggest-suggestions-container,
+  .react-autosuggest__suggestions-container {
+    max-height: 200px;
+  }
+}
+
+/* ======================================
+   АДАПТИВНОСТЬ: МОБИЛЬНЫЕ (<375px)
+   ====================================== */
+@media (max-width: 374px) {
+  .autosuggest-input,
+  .react-autosuggest__input {
+    padding: 14px 18px;
+    font-size: var(--input-font-size-mobile);
+    border-radius: 10px;
+  }
+  
+  .autosuggest-input::placeholder,
+  .react-autosuggest__input::placeholder {
+    font-size: var(--placeholder-font-size-mobile);
+  }
+  
+  .autosuggest-suggestion,
+  .react-autosuggest__suggestion {
+    font-size: 16px;
+    padding: 10px 16px;
+  }
+  
+  .form-label {
+    font-size: var(--label-font-size-mobile);
+    margin-bottom: 6px;
+  }
+  
+  .autosuggest-suggestions-container,
+  .react-autosuggest__suggestions-container {
+    max-height: 180px;
+    border-radius: 10px;
+  }
+  
+  .form-container {
+    padding: 0 16px;
+  }
+}
+
+/* ======================================
+   СОСТОЯНИЯ ОШИБОК
+   ====================================== */
+.autosuggest-input.error,
+.react-autosuggest__input.error {
+  border-color: rgba(255, 0, 0, 0.5);
+  background: rgba(255, 0, 0, 0.05);
+}
+
+.autosuggest-input.error:focus,
+.react-autosuggest__input.error:focus {
+  border-color: rgba(255, 0, 0, 0.7);
+  box-shadow: 0 0 0 3px rgba(255, 0, 0, 0.2);
+}
+
+/* ======================================
+   АНИМАЦИЯ ЗАГРУЗКИ
+   ====================================== */
+.autosuggest-input.loading,
+.react-autosuggest__input.loading {
+  background-image: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(255, 255, 255, 0.15) 50%,
+    rgba(255, 255, 255, 0.08) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* ======================================
+   SAFE AREA ПОДДЕРЖКА
+   ====================================== */
+@supports (padding: max(0px)) {
+  .form-container {
+    padding-left: max(20px, env(safe-area-inset-left));
+    padding-right: max(20px, env(safe-area-inset-right));
+  }
+}
+
+/* ======================================
+   УДАЛЯЕМ ЛЮБЫЕ РАЗДЕЛИТЕЛИ
+   ====================================== */
+hr,
+.divider,
+.separator,
+.react-autosuggest__section-container {
+  display: none !important;
+}
+
+/* Убираем любые псевдо-элементы, которые могут создавать линии */
+*::before,
+*::after {
+  border: none !important;
+}
+
+/* Восстанавливаем нужные псевдо-элементы */
+.autosuggest-input::placeholder {
+  border: none !important;
+}

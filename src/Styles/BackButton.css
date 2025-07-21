@@ -149,7 +149,7 @@
     
     /* Позиционирование - центр совпадает с логотипом */
     /* Tablet: логотип top: 40px + height: 96px / 2 = 88px */
-    top: 60px; /* 88px - 56px/2 = 60px */
+    top: 82px; /* 88px - 56px/2 = 60px */
     left: 24px;
     
     /* Стили */
@@ -186,8 +186,8 @@
   }
   
   .back-btn svg {
-    width: 22px;
-    height: 22px;
+    width: 30px;
+    height: 30px;
   }
 }
 
@@ -319,44 +319,3 @@
     top: 20px;
   }
 }
-
-/* ======================================
-   ПОДДЕРЖКА CSS ПЕРЕМЕННЫХ (legacy)
-   ====================================== */
-.back-btn {
-  /* Поддержка старых CSS переменных для обратной совместимости */
-  width: var(--back-button-size, 64px);
-  height: var(--back-button-size, 64px);
-  min-width: var(--back-button-size, 64px);
-  max-width: var(--back-button-size, 64px);
-  min-height: var(--back-button-size, 64px);
-  max-height: var(--back-button-size, 64px);
-  
-  top: var(--back-button-top, 87px);
-  left: var(--back-button-left, calc(50% - 128px - 50px));
-}
-
-/* ======================================
-   РАСЧЕТ ПОЗИЦИЙ (комментарий)
-   --------------------------------------
-   Desktop (>768px):
-   - Логотип: top: 55px, height: 128px
-   - Центр логотипа: 55 + 128/2 = 119px
-   - Кнопка: height: 64px
-   - Top кнопки: 119 - 64/2 = 87px
-   
-   Tablet (375-768px):
-   - Логотип: top: 40px, height: 96px
-   - Центр логотипа: 40 + 96/2 = 88px
-   - Кнопка: height: 56px
-   - Top кнопки: 88 - 56/2 = 60px
-   
-   Mobile (<375px):
-   - Логотип: top: 25px, height: 80px
-   - Центр логотипа: 25 + 80/2 = 65px
-   - Кнопка: height: 48px
-   - Top кнопки: 65 - 48/2 = 41px
-   ====================================== */
-
-
-

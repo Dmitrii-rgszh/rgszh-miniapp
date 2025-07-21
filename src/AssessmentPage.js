@@ -7,6 +7,7 @@ import Autosuggest from 'react-autosuggest';
 import { useNavigate } from 'react-router-dom';
 import { apiCall } from './config';
 import logoImage from './components/logo.png';
+import './Styles/Autosuggest.css';
 
 // Подключаем модульные CSS файлы КАК В PollsPage
 import './Styles/containers.css';    // Универсальные контейнеры
@@ -118,59 +119,35 @@ export default function AssessmentPage() {
     );
   };
 
+  // Обновленная функция renderAutosuggest с улучшенными стилями
   const renderAutosuggest = (value, setValue, suggestions, setSuggestions, list, placeholder) => (
-    <Autosuggest
-      suggestions={suggestions}
-      onSuggestionsFetchRequested={({ value }) => setSuggestions(getSuggestions(value, list))}
-      onSuggestionsClearRequested={() => setSuggestions([])}
-      getSuggestionValue={suggestion => suggestion}
-      renderSuggestion={suggestion => <div style={{ padding: '10px' }}>{suggestion}</div>}
-      inputProps={{
-        placeholder,
-        value,
-        onChange: (_, { newValue }) => setValue(newValue),
-        style: {
-          width: '100%',
-          padding: '16px 20px',
-          fontSize: '20px',
-          fontFamily: '"Segoe UI", sans-serif',
-          textAlign: 'center',
-          background: 'rgba(255, 255, 255, 0.15)',
-          backdropFilter: 'blur(10px)',
-          border: '1px solid rgba(255, 255, 255, 0.3)',
-          borderRadius: '12px',
-          color: 'white',
-          marginBottom: '15px',
-          transition: 'all 0.3s ease',
-          outline: 'none',
-          boxSizing: 'border-box'
-        }
-      }}
-      theme={{
-        container: { position: 'relative', width: '100%' },
-        suggestionsContainer: {
-          position: 'absolute',
-          top: '100%',
-          width: '100%',
-          background: 'rgba(0, 0, 0, 0.9)',
-          backdropFilter: 'blur(10px)',
-          borderRadius: '12px',
-          marginTop: '5px',
-          maxHeight: '200px',
-          overflowY: 'auto',
-          zIndex: 1000
-        },
-        suggestion: {
-          padding: '12px 20px',
-          cursor: 'pointer',
-          color: 'white',
-          transition: 'background 0.2s ease'
-        },
-        suggestionHighlighted: {
-          background: 'rgba(180, 0, 55, 0.5)'
-        }
-      }}
-    />
+    <div className="autosuggest-container">
+      <Autosuggest
+        suggestions={suggestions}
+        onSuggestionsFetchRequested={({ value }) => setSuggestions(getSuggestions(value, list))}
+        onSuggestionsClearRequested={() => setSuggestions([])}
+        getSuggestionValue={suggestion => suggestion}
+        renderSuggestion={suggestion => (
+          <div className="autosuggest-suggestion">
+            {suggestion}
+          </div>
+        )}
+        inputProps={{
+          className: 'autosuggest-input',
+          placeholder,
+          value,
+          onChange: (_, { newValue }) => setValue(newValue)
+        }}
+        theme={{
+          container: 'autosuggest-container',
+          suggestionsContainer: 'autosuggest-suggestions-container',
+          suggestionsList: 'autosuggest-suggestions-list',
+          suggestion: 'autosuggest-suggestion',
+          suggestionHighlighted: 'autosuggest-suggestion--highlighted',
+          input: 'autosuggest-input'
+        }}
+      />
+    </div>
   );
 
   // ===== ОБРАБОТЧИКИ КАК В PollsPage =====
@@ -434,34 +411,64 @@ export default function AssessmentPage() {
                 {errorMessage}
               </div>
             )}
-            
+      
             <div className="form-container">
-              <label className="text-body text-center" style={{ marginBottom: '5px', display: 'block' }}>
-                Фамилия
-              </label>
-              {renderAutosuggest(
-                surname, setSurname, 
-                surnameSuggestions, setSurnameSuggestions, 
-                surnameList, 'Введите фамилию'
-              )}
-  
-              <label className="text-body text-center" style={{ marginBottom: '5px', display: 'block' }}>
-                Имя
-              </label>
-              {renderAutosuggest(
-                firstName, setFirstName, 
-                firstNameSuggestions, setFirstNameSuggestions, 
-                firstNameList, 'Введите имя'
-              )}
-  
-              <label className="text-body text-center" style={{ marginBottom: '5px', display: 'block' }}>
-                Отчество
-              </label>
-              {renderAutosuggest(
-                patronymic, setPatronymic, 
-                patronymicSuggestions, setPatronymicSuggestions, 
-                patronymicList, 'Введите отчество'
-              )}
+              <style>
+                {`
+                  /* Локальные стили для удаления полосок */
+                  .form-container > * {
+                    border: none !important;
+                  }
+                  .form-container label + div {
+                    margin-top: 0 !important;
+                  }
+                  .autosuggest-wrapper {
+                    margin-bottom: 20px;
+                  }
+                  .autosuggest-wrapper:last-child {
+                    margin-bottom: 0;
+                  }
+                  /* Принудительно убираем любые горизонтальные линии */
+                  .form-container hr,
+                  .form-container > div > hr,
+                  .react-autosuggest__container hr {
+                    display: none !important;
+                  }
+                `}
+              </style>
+        
+              <div className="autosuggest-wrapper">
+                <label className="form-label">
+                  Фамилия
+                </label>
+                {renderAutosuggest(
+                  surname, setSurname, 
+                  surnameSuggestions, setSurnameSuggestions, 
+                  surnameList, 'Введите фамилию'
+                )}
+              </div>
+
+              <div className="autosuggest-wrapper">
+                <label className="form-label">
+                  Имя
+                </label>
+                {renderAutosuggest(
+                  firstName, setFirstName, 
+                  firstNameSuggestions, setFirstNameSuggestions, 
+                  firstNameList, 'Введите имя'
+                )}
+              </div>
+
+              <div className="autosuggest-wrapper">
+                <label className="form-label">
+                  Отчество
+                </label>
+                {renderAutosuggest(
+                  patronymic, setPatronymic, 
+                  patronymicSuggestions, setPatronymicSuggestions, 
+                  patronymicList, 'Введите отчество'
+                )}
+              </div>
             </div>
           </div>
         );
@@ -612,6 +619,57 @@ export default function AssessmentPage() {
             color: white;
             text-align: center;
             font-family: "Segoe UI", sans-serif;
+          }
+        `}
+      </style>
+      
+      {/* НОВЫЙ БЛОК СТИЛЕЙ ДЛЯ УДАЛЕНИЯ ПОЛОСОК */}
+      <style>
+        {`
+          /* Глобальное удаление всех горизонтальных линий */
+          hr {
+            display: none !important;
+          }
+          
+          /* Удаляем границы между элементами react-autosuggest */
+          .react-autosuggest__container,
+          .react-autosuggest__input,
+          .react-autosuggest__suggestions-container {
+            border-top: none !important;
+            border-bottom: none !important;
+          }
+          
+          /* Убираем любые псевдоэлементы, создающие линии */
+          .form-container *::before,
+          .form-container *::after {
+            height: auto !important;
+            border: none !important;
+            background: transparent !important;
+          }
+          
+          /* Исключение для placeholder */
+          .autosuggest-input::placeholder {
+            background: transparent !important;
+          }
+          
+          /* Убираем margin между автосаджестами */
+          .autosuggest-container {
+            margin-bottom: 0 !important;
+          }
+          
+          /* Настройка размеров шрифтов через переменные */
+          :root {
+            --label-font-size-desktop: 20px;
+            --label-font-size-tablet: 18px;
+            --label-font-size-mobile: 16px;
+            
+            --input-font-size-desktop: 22px;
+            --input-font-size-tablet: 20px;
+            --input-font-size-mobile: 18px;
+            
+            --placeholder-font-size-desktop: 20px;
+            --placeholder-font-size-tablet: 18px;
+            --placeholder-font-size-mobile: 16px;
           }
         `}
       </style>
