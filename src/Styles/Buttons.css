@@ -1,373 +1,459 @@
 /* ============================================================================
-   Buttons.css
+   buttons.css - УНИВЕРСАЛЬНЫЕ СТИЛИ КНОПОК
    ----------------------------------------------------------------------------
-   1) Контейнер .button-container остаётся без жёсткой высоты — он «садится»
-      под кнопки (auto-height) и при этом привязан по top: 300px, чтобы
-      располагаться ниже логотипа.
-   2) Кнопки (.btn-custom) анимируются отдельным ключевым кадром slideUpFromBottom:
-      • from { transform: translateY(100vh); opacity: 0; }
-      • to   { transform: translateY(0);     opacity: 1; }
-   3) Для каждой кнопки через псевдокласс :nth-child(n) задаётся своя задержка,
-      чтобы они «выезжали» одна за другой.
+   ✅ Корпоративные цвета: R:180 G:0 B:055 + R:153 G:0 B:055 (красный),
+       R:152 G:164 B:174 + R:118 G:143 B:146 (серый), R:0 G:40 B:130 + R:0 G:32 B:104 (синий)
+   ✅ Шрифты: Segoe UI Bold для заголовков, Segoe UI Regular для текста
+   ✅ Адаптивность для 3 разрешений: >768px, 375-768px, <375px
+   ✅ Универсальный класс для использования в любых JS компонентах
    ============================================================================ */
 
 /* ======================================
-   1) Контейнер для всех кнопок
+   CSS ПЕРЕМЕННЫЕ - КОРПОРАТИВНЫЕ ЦВЕТА
    ====================================== */
-.button-container {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-
-  display: flex;
-  flex-direction: column;     /* Кнопки одна под другой */
-  justify-content: flex-start;
-  align-items: center;        /* Кнопки по центру по X */
-
-  gap: 28px;                  /* Расстояние между кнопками */
-
-  width: 100%;
-  max-width: 300px;           /* Можно скорректировать */
-  z-index: 2;
-
-  /* Позиция контейнера на экране (30px ниже низа логотипа): */
-  /* логотип: top = 110px, height ≈ 160px → низ = 270px; +30 = 300px */
-  top: 350px;
-
-  /* Никакой height — контейнер «подстраивается» под кнопки */
-}
-
-/* каждая строка «опрос + QR» */
-.poll-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between; /* чтобы главный btn занял всё оставшееся место */
-  width: 100%;                     /* растягиваемся на 100% container */
-  margin-bottom: 16px;
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.6s ease, transform 0.6s ease;
-}
-.poll-row.animate-row {
-  opacity: 1;
-  transform: translateY(0);
+:root {
+  /* Корпоративная палитра */
+  --btn-red-primary: rgb(180, 0, 55);
+  --btn-red-secondary: rgb(153, 0, 55);
+  --btn-gray-primary: rgb(152, 164, 174);
+  --btn-gray-secondary: rgb(118, 143, 146);
+  --btn-blue-primary: rgb(0, 40, 130);
+  --btn-blue-secondary: rgb(0, 32, 104);
+  
+  /* Корпоративные шрифты */
+  --btn-font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 /* ======================================
-   2) Общие стили для кнопок (.btn-custom)
+   БАЗОВЫЙ КЛАСС КНОПКИ
    ====================================== */
-.btn-custom {
-  /* Сделать кнопки одинаковой ширины: */
-  flex: 1;
-  min-width: 300px;
-  max-width: 300px;
-
-  /* Вместо жёсткой высоты — паддинги: */
-  padding: 12px 24px;
-  min-height: 48px;  /* Гарантируем высоту минимум 48px */
-
-  box-sizing: border-box;
-
-  background: linear-gradient(
-    120deg,
-    var(--bg-dark-start),
-    var(--bg-dark-end)
-  );
-  color: #ffffff;
-  font-size: 18px;
-  font-family: 'Montserrat', sans-serif;
-  font-weight: 300;
-  text-align: center;
-  line-height: 1.2;
-
-  border: none;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-
+.btn-universal {
+  /* Базовые стили */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   position: relative;
   overflow: hidden;
+  
+  /* Типографика */
+  font-family: var(--btn-font-family);
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  
+  /* Интерактивность */
   cursor: pointer;
-
-  /*
-     Изначально кнопки «спрятаны» внизу экрана:
-     transform: translateY(100vh) — сдвигает каждый элемент вниз на высоту окна.
-     opacity: 0 — кнопка невидима, пока не стартует анимация.
-  */
-  transform: translateY(100vh);
-  opacity: 0;
-
-  /* Запуск анимации выезда (slideUpFromBottom) с задержкой по-умолчанию = 0s */
-  animation-name: slideUpFromBottom;
-  animation-duration: 0.6s;
-  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); /* ease-out */
-  animation-fill-mode: forwards;
-  /* animation-delay будет задаваться ниже через nth-child */
-}
-
-/* --------------------------------------
-   3) Псевдоклассы для поочерёдной задержки
-   -------------------------------------- */
-/* Первая кнопка (nth-child(1)) — задержка 0.1s */
-.button-container .btn-custom:nth-child(1) {
-  animation-delay: 0.1s;
-}
-
-/* Вторая кнопка — задержка 0.2s */
-.button-container .btn-custom:nth-child(2) {
-  animation-delay: 0.2s;
-}
-
-/* Третья кнопка — задержка 0.3s */
-.button-container .btn-custom:nth-child(3) {
-  animation-delay: 0.3s;
-}
-
-/* Четвёртая кнопка — задержка 0.4s */
-.button-container .btn-custom:nth-child(4) {
-  animation-delay: 0.4s;
-}
-
-/* Пятая кнопка — задержка 0.5s (если есть) */
-.button-container .btn-custom:nth-child(5) {
-  animation-delay: 0.5s;
-}
-
-/* Добавьте аналогичные правила, если кнопок больше */
-
-/* 4) Кадры «выезда» из низа экрана вверх */
-@keyframes slideUpFromBottom {
-  0% {
-    transform: translateY(100vh);
-    opacity: 0;
-  }
-  100% {
-    transform: translateY(0);
-    opacity: 1;
-  }
+  user-select: none;
+  border: none;
+  outline: none;
+  
+  /* Переходы */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* Отключение стандартных браузерных стилей */
+  -webkit-tap-highlight-color: transparent;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
 }
 
 /* ======================================
-   5) Hover/active/focus и другие эффекты
-      (оставляем ваши существующие)
+   ОСНОВНОЙ СТИЛЬ (как на скриншоте)
    ====================================== */
-.btn-custom:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+.btn-universal.btn-primary {
+  /* Корпоративный градиент красный -> синий */
+  background: linear-gradient(
+    135deg, 
+    var(--btn-red-primary) 0%, 
+    var(--btn-red-secondary) 35%, 
+    var(--btn-blue-primary) 100%
+  );
+  
+  color: white;
+  border-radius: 12px;
+  box-shadow: 
+    0 4px 15px rgba(0, 0, 0, 0.2),
+    0 2px 8px rgba(180, 0, 55, 0.3);
 }
 
-.btn-custom:active {
-  transform: translateY(0) scale(0.95);
+.btn-universal.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 6px 20px rgba(0, 0, 0, 0.3),
+    0 4px 12px rgba(180, 0, 55, 0.4);
+  
+  /* Более яркий градиент при hover */
+  background: linear-gradient(
+    135deg, 
+    rgba(180, 0, 55, 1) 0%, 
+    rgba(153, 0, 55, 1) 35%, 
+    rgba(0, 40, 130, 1) 100%
+  );
 }
 
-.btn-custom:focus {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.6);
+.btn-universal.btn-primary:active {
+  transform: translateY(0) scale(0.98);
+  box-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.2),
+    0 1px 4px rgba(180, 0, 55, 0.3);
 }
 
-.btn-custom .ripple {
-  position: absolute;
-  border-radius: 50%;
-  transform: scale(0);
-  background: rgba(255, 255, 255, 0.6); /* чуть более яркий цвет */
-  animation: ripple-animation 400ms cubic-bezier(0.4, 0, 0.2, 1);
-  pointer-events: none;
+.btn-universal.btn-primary:focus {
+  box-shadow: 
+    0 4px 15px rgba(0, 0, 0, 0.2),
+    0 0 0 3px rgba(255, 255, 255, 0.6);
 }
 
-@keyframes ripple-animation {
-  0% {
-    transform: scale(0);
-    opacity: 0.6;
-  }
-  50% {
-    transform: scale(4);    /* сначала быстро разрастаясь */
-    opacity: 0.4;
-  }
-  100% {
-    transform: scale(8);    /* выносим намного дальше */
-    opacity: 0;
-  }
+/* ======================================
+   ВТОРИЧНЫЕ СТИЛИ КНОПОК
+   ====================================== */
+
+/* Серая кнопка */
+.btn-universal.btn-secondary {
+  background: linear-gradient(
+    135deg, 
+    var(--btn-gray-primary) 0%, 
+    var(--btn-gray-secondary) 100%
+  );
+  color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
 }
 
-.btn-custom:disabled {
-  background: rgba(255, 255, 255, 0.12);
-  color: rgba(255, 255, 255, 0.5);
+.btn-universal.btn-secondary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+  background: linear-gradient(
+    135deg, 
+    rgba(152, 164, 174, 1) 0%, 
+    rgba(118, 143, 146, 1) 100%
+  );
+}
+
+/* Синяя кнопка */
+.btn-universal.btn-accent {
+  background: linear-gradient(
+    135deg, 
+    var(--btn-blue-primary) 0%, 
+    var(--btn-blue-secondary) 100%
+  );
+  color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 40, 130, 0.3);
+}
+
+.btn-universal.btn-accent:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 40, 130, 0.4);
+  background: linear-gradient(
+    135deg, 
+    rgba(0, 40, 130, 1) 0%, 
+    rgba(0, 32, 104, 1) 100%
+  );
+}
+
+/* Прозрачная кнопка */
+.btn-universal.btn-transparent {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.btn-universal.btn-transparent:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Outline кнопка */
+.btn-universal.btn-outline {
+  background: transparent;
+  border: 2px solid var(--btn-red-primary);
+  color: var(--btn-red-primary);
+  border-radius: 12px;
+}
+
+.btn-universal.btn-outline:hover {
+  background: var(--btn-red-primary);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(180, 0, 55, 0.3);
+}
+
+/* ======================================
+   РАЗМЕРЫ КНОПОК
+   ====================================== */
+
+/* Маленькая кнопка */
+.btn-universal.btn-small {
+  padding: 8px 16px;
+  font-size: 14px;
+  border-radius: 8px;
+  min-height: 32px;
+}
+
+/* Средняя кнопка (по умолчанию) */
+.btn-universal.btn-medium {
+  padding: 12px 24px;
+  font-size: 16px;
+  border-radius: 10px;
+  min-height: 44px;
+}
+
+/* Большая кнопка */
+.btn-universal.btn-large {
+  padding: 16px 32px;
+  font-size: 18px;
+  border-radius: 12px;
+  min-height: 52px;
+}
+
+/* Очень большая кнопка */
+.btn-universal.btn-xlarge {
+  padding: 20px 40px;
+  font-size: 20px;
+  border-radius: 14px;
+  min-height: 60px;
+}
+
+/* Полная ширина */
+.btn-universal.btn-fullwidth {
+  width: 100%;
+}
+
+/* ======================================
+   СОСТОЯНИЯ КНОПОК
+   ====================================== */
+
+/* Отключенная кнопка */
+.btn-universal:disabled,
+.btn-universal.btn-disabled {
+  opacity: 0.5;
   cursor: not-allowed;
+  pointer-events: none;
+  transform: none;
   box-shadow: none;
 }
 
+/* Загрузка */
+.btn-universal.btn-loading {
+  pointer-events: none;
+  position: relative;
+  color: transparent;
+}
+
+.btn-universal.btn-loading::after {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  margin: auto;
+  border: 2px solid transparent;
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: button-loading-spinner 1s ease infinite;
+}
+
+@keyframes button-loading-spinner {
+  from { transform: rotate(0turn); }
+  to { transform: rotate(1turn); }
+}
+
 /* ======================================
-   6) Медиазапрос для мобильных (≤768px)
+   RIPPLE ЭФФЕКТ
    ====================================== */
-@media (max-width: 768px) {
-  .button-container {
-    /* Мобильный логотип: top=110px + height=120px → низ=230px +30 = 260px */
-    top: 260px;
-    max-width: 300px;
-    gap: 12px;
+.btn-universal .ripple {
+  position: absolute;
+  border-radius: 50%;
+  transform: scale(0);
+  background: rgba(255, 255, 255, 0.6);
+  animation: ripple-effect 600ms linear;
+  pointer-events: none;
+}
+
+@keyframes ripple-effect {
+  to {
+    transform: scale(4);
+    opacity: 0;
   }
-  .button-container .btn-custom {
-    padding: 10px 20px;
-    min-height: 50px;
+}
+
+/* ======================================
+   АДАПТИВНОСТЬ ДЛЯ 3 РАЗРЕШЕНИЙ
+   ====================================== */
+
+/* 1. Экраны свыше 768px (DESKTOP) */
+@media (min-width: 769px) {
+  .btn-universal.btn-responsive {
+    padding: 18px 36px;
+    font-size: 20px;
+    border-radius: 12px;
     min-width: 280px;
+    min-height: 56px;
+  }
+  
+  .btn-universal.btn-responsive.btn-small {
+    padding: 12px 24px;
+    font-size: 16px;
+    min-width: 200px;
+    min-height: 44px;
+  }
+  
+  .btn-universal.btn-responsive.btn-large {
+    padding: 22px 44px;
+    font-size: 24px;
+    min-width: 320px;
+    min-height: 64px;
+  }
+}
+
+/* 2. Экраны от 375px до 768px (TABLET) */
+@media (min-width: 375px) and (max-width: 768px) {
+  .btn-universal.btn-responsive {
+    padding: 16px 32px;
     font-size: 18px;
     border-radius: 10px;
-
-    /* На мобильных задержки чуть укоротим */
+    min-width: 260px;
+    min-height: 50px;
   }
-  .button-container .btn-custom:nth-child(1) {
-    animation-delay: 0.1s;
+  
+  .btn-universal.btn-responsive.btn-small {
+    padding: 10px 20px;
+    font-size: 14px;
+    min-width: 180px;
+    min-height: 40px;
   }
-  .button-container .btn-custom:nth-child(2) {
-    animation-delay: 0.2s;
+  
+  .btn-universal.btn-responsive.btn-large {
+    padding: 20px 40px;
+    font-size: 22px;
+    min-width: 300px;
+    min-height: 58px;
   }
-  .button-container .btn-custom:nth-child(3) {
-    animation-delay: 0.3s;
-  }
-  /* и так далее по количеству кнопок… */
 }
 
-/* Exit-анимация для кнопок: сдвиг вниз + исчезнуть */
-.btn-custom.animate-exit {
-  animation-name: slideDownFromTop;
-  animation-duration: 0.6s;
-  animation-timing-function: cubic-bezier(0.65, 0.05, 0.36, 1);
-  animation-fill-mode: forwards;
+/* 3. Экраны менее 375px (MOBILE) */
+@media (max-width: 374px) {
+  .btn-universal.btn-responsive {
+    padding: 14px 28px;
+    font-size: 16px;
+    border-radius: 8px;
+    min-width: 240px;
+    min-height: 46px;
+  }
+  
+  .btn-universal.btn-responsive.btn-small {
+    padding: 8px 16px;
+    font-size: 12px;
+    min-width: 160px;
+    min-height: 36px;
+  }
+  
+  .btn-universal.btn-responsive.btn-large {
+    padding: 18px 36px;
+    font-size: 20px;
+    min-width: 280px;
+    min-height: 54px;
+  }
 }
 
-/* Стагеринг: первая кнопка уезжает с задержкой 0.1s, вторая — 0.2s и т.д. */
-.btn-exit1 { animation-delay: 0.1s; }
-.btn-exit2 { animation-delay: 0.2s; }
-.btn-exit3 { animation-delay: 0.3s; }
-/* Добавьте btn-exit4, btn-exit5… по тому же принципу */
+/* ======================================
+   СПЕЦИАЛЬНЫЕ КНОПКИ
+   ====================================== */
 
-/* Ключевые кадры для уезда вниз */
-@keyframes slideDownFromTop {
-  0% { transform: translateY(0);   opacity: 1; }
-  100% { transform: translateY(100vh); opacity: 0; }
-}
-
-.btn-qr {
-  width: 48px;     /* фиксированный размер */
-  height: 48px;
-  padding: 0;
-  display: flex;
+/* Кнопка с иконкой */
+.btn-universal.btn-icon {
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
+  gap: 8px;
 }
 
-/* SVG‑иконка */
-.btn-qr svg {
-  width: 24px;
-  height: 24px;
-  fill: white;
-  stroke: none;
+.btn-universal.btn-icon-only {
+  padding: 12px;
+  min-width: auto;
+  aspect-ratio: 1;
 }
 
-/* Порядковые задержки появления (slide-up) для QR‑кнопок */
-/* Всего 6 кнопок в .button-container: 3 опросные + 3 QR */
-.button-container .btn-custom:nth-child(1) { animation-delay: 0.10s; } /* 1-я опросная */
-.button-container .btn-custom:nth-child(2) { animation-delay: 0.15s; } /* 1-я QR */
-.button-container .btn-custom:nth-child(3) { animation-delay: 0.20s; } /* 2-я опросная */
-.button-container .btn-custom:nth-child(4) { animation-delay: 0.25s; } /* 2-я QR */
-.button-container .btn-custom:nth-child(5) { animation-delay: 0.30s; } /* 3-я опросная */
-.button-container .btn-custom:nth-child(6) { animation-delay: 0.35s; } /* 3-я QR */
-
-/* Выезд (exit) stagerring для QR‑кнопок */
-.btn-exit4 { animation-delay: 0.40s; } /* 1-я QR */
-.btn-exit5 { animation-delay: 0.50s; } /* 2-я QR */
-.btn-exit6 { animation-delay: 0.60s; } /* 3-я QR */
-
-.poll-row {
-  display: flex;
-  align-items: center;
-  justify-content: center; /* или space-between, если нужно растянуть */
-  gap: 12px;              /* расстояние между кнопками */
-  margin-bottom: 16px;    /* отступ между строками */
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.6s ease, transform 0.6s ease;
-}
-
-/* Когда нужно «выкатить» строки */
-.poll-row.animate-row {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* ----------------------------------------- */
-/* 2) QR‑кнопка в том же стиле, что и .btn-custom */
-/* ----------------------------------------- */
-.btn-qr {
-  flex: 0 0 48px;        /* не растягиваем, фиксируем ширину 48px */
-  height: 48px;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1.5px solid rgba(255,255,255,0.17);
-  background: rgba(255,255,255,0.12);
-  border-radius: 10px;
-  cursor: pointer;
-}
-
-/* Чтобы ripple‑эффект тоже работал */
-.btn-qr .ripple {
+/* Круглая кнопка */
+.btn-universal.btn-circle {
   border-radius: 50%;
+  padding: 12px;
+  min-width: auto;
+  aspect-ratio: 1;
 }
 
-.btn-qr svg {
-  width: 20px;
-  height: 20px;
-  fill: white;
-  stroke: none;
+/* Кнопка с тенью */
+.btn-universal.btn-shadow {
+  box-shadow: 
+    0 8px 25px rgba(0, 0, 0, 0.15),
+    0 4px 12px rgba(180, 0, 55, 0.2);
 }
 
-/* QR‑модалка */
-.qr-modal {
-  position: fixed;
-  top: 0; left: 0; right:0; bottom:0;
+.btn-universal.btn-shadow:hover {
+  box-shadow: 
+    0 12px 35px rgba(0, 0, 0, 0.25),
+    0 6px 16px rgba(180, 0, 55, 0.3);
+}
+
+/* ======================================
+   ГРУППЫ КНОПОК
+   ====================================== */
+.btn-group {
   display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  z-index: 20;
 }
 
-/* Полупрозрачный фон */
-.qr-overlay {
-  position: absolute;
-  top:0; left:0; right:0; bottom:0;
-  background: rgba(0,0,0,0.6);
+.btn-group.btn-group-vertical {
+  flex-direction: column;
 }
 
-/* Окошко с контентом */
-.qr-box {
+.btn-group.btn-group-attached .btn-universal:not(:last-child) {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  margin-right: -1px;
+}
+
+.btn-group.btn-group-attached .btn-universal:not(:first-child) {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+/* ======================================
+   УТИЛИТАРНЫЕ КЛАССЫ
+   ====================================== */
+.btn-universal.btn-animated {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.btn-universal.btn-glow {
   position: relative;
-  background: rgba(255,255,255,1);
-  border-radius: 16px;
-  padding: 24px;
-  text-align: center;
-  z-index: 21;
-  max-width: 90%;
 }
 
-/* Сам QR */
-.qr-box img {
-  width: 256px;
-  height: 256px;
-  margin-bottom: 16px;
+.btn-universal.btn-glow::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: linear-gradient(45deg, var(--btn-red-primary), var(--btn-blue-primary));
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
-/* Подпись с названием опроса */
-.qr-label {
-  color: black;
-  font-size: 24px;
-  margin-bottom: 16px;
+.btn-universal.btn-glow:hover::before {
+  opacity: 0.7;
 }
-
-/* Кнопка «Закрыть» */
-.btn-close {
-  width: 120px;
-  margin: 0 auto;
-}
-
-

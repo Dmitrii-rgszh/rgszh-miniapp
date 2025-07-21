@@ -1,9 +1,15 @@
-// MainMenu.js - ЧИСТАЯ ВЕРСИЯ
+// MainMenu.js - С УНИВЕРСАЛЬНЫМИ СТИЛЯМИ КНОПОК
+// ✅ Использует универсальные классы из buttons.css
+// ✅ Только логика и CSS классы
+// ✅ Чистый код без инлайн стилей
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logoImage from './components/logo.png';
-import './Styles/logo.css';      
+
+// Подключаем CSS файлы
+import './Styles/buttons.css';   // Универсальные кнопки
+import './Styles/logo.css';     // Логотип
 
 export default function MainMenu() {
   const navigate = useNavigate();
@@ -16,8 +22,8 @@ export default function MainMenu() {
 
   // ===== ДАННЫЕ КНОПОК =====
   const buttons = [
-    { label: 'Опросы', to: '/polls' },
-    { label: 'Сотрудники', to: '/employee' },
+    { label: 'Опросы', to: '/polls', type: 'primary' },
+    { label: 'Сотрудники', to: '/employee', type: 'primary' },
   ];
 
   // ===== АНИМАЦИЯ ВХОДА =====
@@ -93,11 +99,14 @@ export default function MainMenu() {
     isExiting ? 'exiting' : ''
   ].filter(Boolean).join(' ');
 
-  const getButtonClasses = (index) => [
-    'btn-custom',
-    'btn-main-menu',
-    buttonsAnimated ? 'animated' : '',
-    isExiting ? 'exiting' : ''
+  // Универсальные классы кнопок
+  const getButtonClasses = (btn, index) => [
+    'btn-universal',           // Базовый класс
+    `btn-${btn.type}`,        // Тип кнопки (primary, secondary, etc.)
+    'btn-responsive',         // Адаптивная кнопка
+    'btn-shadow',            // С тенью
+    buttonsAnimated ? 'button-animated' : 'button-hidden',
+    isExiting ? 'button-exiting' : ''
   ].filter(Boolean).join(' ');
 
   return (
@@ -119,7 +128,7 @@ export default function MainMenu() {
         {buttons.map((btn, index) => (
           <button
             key={btn.to}
-            className={getButtonClasses(index)}
+            className={getButtonClasses(btn, index)}
             data-index={index}
             onClick={(e) => {
               createRipple(e);

@@ -1,68 +1,69 @@
 /* ============================================================================
-   logo.css - ПОЛНЫЙ КОНТРОЛЬ НАД ЛОГОТИПОМ
+   logo.css - ТОЛЬКО СТИЛИ ЛОГОТИПА
    ----------------------------------------------------------------------------
    ✅ Уменьшенный отступ сверху в 2 раза
-   ✅ Все анимации и стили логотипа только здесь
-   ✅ Высший приоритет через !important
+   ✅ Гласморфизм и анимации
+   ✅ Адаптивность для 3 разрешений: >768px, 375-768px, <375px
+   ✅ Без !important - приоритет через подключение
    ============================================================================ */
 
 /* ======================================
    ОСНОВНЫЕ СТИЛИ ЛОГОТИПА
    ====================================== */
 .logo-wrapper {
-  position: absolute !important;
+  position: absolute;
   
   /* Уменьшенные позиции в 2 раза */
-  top: 25px !important;  /* было 50px */
+  top: 25px;  /* было 50px */
   
-  left: 50% !important;
-  transform: translateX(-50%) !important;
+  left: 50%;
+  transform: translateX(-50%);
   
-  /* Размеры и стили */
-  width: 128px !important;
-  height: 128px !important;
-  background-color: rgba(255, 255, 255, 0.10) !important;
-  backdrop-filter: blur(8px) !important;
-  border-radius: 20px !important;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25) !important;
+  /* Размеры и гласморфизм */
+  width: 128px;
+  height: 128px;
+  background-color: rgba(255, 255, 255, 0.10);
+  backdrop-filter: blur(8px);
+  border-radius: 20px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
   
   /* Начальное состояние */
-  opacity: 0 !important;
-  z-index: 3 !important;
+  opacity: 0;
+  z-index: 3;
   
   /* Центрирование */
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   /* Комплексная анимация */
   animation: 
     slideDownWrapper 0.8s ease-out forwards,
     shakeLeftRight 25s ease-in-out infinite 2s,
-    shakeUpDown 30s ease-in-out infinite 5s !important;
+    shakeUpDown 30s ease-in-out infinite 5s;
 
-  animation-fill-mode: both !important;
+  animation-fill-mode: both;
 }
 
 /* ======================================
    ИЗОБРАЖЕНИЕ ЛОГОТИПА
    ====================================== */
 .logo-image {
-  position: absolute !important;
-  top: 50% !important;
-  left: 50% !important;
-  transform: translate(-50%, -50%) !important;
-  width: 96px !important;
-  height: 96px !important;
-  object-fit: contain !important;
-  z-index: 11 !important;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 96px;
+  height: 96px;
+  object-fit: contain;
+  z-index: 11;
 }
 
 /* ======================================
    ENTRY АНИМАЦИЯ
    ====================================== */
 .logo-wrapper.animate-logo {
-  animation: slideDownWrapper 0.8s ease-out forwards !important;
+  animation: slideDownWrapper 0.8s ease-out forwards;
 }
 
 @keyframes slideDownWrapper {
@@ -79,7 +80,7 @@
 }
 
 .logo-wrapper.animate-logo .logo-image {
-  animation: fadeInImage 0.8s ease-out forwards !important;
+  animation: fadeInImage 0.8s ease-out forwards;
 }
 
 @keyframes fadeInImage {
@@ -91,7 +92,7 @@
    EXIT АНИМАЦИЯ
    ====================================== */
 .logo-wrapper.animate-logo-exit {
-  animation: slideUpLogoExit 0.8s ease-in forwards !important;
+  animation: slideUpLogoExit 0.8s ease-in forwards;
 }
 
 @keyframes slideUpLogoExit {
@@ -132,117 +133,105 @@
    СОСТОЯНИЯ АНИМАЦИИ
    ====================================== */
 .logo-wrapper.animated {
-  top: 55px !important;  /* финальная позиция */
-  opacity: 1 !important;
+  top: 55px;  /* финальная позиция */
+  opacity: 1;
 }
 
 .logo-wrapper.exiting {
-  top: -200px !important;
-  opacity: 0 !important;
-  transition: all 0.8s ease-out !important;
+  top: -200px;
+  opacity: 0;
+  transition: all 0.8s ease-out;
 }
 
 /* ======================================
-   МОБИЛЬНАЯ АДАПТАЦИЯ
+   АДАПТИВНОСТЬ ДЛЯ 3 РАЗРЕШЕНИЙ
    ====================================== */
-@media (max-width: 768px) {
-  .logo-wrapper {
-    top: 10px !important;  /* было 20px */
-    width: 96px !important;
-    height: 96px !important;
-    border-radius: 16px !important;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2) !important;
-  }
 
-  .logo-wrapper.animate-logo {
-    animation: slideDownWrapperMobile 0.8s ease-out forwards !important;
+/* 1. Экраны свыше 768px (DESKTOP) */
+@media (min-width: 769px) {
+  .logo-wrapper {
+    top: 25px;
+    width: 128px;
+    height: 128px;
+    border-radius: 20px;
   }
 
   .logo-wrapper.animated {
-    top: 40px !important;  /* было 80px */
+    top: 55px;
   }
 
-  @keyframes slideDownWrapperMobile {
+  .logo-image {
+    width: 96px;
+    height: 96px;
+  }
+}
+
+/* 2. Экраны от 375px до 768px (TABLET) */
+@media (min-width: 375px) and (max-width: 768px) {
+  .logo-wrapper {
+    top: 10px;
+    width: 96px;
+    height: 96px;
+    border-radius: 16px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+  }
+
+  .logo-wrapper.animated {
+    top: 40px;
+  }
+
+  .logo-image {
+    width: 72px;
+    height: 72px;
+  }
+
+  @keyframes slideDownWrapperTablet {
     from {
       opacity: 0;
       top: -150px;
     }
     to {
       opacity: 1;
-      top: 40px;  /* финальная позиция на мобильных */
+      top: 40px;
     }
   }
-
-  .logo-image {
-    width: 72px !important;
-    height: 72px !important;
+  
+  .logo-wrapper.animate-logo {
+    animation: slideDownWrapperTablet 0.8s ease-out forwards;
   }
 }
 
-@media (max-width: 480px) {
+/* 3. Экраны менее 375px (MOBILE) */
+@media (max-width: 374px) {
   .logo-wrapper {
-    top: 5px !important;  /* было 15px */
-    width: 80px !important;
-    height: 80px !important;
-    border-radius: 12px !important;
-  }
-
-  .logo-wrapper.animate-logo {
-    animation: slideDownWrapperSmall 0.8s ease-out forwards !important;
+    top: 5px;
+    width: 80px;
+    height: 80px;
+    border-radius: 12px;
   }
 
   .logo-wrapper.animated {
-    top: 25px !important;  /* было 50px */
+    top: 25px;
   }
 
-  @keyframes slideDownWrapperSmall {
+  .logo-image {
+    width: 60px;
+    height: 60px;
+  }
+
+  @keyframes slideDownWrapperMobile {
     from {
       opacity: 0;
       top: -120px;
     }
     to {
       opacity: 1;
-      top: 25px;  /* финальная позиция на маленьких экранах */
+      top: 25px;
     }
   }
-
-  .logo-image {
-    width: 60px !important;
-    height: 60px !important;
-  }
-}
-
-@media (min-width: 1920px) {
-  .logo-wrapper {
-    top: 50px !important;  /* было 100px */
-    width: 160px !important;
-    height: 160px !important;
-    border-radius: 24px !important;
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3) !important;
-  }
-
+  
   .logo-wrapper.animate-logo {
-    animation: slideDownWrapperLarge 0.8s ease-out forwards !important;
-  }
-
-  .logo-wrapper.animated {
-    top: 80px !important;  /* было 160px */
-  }
-
-  @keyframes slideDownWrapperLarge {
-    from {
-      opacity: 0;
-      top: -250px;
-    }
-    to {
-      opacity: 1;
-      top: 80px;  /* финальная позиция на больших экранах */
-    }
-  }
-
-  .logo-image {
-    width: 120px !important;
-    height: 120px !important;
+    animation: slideDownWrapperMobile 0.8s ease-out forwards;
   }
 }
 
@@ -250,16 +239,16 @@
    УТИЛИТАРНЫЕ КЛАССЫ
    ====================================== */
 .logo-wrapper.hidden {
-  opacity: 0 !important;
-  pointer-events: none !important;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .logo-wrapper.no-animation {
-  animation: none !important;
+  animation: none;
 }
 
 .logo-wrapper.fast-animation {
-  animation-duration: 0.4s !important;
+  animation-duration: 0.4s;
 }
 
 
