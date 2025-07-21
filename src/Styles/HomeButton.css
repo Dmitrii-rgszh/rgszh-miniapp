@@ -1,112 +1,324 @@
-/* HomeButton.css - ИСПРАВЛЕНО: унифицированное позиционирование + Safe Area для Telegram miniapp */
+/* ============================================================================
+   HomeButton.css - УНИФИЦИРОВАННЫЕ СТИЛИ КНОПКИ "ДОМОЙ"
+   ----------------------------------------------------------------------------
+   ✅ Центрирование по высоте с логотипом
+   ✅ Адаптивность для 3 разрешений: >768px, 375-768px, <375px
+   ✅ Поддержка Safe Area для Telegram MiniApp
+   ✅ Корпоративные стили
+   ============================================================================ */
 
-.home-button-polls {
+/* ======================================
+   БАЗОВЫЕ СТИЛИ КНОПКИ "ДОМОЙ"
+   ====================================== */
+.home-button {
   position: absolute;
   
-  /* Размеры кнопки - используем CSS переменную или fallback */
-  width: var(--home-button-size, 64px) !important;
-  height: var(--home-button-size, 64px) !important;
-  min-width: var(--home-button-size, 64px) !important;
-  max-width: var(--home-button-size, 64px) !important;
-  min-height: var(--home-button-size, 64px) !important;
-  max-height: var(--home-button-size, 64px) !important;
+  /* Размеры кнопки */
+  width: 64px;
+  height: 64px;
   
-  /* ИСПРАВЛЕНО: Позиционирование с поддержкой Safe Area */
-  top: var(--home-button-top, 142px) !important;
-  left: var(--home-button-left, max(env(safe-area-inset-left, 20px), 20px)) !important;
+  /* Запрет изменения размера */
+  min-width: 64px;
+  max-width: 64px;
+  min-height: 64px;
+  max-height: 64px;
+  flex-shrink: 0;
+  flex-grow: 0;
+  
+  /* Позиционирование - центр совпадает с логотипом */
+  /* Desktop: логотип top: 55px + height: 128px / 2 = 119px */
+  top: 87px; /* 119px - 64px/2 = 87px */
+  left: 30px;
   
   /* Стили */
-  background: rgba(255, 255, 255, 0.10) !important;
-  backdrop-filter: blur(8px) !important;
-  border: 1px solid rgba(255,255,255,0.17) !important;
-  border-radius: 16px !important;
-  z-index: 5 !important;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
   
-  /* Flexbox для центрирования иконки */
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
+  /* Центрирование иконки */
+  display: flex;
+  align-items: center;
+  justify-content: center;
   
-  /* Анимация */
-  transform: translateX(-100px);
+  /* Интерактивность */
+  cursor: pointer;
+  z-index: 5;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* Сброс стандартных стилей */
+  padding: 0;
+  margin: 0;
+  outline: none;
+  text-decoration: none;
+  box-sizing: border-box;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  
+  /* Начальное состояние для анимации */
   opacity: 0;
-  transition: all 0.8s cubic-bezier(0.22,1,0.36,1);
-  cursor: pointer !important;
-  
-  /* Сброс стилей для гарантии квадрата */
-  padding: 0 !important;
-  margin: 0 !important;
-  box-sizing: border-box !important;
-  outline: none !important;
-  text-decoration: none !important;
-  font-size: 0 !important;
-  line-height: 0 !important;
-  overflow: hidden !important;
-  aspect-ratio: 1 / 1 !important;
-  flex-shrink: 0 !important;
-  flex-grow: 0 !important;
+  transform: translateX(-30px);
 }
 
-/* Анимация входа */
-.home-button-polls.animate-home {
-  transform: translateX(0);
+/* ======================================
+   ИКОНКА ВНУТРИ КНОПКИ
+   ====================================== */
+.home-button svg {
+  width: 28px;
+  height: 28px;
+  fill: white;
+  pointer-events: none;
+}
+
+/* ======================================
+   СОСТОЯНИЯ И АНИМАЦИИ
+   ====================================== */
+
+/* Анимация появления */
+.home-button.animate-in {
   opacity: 1;
+  transform: translateX(0);
+  animation: homeButtonSlideIn 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes homeButtonSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 /* Анимация выхода */
-.home-button-polls.animate-home-exit {
-  transform: translateX(-100px);
-  opacity: 0;
-  transition: all 0.7s cubic-bezier(0.65,0.05,0.36,1);
+.home-button.animate-out {
+  animation: homeButtonSlideOut 0.6s cubic-bezier(0.65, 0.05, 0.36, 1) forwards;
 }
 
-/* Иконка внутри кнопки */
-.home-button-polls svg {
-  width: 28px;
-  height: 28px;
-  fill: #ffffff;
+@keyframes homeButtonSlideOut {
+  to {
+    opacity: 0;
+    transform: translateX(-50px);
+  }
 }
 
-/* ===== АДАПТИВНОСТЬ ===== */
+/* Hover эффект */
+.home-button:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateX(0) scale(1.05);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+}
 
-/* Маленькие экраны - иконка и border-radius */
-@media (max-height: 700px), (max-width: 400px) {
-  .home-button-polls {
-    border-radius: 12px !important;
-    /* На маленьких экранах - всегда 20px от края */
-    left: max(env(safe-area-inset-left, 20px), 40px) !important;
+.home-button:hover svg {
+  transform: scale(1.1);
+}
+
+/* Active состояние */
+.home-button:active {
+  transform: translateX(0) scale(0.95);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* ======================================
+   АДАПТИВНОСТЬ: ПЛАНШЕТЫ (375-768px)
+   ====================================== */
+@media (min-width: 375px) and (max-width: 768px) {
+  .home-button {
+    /* Размеры кнопки */
+    width: 56px;
+    height: 56px;
+    min-width: 56px;
+    max-width: 56px;
+    min-height: 56px;
+    max-height: 56px;
+    
+    /* Позиционирование - центр совпадает с логотипом */
+    /* Tablet: логотип top: 40px + height: 96px / 2 = 88px */
+    top: 80px; /* 88px - 56px/2 = 60px */
+    left: 24px;
+    
+    /* Стили */
+    border-radius: 14px;
   }
   
-  .home-button-polls svg {
+  .home-button svg {
     width: 24px;
     height: 24px;
   }
 }
 
-/* Специальная поддержка для Telegram WebApp */
-@supports (env(safe-area-inset-left)) {
-  .home-button-polls {
-    /* Для iPhone с вырезом/dynamic island - отступ от safe area */
-    left: var(--home-button-left, max(env(safe-area-inset-left), 20px)) !important;
+/* ======================================
+   АДАПТИВНОСТЬ: МОБИЛЬНЫЕ (<375px)
+   ====================================== */
+@media (max-width: 374px) {
+  .home-button {
+    /* Размеры кнопки */
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    max-width: 48px;
+    min-height: 48px;
+    max-height: 48px;
+    
+    /* Позиционирование - центр совпадает с логотипом */
+    /* Mobile: логотип top: 25px + height: 80px / 2 = 65px */
+    top: 41px; /* 65px - 48px/2 = 41px */
+    left: 20px;
+    
+    /* Стили */
+    border-radius: 12px;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.15);
+  }
+  
+  .home-button svg {
+    width: 20px;
+    height: 20px;
   }
 }
 
-/* Hover эффект (только для устройств с курсором) */
-@media (hover: hover) {
-  .home-button-polls:hover {
-    background: rgba(255, 255, 255, 0.15) !important;
-    border-color: rgba(255,255,255,0.25) !important;
+/* ======================================
+   SAFE AREA ПОДДЕРЖКА (Telegram MiniApp)
+   ====================================== */
+@supports (padding: max(0px)) {
+  .home-button {
+    left: max(30px, env(safe-area-inset-left, 30px));
+  }
+  
+  @media (max-width: 768px) and (min-width: 375px) {
+    .home-button {
+      left: max(70px, env(safe-area-inset-left, 24px));
+    }
+  }
+  
+  @media (max-width: 374px) {
+    .home-button {
+      left: max(20px, env(safe-area-inset-left, 20px));
+    }
   }
 }
 
-/* Убираем все text-related стили чтобы гарантировать квадрат */
-.home-button-polls * {
-  font-size: 0 !important;
-  line-height: 0 !important;
-  letter-spacing: 0 !important;
-  padding: 0 !important;
-  margin: 0 !important;
+/* ======================================
+   СПЕЦИАЛЬНЫЕ ВАРИАНТЫ
+   ====================================== */
+
+/* Кнопка домой справа */
+.home-button.right {
+  left: auto;
+  right: 30px;
 }
+
+@media (max-width: 768px) and (min-width: 375px) {
+  .home-button.right {
+    right: 24px;
+  }
+}
+
+@media (max-width: 374px) {
+  .home-button.right {
+    right: 20px;
+  }
+}
+
+/* Кнопка домой с текстом */
+.home-button.with-text {
+  width: auto;
+  min-width: 120px;
+  padding: 0 20px;
+}
+
+.home-button.with-text span {
+  margin-left: 8px;
+  font-family: "Segoe UI", sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  color: white;
+}
+
+/* ======================================
+   УТИЛИТАРНЫЕ КЛАССЫ
+   ====================================== */
+
+/* Скрытая кнопка */
+.home-button.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Кнопка без анимации */
+.home-button.no-animation {
+  transition: none;
+  animation: none;
+}
+
+/* Альтернативные стили */
+.home-button.primary {
+  background: linear-gradient(
+    135deg, 
+    rgba(180, 0, 55, 0.3) 0%, 
+    rgba(153, 0, 55, 0.3) 100%
+  );
+  border-color: rgba(180, 0, 55, 0.3);
+}
+
+.home-button.primary:hover {
+  background: linear-gradient(
+    135deg, 
+    rgba(180, 0, 55, 0.5) 0%, 
+    rgba(153, 0, 55, 0.5) 100%
+  );
+  border-color: rgba(180, 0, 55, 0.5);
+}
+
+/* ======================================
+   ПОЗИЦИОНИРОВАНИЕ ДЛЯ РАЗНЫХ СТРАНИЦ
+   ====================================== */
+
+/* Для страниц с логотипом наверху */
+.with-top-logo .home-button {
+  /* Desktop позиции уже установлены выше */
+}
+
+/* Для страниц без логотипа */
+.no-logo .home-button {
+  top: 30px;
+}
+
+@media (max-width: 768px) and (min-width: 375px) {
+  .no-logo .home-button {
+    top: 24px;
+  }
+}
+
+@media (max-width: 374px) {
+  .no-logo .home-button {
+    top: 20px;
+  }
+}
+
+/* ======================================
+   РАСЧЕТ ПОЗИЦИЙ (комментарий)
+   --------------------------------------
+   Desktop (>768px):
+   - Логотип: top: 55px, height: 128px
+   - Центр логотипа: 55 + 128/2 = 119px
+   - Кнопка: height: 64px
+   - Top кнопки: 119 - 64/2 = 87px
+   
+   Tablet (375-768px):
+   - Логотип: top: 40px, height: 96px
+   - Центр логотипа: 40 + 96/2 = 88px
+   - Кнопка: height: 56px
+   - Top кнопки: 88 - 56/2 = 60px
+   
+   Mobile (<375px):
+   - Логотип: top: 25px, height: 80px
+   - Центр логотипа: 25 + 80/2 = 65px
+   - Кнопка: height: 48px
+   - Top кнопки: 65 - 48/2 = 41px
+   ====================================== */
 
 
 

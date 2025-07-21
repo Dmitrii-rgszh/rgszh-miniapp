@@ -1,15 +1,16 @@
-// MainMenu.js - С УНИВЕРСАЛЬНЫМИ СТИЛЯМИ КНОПОК
-// ✅ Использует универсальные классы из buttons.css
-// ✅ Только логика и CSS классы
-// ✅ Чистый код без инлайн стилей
+// MainMenu.js - С УНИВЕРСАЛЬНЫМИ КОНТЕЙНЕРАМИ
+// ✅ Использует containers.css для позиционирования
+// ✅ Использует buttons.css для стилей кнопок
+// ✅ Чистая структура с CSS классами
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logoImage from './components/logo.png';
 
 // Подключаем CSS файлы
-import './Styles/buttons.css';   // Универсальные кнопки
-import './Styles/logo.css';     // Логотип
+import './Styles/containers.css'; // Универсальные контейнеры
+import './Styles/buttons.css';    // Универсальные кнопки (включая анимации)
+import './Styles/logo.css';       // Логотип
 
 export default function MainMenu() {
   const navigate = useNavigate();
@@ -95,16 +96,17 @@ export default function MainMenu() {
 
   const getButtonContainerClasses = () => [
     'button-container',
+    'with-logo',                  // Позиционирование с учетом логотипа
     buttonsAnimated ? 'animated' : '',
     isExiting ? 'exiting' : ''
   ].filter(Boolean).join(' ');
 
   // Универсальные классы кнопок
   const getButtonClasses = (btn, index) => [
-    'btn-universal',           // Базовый класс
-    `btn-${btn.type}`,        // Тип кнопки (primary, secondary, etc.)
-    'btn-responsive',         // Адаптивная кнопка
-    'btn-shadow',            // С тенью
+    'btn-universal',              // Базовый класс
+    `btn-${btn.type}`,           // Тип кнопки (primary, secondary, etc.)
+    'btn-large',                 // Размер кнопки
+    'btn-shadow',                // С тенью
     buttonsAnimated ? 'button-animated' : 'button-hidden',
     isExiting ? 'button-exiting' : ''
   ].filter(Boolean).join(' ');

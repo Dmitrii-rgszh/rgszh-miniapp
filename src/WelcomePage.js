@@ -1,24 +1,30 @@
-// WelcomePage.js - ИСПРАВЛЕННАЯ ВЕРСИЯ
-// ✅ Логотип управляется через CSS классы
-// ✅ Правильные отступы для текста
+// WelcomePage.js - С УНИФИЦИРОВАННЫМИ СТИЛЯМИ
+// ✅ Использует containers.css для позиционирования
+// ✅ Использует logo.css для логотипа
+// ✅ Минимум инлайн стилей
 
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logoImage from './components/logo.png';
-import './Styles/logo.css'; // Импортируем стили логотипа
+
+// Подключаем CSS файлы
+import './Styles/containers.css'; // Универсальные контейнеры
+import './Styles/logo.css';       // Стили логотипа
+import './Styles/text.css';        // Стили текста
 
 const WelcomePage = () => {
   const navigate = useNavigate();
   
-  // Состояния анимаций
+  // ===== СОСТОЯНИЯ =====
   const [textAnimated, setTextAnimated] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
   const [greeting, setGreeting] = useState('');
+  const [logoAnimated, setLogoAnimated] = useState(false);
   
   // Ref для логотипа
   const logoRef = useRef(null);
 
-  // ===== HAPTIC FEEDBACK ФУНКЦИЯ =====
+  // ===== HAPTIC FEEDBACK =====
   const triggerHaptic = useCallback((type = 'light') => {
     if (window.Telegram?.WebApp?.HapticFeedback) {
       switch (type) {
@@ -58,7 +64,12 @@ const WelcomePage = () => {
       logoRef.current.classList.remove('animate-logo');
       logoRef.current.classList.add('animate-logo-exit');
     }
-  }, [isExiting, triggerHaptic]);
+    
+    // Переход на следующую страницу
+    setTimeout(() => {
+      navigate('/main-menu');
+    }, 800);
+  }, [isExiting, triggerHaptic, navigate]);
 
   // ===== ИНИЦИАЛИЗАЦИЯ И АНИМАЦИЯ =====
   useEffect(() => {
@@ -66,6 +77,7 @@ const WelcomePage = () => {
     
     // Запускаем анимации последовательно
     const timer1 = setTimeout(() => {
+      setLogoAnimated(true);
       if (logoRef.current) {
         logoRef.current.classList.add('animate-logo');
       }
@@ -75,105 +87,62 @@ const WelcomePage = () => {
     const timer2 = setTimeout(() => {
       setTextAnimated(true);
     }, 600);
+    
+    // Автоматический переход через 3 секунды (уменьшил для тестирования)
+    const autoNavigate = setTimeout(() => {
+      handleNavigation();
+    }, 3000);
 
     return () => {
       clearTimeout(timer1);
       clearTimeout(timer2);
+      clearTimeout(autoNavigate);
     };
-  }, [triggerHaptic]);
+  }, [triggerHaptic]); // Убрал handleNavigation из зависимостей чтобы избежать циклов
 
-  // ===== СТИЛИ =====
+  // ===== КЛАССЫ ДЛЯ ЭЛЕМЕНТОВ =====
+  const getContainerClasses = () => [
+    'main-container',
+    'align-center',
+    isExiting ? 'exiting' : ''
+  ].filter(Boolean).join(' ');
 
-  // Основной контейнер
-  const mainContainerStyle = {
-    position: 'relative',
-    width: '100%',
-    height: window.innerHeight + 'px',
-    minHeight: '100vh',
-    overflow: 'hidden',
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'center',
-    alignItems: 'center',
-    fontFamily: '"Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif',
-    cursor: 'pointer',
-    WebkitTapHighlightColor: 'transparent',
-    userSelect: 'none'
-  };
+  const getLogoClasses = () => [
+    'logo-wrapper',
+    logoAnimated ? 'animated' : '',
+    isExiting ? 'exiting' : ''
+  ].filter(Boolean).join(' ');
 
-  // Изображение логотипа
-  const logoImageStyle = {
-    width: '100%',
-    height: '100%',
-    objectFit: 'contain'
-  };
-
-  // Контейнер для текста с правильным отступом от логотипа
-  const textContainerStyle = {
-    position: 'absolute',
-    top: textAnimated && !isExiting ? '320px' : '100%', // Изменено с 380px на 320px (80 + 102 + 50 + 88 для отступа)
-    left: '50%',
-    transform: 'translateX(-50%)',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: '20px',
-    width: '100%',
-    maxWidth: '400px',
-    paddingLeft: '20px',
-    paddingRight: '20px',
-    boxSizing: 'border-box',
-    opacity: textAnimated && !isExiting ? 1 : 0,
-    transition: 'all 0.8s ease-out 0.2s'
-  };
-
-  // Стиль приветствия
-  const greetingStyle = {
-    fontSize: '32px',
-    fontWeight: '700', // Segoe UI Bold
-    fontFamily: '"Segoe UI", sans-serif',
-    color: 'rgba(255, 255, 255, 0.95)',
-    textAlign: 'center',
-    lineHeight: '1.3',
-    textShadow: '0 2px 10px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(0, 0, 0, 0.3)',
-    letterSpacing: '0.5px'
-  };
-
-  // Стиль инструкции
-  const instructionStyle = {
-    fontSize: '18px',
-    fontWeight: '400', // Segoe UI Regular
-    fontFamily: '"Segoe UI", sans-serif',
-    color: 'rgba(255, 255, 255, 0.8)',
-    textAlign: 'center',
-    lineHeight: '1.5',
-    textShadow: '0 1px 5px rgba(0, 0, 0, 0.4)'
-  };
+  const getTextContainerClasses = () => [
+    'welcome-text-container',
+    textAnimated ? 'animated' : '',
+    isExiting ? 'exiting' : ''
+  ].filter(Boolean).join(' ');
 
   return (
     <div 
-      style={mainContainerStyle}
+      className={getContainerClasses()}
       onClick={handleNavigation}
+      style={{ cursor: 'pointer' }}
     >
-      {/* Логотип - управляется через CSS классы */}
-      <div ref={logoRef} className="logo-wrapper">
+      {/* ===== ЛОГОТИП ===== */}
+      <div ref={logoRef} className={getLogoClasses()}>
         <img
           src={logoImage}
           alt="Логотип РГС Жизнь"
           className="logo-image"
-          style={logoImageStyle}
         />
       </div>
 
-      {/* Текст поднимается снизу */}
-      <div style={textContainerStyle}>
-        <div style={greetingStyle}>
+      {/* ===== ТЕКСТ ПРИВЕТСТВИЯ ===== */}
+      <div className={getTextContainerClasses()}>
+        <h1 className="text-greeting text-pulse">
           {greeting}!
-        </div>
-        <div style={instructionStyle}>
+        </h1>
+        <p className="text-instruction">
           Подождите немного<br />
           или нажмите для продолжения
-        </div>
+        </p>
       </div>
     </div>
   );

@@ -1,10 +1,9 @@
 /* ============================================================================
-   logo.css - ТОЛЬКО СТИЛИ ЛОГОТИПА
+   logo.css - СТИЛИ ЛОГОТИПА С ИСПРАВЛЕННЫМИ АНИМАЦИЯМИ
    ----------------------------------------------------------------------------
-   ✅ Уменьшенный отступ сверху в 2 раза
+   ✅ Исправлены анимации выхода
    ✅ Гласморфизм и анимации
    ✅ Адаптивность для 3 разрешений: >768px, 375-768px, <375px
-   ✅ Без !important - приоритет через подключение
    ============================================================================ */
 
 /* ======================================
@@ -35,14 +34,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-
-  /* Комплексная анимация */
-  animation: 
-    slideDownWrapper 0.8s ease-out forwards,
-    shakeLeftRight 25s ease-in-out infinite 2s,
-    shakeUpDown 30s ease-in-out infinite 5s;
-
-  animation-fill-mode: both;
 }
 
 /* ======================================
@@ -79,36 +70,40 @@
   }
 }
 
-.logo-wrapper.animate-logo .logo-image {
-  animation: fadeInImage 0.8s ease-out forwards;
-}
-
-@keyframes fadeInImage {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
 /* ======================================
-   EXIT АНИМАЦИЯ
+   EXIT АНИМАЦИЯ - ИСПРАВЛЕНО
    ====================================== */
 .logo-wrapper.animate-logo-exit {
-  animation: slideUpLogoExit 0.8s ease-in forwards;
+  /* Останавливаем все предыдущие анимации */
+  animation: none !important;
+  /* Применяем анимацию выхода */
+  animation: slideUpLogoExit 0.8s ease-in forwards !important;
 }
 
 @keyframes slideUpLogoExit {
   0% { 
     opacity: 1; 
-    transform: translateX(-50%) translateY(0); 
+    top: 55px; /* Начинаем с текущей позиции */
+    transform: translateX(-50%);
   }
   100% { 
     opacity: 0; 
-    transform: translateX(-50%) translateY(-150px); 
+    top: -200px; /* Улетаем вверх */
+    transform: translateX(-50%);
   }
 }
 
 /* ======================================
    ПОСТОЯННЫЕ АНИМАЦИИ (ВСТРЯСКИ)
    ====================================== */
+/* Эти анимации отключаются при выходе */
+.logo-wrapper.animate-logo:not(.animate-logo-exit) {
+  animation: 
+    slideDownWrapper 0.8s ease-out forwards,
+    shakeLeftRight 25s ease-in-out infinite 2s,
+    shakeUpDown 30s ease-in-out infinite 5s;
+}
+
 @keyframes shakeLeftRight {
   0%   { transform: translateX(-50%) translateX(0); }
   10%  { transform: translateX(-50%) translateX(-10px); }
@@ -137,10 +132,10 @@
   opacity: 1;
 }
 
+/* Убираем конфликтующий класс exiting */
 .logo-wrapper.exiting {
-  top: -200px;
-  opacity: 0;
-  transition: all 0.8s ease-out;
+  /* Не используем этот класс для логотипа */
+  pointer-events: none;
 }
 
 /* ======================================
@@ -158,6 +153,23 @@
 
   .logo-wrapper.animated {
     top: 55px;
+  }
+  
+  .logo-wrapper.animate-logo-exit {
+    animation: slideUpLogoExitDesktop 0.8s ease-in forwards !important;
+  }
+  
+  @keyframes slideUpLogoExitDesktop {
+    0% { 
+      opacity: 1; 
+      top: 55px;
+      transform: translateX(-50%);
+    }
+    100% { 
+      opacity: 0; 
+      top: -200px;
+      transform: translateX(-50%);
+    }
   }
 
   .logo-image {
@@ -179,6 +191,23 @@
   .logo-wrapper.animated {
     top: 40px;
   }
+  
+  .logo-wrapper.animate-logo-exit {
+    animation: slideUpLogoExitTablet 0.8s ease-in forwards !important;
+  }
+  
+  @keyframes slideUpLogoExitTablet {
+    0% { 
+      opacity: 1; 
+      top: 40px;
+      transform: translateX(-50%);
+    }
+    100% { 
+      opacity: 0; 
+      top: -150px;
+      transform: translateX(-50%);
+    }
+  }
 
   .logo-image {
     width: 72px;
@@ -189,10 +218,12 @@
     from {
       opacity: 0;
       top: -150px;
+      transform: translateX(-50%);
     }
     to {
       opacity: 1;
       top: 40px;
+      transform: translateX(-50%);
     }
   }
   
@@ -213,6 +244,23 @@
   .logo-wrapper.animated {
     top: 25px;
   }
+  
+  .logo-wrapper.animate-logo-exit {
+    animation: slideUpLogoExitMobile 0.8s ease-in forwards !important;
+  }
+  
+  @keyframes slideUpLogoExitMobile {
+    0% { 
+      opacity: 1; 
+      top: 25px;
+      transform: translateX(-50%);
+    }
+    100% { 
+      opacity: 0; 
+      top: -120px;
+      transform: translateX(-50%);
+    }
+  }
 
   .logo-image {
     width: 60px;
@@ -223,10 +271,12 @@
     from {
       opacity: 0;
       top: -120px;
+      transform: translateX(-50%);
     }
     to {
       opacity: 1;
       top: 25px;
+      transform: translateX(-50%);
     }
   }
   
@@ -244,11 +294,11 @@
 }
 
 .logo-wrapper.no-animation {
-  animation: none;
+  animation: none !important;
 }
 
 .logo-wrapper.fast-animation {
-  animation-duration: 0.4s;
+  animation-duration: 0.4s !important;
 }
 
 

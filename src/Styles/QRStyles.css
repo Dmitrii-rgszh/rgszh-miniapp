@@ -1,60 +1,89 @@
-/* Добавьте эти стили в Buttons.css или создайте отдельный файл QRStyles.css */
+/* ============================================================================
+   QRStyles.css - УНИФИЦИРОВАННЫЕ СТИЛИ ДЛЯ QR ФУНКЦИОНАЛЬНОСТИ
+   ----------------------------------------------------------------------------
+   ✅ Корпоративные цвета и стили
+   ✅ QR кнопки (квадратные)
+   ✅ Строки с опросами
+   ✅ Адаптивность для 3 разрешений
+   ============================================================================ */
 
-/* ==============================================
-   QR КНОПКИ И МОДАЛЬНОЕ ОКНО
-============================================== */
-
-/* Контейнер строки опроса с QR кнопкой */
+/* ======================================
+   СТРОКА ОПРОСА (основная кнопка + QR)
+   ====================================== */
 .poll-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
+  gap: 12px;
   width: 100%;
-  margin-bottom: 16px;
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.6s ease, transform 0.6s ease;
-  gap: 12px; /* Расстояние между основной кнопкой и QR */
+  flex-wrap: nowrap;
 }
 
-.poll-row.animate-row {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* Основная кнопка опроса */
-.poll-row .btn-custom {
+/* Основная кнопка в строке опроса занимает максимум места */
+.poll-row .btn-universal {
   flex: 1;
-  min-width: auto; /* Убираем фиксированную ширину */
-  max-width: none;
+  min-width: 0; /* Позволяет кнопке сжиматься */
 }
 
-/* QR кнопка */
-.qr-btn {
-  width: 48px;
-  height: 48px;
-  min-width: 48px;
-  background: linear-gradient(120deg, var(--bg-dark-start), var(--bg-dark-end));
+/* ======================================
+   QR КНОПКА - КВАДРАТНАЯ
+   ====================================== */
+.qr-button {
+  /* Жесткие размеры для квадрата */
+  width: 56px !important;
+  height: 56px !important;
+  min-width: 56px !important;
+  max-width: 56px !important;
+  min-height: 56px !important;
+  max-height: 56px !important;
+  
+  /* Запрет изменения размера */
+  flex-shrink: 0;
+  flex-grow: 0;
+  flex-basis: auto;
+  
+  /* Стили */
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
+  border-radius: 12px;
+  
+  /* Центрирование содержимого */
   display: flex;
   align-items: center;
   justify-content: center;
+  
+  /* Интерактивность */
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  
+  /* Сброс текстовых стилей */
+  padding: 0 !important;
+  margin: 0 !important;
+  font-size: 0 !important;
+  line-height: 0 !important;
+  
+  /* Другие свойства */
   position: relative;
   overflow: hidden;
+  aspect-ratio: 1 / 1;
+  box-sizing: border-box;
+  outline: none;
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.qr-btn:hover {
-  background: linear-gradient(120deg, #1a3a8a, #b91c7c);
+/* Hover эффект */
+.qr-button:hover {
+  background: rgba(255, 255, 255, 0.2);
   border-color: rgba(255, 255, 255, 0.4);
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
 }
 
-.qr-btn:active {
+.qr-button:active {
   transform: translateY(0);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }
 
 /* QR иконка */
@@ -62,206 +91,173 @@
   width: 24px;
   height: 24px;
   fill: white;
-  transition: all 0.3s ease;
+  pointer-events: none;
+  transition: transform 0.3s ease;
 }
 
-.qr-btn:hover .qr-icon {
+.qr-button:hover .qr-icon {
   transform: scale(1.1);
 }
 
-/* Ripple эффект для QR кнопки */
-.qr-btn .ripple {
+/* ======================================
+   СПЕЦИАЛЬНЫЕ QR КНОПКИ
+   ====================================== */
+
+/* Альтернативный стиль - с градиентом */
+.qr-button-gradient {
+  background: linear-gradient(
+    135deg, 
+    rgba(0, 40, 130, 0.3) 0%, 
+    rgba(0, 32, 104, 0.3) 100%
+  );
+}
+
+.qr-button-gradient:hover {
+  background: linear-gradient(
+    135deg, 
+    rgba(0, 40, 130, 0.5) 0%, 
+    rgba(0, 32, 104, 0.5) 100%
+  );
+}
+
+/* Прозрачный стиль */
+.qr-button-outline {
+  background: transparent;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+}
+
+.qr-button-outline:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: white;
+}
+
+/* ======================================
+   RIPPLE ЭФФЕКТ ДЛЯ QR КНОПОК
+   ====================================== */
+.qr-button .ripple {
   position: absolute;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.6);
   transform: scale(0);
-  animation: ripple-animation 0.6s linear;
+  animation: qr-ripple 0.6s ease-out;
   pointer-events: none;
 }
 
-@keyframes ripple-animation {
+@keyframes qr-ripple {
   to {
     transform: scale(4);
     opacity: 0;
   }
 }
 
-/* ==============================================
-   МОДАЛЬНОЕ ОКНО QR
-============================================== */
-
-.qr-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.8);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  animation: modal-fade-in 0.3s ease;
+/* ======================================
+   АНИМАЦИЯ ПОЯВЛЕНИЯ СТРОК
+   ====================================== */
+.poll-row {
+  opacity: 0;
+  transform: translateY(20px);
 }
 
-.qr-modal-content {
-  background: linear-gradient(135deg, var(--bg-dark-start), var(--bg-dark-end));
-  border-radius: 16px;
-  padding: 24px;
-  max-width: 400px;
-  width: 90%;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  position: relative;
-  animation: modal-slide-up 0.3s ease;
-  text-align: center;
-}
-
-.qr-close {
-  position: absolute;
-  top: 12px;
-  right: 16px;
-  background: none;
-  border: none;
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 24px;
-  cursor: pointer;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  transition: all 0.3s ease;
-}
-
-.qr-close:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
-  transform: scale(1.1);
-}
-
-.qr-modal h3 {
-  color: white;
-  font-size: 20px;
-  font-weight: 600;
-  margin: 0 0 8px 0;
-  font-family: 'Montserrat', sans-serif;
-}
-
-.qr-modal p {
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 16px;
-  margin: 0 0 20px 0;
-  font-weight: 300;
-}
-
-.qr-code-container {
-  background: white;
-  border-radius: 12px;
-  padding: 16px;
-  margin: 20px 0;
-  display: inline-block;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-}
-
-.qr-code-image {
-  display: block;
-  width: 200px;
-  height: 200px;
-  border-radius: 8px;
-}
-
-.qr-url {
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 12px;
-  word-break: break-all;
-  background: rgba(255, 255, 255, 0.1);
-  padding: 8px 12px;
-  border-radius: 6px;
-  margin: 16px 0;
-  font-family: monospace;
-}
-
-.qr-actions {
-  margin-top: 20px;
-}
-
-.qr-copy-btn {
-  background: rgba(33, 150, 243, 0.8);
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 8px;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-family: 'Montserrat', sans-serif;
-  font-weight: 500;
-}
-
-.qr-copy-btn:hover {
-  background: rgba(33, 150, 243, 1);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(33, 150, 243, 0.4);
-}
-
-.qr-copy-btn:active {
+.poll-row.animated {
+  opacity: 1;
   transform: translateY(0);
+  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Анимации модального окна */
-@keyframes modal-fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
+/* Задержки для поочередной анимации */
+.poll-row.animated:nth-child(1) { transition-delay: 0.1s; }
+.poll-row.animated:nth-child(2) { transition-delay: 0.2s; }
+.poll-row.animated:nth-child(3) { transition-delay: 0.3s; }
+.poll-row.animated:nth-child(4) { transition-delay: 0.4s; }
+.poll-row.animated:nth-child(5) { transition-delay: 0.5s; }
 
-@keyframes modal-slide-up {
-  from {
-    opacity: 0;
-    transform: translateY(50px) scale(0.9);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-/* Адаптивность */
-@media (max-width: 768px) {
+/* ======================================
+   АДАПТИВНОСТЬ: ПЛАНШЕТЫ (375-768px)
+   ====================================== */
+@media (max-width: 768px) and (min-width: 375px) {
   .poll-row {
-    gap: 8px;
+    gap: 10px;
   }
   
-  .qr-btn {
-    width: 40px;
-    height: 40px;
-    min-width: 40px;
+  .qr-button {
+    width: 48px !important;
+    height: 48px !important;
+    min-width: 48px !important;
+    max-width: 48px !important;
+    min-height: 48px !important;
+    max-height: 48px !important;
+    border-radius: 10px;
   }
   
   .qr-icon {
     width: 20px;
     height: 20px;
   }
-  
-  .qr-modal-content {
-    padding: 20px;
-    margin: 20px;
+}
+
+/* ======================================
+   АДАПТИВНОСТЬ: МОБИЛЬНЫЕ (<375px)
+   ====================================== */
+@media (max-width: 374px) {
+  .poll-row {
+    gap: 8px;
   }
   
-  .qr-code-image {
-    width: 180px;
-    height: 180px;
+  .qr-button {
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+    max-width: 44px !important;
+    min-height: 44px !important;
+    max-height: 44px !important;
+    border-radius: 8px;
+  }
+  
+  .qr-icon {
+    width: 18px;
+    height: 18px;
   }
 }
 
-/* Улучшенная анимация появления строк опросов */
-.poll-row:nth-child(1) { animation-delay: 0.1s; }
-.poll-row:nth-child(2) { animation-delay: 0.2s; }
-.poll-row:nth-child(3) { animation-delay: 0.3s; }
-.poll-row:nth-child(4) { animation-delay: 0.4s; }
-.poll-row:nth-child(5) { animation-delay: 0.5s; }
+/* ======================================
+   УТИЛИТАРНЫЕ КЛАССЫ
+   ====================================== */
+
+/* QR кнопка с пульсацией */
+.qr-button-pulse {
+  animation: qr-pulse 2s infinite;
+}
+
+@keyframes qr-pulse {
+  0% { 
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  }
+  50% { 
+    box-shadow: 0 4px 20px rgba(0, 40, 130, 0.4);
+  }
+  100% { 
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  }
+}
+
+/* QR кнопка неактивная */
+.qr-button:disabled,
+.qr-button.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Группа QR кнопок */
+.qr-button-group {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+}
+
+/* QR кнопка в качестве ссылки */
+a.qr-button {
+  text-decoration: none;
+  color: inherit;
+}

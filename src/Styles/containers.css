@@ -1,0 +1,492 @@
+/* ============================================================================
+   containers.css - УНИФИЦИРОВАННЫЕ КОНТЕЙНЕРЫ
+   ----------------------------------------------------------------------------
+   ✅ Корпоративные цвета: R:180 G:0 B:055 (красный), R:152 G:164 B:174 (серый), R:0 G:40 B:130 (синий)
+   ✅ Адаптивность для 3 разрешений: >768px, 375-768px, <375px
+   ✅ Центрирование и правильные отступы для всех элементов
+   ============================================================================ */
+
+/* ======================================
+   ОСНОВНОЙ КОНТЕЙНЕР СТРАНИЦЫ
+   ====================================== */
+.main-container {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden;
+  padding: 0;
+  margin: 0;
+}
+
+/* ======================================
+   КОНТЕЙНЕР ДЛЯ КНОПОК
+   ====================================== */
+.button-container {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+  max-width: 320px;
+  padding: 0 20px;
+  box-sizing: border-box;
+  
+  /* Позиционирование по умолчанию */
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Контейнер кнопок с логотипом */
+.button-container.with-logo {
+  top: 220px;  /* Было 280px, теперь выше */
+  transform: translateX(-50%);
+}
+
+/* Все кнопки внутри контейнера занимают полную ширину */
+.button-container .btn-universal {
+  width: 100%;
+  min-height: 56px;
+}
+
+/* ======================================
+   СЕТКА ДЛЯ НЕСКОЛЬКИХ КНОПОК
+   ====================================== */
+.button-grid {
+  display: grid;
+  gap: 16px;
+  width: 100%;
+  max-width: 600px;
+  padding: 0 20px;
+  box-sizing: border-box;
+  margin: 0 auto;
+}
+
+/* 2 колонки */
+.button-grid.cols-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+/* 3 колонки */
+.button-grid.cols-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+/* ======================================
+   КОНТЕЙНЕР КОНТЕНТА
+   ====================================== */
+.content-container {
+  position: relative;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  box-sizing: border-box;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Центрированный контент */
+.content-container.centered {
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+/* ======================================
+   КОНТЕЙНЕР ДЛЯ ФОРМ
+   ====================================== */
+.form-container {
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 20px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ======================================
+   НАВИГАЦИОННЫЙ КОНТЕЙНЕР
+   ====================================== */
+.nav-container {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  gap: 16px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  z-index: 100;
+}
+
+/* ======================================
+   КОНТЕЙНЕР ЗАГОЛОВКА
+   ====================================== */
+.header-container {
+  position: relative;
+  width: 100%;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+}
+
+/* ======================================
+   АДАПТИВНОСТЬ: ПЛАНШЕТЫ (375-768px)
+   ====================================== */
+@media (max-width: 768px) and (min-width: 375px) {
+  /* Основной контейнер */
+  .main-container {
+    padding: 0 16px;
+  }
+  
+  /* Кнопки */
+  .button-container {
+    max-width: 280px;
+    gap: 16px;
+    padding: 0 16px;
+  }
+  
+  .button-container.with-logo {
+    top: 200px;  /* Было 240px */
+  }
+  
+  /* Сетка кнопок */
+  .button-grid {
+    gap: 12px;
+    padding: 0 16px;
+  }
+  
+  .button-grid.cols-3 {
+    grid-template-columns: 1fr;
+  }
+  
+  /* Контент */
+  .content-container {
+    padding: 16px;
+    max-width: 100%;
+  }
+  
+  /* Формы */
+  .form-container {
+    padding: 16px;
+    gap: 12px;
+  }
+  
+  /* Навигация */
+  .nav-container {
+    padding: 16px;
+    gap: 12px;
+  }
+  
+  /* Заголовок */
+  .header-container {
+    padding: 16px;
+    gap: 12px;
+  }
+}
+
+/* ======================================
+   АДАПТИВНОСТЬ: МОБИЛЬНЫЕ (<375px)
+   ====================================== */
+@media (max-width: 374px) {
+  /* Основной контейнер */
+  .main-container {
+    padding: 0 12px;
+  }
+  
+  /* Кнопки */
+  .button-container {
+    max-width: 240px;
+    gap: 12px;
+    padding: 0 12px;
+  }
+  
+  .button-container.with-logo {
+    top: 180px;  /* Было 200px */
+  }
+  
+  /* Сетка кнопок */
+  .button-grid {
+    gap: 10px;
+    padding: 0 12px;
+  }
+  
+  .button-grid.cols-2,
+  .button-grid.cols-3 {
+    grid-template-columns: 1fr;
+  }
+  
+  /* Контент */
+  .content-container {
+    padding: 12px;
+    max-width: 100%;
+  }
+  
+  /* Формы */
+  .form-container {
+    padding: 12px;
+    gap: 10px;
+    max-width: 100%;
+  }
+  
+  /* Навигация */
+  .nav-container {
+    padding: 12px;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  
+  /* Заголовок */
+  .header-container {
+    padding: 12px;
+    gap: 10px;
+  }
+}
+
+/* ======================================
+   СОСТОЯНИЯ АНИМАЦИИ КОНТЕЙНЕРОВ
+   ====================================== */
+
+/* Анимация появления */
+.button-container.animated {
+  opacity: 1;
+  transition: opacity 0.6s ease-in-out;
+}
+
+.button-container:not(.animated) {
+  opacity: 0;
+}
+
+/* Анимация выхода */
+.main-container.exiting {
+  opacity: 0;
+  transition: opacity 0.8s ease-in-out;
+}
+
+.button-container.exiting {
+  transform: translate(-50%, calc(-50% + 50px));
+  opacity: 0;
+  transition: all 0.8s ease-in-out;
+}
+
+.button-container.with-logo.exiting {
+  transform: translateX(-50%) translateY(50px);
+}
+
+/* ======================================
+   МОДИФИКАТОРЫ ПОЗИЦИОНИРОВАНИЯ
+   ====================================== */
+
+/* Поднять контейнер выше */
+.button-container.position-higher {
+  top: 180px !important;
+}
+
+/* Центрировать по вертикали с небольшим смещением вверх */
+.button-container.position-center-up {
+  top: 40% !important;
+  transform: translate(-50%, -50%);
+}
+
+/* Кастомная позиция */
+.button-container.position-custom {
+  /* Можно переопределить в инлайн стилях */
+}
+
+/* Большие отступы */
+.container-padding-lg {
+  padding: 40px !important;
+}
+
+/* Средние отступы */
+.container-padding-md {
+  padding: 24px !important;
+}
+
+/* Малые отступы */
+.container-padding-sm {
+  padding: 16px !important;
+}
+
+/* Без отступов */
+.container-padding-none {
+  padding: 0 !important;
+}
+
+/* ======================================
+   УТИЛИТЫ ДЛЯ ВЫРАВНИВАНИЯ
+   ====================================== */
+
+/* Выравнивание по верху */
+.align-top {
+  justify-content: flex-start !important;
+}
+
+/* Выравнивание по центру */
+.align-center {
+  justify-content: center !important;
+}
+
+/* Выравнивание по низу */
+.align-bottom {
+  justify-content: flex-end !important;
+}
+
+/* Горизонтальное выравнивание */
+.align-left {
+  align-items: flex-start !important;
+}
+
+.align-middle {
+  align-items: center !important;
+}
+
+.align-right {
+  align-items: flex-end !important;
+}
+
+/* ======================================
+   СПЕЦИАЛЬНЫЕ КОНТЕЙНЕРЫ
+   ====================================== */
+
+/* Контейнер текста на приветственной странице */
+.welcome-text-container {
+  position: absolute;
+  top: 280px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+  max-width: 400px;
+  padding: 0 20px;
+  box-sizing: border-box;
+  
+  /* Начальное состояние */
+  opacity: 0;
+  transform: translateX(-50%) translateY(50px);
+  transition: all 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.welcome-text-container.animated {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.welcome-text-container.exiting {
+  opacity: 0;
+  transform: translateX(-50%) translateY(-30px);
+  transition: all 0.6s ease-out;
+}
+
+/* Адаптивность для welcome-text-container */
+@media (min-width: 375px) and (max-width: 768px) {
+  .welcome-text-container {
+    top: 220px;
+    gap: 16px;
+    padding: 0 16px;
+  }
+}
+
+@media (max-width: 374px) {
+  .welcome-text-container {
+    top: 180px;
+    gap: 12px;
+    padding: 0 12px;
+    max-width: 320px;
+  }
+}
+
+/* Контейнер с фоновой карточкой */
+.card-container {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Контейнер с градиентной рамкой */
+.gradient-border-container {
+  position: relative;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  padding: 20px;
+  
+  /* Градиентная рамка */
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+    padding: 2px;
+    background: linear-gradient(135deg, 
+      rgb(180, 0, 55), 
+      rgb(152, 164, 174), 
+      rgb(0, 40, 130)
+    );
+    -webkit-mask: 
+      linear-gradient(#fff 0 0) content-box, 
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+  }
+}
+
+/* ======================================
+   ВСПОМОГАТЕЛЬНЫЕ КЛАССЫ
+   ====================================== */
+
+/* Полная ширина */
+.full-width {
+  width: 100% !important;
+  max-width: none !important;
+}
+
+/* Ограничение ширины */
+.max-width-sm {
+  max-width: 400px !important;
+}
+
+.max-width-md {
+  max-width: 600px !important;
+}
+
+.max-width-lg {
+  max-width: 800px !important;
+}
+
+/* Z-index уровни */
+.z-back {
+  z-index: 1;
+}
+
+.z-base {
+  z-index: 10;
+}
+
+.z-front {
+  z-index: 100;
+}
+
+.z-modal {
+  z-index: 1000;
+}
