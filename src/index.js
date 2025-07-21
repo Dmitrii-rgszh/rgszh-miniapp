@@ -1,17 +1,17 @@
-// index.js - ОБНОВЛЕННАЯ ВЕРСИЯ С BrowserRouter
+// index.js - ОКОНЧАТЕЛЬНОЕ ИСПРАВЛЕНИЕ
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { HashRouter } from 'react-router-dom'; // ← ПЕРЕНЕСЕН СЮДА
+import { HashRouter } from 'react-router-dom'; // ← ИСПОЛЬЗУЕМ HashRouter для надежности
 import './index.css';
-import MainApp from './MainApp'; // или App, если используете App.js
+import MainApp from './MainApp';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
 root.render(
   <React.StrictMode>
-    <BrowserRouter basename={process.env.PUBLIC_URL}>
+    <HashRouter>
       <MainApp />
-    </BrowserRouter>
+    </HashRouter>
   </React.StrictMode>
 );
 
