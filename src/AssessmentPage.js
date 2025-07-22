@@ -1,6 +1,8 @@
-// AssessmentPage.js - С УНИФИЦИРОВАННЫМИ МОДУЛЬНЫМИ СТИЛЯМИ КАК В PollsPage
-// ✅ Точно следует структуре PollsPage.js
-// ✅ Использует те же CSS классы и подходы
+// AssessmentPage.js - С ИСПРАВЛЕННОЙ ЛОГИКОЙ КНОПОК
+// ✅ Добавлен сброс состояния при монтировании
+// ✅ Добавлены touch обработчики
+// ✅ Добавлены принудительные стили для кликабельности
+// ✅ Исправлена логика навигации
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Autosuggest from 'react-autosuggest';
@@ -8,14 +10,13 @@ import { useNavigate } from 'react-router-dom';
 import { apiCall } from './config';
 import logoImage from './components/logo.png';
 
-
-// Подключаем модульные CSS файлы КАК В PollsPage
-import './Styles/containers.css';    // Универсальные контейнеры
-import './Styles/buttons.css';       // Универсальные кнопки
-import './Styles/logo.css';          // Логотип
-import './Styles/NextButton.css';    // Кнопка "Далее"
-import './Styles/BackButton.css';    // Кнопка "Назад"
-import './Styles/HomeButton.css';    // Кнопка "Домой"
+// Подключаем модульные CSS файлы
+import './Styles/containers.css';
+import './Styles/buttons.css';
+import './Styles/logo.css';
+import './Styles/NextButton.css';
+import './Styles/BackButton.css';
+import './Styles/HomeButton.css';
 import './Styles/ProgressIndicator.css';
 import './Styles/Autosuggest.css';
 
@@ -31,7 +32,7 @@ export default function AssessmentPage() {
   const homeRef = useRef(null);
   const logoRef = useRef(null);
 
-  // ===== СОСТОЯНИЯ КАК В PollsPage =====
+  // ===== СОСТОЯНИЯ =====
   const [logoAnimated, setLogoAnimated] = useState(false);
   const [contentAnimated, setContentAnimated] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
@@ -63,7 +64,12 @@ export default function AssessmentPage() {
 
   const MAIN_QUESTIONNAIRE_ID = 1;
 
-  // ===== АНИМАЦИЯ ВХОДА КАК В PollsPage =====
+  // ===== СБРОС СОСТОЯНИЯ ПРИ МОНТИРОВАНИИ =====
+  useEffect(() => {
+    setIsExiting(false);
+  }, []);
+
+  // ===== АНИМАЦИЯ ВХОДА =====
   useEffect(() => {
     if (!isLoading) {
       const timer1 = setTimeout(() => {
@@ -84,18 +90,96 @@ export default function AssessmentPage() {
     }
   }, [isLoading]);
 
+  // ===== ИСПРАВЛЕНИЕ INPUT ПОЛЕЙ =====
+  useEffect(() => {
+    const fixInputs = () => {
+      const inputs = document.querySelectorAll('.autosuggest-input, .react-autosuggest__input, input[type="text"]');
+      
+      inputs.forEach((input) => {
+        if (input.dataset.inputFixed) return;
+        
+        // Принудительные стили для input
+        Object.assign(input.style, {
+          userSelect: 'auto',
+          WebkitUserSelect: 'auto',
+          pointerEvents: 'auto',
+          cursor: 'text',
+          touchAction: 'manipulation',
+          WebkitTouchCallout: 'auto',
+          WebkitTapHighlightColor: 'rgba(255, 255, 255, 0.1)',
+          outline: 'none',
+          border: '1px solid rgba(255, 255, 255, 0.25)'
+        });
+        
+        // Удаляем любые блокирующие атрибуты
+        input.removeAttribute('readonly');
+        input.removeAttribute('disabled');
+        
+        // Обработчики для мобильных устройств
+        input.addEventListener('touchstart', (e) => {
+          e.stopPropagation();
+        }, { passive: true });
+        
+        input.addEventListener('touchend', (e) => {
+          e.stopPropagation();
+          setTimeout(() => {
+            if (!input.matches(':focus')) {
+              input.focus();
+            }
+          }, 10);
+        }, { passive: false });
+        
+        input.addEventListener('click', (e) => {
+          e.stopPropagation();
+          setTimeout(() => {
+            if (!input.matches(':focus')) {
+              input.focus();
+            }
+          }, 10);
+        });
+        
+        // Принудительно делаем поле редактируемым
+        input.contentEditable = false; // отключаем contentEditable если есть
+        input.readOnly = false;
+        input.disabled = false;
+        
+        input.dataset.inputFixed = 'true';
+      });
+    };
+    
+    // Множественные попытки исправления
+    const timer1 = setTimeout(fixInputs, 100);
+    const timer2 = setTimeout(fixInputs, 500);
+    const timer3 = setTimeout(fixInputs, 1000);
+    const interval = setInterval(fixInputs, 2000);
+    
+    return () => {
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+      clearTimeout(timer3);
+      clearInterval(interval);
+    };
+  }, [currentStep]);
+
+  // ===== TOUCH ОБРАБОТЧИКИ =====
+  const handleTouchStart = (e) => {
+    // Touch start handler
+  };
+
+  const handleTouchEnd = (e, callback) => {
+    e.preventDefault();
+    if (callback) callback();
+  };
+
   // ===== УДАЛЕНИЕ СЕРЫХ ЛИНИЙ =====
   useEffect(() => {
     if (currentStep === 2) {
       const removeLines = () => {
-        // Удаляем все HR элементы
         document.querySelectorAll('hr').forEach(hr => hr.remove());
         
-        // Добавляем агрессивные стили
         const style = document.createElement('style');
         style.setAttribute('data-remove-lines', 'true');
         style.innerHTML = `
-          /* УДАЛЯЕМ ВСЕ ЛИНИИ В ФОРМЕ */
           .form-container hr,
           .form-container .divider,
           .form-container .separator,
@@ -110,7 +194,6 @@ export default function AssessmentPage() {
             padding: 0 !important;
           }
           
-          /* Убираем псевдоэлементы которые могут быть линиями */
           .form-container > *::before,
           .form-container > *::after,
           .autosuggest-wrapper::before,
@@ -121,19 +204,16 @@ export default function AssessmentPage() {
             content: none !important;
           }
           
-          /* Убираем границы у всех элементов кроме input */
           .form-container * {
             border-top: none !important;
             border-bottom: none !important;
           }
           
-          /* Восстанавливаем границы только для input */
           .autosuggest-input,
           .react-autosuggest__input {
             border: 1px solid rgba(255, 255, 255, 0.25) !important;
           }
           
-          /* Убираем отступы между wrapper'ами которые могут создавать линии */
           .autosuggest-wrapper + * {
             margin-top: 0 !important;
           }
@@ -149,13 +229,9 @@ export default function AssessmentPage() {
         document.head.appendChild(style);
       };
       
-      // Запускаем сразу
       removeLines();
-      
-      // И еще раз через небольшую задержку
       const timeout = setTimeout(removeLines, 100);
       
-      // Cleanup
       return () => {
         clearTimeout(timeout);
         document.querySelectorAll('style[data-remove-lines]').forEach(s => s.remove());
@@ -164,7 +240,6 @@ export default function AssessmentPage() {
   }, [currentStep]);
 
   // ===== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ =====
-  // Определение возможности перехода далее
   const canGoNext = () => {
     if (currentStep === 1) return true;
     if (currentStep === 2) return surname.trim() && firstName.trim() && patronymic.trim();
@@ -172,7 +247,6 @@ export default function AssessmentPage() {
     return false;
   };
 
-  // Обработанные данные для автосаджестов
   const surnameList = surnames.map(item => item.male || item.female);
   const firstNameList = firstnames.map(item =>
     typeof item === 'string' ? item : (item.firstName || item.name)
@@ -181,7 +255,6 @@ export default function AssessmentPage() {
     typeof item === 'string' ? item : (item.patronymic || item.name)
   );
 
-  // Функция для рандомизации порядка ответов
   const shuffleOptions = (options) => {
     const shuffled = [...options];
     for (let i = shuffled.length - 1; i > 0; i--) {
@@ -191,7 +264,6 @@ export default function AssessmentPage() {
     return shuffled;
   };
 
-  // Автосаджест функции
   const getSuggestions = (value, list) => {
     const inputValue = value.trim().toLowerCase();
     const inputLength = inputValue.length;
@@ -200,38 +272,77 @@ export default function AssessmentPage() {
     );
   };
 
-  // Обновленная функция renderAutosuggest с улучшенными стилями
-  const renderAutosuggest = (value, setValue, suggestions, setSuggestions, list, placeholder) => (
-    <div className="autosuggest-container">
-      <Autosuggest
-        suggestions={suggestions}
-        onSuggestionsFetchRequested={({ value }) => setSuggestions(getSuggestions(value, list))}
-        onSuggestionsClearRequested={() => setSuggestions([])}
-        getSuggestionValue={suggestion => suggestion}
-        renderSuggestion={suggestion => (
-          <div className="autosuggest-suggestion">
-            {suggestion}
-          </div>
-        )}
-        inputProps={{
-          className: 'autosuggest-input',
-          placeholder,
-          value,
-          onChange: (_, { newValue }) => setValue(newValue)
-        }}
-        theme={{
-          container: 'autosuggest-container',
-          suggestionsContainer: 'autosuggest-suggestions-container',
-          suggestionsList: 'autosuggest-suggestions-list',
-          suggestion: 'autosuggest-suggestion',
-          suggestionHighlighted: 'autosuggest-suggestion--highlighted',
-          input: 'autosuggest-input'
-        }}
-      />
-    </div>
-  );
+  const renderAutosuggest = (value, setValue, suggestions, setSuggestions, list, placeholder) => {
+    // Обработчики для принудительного фокуса
+    const handleInputClick = (e) => {
+      e.stopPropagation();
+      const input = e.target;
+      setTimeout(() => {
+        if (!input.matches(':focus')) {
+          input.focus();
+          input.click();
+        }
+      }, 10);
+    };
 
-  // ===== ОБРАБОТЧИКИ КАК В PollsPage =====
+    const handleInputTouch = (e) => {
+      e.stopPropagation();
+      const input = e.target;
+      setTimeout(() => {
+        if (!input.matches(':focus')) {
+          input.focus();
+        }
+      }, 10);
+    };
+
+    return (
+      <div className="autosuggest-container">
+        <Autosuggest
+          suggestions={suggestions}
+          onSuggestionsFetchRequested={({ value }) => setSuggestions(getSuggestions(value, list))}
+          onSuggestionsClearRequested={() => setSuggestions([])}
+          getSuggestionValue={suggestion => suggestion}
+          renderSuggestion={suggestion => (
+            <div className="autosuggest-suggestion">
+              {suggestion}
+            </div>
+          )}
+          inputProps={{
+            className: 'autosuggest-input',
+            placeholder,
+            value,
+            onChange: (_, { newValue }) => setValue(newValue),
+            onFocus: (e) => {
+              e.stopPropagation();
+            },
+            onClick: handleInputClick,
+            onTouchEnd: handleInputTouch,
+            onTouchStart: (e) => {
+              e.stopPropagation();
+            },
+            style: {
+              userSelect: 'auto',
+              WebkitUserSelect: 'auto',
+              pointerEvents: 'auto',
+              cursor: 'text',
+              touchAction: 'manipulation',
+              WebkitTouchCallout: 'auto'
+            }
+          }}
+          theme={{
+            container: 'autosuggest-container',
+            suggestionsContainer: 'autosuggest-suggestions-container',
+            suggestionsList: 'autosuggest-suggestions-list',
+            suggestion: 'autosuggest-suggestion',
+            suggestionHighlighted: 'autosuggest-suggestion--highlighted',
+            input: 'autosuggest-input'
+          }}
+        />
+      </div>
+    );
+  };
+
+  // ===== ОБРАБОТЧИКИ =====
   const handleNext = useCallback(() => {
     if (currentStep === 1) {
       setCurrentStep(2);
@@ -257,7 +368,6 @@ export default function AssessmentPage() {
 
       setErrorMessage('');
       
-      // Сохраняем ответ
       const existingAnswerIndex = userAnswers.findIndex(ans => ans.question_id === questions[currentQuestion].id);
 
       let updatedAnswers;
@@ -322,7 +432,11 @@ export default function AssessmentPage() {
     setTimeout(() => navigate('/'), 800);
   };
 
-  // Завершение тестирования
+  // Обработчик выбора ответа
+  const handleAnswerSelect = (answerText) => {
+    setSelectedAnswer(answerText);
+  };
+
   const finishAssessment = async (answers) => {
     try {
       setIsProcessing(true);
@@ -352,14 +466,14 @@ export default function AssessmentPage() {
         body: JSON.stringify(sessionData)
       });
 
-      // ✅ ПРИНУДИТЕЛЬНО УСТАНАВЛИВАЕМ СОСТОЯНИЯ
-      console.log('✅ Assessment saved successfully, setting finished state');
-      setResult({ success: true });
-      setIsFinished(true);
-      setIsProcessing(false); // ← ДОБАВЛЕНО: убираем processing сразу после успеха
+      // ✅ ПОКАЗЫВАЕМ СПИННЕР МИНИМУМ 2 СЕКУНДЫ для UX
+      setTimeout(() => {
+        setResult({ success: true });
+        setIsFinished(true);
+        setIsProcessing(false);
+      }, 2000); // 2 секунды показываем "Обработка результатов..."
     
     } catch (error) {
-      console.error('❌ Error submitting assessment:', error);
       setErrorMessage('Ошибка при отправке результатов. Попробуйте еще раз.');
       setIsProcessing(false);
     }
@@ -390,7 +504,6 @@ export default function AssessmentPage() {
         setShuffledQuestions(questionsWithShuffledOptions);
         
       } catch (error) {
-        console.error('❌ Error loading questionnaire:', error);
         setErrorMessage(`Ошибка загрузки опросника: ${error.message}`);
       } finally {
         setIsLoading(false);
@@ -401,7 +514,7 @@ export default function AssessmentPage() {
     startTimeRef.current = Date.now();
   }, []);
 
-  // ===== КЛАССЫ ДЛЯ ЭЛЕМЕНТОВ КАК В PollsPage =====
+  // ===== КЛАССЫ ДЛЯ ЭЛЕМЕНТОВ =====
   const getContainerClasses = () => [
     'main-container',
     isExiting ? 'exiting' : ''
@@ -454,7 +567,6 @@ export default function AssessmentPage() {
       );
     }
 
-    // Рендер контента по шагам
     switch (currentStep) {
       case 1:
         return (
@@ -498,7 +610,15 @@ export default function AssessmentPage() {
       
             <div className="form-container">
               <div className="autosuggest-wrapper">
-                <label className="form-label">
+                <label 
+                  className="form-label"
+                  onClick={() => {
+                    const input = document.querySelector('.autosuggest-wrapper:nth-of-type(1) .autosuggest-input');
+                    if (input) {
+                      setTimeout(() => input.focus(), 10);
+                    }
+                  }}
+                >
                   Фамилия
                 </label>
                 {renderAutosuggest(
@@ -509,7 +629,15 @@ export default function AssessmentPage() {
               </div>
 
               <div className="autosuggest-wrapper">
-                <label className="form-label">
+                <label 
+                  className="form-label"
+                  onClick={() => {
+                    const input = document.querySelector('.autosuggest-wrapper:nth-of-type(2) .autosuggest-input');
+                    if (input) {
+                      setTimeout(() => input.focus(), 10);
+                    }
+                  }}
+                >
                   Имя
                 </label>
                 {renderAutosuggest(
@@ -520,7 +648,15 @@ export default function AssessmentPage() {
               </div>
 
               <div className="autosuggest-wrapper">
-                <label className="form-label">
+                <label 
+                  className="form-label"
+                  onClick={() => {
+                    const input = document.querySelector('.autosuggest-wrapper:nth-of-type(3) .autosuggest-input');
+                    if (input) {
+                      setTimeout(() => input.focus(), 10);
+                    }
+                  }}
+                >
                   Отчество
                 </label>
                 {renderAutosuggest(
@@ -547,7 +683,6 @@ export default function AssessmentPage() {
         const currentQuestionData = shuffledQuestions[currentQuestion];
         return (
           <div className={`welcome-text-container ${contentAnimated && !fadeTransition ? 'animated' : ''}`}>
-            {/* Прогресс индикатор */}
             <div className="progress-indicator-wrapper">
               <div className="progress-indicator">
                 {questions.map((_, idx) => (
@@ -582,7 +717,16 @@ export default function AssessmentPage() {
                 <button
                   key={idx}
                   className={`answer-option ${selectedAnswer === option.text ? 'selected' : ''}`}
-                  onClick={() => setSelectedAnswer(option.text)}
+                  onClick={() => handleAnswerSelect(option.text)}
+                  onTouchStart={handleTouchStart}
+                  onTouchEnd={(e) => handleTouchEnd(e, () => handleAnswerSelect(option.text))}
+                  style={{
+                    userSelect: 'auto',
+                    WebkitUserSelect: 'auto',
+                    pointerEvents: 'auto',
+                    cursor: 'pointer',
+                    touchAction: 'manipulation'
+                  }}
                 >
                   {option.text}
                 </button>
@@ -602,7 +746,6 @@ export default function AssessmentPage() {
     }
   };
 
-  // ===== ОСНОВНОЙ РЕНДЕР КАК В PollsPage =====
   return (
     <div className={getContainerClasses()}>
       {/* CSS анимации */}
@@ -636,15 +779,12 @@ export default function AssessmentPage() {
         `}
       </style>
       
-      {/* НОВЫЙ БЛОК СТИЛЕЙ ДЛЯ УДАЛЕНИЯ ПОЛОСОК */}
       <style>
         {`
-          /* Глобальное удаление всех горизонтальных линий */
           hr {
             display: none !important;
           }
           
-          /* Удаляем границы между элементами react-autosuggest */
           .react-autosuggest__container,
           .react-autosuggest__input,
           .react-autosuggest__suggestions-container {
@@ -652,7 +792,52 @@ export default function AssessmentPage() {
             border-bottom: none !important;
           }
           
-          /* Убираем любые псевдоэлементы, создающие линии */
+          /* КРИТИЧНО: Обеспечиваем кликабельность autosuggest полей */
+          .autosuggest-input,
+          .react-autosuggest__input,
+          input[type="text"] {
+            user-select: auto !important;
+            -webkit-user-select: auto !important;
+            -moz-user-select: auto !important;
+            pointer-events: auto !important;
+            cursor: text !important;
+            touch-action: manipulation !important;
+            -webkit-touch-callout: auto !important;
+            -webkit-tap-highlight-color: rgba(255, 255, 255, 0.1) !important;
+            outline: none !important;
+            border: 1px solid rgba(255, 255, 255, 0.25) !important;
+            background-color: rgba(255, 255, 255, 0.05) !important;
+            color: white !important;
+            z-index: 10 !important;
+            position: relative !important;
+          }
+          
+          /* Focus состояние для input полей */
+          .autosuggest-input:focus,
+          .react-autosuggest__input:focus,
+          input[type="text"]:focus {
+            border-color: rgba(255, 255, 255, 0.6) !important;
+            background-color: rgba(255, 255, 255, 0.1) !important;
+            outline: none !important;
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2) !important;
+          }
+          
+          /* Hover состояние для input полей */
+          .autosuggest-input:hover,
+          .react-autosuggest__input:hover,
+          input[type="text"]:hover {
+            border-color: rgba(255, 255, 255, 0.4) !important;
+            background-color: rgba(255, 255, 255, 0.08) !important;
+          }
+          
+          /* Активное состояние для input полей */
+          .autosuggest-input:active,
+          .react-autosuggest__input:active,
+          input[type="text"]:active {
+            border-color: rgba(255, 255, 255, 0.8) !important;
+            background-color: rgba(255, 255, 255, 0.15) !important;
+          }
+          
           .form-container *::before,
           .form-container *::after {
             height: auto !important;
@@ -660,17 +845,14 @@ export default function AssessmentPage() {
             background: transparent !important;
           }
           
-          /* Исключение для placeholder */
           .autosuggest-input::placeholder {
             background: transparent !important;
           }
           
-          /* Убираем margin между автосаджестами */
           .autosuggest-container {
             margin-bottom: 0 !important;
           }
           
-          /* Настройка размеров шрифтов через переменные */
           :root {
             --label-font-size-desktop: 20px;
             --label-font-size-tablet: 18px;
@@ -687,7 +869,7 @@ export default function AssessmentPage() {
         `}
       </style>
 
-      {/* ===== ЛОГОТИП КАК В PollsPage ===== */}
+      {/* ===== ЛОГОТИП ===== */}
       <div 
         ref={logoRef} 
         className={getLogoClasses()}
@@ -705,6 +887,15 @@ export default function AssessmentPage() {
           ref={backRef}
           className={`back-btn ${contentAnimated ? 'animate-home' : ''} ${isExiting ? 'animate-home-exit' : ''}`}
           onClick={handleBack}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={(e) => handleTouchEnd(e, handleBack)}
+          style={{
+            userSelect: 'auto',
+            WebkitUserSelect: 'auto',
+            pointerEvents: 'auto',
+            cursor: 'pointer',
+            touchAction: 'manipulation'
+          }}
         >
           <svg viewBox="0 0 24 24">
             <path d="M15 18l-6-6 6-6" stroke="white" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
@@ -717,7 +908,16 @@ export default function AssessmentPage() {
         <button 
           className={`next-btn ${contentAnimated ? 'animate-next' : ''} ${isExiting ? 'animate-next-exit' : ''} ${!canGoNext() ? 'disabled' : ''}`}
           onClick={canGoNext() ? handleNext : undefined}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={canGoNext() ? (e) => handleTouchEnd(e, handleNext) : undefined}
           disabled={!canGoNext()}
+          style={{
+            userSelect: 'auto',
+            WebkitUserSelect: 'auto',
+            pointerEvents: 'auto',
+            cursor: canGoNext() ? 'pointer' : 'not-allowed',
+            touchAction: 'manipulation'
+          }}
         >
           <div className={
             canGoNext() 

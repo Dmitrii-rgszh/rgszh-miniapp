@@ -185,6 +185,16 @@ function MainApp() {
       allButtons.forEach((button) => {
         if (button.dataset.globalFixed) return;
         
+        // ИСКЛЮЧАЕМ autosuggest input поля
+        if (button.classList.contains('autosuggest-input') || 
+            button.classList.contains('react-autosuggest__input') ||
+            button.type === 'text' || 
+            button.type === 'email' || 
+            button.type === 'password' ||
+            button.tagName.toLowerCase() === 'input') {
+          return;
+        }
+        
         Object.assign(button.style, {
           userSelect: 'auto',
           WebkitUserSelect: 'auto',

@@ -5,6 +5,7 @@
    ✅ Корпоративные цвета
    ✅ Убрана белая полоса сверху
    ✅ Поддержка всех браузеров и устройств
+   ✅ Исправления для input полей
    ============================================================================ */
 
 /* ======================================
@@ -25,13 +26,6 @@ html {
   overflow: hidden;
   background-color: #B40037; /* Корпоративный цвет вместо белого */
   
-  /* РАЗРЕШАЕМ touch и клики - убираем блокировки! */
-  /* -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  -webkit-tap-highlight-color: transparent;
-  user-select: none;
-  touch-action: manipulation; */
-  
   /* Фиксированный размер шрифта для отключения зума на iOS */
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
@@ -49,77 +43,28 @@ body {
   font-weight: 400;
   line-height: 1.5;
   color: white;
-  
-  /* УБИРАЕМ глобальный user-select: none - он блокирует события! */
-  /* -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none; */
-  
-  /* Сглаживание шрифтов */
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
-/* КОРНЕВОЙ ЭЛЕМЕНТ REACT */
 #root {
-  position: fixed !important;
-  top: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  bottom: 0 !important;
-  width: 100vw !important;
-  height: 100vh !important;
-  
-  /* Динамическая высота viewport для мобильных */
-  height: 100dvh !important;
-  height: calc(var(--vh, 1vh) * 100) !important;
-  
-  overflow: hidden !important;
-  background-color: #B40037 !important;
-  
-  /* УБИРАЕМ pointer-events: none - пусть клики проходят нормально */
-}
-
-/* ПОДДЕРЖКА SAFE AREA (вырезы экрана iPhone X+) */
-@supports (padding: max(0px)) {
-  #root {
-    padding-top: env(safe-area-inset-top, 0px) !important;
-    padding-bottom: env(safe-area-inset-bottom, 0px) !important;
-    padding-left: env(safe-area-inset-left, 0px) !important;
-    padding-right: env(safe-area-inset-right, 0px) !important;
-  }
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: #B40037;
 }
 
 /* ======================================
-   ТИПОГРАФИКА - SEGOE UI
-   ====================================== */
-h1, h2, h3, h4, h5, h6 {
-  font-family: "Segoe UI", sans-serif;
-  font-weight: bold;
-  margin: 0;
-  color: white;
-}
-
-p, span, div, label, input, textarea, button {
-  font-family: "Segoe UI", sans-serif;
-  font-weight: 400;
-  color: white;
-}
-
-/* ======================================
-   КОРПОРАТИВНЫЕ ЦВЕТА (CSS ПЕРЕМЕННЫЕ)
+   CSS ПЕРЕМЕННЫЕ
    ====================================== */
 :root {
-  /* Красные оттенки */
+  /* Красный */
   --color-red-primary: rgb(180, 0, 55);
   --color-red-secondary: rgb(153, 0, 55);
   
-  /* Серые оттенки */
+  /* Серый */
   --color-gray-primary: rgb(152, 164, 174);
   --color-gray-secondary: rgb(118, 143, 146);
   
-  /* Синие оттенки */
+  /* Синий */
   --color-blue-primary: rgb(0, 40, 130);
   --color-blue-secondary: rgb(0, 32, 104);
   
@@ -134,7 +79,7 @@ p, span, div, label, input, textarea, button {
    ГЛОБАЛЬНЫЕ СТИЛИ ДЛЯ КНОПОК - ИСПРАВЛЕНИЕ КЛИКАБЕЛЬНОСТИ
    ====================================== */
 
-/* ВСЕ кнопки должны быть кликабельными */
+/* ВСЕ кнопки должны быть кликабельными (ИСКЛЮЧАЯ INPUT ПОЛЯ) */
 button,
 [role="button"],
 .btn,
@@ -164,6 +109,152 @@ a {
   
   /* Убираем outline только после клика, но оставляем возможность фокуса */
   outline: none;
+}
+
+/* ======================================
+   СПЕЦИАЛЬНЫЕ СТИЛИ ДЛЯ INPUT ПОЛЕЙ
+   ====================================== */
+
+/* Обеспечиваем кликабельность input полей */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="search"],
+textarea,
+.autosuggest-input,
+.react-autosuggest__input {
+  /* КРИТИЧНО: разрешаем все события ввода */
+  -webkit-user-select: auto !important;
+  -moz-user-select: auto !important;
+  -ms-user-select: auto !important;
+  user-select: auto !important;
+  
+  /* КРИТИЧНО: курсор ввода текста */
+  cursor: text !important;
+  
+  /* КРИТИЧНО: разрешаем touch события */
+  -webkit-touch-callout: auto !important;
+  pointer-events: auto !important;
+  
+  /* Подсветка при тапе на мобильных */
+  -webkit-tap-highlight-color: rgba(255, 255, 255, 0.1) !important;
+  
+  /* Touch действия для input */
+  touch-action: manipulation !important;
+  
+  /* Outline для доступности */
+  outline: none;
+  
+  /* Базовые стили для видимости */
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  color: white !important;
+  border-radius: 4px;
+  padding: 10px 15px;
+  font-family: "Segoe UI", sans-serif;
+  font-size: 16px;
+  line-height: 1.4;
+  width: 100%;
+  
+  /* Предотвращаем zoom на iOS */
+  font-size: 16px !important;
+  transform: scale(1) !important;
+  
+  /* Принудительно делаем интерактивным */
+  z-index: 10 !important;
+  position: relative !important;
+}
+
+/* Focus состояние для input полей */
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="search"]:focus,
+textarea:focus,
+.autosuggest-input:focus,
+.react-autosuggest__input:focus {
+  /* Визуальная обратная связь при фокусе */
+  border-color: rgba(255, 255, 255, 0.6) !important;
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2) !important;
+  outline: none !important;
+}
+
+/* Hover состояние для input полей */
+input[type="text"]:hover,
+input[type="email"]:hover,
+input[type="password"]:hover,
+input[type="search"]:hover,
+textarea:hover,
+.autosuggest-input:hover,
+.react-autosuggest__input:hover {
+  border-color: rgba(255, 255, 255, 0.4) !important;
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Active состояние для input полей */
+input[type="text"]:active,
+input[type="email"]:active,
+input[type="password"]:active,
+input[type="search"]:active,
+textarea:active,
+.autosuggest-input:active,
+.react-autosuggest__input:active {
+  border-color: rgba(255, 255, 255, 0.8) !important;
+  background-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+/* Placeholder стили */
+input::placeholder,
+textarea::placeholder,
+.autosuggest-input::placeholder,
+.react-autosuggest__input::placeholder {
+  color: rgba(255, 255, 255, 0.6) !important;
+  opacity: 1 !important;
+}
+
+input::-webkit-input-placeholder,
+textarea::-webkit-input-placeholder,
+.autosuggest-input::-webkit-input-placeholder,
+.react-autosuggest__input::-webkit-input-placeholder {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+input::-moz-placeholder,
+textarea::-moz-placeholder,
+.autosuggest-input::-moz-placeholder,
+.react-autosuggest__input::-moz-placeholder {
+  color: rgba(255, 255, 255, 0.6) !important;
+  opacity: 1 !important;
+}
+
+input:-ms-input-placeholder,
+textarea:-ms-input-placeholder,
+.autosuggest-input:-ms-input-placeholder,
+.react-autosuggest__input:-ms-input-placeholder {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+/* Autosuggest suggestions */
+.react-autosuggest__suggestions-container,
+.react-autosuggest__suggestions-list,
+.react-autosuggest__suggestion,
+.autosuggest-suggestion {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  touch-action: manipulation !important;
+  -webkit-user-select: auto !important;
+  user-select: auto !important;
+}
+
+/* Labels для input полей */
+label,
+.form-label {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  touch-action: manipulation !important;
+  -webkit-user-select: auto !important;
+  user-select: auto !important;
 }
 
 /* Hover эффекты для кнопок */
@@ -205,97 +296,3 @@ button:active,
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.3) rgba(255, 255, 255, 0.1);
 }
-
-/* ======================================
-   СПЕЦИАЛЬНЫЕ СТИЛИ ДЛЯ МОБИЛЬНЫХ
-   ====================================== */
-
-/* Отключаем pull-to-refresh */
-body {
-  overscroll-behavior: none;
-  overscroll-behavior-y: none;
-}
-
-/* Отключаем selection на мобильных - НО РАЗРЕШАЕМ НА ИНТЕРАКТИВНЫХ ЭЛЕМЕНТАХ */
-@media (pointer: coarse) {
-  * {
-    -webkit-user-select: none !important;
-    user-select: none !important;
-  }
-  
-  /* ВАЖНО: Разрешаем интерактивность на кнопках и ссылках */
-  button, 
-  [role="button"],
-  a,
-  input, 
-  textarea,
-  select {
-    -webkit-user-select: auto !important;
-    user-select: auto !important;
-    -webkit-touch-callout: auto !important;
-    pointer-events: auto !important;
-    cursor: pointer !important;
-  }
-}
-
-/* ======================================
-   УТИЛИТАРНЫЕ КЛАССЫ
-   ====================================== */
-
-/* Класс для разрешения выделения текста */
-.selectable {
-  -webkit-user-select: text !important;
-  user-select: text !important;
-}
-
-/* Скрытие элементов */
-.hidden {
-  display: none !important;
-}
-
-.invisible {
-  visibility: hidden !important;
-}
-
-/* Центрирование */
-.center {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Полная ширина */
-.full-width {
-  width: 100% !important;
-}
-
-/* Полная высота */
-.full-height {
-  height: 100% !important;
-}
-
-/* ======================================
-   АНИМАЦИИ И ПЕРЕХОДЫ
-   ====================================== */
-.smooth-transition {
-  transition: all 0.3s ease;
-}
-
-.fade-in {
-  animation: fadeIn 0.5s ease-in;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-/* ======================================
-   ОТЛАДКА (уберите в production)
-   ====================================== */
-/* Uncomment for debugging layout issues */
-/*
-* {
-  outline: 1px solid red !important;
-}
-*/
