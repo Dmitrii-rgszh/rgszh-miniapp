@@ -1,8 +1,7 @@
-// AssessmentPage.js - С ИСПРАВЛЕННОЙ ЛОГИКОЙ КНОПОК
-// ✅ Добавлен сброс состояния при монтировании
-// ✅ Добавлены touch обработчики
-// ✅ Добавлены принудительные стили для кликабельности
-// ✅ Исправлена логика навигации
+// AssessmentPage.js - ИСПРАВЛЕНА ПРОБЛЕМА С ПУСТЫМ ЭКРАНОМ
+// ✅ Добавлен класс animated для состояний загрузки
+// ✅ Обеспечена видимость логотипа во время загрузки
+// ✅ Исправлены состояния анимации
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Autosuggest from 'react-autosuggest';
@@ -536,7 +535,7 @@ export default function AssessmentPage() {
   const renderStepContent = () => {
     if (isLoading) {
       return (
-        <div className="welcome-text-container">
+        <div className="welcome-text-container animated">
           <div className="assessment-spinner" />
           <h2 className="text-h2 text-center">Загрузка опросника...</h2>
           <p className="text-body text-center">Подготавливаем вопросы для оценки</p>
@@ -546,7 +545,7 @@ export default function AssessmentPage() {
 
     if (isProcessing) {
       return (
-        <div className="welcome-text-container">
+        <div className="welcome-text-container animated">
           <div className="assessment-spinner" />
           <h2 className="text-h2 text-center">Обработка результатов...</h2>
           <p className="text-body text-center">Анализируем ваши ответы</p>
@@ -775,6 +774,12 @@ export default function AssessmentPage() {
             color: white;
             text-align: center;
             font-family: "Segoe UI", sans-serif;
+          }
+          
+          /* Обеспечиваем видимость логотипа во время загрузки */
+          .logo-wrapper:not(.animated) {
+            opacity: 1 !important;
+            transform: none !important;
           }
         `}
       </style>
