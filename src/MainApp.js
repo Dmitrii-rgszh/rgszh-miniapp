@@ -171,9 +171,7 @@ function BackgroundManager() {
               backgroundSize: 'cover',
               backgroundPosition: 'center',
               backgroundRepeat: 'no-repeat',
-              opacity: index === 0 ? 1 : 0,
               transition: 'opacity 2s ease-in-out',
-              zIndex: index === 0 ? 2 : 1
             }}
           />
         ))}

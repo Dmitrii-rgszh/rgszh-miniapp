@@ -130,3 +130,84 @@ body::after {
   z-index: -1;
   content: url('../components/background/background1.webp');
 }
+
+/* Добавьте эти стили в конец вашего backgrounds.css */
+
+/* ======================================
+   АНИМАЦИИ ДВИЖЕНИЯ ФОНОВ
+   ====================================== */
+
+/* Анимация: левый нижний → правый верхний */
+@keyframes moveBottomLeftToTopRight {
+  0% {
+    background-position: 0% 100%;
+  }
+  100% {
+    background-position: 100% 0%;
+  }
+}
+
+.background-layer.move-bl-tr {
+  animation: moveBottomLeftToTopRight 30s ease-in-out infinite alternate;
+}
+
+/* Анимация: левый верхний → правый нижний */
+@keyframes moveTopLeftToBottomRight {
+  0% {
+    background-position: 0% 0%;
+  }
+  100% {
+    background-position: 100% 100%;
+  }
+}
+
+.background-layer.move-tl-br {
+  animation: moveTopLeftToBottomRight 30s ease-in-out infinite alternate;
+}
+
+/* Анимация: правый верхний → левый нижний */
+@keyframes moveTopRightToBottomLeft {
+  0% {
+    background-position: 100% 0%;
+  }
+  100% {
+    background-position: 0% 100%;
+  }
+}
+
+.background-layer.move-tr-bl {
+  animation: moveTopRightToBottomLeft 30s ease-in-out infinite alternate;
+}
+
+/* Анимация: правый нижний → левый верхний */
+@keyframes moveBottomRightToTopLeft {
+  0% {
+    background-position: 100% 100%;
+  }
+  100% {
+    background-position: 0% 0%;
+  }
+}
+
+.background-layer.move-br-tl {
+  animation: moveBottomRightToTopLeft 30s ease-in-out infinite alternate;
+}
+
+/* Для плавности анимации при смене фонов */
+.background-layer.transitioning {
+  animation-play-state: paused;
+}
+
+.background-layer.active {
+  animation-play-state: running;
+}
+
+/* Оптимизация для мобильных */
+@media (max-width: 768px) {
+  .background-layer.move-bl-tr,
+  .background-layer.move-tl-br,
+  .background-layer.move-tr-bl,
+  .background-layer.move-br-tl {
+    animation-duration: 40s; /* Медленнее на мобильных */
+  }
+}
