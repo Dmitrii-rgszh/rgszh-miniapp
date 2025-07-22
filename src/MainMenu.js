@@ -1,7 +1,7 @@
-// MainMenu.js - ИСПРАВЛЕННАЯ ВЕРСИЯ С TOUCH ПОДДЕРЖКОЙ
+// MainMenu.js - ФИНАЛЬНАЯ ВЕРСИЯ БЕЗ ОТЛАДКИ
 // ✅ Исправлено состояние isExiting
 // ✅ Добавлены touch события
-// ✅ Добавлено логирование для отладки
+// ✅ Убраны все логи и отладочные элементы
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -18,7 +18,7 @@ export default function MainMenu() {
   // ===== СОСТОЯНИЯ =====
   const [logoAnimated, setLogoAnimated] = useState(false);
   const [buttonsAnimated, setButtonsAnimated] = useState(false);
-  const [isExiting, setIsExiting] = useState(false); // ← Убеждаемся что false по умолчанию
+  const [isExiting, setIsExiting] = useState(false);
   const logoRef = useRef(null);
 
   // ===== ДАННЫЕ КНОПОК =====
@@ -29,7 +29,6 @@ export default function MainMenu() {
 
   // ===== СБРОС СОСТОЯНИЯ ПРИ МОНТИРОВАНИИ =====
   useEffect(() => {
-    console.log('🔄 MainMenu: Инициализация, сбрасываем isExiting');
     setIsExiting(false);
   }, []);
 
@@ -54,35 +53,26 @@ export default function MainMenu() {
 
   // ===== ОБРАБОТКА КЛИКА ПО КНОПКЕ =====
   const handleClick = (path) => {
-    console.log('🔘 MainMenu: handleClick вызван, path:', path);
-    console.log('🔘 MainMenu: isExiting текущее значение:', isExiting);
+    if (isExiting) return;
     
-    if (isExiting) {
-      console.log('❌ MainMenu: Клик заблокирован - isExiting=true');
-      return;
-    }
-    
-    console.log('✅ MainMenu: Клик разрешен, начинаем навигацию');
     setIsExiting(true);
     
-    // Добавляем CSS классы для exit анимации
     if (logoRef.current) {
       logoRef.current.classList.add('animate-logo-exit');
     }
     
     setTimeout(() => {
-      console.log('🔄 MainMenu: Навигация к:', path);
       navigate(path);
     }, 800);
   };
 
   // ===== TOUCH ОБРАБОТЧИКИ =====
   const handleTouchStart = (e) => {
-    console.log('👆 MainMenu: TouchStart');
+    // Touch start handler
   };
 
   const handleTouchEnd = (e, path) => {
-    console.log('👆 MainMenu: TouchEnd, path:', path);
+    e.preventDefault();
     handleClick(path);
   };
 
@@ -120,30 +110,19 @@ export default function MainMenu() {
 
   const getButtonContainerClasses = () => [
     'button-container',
-    'with-logo',                  // Позиционирование с учетом логотипа
+    'with-logo',
     buttonsAnimated ? 'animated' : '',
     isExiting ? 'exiting' : ''
   ].filter(Boolean).join(' ');
 
-  // Универсальные классы кнопок - ИСПРАВЛЕНО: НЕ добавляем exiting если кнопки еще не анимированы
   const getButtonClasses = (btn, index) => [
-    'btn-universal',              // Базовый класс
-    `btn-${btn.type}`,           // Тип кнопки (primary, secondary, etc.)
-    'btn-large',                 // Размер кнопки
-    'btn-shadow',                // С тенью
+    'btn-universal',
+    `btn-${btn.type}`,
+    'btn-large',
+    'btn-shadow',
     buttonsAnimated ? 'button-animated' : 'button-hidden',
-    // ТОЛЬКО добавляем button-exiting если кнопки уже анимированы И идет выход
     (buttonsAnimated && isExiting) ? 'button-exiting' : ''
   ].filter(Boolean).join(' ');
-
-  // Отладочная информация
-  useEffect(() => {
-    console.log('🔍 MainMenu: Состояние изменилось:', {
-      logoAnimated,
-      buttonsAnimated,
-      isExiting
-    });
-  }, [logoAnimated, buttonsAnimated, isExiting]);
 
   return (
     <div className={getContainerClasses()}>
@@ -159,7 +138,7 @@ export default function MainMenu() {
         />
       </div>
 
-      {/* ===== КНОПКИ С ПОЛНОЙ ПОДДЕРЖКОЙ СОБЫТИЙ ===== */}
+      {/* ===== КНОПКИ ===== */}
       <div className={getButtonContainerClasses()}>
         {buttons.map((btn, index) => (
           <button
@@ -167,18 +146,15 @@ export default function MainMenu() {
             className={getButtonClasses(btn, index)}
             data-index={index}
             onClick={(e) => {
-              console.log('🖱️ MainMenu: onClick обработчик вызван', btn.label);
               createRipple(e);
               handleClick(btn.to);
             }}
             onTouchStart={handleTouchStart}
             onTouchEnd={(e) => {
-              e.preventDefault(); // Предотвращаем двойной вызов
+              e.preventDefault();
               handleTouchEnd(e, btn.to);
             }}
-            onPointerDown={() => console.log('👉 MainMenu: PointerDown', btn.label)}
             style={{
-              // ПРИНУДИТЕЛЬНЫЕ СТИЛИ для обеспечения кликабельности
               userSelect: 'auto',
               WebkitUserSelect: 'auto',
               pointerEvents: 'auto',
@@ -189,23 +165,6 @@ export default function MainMenu() {
             {btn.label}
           </button>
         ))}
-      </div>
-
-      {/* ОТЛАДОЧНАЯ ИНФОРМАЦИЯ */}
-      <div style={{
-        position: 'fixed',
-        bottom: '20px',
-        left: '20px',
-        background: 'black',
-        color: 'yellow',
-        padding: '10px',
-        fontSize: '12px',
-        zIndex: 9999,
-        borderRadius: '4px'
-      }}>
-        <div>isExiting: {String(isExiting)}</div>
-        <div>buttonsAnimated: {String(buttonsAnimated)}</div>
-        <div>logoAnimated: {String(logoAnimated)}</div>
       </div>
     </div>
   );

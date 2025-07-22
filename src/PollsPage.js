@@ -29,12 +29,22 @@ export default function PollsPage() {
   const [isExiting, setIsExiting] = useState(false); // ← ВАЖНО: false по умолчанию
   const [qrData, setQrData] = useState({ open: false, path: '', label: '' });
 
-  // ===== ДАННЫЕ ОПРОСОВ =====
+  // ===== ДАННЫЕ ОПРОСОВ С ПРОВЕРКОЙ =====
   const polls = [
     { path: '/assessment', label: 'Оценка кандидата' },
     { path: '/feedback', label: 'Обратная связь' },
     { path: '/marza-poll', label: 'Маржа продаж' },
   ];
+
+  // ===== ПРОВЕРКА ДОСТУПНЫХ МАРШРУТОВ =====
+  useEffect(() => {
+    console.log('📋 PollsPage: Проверка доступных маршрутов:');
+    polls.forEach((poll, index) => {
+      console.log(`   ${index + 1}. ${poll.label} → ${poll.path}`);
+    });
+    console.log('📋 PollsPage: Текущий pathname:', window.location.pathname);
+    console.log('📋 PollsPage: Текущий hash:', window.location.hash);
+  }, []);
 
   // ===== СБРОС СОСТОЯНИЯ ПРИ МОНТИРОВАНИИ (КАК В MainMenu.js) =====
   useEffect(() => {
@@ -62,10 +72,12 @@ export default function PollsPage() {
     };
   }, []);
 
-  // ===== ОБРАБОТКА КЛИКА ПО ОПРОСУ (УЛУЧШЕННАЯ ЛОГИКА) =====
+  // ===== ОБРАБОТКА КЛИКА ПО ОПРОСУ (С ДЕТАЛЬНЫМ ЛОГИРОВАНИЕМ) =====
   const handleClick = (path) => {
     console.log('🔘 PollsPage: handleClick вызван, path:', path);
     console.log('🔘 PollsPage: isExiting текущее значение:', isExiting);
+    console.log('🔘 PollsPage: Текущий location.pathname:', window.location.pathname);
+    console.log('🔘 PollsPage: Текущий location.href:', window.location.href);
     
     if (isExiting) {
       console.log('❌ PollsPage: Клик заблокирован - isExiting=true');
@@ -79,10 +91,25 @@ export default function PollsPage() {
       logoRef.current.classList.add('animate-logo-exit');
     }
     
-    setTimeout(() => {
-      console.log('🔄 PollsPage: Навигация к:', path);
+    // НЕМЕДЛЕННАЯ НАВИГАЦИЯ БЕЗ ЗАДЕРЖКИ ДЛЯ ТЕСТА
+    console.log('🔄 PollsPage: НЕМЕДЛЕННАЯ навигация к:', path);
+    try {
       navigate(path);
-    }, 800);
+      console.log('✅ PollsPage: Навигация выполнена успешно');
+    } catch (error) {
+      console.error('❌ PollsPage: Ошибка навигации:', error);
+    }
+    
+    // ТАКЖЕ ДУБЛИРУЕМ С ЗАДЕРЖКОЙ (на случай если немедленная не сработает)
+    setTimeout(() => {
+      console.log('🔄 PollsPage: ДУБЛИРОВАННАЯ навигация к:', path);
+      try {
+        navigate(path);
+        console.log('✅ PollsPage: Дублированная навигация выполнена');
+      } catch (error) {
+        console.error('❌ PollsPage: Ошибка дублированной навигации:', error);
+      }
+    }, 100);
   };
 
   // ===== ОБРАБОТКА КЛИКА ПО КНОПКЕ ДОМОЙ (УЛУЧШЕННАЯ ЛОГИКА) =====
@@ -391,7 +418,7 @@ export default function PollsPage() {
         </div>
       )}
 
-      {/* ОТЛАДОЧНАЯ ИНФОРМАЦИЯ (КАК В MainMenu.js) */}
+      {/* ОТЛАДОЧНАЯ ИНФОРМАЦИЯ И ТЕСТОВЫЕ КНОПКИ */}
       <div style={{
         position: 'fixed',
         bottom: '20px',
@@ -407,6 +434,65 @@ export default function PollsPage() {
         <div>buttonsAnimated: {String(buttonsAnimated)}</div>
         <div>homeAnimated: {String(homeAnimated)}</div>
         <div>logoAnimated: {String(logoAnimated)}</div>
+        
+        {/* ТЕСТОВЫЕ КНОПКИ ПРЯМОЙ НАВИГАЦИИ */}
+        <div style={{ marginTop: '10px', borderTop: '1px solid yellow', paddingTop: '10px' }}>
+          <div style={{ marginBottom: '5px', fontSize: '10px' }}>ТЕСТОВЫЕ КНОПКИ:</div>
+          <button
+            onClick={() => {
+              console.log('🧪 ТЕСТ: Прямая навигация к /assessment');
+              window.location.hash = '#/assessment';
+            }}
+            style={{
+              margin: '2px',
+              padding: '4px 8px',
+              fontSize: '10px',
+              background: 'yellow',
+              color: 'black',
+              border: 'none',
+              borderRadius: '3px',
+              cursor: 'pointer'
+            }}
+          >
+            HASH→ASS
+          </button>
+          <button
+            onClick={() => {
+              console.log('🧪 ТЕСТ: Navigate к /assessment');
+              navigate('/assessment');
+            }}
+            style={{
+              margin: '2px',
+              padding: '4px 8px',
+              fontSize: '10px',
+              background: 'yellow',
+              color: 'black',
+              border: 'none',
+              borderRadius: '3px',
+              cursor: 'pointer'
+            }}
+          >
+            NAV→ASS
+          </button>
+          <button
+            onClick={() => {
+              console.log('🧪 ТЕСТ: window.location к /assessment');
+              window.location.href = window.location.origin + '/#/assessment';
+            }}
+            style={{
+              margin: '2px',
+              padding: '4px 8px',
+              fontSize: '10px',
+              background: 'yellow',
+              color: 'black',
+              border: 'none',
+              borderRadius: '3px',
+              cursor: 'pointer'
+            }}
+          >
+            WIN→ASS
+          </button>
+        </div>
       </div>
     </div>
   );
