@@ -77,6 +77,14 @@ body {
   
   overflow: hidden !important;
   background-color: #B40037 !important;
+  
+  /* ВАЖНО: корневой контейнер не должен блокировать клики */
+  pointer-events: none !important;
+}
+
+/* Все прямые дочерние элементы #root должны разрешать клики */
+#root > * {
+  pointer-events: auto !important;
 }
 
 /* ПОДДЕРЖКА SAFE AREA (вырезы экрана iPhone X+) */

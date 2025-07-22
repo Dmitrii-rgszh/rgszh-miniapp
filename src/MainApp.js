@@ -273,7 +273,7 @@ function MainApp() {
       bottom: 0,
       width: '100vw',
       height: '100vh',
-      zIndex: opacity > 0 ? 1 : 0,
+      zIndex: opacity > 0 ? -1 : -2, // ← ИСПРАВЛЕНО: отрицательные z-index для фонов
       
       // Фон: изображение или корпоративный градиент
       backgroundImage: backgroundSrc 
@@ -292,16 +292,17 @@ function MainApp() {
       // Оптимизация
       willChange: isTransitioning ? 'opacity' : 'auto',
       transform: 'translateZ(0)',
-      pointerEvents: 'none'
+      pointerEvents: 'none' // ← ВАЖНО: фоны не должны перехватывать клики
     };
   };
 
   // Контейнер контента - минимальные стили
   const contentContainerStyle = {
     position: 'relative',
-    zIndex: 10,
+    zIndex: 100, // ← ИСПРАВЛЕНО: высокий z-index для контента
     width: '100%',
-    height: '100%'
+    height: '100%',
+    pointerEvents: 'auto' // ← ВАЖНО: разрешаем клики на контенте
   };
 
   return (
