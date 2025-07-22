@@ -1,9 +1,10 @@
 /* ============================================================================
-   backgrounds.css - ЧИСТАЯ ВЕРСИЯ ТОЛЬКО WEBP
+   backgrounds.css - ЧИСТАЯ ВЕРСИЯ ТОЛЬКО WEBP + ОДНОСТОРОННИЕ АНИМАЦИИ
    ----------------------------------------------------------------------------
    ✅ ТОЛЬКО WebP файлы
    ✅ Удалены все ссылки на PNG
    ✅ Оптимизировано для быстрой загрузки
+   ✅ ОДНОСТОРОННИЕ анимации 15 секунд
    ============================================================================ */
 
 /* ======================================
@@ -131,24 +132,48 @@ body::after {
   content: url('../components/background/background1.webp');
 }
 
-/* Добавьте эти стили в конец вашего backgrounds.css */
-
 /* ======================================
-   АНИМАЦИИ ДВИЖЕНИЯ ФОНОВ
+   ОДНОСТОРОННИЕ АНИМАЦИИ ДВИЖЕНИЯ ФОНОВ - 15 СЕКУНД
    ====================================== */
 
-/* Анимация: левый нижний → правый верхний */
-@keyframes moveBottomLeftToTopRight {
+/* Анимация: слева направо */
+@keyframes moveLeftToRight {
   0% {
-    background-position: 0% 100%;
+    background-position: 0% center;
   }
   100% {
-    background-position: 100% 0%;
+    background-position: 100% center;
   }
 }
 
-.background-layer.move-bl-tr {
-  animation: moveBottomLeftToTopRight 30s ease-in-out infinite alternate;
+/* Анимация: сверху вниз */
+@keyframes moveTopToBottom {
+  0% {
+    background-position: center 0%;
+  }
+  100% {
+    background-position: center 100%;
+  }
+}
+
+/* Анимация: справа налево */
+@keyframes moveRightToLeft {
+  0% {
+    background-position: 100% center;
+  }
+  100% {
+    background-position: 0% center;
+  }
+}
+
+/* Анимация: снизу вверх */
+@keyframes moveBottomToTop {
+  0% {
+    background-position: center 100%;
+  }
+  100% {
+    background-position: center 0%;
+  }
 }
 
 /* Анимация: левый верхний → правый нижний */
@@ -161,10 +186,6 @@ body::after {
   }
 }
 
-.background-layer.move-tl-br {
-  animation: moveTopLeftToBottomRight 30s ease-in-out infinite alternate;
-}
-
 /* Анимация: правый верхний → левый нижний */
 @keyframes moveTopRightToBottomLeft {
   0% {
@@ -175,8 +196,14 @@ body::after {
   }
 }
 
-.background-layer.move-tr-bl {
-  animation: moveTopRightToBottomLeft 30s ease-in-out infinite alternate;
+/* Анимация: левый нижний → правый верхний */
+@keyframes moveBottomLeftToTopRight {
+  0% {
+    background-position: 0% 100%;
+  }
+  100% {
+    background-position: 100% 0%;
+  }
 }
 
 /* Анимация: правый нижний → левый верхний */
@@ -189,25 +216,83 @@ body::after {
   }
 }
 
-.background-layer.move-br-tl {
-  animation: moveBottomRightToTopLeft 30s ease-in-out infinite alternate;
+/* ======================================
+   ПРИМЕНЕНИЕ АНИМАЦИЙ К СЛОЯМ
+   ====================================== */
+
+/* УБРАНО alternate - теперь ОДНОСТОРОННИЕ анимации */
+.background-layer.move-bl-tr {
+  animation: moveBottomLeftToTopRight 15s linear infinite;
 }
 
-/* Для плавности анимации при смене фонов */
+.background-layer.move-tl-br {
+  animation: moveTopLeftToBottomRight 15s linear infinite;
+}
+
+.background-layer.move-tr-bl {
+  animation: moveTopRightToBottomLeft 15s linear infinite;
+}
+
+.background-layer.move-br-tl {
+  animation: moveBottomRightToTopLeft 15s linear infinite;
+}
+
+.background-layer.move-left-right {
+  animation: moveLeftToRight 15s linear infinite;
+}
+
+.background-layer.move-top-bottom {
+  animation: moveTopToBottom 15s linear infinite;
+}
+
+.background-layer.move-right-left {
+  animation: moveRightToLeft 15s linear infinite;
+}
+
+.background-layer.move-bottom-top {
+  animation: moveBottomToTop 15s linear infinite;
+}
+
+/* ======================================
+   СОСТОЯНИЯ АНИМАЦИЙ
+   ====================================== */
+
+/* Пауза анимации при переходе */
 .background-layer.transitioning {
   animation-play-state: paused;
 }
 
+/* Активная анимация */
 .background-layer.active {
   animation-play-state: running;
 }
 
-/* Оптимизация для мобильных */
+/* ======================================
+   ОПТИМИЗАЦИЯ ДЛЯ МОБИЛЬНЫХ
+   ====================================== */
 @media (max-width: 768px) {
   .background-layer.move-bl-tr,
   .background-layer.move-tl-br,
   .background-layer.move-tr-bl,
-  .background-layer.move-br-tl {
-    animation-duration: 40s; /* Медленнее на мобильных */
+  .background-layer.move-br-tl,
+  .background-layer.move-left-right,
+  .background-layer.move-top-bottom,
+  .background-layer.move-right-left,
+  .background-layer.move-bottom-top {
+    animation-duration: 20s; /* Чуть медленнее на мобильных для плавности */
+  }
+}
+
+/* Для очень маленьких экранов */
+@media (max-width: 375px) {
+  .background-layer.move-bl-tr,
+  .background-layer.move-tl-br,
+  .background-layer.move-tr-bl,
+  .background-layer.move-br-tl,
+  .background-layer.move-left-right,
+  .background-layer.move-top-bottom,
+  .background-layer.move-right-left,
+  .background-layer.move-bottom-top {
+    animation-duration: 25s; /* Еще медленнее для маленьких экранов */
   }
 }
