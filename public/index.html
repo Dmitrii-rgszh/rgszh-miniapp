@@ -1,29 +1,165 @@
 <!doctype html>
-<html lang="en">
+<html lang="ru">
   <head>
     <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>MiniApp</title>
+    <!-- ОСНОВНОЙ VIEWPORT - расширенный для полноэкранного режима -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    
+    <!-- МЕТА-ТЕГИ ДЛЯ PWA и ПОЛНОЭКРАННОГО РЕЖИМА -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="МiniApp">
+    <meta name="application-name" content="МiniApp">
+    
+    <!-- МЕТА-ТЕГИ ДЛЯ ANDROID -->
+    <meta name="theme-color" content="#B40037">
+    <meta name="msapplication-navbutton-color" content="#B40037">
+    
+    <!-- ОТКЛЮЧЕНИЕ КЕШИРОВАНИЯ -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
     <meta http-equiv="Pragma" content="no-cache"/>
     <meta http-equiv="Expires" content="0"/>
+    
+    <title>РГС ЖИЗНЬ - MiniApp</title>
+    
+    <!-- TELEGRAM WEB APP SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
+    <!-- INLINE СТИЛИ ДЛЯ УСТРАНЕНИЯ БЕЛОЙ ПОЛОСЫ -->
+    <style>
+      /* УБИРАЕМ БЕЛУЮ ПОЛОСУ СВЕРХУ */
+      html, body {
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        overflow-x: hidden !important;
+        background-color: #B40037 !important; /* Корпоративный цвет */
+        
+        /* ОТКЛЮЧАЕМ СКРОЛЛ И ZOOM */
+        -webkit-touch-callout: none !important;
+        -webkit-user-select: none !important;
+        -webkit-tap-highlight-color: transparent !important;
+        user-select: none !important;
+        touch-action: manipulation !important;
+      }
+      
+      /* КОРНЕВОЙ ЭЛЕМЕНТ НА ВЕСЬ ЭКРАН */
+      #root {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        height: 100dvh !important; /* Динамическая высота viewport для мобильных */
+        overflow: hidden !important;
+        background-color: #B40037 !important;
+      }
+      
+      /* УБИРАЕМ ОТСТУПЫ У ВСЕХ ЭЛЕМЕНТОВ */
+      * {
+        box-sizing: border-box !important;
+        -webkit-tap-highlight-color: transparent !important;
+      }
+      
+      /* ПОДДЕРЖКА SAFE AREA (вырезы экрана) */
+      @supports (padding: max(0px)) {
+        #root {
+          padding-top: env(safe-area-inset-top, 0px) !important;
+          padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+          padding-left: env(safe-area-inset-left, 0px) !important;
+          padding-right: env(safe-area-inset-right, 0px) !important;
+        }
+      }
+      
+      /* СПЕЦИАЛЬНЫЕ СТИЛИ ДЛЯ iOS SAFARI */
+      @supports (-webkit-appearance: none) {
+        html {
+          height: -webkit-fill-available !important;
+        }
+        
+        body {
+          height: -webkit-fill-available !important;
+        }
+        
+        #root {
+          height: -webkit-fill-available !important;
+        }
+      }
+      
+      /* ОТКЛЮЧАЕМ ВЫДЕЛЕНИЕ ТЕКСТА НА МОБИЛЬНЫХ */
+      body, #root {
+        -webkit-user-select: none !important;
+        -moz-user-select: none !important;
+        -ms-user-select: none !important;
+        user-select: none !important;
+      }
+      
+      /* УБИРАЕМ СКРОЛЛБАРЫ */
+      html::-webkit-scrollbar,
+      body::-webkit-scrollbar {
+        display: none !important;
+        width: 0 !important;
+        height: 0 !important;
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>
+    
+    <!-- ИНИЦИАЛИЗАЦИЯ TELEGRAM WEB APP -->
     <script>
       window.addEventListener("load", () => {
         try {
-          if (
-            window.Telegram &&
-            Telegram.WebApp &&
-            typeof Telegram.WebApp.expand === "function"
-          ) {
+          // Расширяем Telegram WebApp до полного размера
+          if (window.Telegram && Telegram.WebApp && typeof Telegram.WebApp.expand === "function") {
             Telegram.WebApp.expand();
+            console.log("✅ Telegram WebApp expanded");
           }
+          
+          // Устанавливаем цвет заголовка для Telegram
+          if (window.Telegram && Telegram.WebApp && typeof Telegram.WebApp.setHeaderColor === "function") {
+            Telegram.WebApp.setHeaderColor('#B40037');
+          }
+          
+          // Отключаем вертикальные свайпы если возможно
+          if (window.Telegram && Telegram.WebApp && typeof Telegram.WebApp.disableVerticalSwipes === "function") {
+            Telegram.WebApp.disableVerticalSwipes();
+          }
+          
         } catch(e) {
-          console.warn("Telegram.WebApp.expand failed:", e);
+          console.warn("Telegram WebApp initialization failed:", e);
         }
+        
+        // Фиксируем высоту для iOS Safari
+        function setVH() {
+          const vh = window.innerHeight * 0.01;
+          document.documentElement.style.setProperty('--vh', `${vh}px`);
+        }
+        
+        setVH();
+        window.addEventListener('resize', setVH);
+        window.addEventListener('orientationchange', () => {
+          setTimeout(setVH, 100);
+        });
+        
+        // Отключаем pull-to-refresh
+        document.body.addEventListener('touchstart', e => {
+          if (e.touches.length !== 1) return;
+          
+          const scrollY = window.pageYOffset || document.body.scrollTop || document.documentElement.scrollTop;
+          if (scrollY === 0) {
+            e.preventDefault();
+          }
+        }, { passive: false });
+        
+        // Отключаем пинч-зум
+        document.addEventListener('gesturestart', e => e.preventDefault());
+        document.addEventListener('gesturechange', e => e.preventDefault());
+        document.addEventListener('gestureend', e => e.preventDefault());
       });
     </script>
   </body>

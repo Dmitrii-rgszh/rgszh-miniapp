@@ -1,8 +1,8 @@
-// MainApp.js - ИСПРАВЛЕННАЯ ВЕРСИЯ С ОДНОСТОРОННИМ ДВИЖЕНИЕМ
+// MainApp.js - ЧИСТАЯ ВЕРСИЯ БЕЗ АНИМАЦИЙ ДВИЖЕНИЯ
 // ✅ УБРАН BrowserRouter (перенесен в index.js)
-// ✅ ОДНОСТОРОННИЕ анимации фонов
+// ✅ ТОЛЬКО плавная смена фонов без движения
 // ✅ Смена каждые 15 секунд
-// ✅ ВСЕ остальные стили - через CSS файлы
+// ✅ ТОЛЬКО WebP файлы
 
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, useNavigate } from 'react-router-dom'; // ← БЕЗ BrowserRouter
@@ -19,79 +19,56 @@ import JustincasePage  from './JustincasePage';
 import CareFuturePage  from './CareFuturePage';
 import MarzaPollPage   from './MarzaPollPage';
 
-// ===== ИМПОРТ ФОНОВЫХ ИЗОБРАЖЕНИЙ =====
-let backgroundImage1, backgroundImage2, backgroundImage3, backgroundImage4, defaultBackground;
+// ===== ИМПОРТ ФОНОВЫХ ИЗОБРАЖЕНИЙ - ТОЛЬКО WEBP =====
+let backgroundImage1, backgroundImage2, backgroundImage3, backgroundImage4;
 
+// Background 1
 try {
-  defaultBackground = require('./components/background.png');
+  backgroundImage1 = require('./components/background/background1.webp');
 } catch (error) {
-  console.log('ℹ️ Default background not found, using gradient');
-  defaultBackground = null;
+  console.log('ℹ️ Background 1 not found');
+  backgroundImage1 = null;
 }
 
+// Background 2
 try {
-  backgroundImage1 = require('./components/background/background1.png');
+  backgroundImage2 = require('./components/background/background2.webp');
 } catch (error) {
-  try {
-    backgroundImage1 = require('./components/background/background (1).png');
-  } catch (error2) {
-    backgroundImage1 = null;
-  }
+  console.log('ℹ️ Background 2 not found');
+  backgroundImage2 = null;
 }
 
+// Background 3
 try {
-  backgroundImage2 = require('./components/background/background2.png');
+  backgroundImage3 = require('./components/background/background3.webp');
 } catch (error) {
-  try {
-    backgroundImage2 = require('./components/background/background (2).png');
-  } catch (error2) {
-    backgroundImage2 = null;
-  }
+  console.log('ℹ️ Background 3 not found');
+  backgroundImage3 = null;
 }
 
+// Background 4
 try {
-  backgroundImage3 = require('./components/background/background3.png');
+  backgroundImage4 = require('./components/background/background4.webp');
 } catch (error) {
-  try {
-    backgroundImage3 = require('./components/background/background (3).png');
-  } catch (error2) {
-    backgroundImage3 = null;
-  }
+  console.log('ℹ️ Background 4 not found');
+  backgroundImage4 = null;
 }
 
-try {
-  backgroundImage4 = require('./components/background/background4.png');
-} catch (error) {
-  try {
-    backgroundImage4 = require('./components/background/background (4).png');
-  } catch (error2) {
-    backgroundImage4 = null;
-  }
-}
-
-// Массив доступных фонов
+// Массив доступных фонов - убираем null значения
 const availableBackgrounds = [
-  defaultBackground,
   backgroundImage1,
   backgroundImage2,
   backgroundImage3,
   backgroundImage4
 ].filter(Boolean);
 
-// Если нет изображений - используем корпоративный градиент
+// Если нет изображений - используем только корпоративный градиент
 if (availableBackgrounds.length === 0) {
-  console.log('📱 Using gradient background');
+  console.log('📱 No background images found, using gradient only');
   availableBackgrounds.push(null);
 }
 
-// Направления односторонних анимаций (соответствуют CSS классам)
-const backgroundAnimations = [
-  'move-left-right',
-  'move-top-bottom', 
-  'move-right-left',
-  'move-bottom-top',
-  'move-tl-br'
-];
+console.log(`📷 Loaded ${availableBackgrounds.length} background(s):`, availableBackgrounds.map((bg, i) => bg ? `Background ${i+1}: found` : `Background ${i+1}: gradient`));
 
 // ===== ERROR BOUNDARY =====
 class ErrorBoundary extends React.Component {
@@ -111,9 +88,38 @@ class ErrorBoundary extends React.Component {
   render() {
     if (this.state.error) {
       return (
-        <div className="error-boundary">
+        <div className="error-boundary" style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'linear-gradient(135deg, rgb(180, 0, 55) 0%, rgb(153, 0, 55) 25%, rgb(152, 164, 174) 50%, rgb(118, 143, 146) 75%, rgb(0, 40, 130) 100%)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexDirection: 'column',
+          color: 'white',
+          fontFamily: '"Segoe UI", sans-serif',
+          padding: '20px',
+          textAlign: 'center'
+        }}>
           <h2>Произошла ошибка</h2>
-          <pre>{this.state.error.toString()}</pre>
+          <p>Пожалуйста, перезагрузите страницу</p>
+          <button 
+            onClick={() => window.location.reload()}
+            style={{
+              marginTop: '20px',
+              padding: '10px 20px',
+              background: 'rgba(255, 255, 255, 0.2)',
+              border: '1px solid rgba(255, 255, 255, 0.3)',
+              borderRadius: '8px',
+              color: 'white',
+              cursor: 'pointer'
+            }}
+          >
+            Перезагрузить
+          </button>
         </div>
       );
     }
@@ -159,11 +165,14 @@ function MainApp() {
     let loadedCount = 0;
     const totalImages = availableBackgrounds.length;
 
-    availableBackgrounds.forEach((imageSrc, index) => {
+    const preloadImage = (imageSrc, index) => {
       if (!imageSrc) {
+        // Для градиентов - считаем загруженными
         loadedCount++;
+        console.log(`📷 Background ${index + 1}: using gradient`);
         if (loadedCount === totalImages) {
           setImagesLoaded(true);
+          console.log('✅ All backgrounds ready');
         }
         return;
       }
@@ -171,17 +180,25 @@ function MainApp() {
       const img = new Image();
       img.onload = () => {
         loadedCount++;
+        console.log(`✅ Background ${index + 1}: loaded successfully`);
         if (loadedCount === totalImages) {
           setImagesLoaded(true);
+          console.log('✅ All backgrounds loaded');
         }
       };
       img.onerror = () => {
         loadedCount++;
+        console.warn(`⚠️ Background ${index + 1}: failed to load, will use gradient`);
         if (loadedCount === totalImages) {
           setImagesLoaded(true);
+          console.log('✅ All backgrounds processed (some with errors)');
         }
       };
       img.src = imageSrc;
+    };
+
+    availableBackgrounds.forEach((imageSrc, index) => {
+      preloadImage(imageSrc, index);
     });
   }, []);
 
@@ -214,6 +231,7 @@ function MainApp() {
       setIsTransitioning(true);
       
       const nextIndex = (activeBackgroundIndex + 1) % availableBackgrounds.length;
+      console.log(`🔄 Switching from background ${activeBackgroundIndex + 1} to ${nextIndex + 1}`);
       
       setBackgroundOpacities(prev => 
         prev.map((opacity, index) => 
@@ -226,7 +244,7 @@ function MainApp() {
         setIsTransitioning(false);
       }, 2000);
       
-    }, 15000); // ← ИЗМЕНЕНО с 30000 на 15000 (15 секунд)
+    }, 15000); // 15 секунд
 
     return () => clearTimeout(changeTimer);
   }, [imagesLoaded, activeBackgroundIndex]);
@@ -243,10 +261,9 @@ function MainApp() {
     fontFamily: '"Segoe UI", sans-serif'
   };
 
-  // Стили фоновых слоев
+  // Стили фоновых слоев - БЕЗ АНИМАЦИЙ ДВИЖЕНИЯ
   const createBackgroundStyle = (backgroundSrc, index) => {
     const opacity = backgroundOpacities[index] || 0;
-    const animationClass = backgroundAnimations[index % backgroundAnimations.length];
     
     return {
       position: 'fixed',
@@ -268,7 +285,7 @@ function MainApp() {
       backgroundRepeat: 'no-repeat',
       backgroundAttachment: 'fixed',
       
-      // Плавный переход
+      // ТОЛЬКО плавный переход opacity - БЕЗ ДРУГИХ АНИМАЦИЙ
       opacity: opacity,
       transition: isTransitioning ? 'opacity 2.0s ease-in-out' : 'none',
       
@@ -290,15 +307,14 @@ function MainApp() {
   return (
     <ErrorBoundary>
       <div className="main-app-container" style={mainContainerStyle}>
-        {/* ===== ФОНОВЫЕ СЛОИ ===== */}
+        {/* ===== ФОНОВЫЕ СЛОИ БЕЗ АНИМАЦИЙ ДВИЖЕНИЯ ===== */}
         {availableBackgrounds.map((backgroundSrc, index) => {
-          const animationClass = backgroundAnimations[index % backgroundAnimations.length];
           const opacity = backgroundOpacities[index] || 0;
           
           return (
             <div
               key={`background-${index}`}
-              className={`background-layer ${opacity > 0 && !isTransitioning ? animationClass : ''} ${isTransitioning ? 'transitioning' : ''} ${opacity > 0 ? 'active' : ''}`}
+              className={`background-layer ${isTransitioning ? 'transitioning' : ''} ${opacity > 0 ? 'active' : ''}`}
               style={createBackgroundStyle(backgroundSrc, index)}
             />
           );

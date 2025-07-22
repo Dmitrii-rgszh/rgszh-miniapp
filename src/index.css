@@ -1,125 +1,87 @@
-/* index.css - ОБНОВЛЕННАЯ ВЕРСИЯ с полной поддержкой Safe Area */
+/* ============================================================================
+   index.css - ГЛОБАЛЬНЫЕ СТИЛИ + ПОЛНОЭКРАННЫЙ РЕЖИМ
+   ----------------------------------------------------------------------------
+   ✅ Segoe UI шрифты
+   ✅ Корпоративные цвета
+   ✅ Убрана белая полоса сверху
+   ✅ Поддержка всех браузеров и устройств
+   ============================================================================ */
 
-/* ===== RESET И ГЛОБАЛЬНЫЕ СТИЛИ ===== */
+/* ======================================
+   СБРОС И БАЗОВЫЕ СТИЛИ
+   ====================================== */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-/* ===== ПОЛНОЕ ПОКРЫТИЕ SAFE AREA ===== */
+/* ПОЛНОЭКРАННЫЙ РЕЖИМ - УБИРАЕМ БЕЛУЮ ПОЛОСУ */
 html {
   width: 100%;
   height: 100%;
-  /* ✅ Фон покрывает всю область включая Safe Area */
-  background: transparent;
+  /* Поддержка iOS Safari */
+  height: -webkit-fill-available;
+  overflow: hidden;
+  background-color: #B40037; /* Корпоративный цвет вместо белого */
   
-  /* ✅ Поддержка Safe Area для всех браузеров */
-  padding-top: env(safe-area-inset-top, 0px);
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-  padding-left: env(safe-area-inset-left, 0px);
-  padding-right: env(safe-area-inset-right, 0px);
+  /* Отключаем скролл и зум */
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  touch-action: manipulation;
   
-  /* ✅ Альтернативная поддержка для старых браузеров */
-  padding-top: constant(safe-area-inset-top, 0px);
-  padding-bottom: constant(safe-area-inset-bottom, 0px);
-  padding-left: constant(safe-area-inset-left, 0px);
-  padding-right: constant(safe-area-inset-right, 0px);
+  /* Фиксированный размер шрифта для отключения зума на iOS */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
-  margin: 0;
-  padding: 0;
   width: 100%;
   height: 100%;
-  background: transparent;
+  height: -webkit-fill-available; /* iOS Safari */
+  overflow: hidden;
+  background-color: #B40037; /* Корпоративный цвет */
   
-  /* ✅ Основной шрифт */
-  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
+  /* Шрифт по умолчанию */
+  font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, "Roboto", "Oxygen", "Ubuntu", "Cantarell", sans-serif;
+  font-weight: 400;
+  line-height: 1.5;
+  color: white;
   
-  /* ✅ Отключаем overscroll и zoom на мобильных */
-  overscroll-behavior: none;
-  -webkit-overflow-scrolling: touch;
-  touch-action: manipulation;
-  
-  /* ✅ Отключаем выделение текста */
-  -webkit-touch-callout: none;
+  /* Отключаем выделение */
   -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
   user-select: none;
   
-  /* ✅ Сглаживание шрифтов */
+  /* Сглаживание шрифтов */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ===== ROOT КОНТЕЙНЕР ===== */
+/* КОРНЕВОЙ ЭЛЕМЕНТ REACT */
 #root {
-  width: 100vw;
-  height: 100vh;
-  margin: 0;
-  padding: 0;
-  background: transparent;
-  overflow: hidden;
-  position: relative;
-}
-
-/* ===== ГЛОБАЛЬНЫЕ CSS ПЕРЕМЕННЫЕ ДЛЯ SAFE AREA ===== */
-:root {
-  --safe-area-top: env(safe-area-inset-top, 0px);
-  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
-  --safe-area-left: env(safe-area-inset-left, 0px);
-  --safe-area-right: env(safe-area-inset-right, 0px);
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
   
-  /* ✅ Корпоративные цвета */
-  --color-red-primary: rgb(180, 0, 55);
-  --color-red-secondary: rgb(153, 0, 55);
-  --color-gray-primary: rgb(152, 164, 174);
-  --color-gray-secondary: rgb(118, 143, 146);
-  --color-blue-primary: rgb(0, 40, 130);
-  --color-blue-secondary: rgb(0, 32, 104);
+  /* Динамическая высота viewport для мобильных */
+  height: 100dvh !important;
+  height: calc(var(--vh, 1vh) * 100) !important;
+  
+  overflow: hidden !important;
+  background-color: #B40037 !important;
 }
 
-/* ===== УТИЛИТАРНЫЕ КЛАССЫ ДЛЯ SAFE AREA ===== */
-.safe-top { 
-  margin-top: var(--safe-area-top) !important; 
-}
-.safe-top-padding { 
-  padding-top: var(--safe-area-top) !important; 
-}
-.safe-bottom { 
-  margin-bottom: var(--safe-area-bottom) !important; 
-}
-.safe-bottom-padding { 
-  padding-bottom: var(--safe-area-bottom) !important; 
-}
-.safe-left { 
-  margin-left: var(--safe-area-left) !important; 
-}
-.safe-left-padding { 
-  padding-left: var(--safe-area-left) !important; 
-}
-.safe-right { 
-  margin-right: var(--safe-area-right) !important; 
-}
-.safe-right-padding { 
-  padding-right: var(--safe-area-right) !important; 
-}
-
-/* ===== КРОССБРАУЗЕРНАЯ ПОДДЕРЖКА SAFE AREA ===== */
-
-/* Safari iOS */
+/* ПОДДЕРЖКА SAFE AREA (вырезы экрана iPhone X+) */
 @supports (padding: max(0px)) {
-  html {
-    padding-top: max(env(safe-area-inset-top, 0px), 0px) !important;
-    padding-bottom: max(env(safe-area-inset-bottom, 0px), 0px) !important;
-    padding-left: max(env(safe-area-inset-left, 0px), 0px) !important;
-    padding-right: max(env(safe-area-inset-right, 0px), 0px) !important;
-  }
-}
-
-/* Chrome Android */
-@supports (padding: env(safe-area-inset-top)) {
-  body {
+  #root {
     padding-top: env(safe-area-inset-top, 0px) !important;
     padding-bottom: env(safe-area-inset-bottom, 0px) !important;
     padding-left: env(safe-area-inset-left, 0px) !important;
@@ -127,48 +89,82 @@ body {
   }
 }
 
-/* Старые браузеры с constant() */
-@supports (padding: constant(safe-area-inset-top)) {
-  html {
-    padding-top: constant(safe-area-inset-top) !important;
-    padding-bottom: constant(safe-area-inset-bottom) !important;
-    padding-left: constant(safe-area-inset-left) !important;
-    padding-right: constant(safe-area-inset-right) !important;
-  }
+/* ======================================
+   ТИПОГРАФИКА - SEGOE UI
+   ====================================== */
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Segoe UI", sans-serif;
+  font-weight: bold;
+  margin: 0;
+  color: white;
 }
 
-/* ===== СПЕЦИАЛЬНЫЕ СТИЛИ ДЛЯ TELEGRAM MINIAPP ===== */
-
-/* Telegram WebApp на iOS */
-@media screen and (device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) {
-  html {
-    padding-top: env(safe-area-inset-top, 50px) !important;
-  }
+p, span, div, label, input, textarea, button {
+  font-family: "Segoe UI", sans-serif;
+  font-weight: 400;
+  color: white;
 }
 
-/* Telegram WebApp на Android */
-@media screen and (min-device-width: 360px) and (max-device-width: 430px) {
-  html {
-    padding-top: env(safe-area-inset-top, 24px) !important;
-  }
+/* ======================================
+   КОРПОРАТИВНЫЕ ЦВЕТА (CSS ПЕРЕМЕННЫЕ)
+   ====================================== */
+:root {
+  /* Красные оттенки */
+  --color-red-primary: rgb(180, 0, 55);
+  --color-red-secondary: rgb(153, 0, 55);
+  
+  /* Серые оттенки */
+  --color-gray-primary: rgb(152, 164, 174);
+  --color-gray-secondary: rgb(118, 143, 146);
+  
+  /* Синие оттенки */
+  --color-blue-primary: rgb(0, 40, 130);
+  --color-blue-secondary: rgb(0, 32, 104);
+  
+  /* Белый */
+  --color-white: rgb(255, 255, 255);
+  
+  /* Динамическая высота viewport */
+  --vh: 1vh;
 }
 
-/* ===== ОТКЛЮЧЕНИЕ НЕЖЕЛАТЕЛЬНОГО ПОВЕДЕНИЯ ===== */
+/* ======================================
+   ОТКЛЮЧЕНИЕ НЕЖЕЛАТЕЛЬНЫХ ЭФФЕКТОВ
+   ====================================== */
 
-/* Отключаем выделение текста глобально */
+/* Убираем голубой outline везде */
+*:focus {
+  outline: none !important;
+  outline-width: 0 !important;
+  outline-color: transparent !important;
+  box-shadow: none !important;
+}
+
+*:focus-visible {
+  outline: none !important;
+}
+
+/* Убираем выделение при тапе */
 * {
+  -webkit-tap-highlight-color: transparent !important;
   -webkit-touch-callout: none !important;
-  -webkit-user-select: none !important;
-  user-select: none !important;
 }
 
-/* Разрешаем выделение только для input полей */
-input, textarea {
-  -webkit-user-select: text !important;
-  user-select: text !important;
+/* Специально для форм */
+input, textarea, select, button {
+  -webkit-tap-highlight-color: transparent !important;
+  -webkit-touch-callout: none !important;
 }
 
-/* Отключаем zoom при фокусе на input на iOS */
+input:focus,
+textarea:focus,
+select:focus,
+button:focus {
+  outline: none !important;
+  outline-offset: 0 !important;
+}
+
+/* Отключаем автозум на iOS при фокусе на input */
 input[type="text"], 
 input[type="email"], 
 input[type="tel"], 
@@ -176,14 +172,9 @@ textarea {
   font-size: 16px !important;
 }
 
-/* Отключаем автофокус на мобильных */
-@media (pointer: coarse) {
-  input, textarea, select {
-    font-size: 16px !important;
-  }
-}
-
-/* ===== СКРОЛЛБАР СТИЛИ (для элементов с overflow) ===== */
+/* ======================================
+   СКРОЛЛБАРЫ (для элементов с overflow)
+   ====================================== */
 ::-webkit-scrollbar {
   width: 4px;
 }
@@ -201,47 +192,94 @@ textarea {
   background: rgba(255, 255, 255, 0.5);
 }
 
-/* ======================================
-   ГЛОБАЛЬНОЕ УДАЛЕНИЕ ГОЛУБОГО OUTLINE
-   ====================================== */
+/* Firefox */
 * {
-  -webkit-tap-highlight-color: transparent !important;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) rgba(255, 255, 255, 0.1);
 }
 
-*:focus {
-  outline: none !important;
-  outline-width: 0 !important;
-  outline-color: transparent !important;
-  box-shadow: none !important;
+/* ======================================
+   СПЕЦИАЛЬНЫЕ СТИЛИ ДЛЯ МОБИЛЬНЫХ
+   ====================================== */
+
+/* Отключаем pull-to-refresh */
+body {
+  overscroll-behavior: none;
+  overscroll-behavior-y: none;
 }
 
-*:focus-visible {
-  outline: none !important;
+/* Отключаем selection на мобильных */
+@media (pointer: coarse) {
+  * {
+    -webkit-user-select: none !important;
+    user-select: none !important;
+  }
+  
+  /* Но разрешаем в текстовых полях */
+  input, textarea {
+    -webkit-user-select: text !important;
+    user-select: text !important;
+  }
 }
 
-/* Специально для input элементов */
-input:focus,
-input:focus-visible,
-textarea:focus,
-textarea:focus-visible,
-select:focus,
-select:focus-visible {
-  outline: none !important;
-  outline-offset: 0 !important;
+/* ======================================
+   УТИЛИТАРНЫЕ КЛАССЫ
+   ====================================== */
+
+/* Класс для разрешения выделения текста */
+.selectable {
+  -webkit-user-select: text !important;
+  user-select: text !important;
 }
 
-/* Для кнопок */
-button:focus,
-button:focus-visible {
-  outline: none !important;
+/* Скрытие элементов */
+.hidden {
+  display: none !important;
 }
 
-/* Убираем выделение при тапе на мобильных устройствах */
-input,
-textarea,
-button,
-select,
-a {
-  -webkit-tap-highlight-color: transparent !important;
-  -webkit-touch-callout: none !important;
+.invisible {
+  visibility: hidden !important;
 }
+
+/* Центрирование */
+.center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Полная ширина */
+.full-width {
+  width: 100% !important;
+}
+
+/* Полная высота */
+.full-height {
+  height: 100% !important;
+}
+
+/* ======================================
+   АНИМАЦИИ И ПЕРЕХОДЫ
+   ====================================== */
+.smooth-transition {
+  transition: all 0.3s ease;
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ======================================
+   ОТЛАДКА (уберите в production)
+   ====================================== */
+/* Uncomment for debugging layout issues */
+/*
+* {
+  outline: 1px solid red !important;
+}
+*/
