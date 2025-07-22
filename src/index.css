@@ -25,12 +25,12 @@ html {
   overflow: hidden;
   background-color: #B40037; /* Корпоративный цвет вместо белого */
   
-  /* Отключаем скролл и зум */
-  -webkit-touch-callout: none;
+  /* РАЗРЕШАЕМ touch и клики - убираем блокировки! */
+  /* -webkit-touch-callout: none;
   -webkit-user-select: none;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
-  touch-action: manipulation;
+  touch-action: manipulation; */
   
   /* Фиксированный размер шрифта для отключения зума на iOS */
   -webkit-text-size-adjust: 100%;
@@ -50,11 +50,11 @@ body {
   line-height: 1.5;
   color: white;
   
-  /* Отключаем выделение */
-  -webkit-user-select: none;
+  /* УБИРАЕМ глобальный user-select: none - он блокирует события! */
+  /* -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
-  user-select: none;
+  user-select: none; */
   
   /* Сглаживание шрифтов */
   -webkit-font-smoothing: antialiased;
@@ -78,13 +78,7 @@ body {
   overflow: hidden !important;
   background-color: #B40037 !important;
   
-  /* ВАЖНО: корневой контейнер не должен блокировать клики */
-  pointer-events: none !important;
-}
-
-/* Все прямые дочерние элементы #root должны разрешать клики */
-#root > * {
-  pointer-events: auto !important;
+  /* УБИРАЕМ pointer-events: none - пусть клики проходят нормально */
 }
 
 /* ПОДДЕРЖКА SAFE AREA (вырезы экрана iPhone X+) */
@@ -137,47 +131,53 @@ p, span, div, label, input, textarea, button {
 }
 
 /* ======================================
-   ОТКЛЮЧЕНИЕ НЕЖЕЛАТЕЛЬНЫХ ЭФФЕКТОВ
+   ГЛОБАЛЬНЫЕ СТИЛИ ДЛЯ КНОПОК - ИСПРАВЛЕНИЕ КЛИКАБЕЛЬНОСТИ
    ====================================== */
 
-/* Убираем голубой outline везде */
-*:focus {
-  outline: none !important;
-  outline-width: 0 !important;
-  outline-color: transparent !important;
-  box-shadow: none !important;
+/* ВСЕ кнопки должны быть кликабельными */
+button,
+[role="button"],
+.btn,
+.btn-universal,
+.btn-primary,
+.btn-secondary,
+.button,
+input[type="button"],
+input[type="submit"],
+a {
+  /* КРИТИЧНО: разрешаем все интерактивные события */
+  -webkit-user-select: auto !important;
+  -moz-user-select: auto !important;
+  -ms-user-select: auto !important;
+  user-select: auto !important;
+  
+  /* КРИТИЧНО: разрешаем touch события */
+  -webkit-touch-callout: auto !important;
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  
+  /* Подсветка при тапе на мобильных */
+  -webkit-tap-highlight-color: rgba(255, 255, 255, 0.2) !important;
+  
+  /* Touch действия */
+  touch-action: manipulation !important;
+  
+  /* Убираем outline только после клика, но оставляем возможность фокуса */
+  outline: none;
 }
 
-*:focus-visible {
-  outline: none !important;
+/* Hover эффекты для кнопок */
+button:hover,
+[role="button"]:hover,
+.btn:hover {
+  opacity: 0.9 !important;
 }
 
-/* Убираем выделение при тапе */
-* {
-  -webkit-tap-highlight-color: transparent !important;
-  -webkit-touch-callout: none !important;
-}
-
-/* Специально для форм */
-input, textarea, select, button {
-  -webkit-tap-highlight-color: transparent !important;
-  -webkit-touch-callout: none !important;
-}
-
-input:focus,
-textarea:focus,
-select:focus,
-button:focus {
-  outline: none !important;
-  outline-offset: 0 !important;
-}
-
-/* Отключаем автозум на iOS при фокусе на input */
-input[type="text"], 
-input[type="email"], 
-input[type="tel"], 
-textarea {
-  font-size: 16px !important;
+/* Active состояние */
+button:active,
+[role="button"]:active,
+.btn:active {
+  transform: scale(0.98) !important;
 }
 
 /* ======================================
@@ -216,17 +216,25 @@ body {
   overscroll-behavior-y: none;
 }
 
-/* Отключаем selection на мобильных */
+/* Отключаем selection на мобильных - НО РАЗРЕШАЕМ НА ИНТЕРАКТИВНЫХ ЭЛЕМЕНТАХ */
 @media (pointer: coarse) {
   * {
     -webkit-user-select: none !important;
     user-select: none !important;
   }
   
-  /* Но разрешаем в текстовых полях */
-  input, textarea {
-    -webkit-user-select: text !important;
-    user-select: text !important;
+  /* ВАЖНО: Разрешаем интерактивность на кнопках и ссылках */
+  button, 
+  [role="button"],
+  a,
+  input, 
+  textarea,
+  select {
+    -webkit-user-select: auto !important;
+    user-select: auto !important;
+    -webkit-touch-callout: auto !important;
+    pointer-events: auto !important;
+    cursor: pointer !important;
   }
 }
 

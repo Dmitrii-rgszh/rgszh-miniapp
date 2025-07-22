@@ -1,11 +1,6 @@
-// MainApp.js - ЧИСТАЯ ВЕРСИЯ БЕЗ АНИМАЦИЙ ДВИЖЕНИЯ
-// ✅ УБРАН BrowserRouter (перенесен в index.js)
-// ✅ ТОЛЬКО плавная смена фонов без движения
-// ✅ Смена каждые 15 секунд
-// ✅ ТОЛЬКО WebP файлы
-
+// MainApp.js - С ТЕСТОВОЙ КНОПКОЙ ДЛЯ ДИАГНОСТИКИ
 import React, { useState, useEffect } from 'react';
-import { Routes, Route, useNavigate } from 'react-router-dom'; // ← БЕЗ BrowserRouter
+import { Routes, Route, useNavigate } from 'react-router-dom';
 
 // Импорты компонентов
 import WelcomePage     from './WelcomePage';
@@ -18,6 +13,9 @@ import FeedbackPage    from './FeedbackPage';
 import JustincasePage  from './JustincasePage';
 import CareFuturePage  from './CareFuturePage';
 import MarzaPollPage   from './MarzaPollPage';
+
+// ===== ИМПОРТ ТЕСТОВОГО КОМПОНЕНТА ===== 
+import TestButton from './TestButton'; // ← ДОБАВЬТЕ ЭТУ СТРОКУ
 
 // ===== ИМПОРТ ФОНОВЫХ ИЗОБРАЖЕНИЙ - ТОЛЬКО WEBP =====
 let backgroundImage1, backgroundImage2, backgroundImage3, backgroundImage4;
@@ -223,7 +221,127 @@ function MainApp() {
     };
   }, []);
 
-  // ===== СМЕНА ФОНОВ КАЖДЫЕ 15 СЕКУНД =====
+// ===== ГЛОБАЛЬНОЕ ИСПРАВЛЕНИЕ КЛИКАБЕЛЬНОСТИ КНОПОК =====
+useEffect(() => {
+  const fixAllButtons = () => {
+    console.log('🔧 MainApp: Запуск глобального исправления кнопок...');
+    
+    // Находим ВСЕ кнопки на странице
+    const allButtons = document.querySelectorAll('button, [role="button"], .btn, .btn-universal, input[type="button"], input[type="submit"]');
+    
+    console.log(`🔧 MainApp: Найдено ${allButtons.length} кнопок для исправления`);
+    
+    allButtons.forEach((button, index) => {
+      // Проверяем, уже ли исправлена эта кнопка
+      if (button.dataset.globalFixed) return;
+      
+      // Добавляем принудительные стили
+      Object.assign(button.style, {
+        userSelect: 'auto',
+        WebkitUserSelect: 'auto',
+        pointerEvents: 'auto',
+        cursor: 'pointer',
+        touchAction: 'manipulation',
+        WebkitTouchCallout: 'auto',
+        WebkitTapHighlightColor: 'rgba(255, 255, 255, 0.2)'
+      });
+      
+      // Сохраняем оригинальные обработчики
+      const originalOnClick = button.onclick;
+      const originalOnTouchEnd = button.ontouchend;
+      
+      // Добавляем универсальный обработчик клика
+      const universalClickHandler = (e) => {
+        console.log('🔧 MainApp: Универсальный клик по кнопке:', button.textContent?.trim().substring(0, 20));
+        
+        // Вызываем оригинальный обработчик если есть
+        if (originalOnClick && typeof originalOnClick === 'function') {
+          originalOnClick.call(button, e);
+        }
+        
+        // Если есть React обработчики, пытаемся их найти
+        const reactProps = Object.keys(button).find(key => key.startsWith('__reactProps') || key.startsWith('__reactInternalInstance'));
+        if (reactProps && button[reactProps]?.onClick) {
+          console.log('🔧 MainApp: Вызываем React onClick');
+          button[reactProps].onClick(e);
+        }
+      };
+      
+      // Добавляем touch обработчик
+      const touchHandler = (e) => {
+        console.log('🔧 MainApp: Touch событие на кнопке:', button.textContent?.trim().substring(0, 20));
+        
+        // Вызываем оригинальный touch обработчик если есть
+        if (originalOnTouchEnd && typeof originalOnTouchEnd === 'function') {
+          originalOnTouchEnd.call(button, e);
+          return; // Если есть оригинальный, не дублируем
+        }
+        
+        // Иначе эмулируем клик
+        setTimeout(() => {
+          button.click();
+        }, 50);
+      };
+      
+      // Добавляем обработчики событий
+      button.addEventListener('click', universalClickHandler, { passive: false });
+      button.addEventListener('touchend', touchHandler, { passive: false });
+      button.addEventListener('pointerup', universalClickHandler, { passive: false });
+      
+      // Помечаем кнопку как исправленную
+      button.dataset.globalFixed = 'true';
+      
+      console.log(`🔧 MainApp: Кнопка ${index + 1} исправлена: "${button.textContent?.trim().substring(0, 30)}"`);
+    });
+  };
+  
+  // Исправляем кнопки при загрузке
+  const initialTimer = setTimeout(fixAllButtons, 500);
+  
+  // Создаем MutationObserver для отслеживания новых кнопок
+  const observer = new MutationObserver((mutations) => {
+    let hasNewButtons = false;
+    
+    mutations.forEach((mutation) => {
+      mutation.addedNodes.forEach((node) => {
+        if (node.nodeType === 1) { // Element node
+          // Проверяем, если добавленный элемент - кнопка или содержит кнопки
+          if (node.matches?.('button, [role="button"], .btn, .btn-universal, input[type="button"], input[type="submit"]')) {
+            hasNewButtons = true;
+          } else if (node.querySelectorAll) {
+            const newButtons = node.querySelectorAll('button, [role="button"], .btn, .btn-universal, input[type="button"], input[type="submit"]');
+            if (newButtons.length > 0) {
+              hasNewButtons = true;
+            }
+          }
+        }
+      });
+    });
+    
+    if (hasNewButtons) {
+      console.log('🔧 MainApp: Обнаружены новые кнопки, применяем исправления...');
+      setTimeout(fixAllButtons, 100);
+    }
+  });
+  
+  // Запускаем наблюдение
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true
+  });
+  
+  // Периодическое исправление (на всякий случай)
+  const periodicTimer = setInterval(() => {
+    fixAllButtons();
+  }, 5000); // Каждые 5 секунд
+  
+  // Cleanup
+  return () => {
+    clearTimeout(initialTimer);
+    clearInterval(periodicTimer);
+    observer.disconnect();
+  };
+}, []);
   useEffect(() => {
     if (!imagesLoaded || availableBackgrounds.length <= 1) return;
 
@@ -273,7 +391,7 @@ function MainApp() {
       bottom: 0,
       width: '100vw',
       height: '100vh',
-      zIndex: opacity > 0 ? -1 : -2, // ← ИСПРАВЛЕНО: отрицательные z-index для фонов
+      zIndex: -1, // ← УПРОЩЕНО: все фоны имеют zIndex -1
       
       // Фон: изображение или корпоративный градиент
       backgroundImage: backgroundSrc 
@@ -299,10 +417,9 @@ function MainApp() {
   // Контейнер контента - минимальные стили
   const contentContainerStyle = {
     position: 'relative',
-    zIndex: 100, // ← ИСПРАВЛЕНО: высокий z-index для контента
+    zIndex: 1, // ← УПРОЩЕНО: просто положительный z-index
     width: '100%',
-    height: '100%',
-    pointerEvents: 'auto' // ← ВАЖНО: разрешаем клики на контенте
+    height: '100%'
   };
 
   return (
@@ -340,6 +457,9 @@ function MainApp() {
             </Routes>
           </div>
         </AutoNavigator>
+        
+        {/* ===== ТЕСТОВАЯ КНОПКА ДЛЯ ДИАГНОСТИКИ ===== */}
+        <TestButton />
       </div>
     </ErrorBoundary>
   );
