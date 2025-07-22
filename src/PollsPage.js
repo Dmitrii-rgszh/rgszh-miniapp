@@ -1,7 +1,9 @@
-// PollsPage.js - С УНИФИЦИРОВАННЫМИ СТИЛЯМИ
-// ✅ Использует containers.css для позиционирования
-// ✅ Использует buttons.css для стилей кнопок
-// ✅ Минимум инлайн стилей
+// PollsPage.js - С ИСПРАВЛЕННОЙ ЛОГИКОЙ КНОПОК ИЗ MainMenu.js
+// ✅ Добавлен сброс состояния при монтировании
+// ✅ Добавлены touch обработчики 
+// ✅ Добавлены принудительные стили для кликабельности
+// ✅ Добавлено полное логирование для отладки
+// ✅ Добавлены все обработчики событий
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -24,7 +26,7 @@ export default function PollsPage() {
   const [logoAnimated, setLogoAnimated] = useState(false);
   const [buttonsAnimated, setButtonsAnimated] = useState(false);
   const [homeAnimated, setHomeAnimated] = useState(false);
-  const [isExiting, setIsExiting] = useState(false);
+  const [isExiting, setIsExiting] = useState(false); // ← ВАЖНО: false по умолчанию
   const [qrData, setQrData] = useState({ open: false, path: '', label: '' });
 
   // ===== ДАННЫЕ ОПРОСОВ =====
@@ -33,6 +35,12 @@ export default function PollsPage() {
     { path: '/feedback', label: 'Обратная связь' },
     { path: '/marza-poll', label: 'Маржа продаж' },
   ];
+
+  // ===== СБРОС СОСТОЯНИЯ ПРИ МОНТИРОВАНИИ (КАК В MainMenu.js) =====
+  useEffect(() => {
+    console.log('🔄 PollsPage: Инициализация, сбрасываем isExiting');
+    setIsExiting(false);
+  }, []);
 
   // ===== АНИМАЦИЯ ВХОДА =====
   useEffect(() => {
@@ -54,37 +62,80 @@ export default function PollsPage() {
     };
   }, []);
 
-  // ===== ОБРАБОТЧИКИ =====
+  // ===== ОБРАБОТКА КЛИКА ПО ОПРОСУ (УЛУЧШЕННАЯ ЛОГИКА) =====
   const handleClick = (path) => {
-    if (isExiting) return;
+    console.log('🔘 PollsPage: handleClick вызван, path:', path);
+    console.log('🔘 PollsPage: isExiting текущее значение:', isExiting);
     
+    if (isExiting) {
+      console.log('❌ PollsPage: Клик заблокирован - isExiting=true');
+      return;
+    }
+    
+    console.log('✅ PollsPage: Клик разрешен, начинаем навигацию');
     setIsExiting(true);
     
     if (logoRef.current) {
       logoRef.current.classList.add('animate-logo-exit');
     }
     
-    setTimeout(() => navigate(path), 800);
+    setTimeout(() => {
+      console.log('🔄 PollsPage: Навигация к:', path);
+      navigate(path);
+    }, 800);
   };
 
+  // ===== ОБРАБОТКА КЛИКА ПО КНОПКЕ ДОМОЙ (УЛУЧШЕННАЯ ЛОГИКА) =====
   const handleHomeClick = () => {
-    if (isExiting) return;
+    console.log('🔘 PollsPage: handleHomeClick вызван');
+    console.log('🔘 PollsPage: isExiting текущее значение:', isExiting);
     
+    if (isExiting) {
+      console.log('❌ PollsPage: Клик домой заблокирован - isExiting=true');
+      return;
+    }
+    
+    console.log('✅ PollsPage: Клик домой разрешен, начинаем навигацию');
     setIsExiting(true);
     
     if (logoRef.current) {
       logoRef.current.classList.add('animate-logo-exit');
     }
     
-    setTimeout(() => navigate('/main-menu'), 800);
+    setTimeout(() => {
+      console.log('🔄 PollsPage: Навигация к главному меню');
+      navigate('/main-menu');
+    }, 800);
   };
 
+  // ===== TOUCH ОБРАБОТЧИКИ (КАК В MainMenu.js) =====
+  const handleTouchStart = (e) => {
+    console.log('👆 PollsPage: TouchStart');
+  };
+
+  const handleTouchEnd = (e, path) => {
+    console.log('👆 PollsPage: TouchEnd, path:', path);
+    e.preventDefault(); // Предотвращаем двойной вызов
+    handleClick(path);
+  };
+
+  const handleHomeTouchEnd = (e) => {
+    console.log('👆 PollsPage: Home TouchEnd');
+    e.preventDefault(); // Предотвращаем двойной вызов
+    handleHomeClick();
+  };
+
+  // ===== QR ОБРАБОТЧИКИ =====
   const handleQrClick = (e, poll) => {
+    console.log('🔘 PollsPage: QR клик для:', poll.label);
     e.stopPropagation();
     setQrData({ open: true, path: poll.path, label: poll.label });
   };
 
-  const closeQr = () => setQrData({ open: false, path: '', label: '' });
+  const closeQr = () => {
+    console.log('🔘 PollsPage: Закрытие QR модального окна');
+    setQrData({ open: false, path: '', label: '' });
+  };
 
   // ===== RIPPLE ЭФФЕКТ =====
   const createRipple = (event) => {
@@ -132,6 +183,7 @@ export default function PollsPage() {
     isExiting ? 'animate-out' : ''
   ].filter(Boolean).join(' ');
 
+  // ИСПРАВЛЕННАЯ ФУНКЦИЯ КЛАССОВ ДЛЯ КНОПОК ОПРОСОВ (КАК В MainMenu.js)
   const getPollButtonClasses = (index) => [
     'btn-universal',
     'btn-primary',
@@ -139,7 +191,8 @@ export default function PollsPage() {
     'btn-shadow',
     'btn-fullwidth',
     buttonsAnimated ? 'button-animated' : 'button-hidden',
-    isExiting ? 'button-exiting' : ''
+    // ТОЛЬКО добавляем button-exiting если кнопки уже анимированы И идет выход
+    (buttonsAnimated && isExiting) ? 'button-exiting' : ''
   ].filter(Boolean).join(' ');
 
   const getQrButtonClasses = () => [
@@ -148,6 +201,16 @@ export default function PollsPage() {
 
   // QR URL
   const qrUrl = qrData.path ? `${window.location.origin}${qrData.path}` : '';
+
+  // ===== ОТЛАДОЧНАЯ ИНФОРМАЦИЯ (КАК В MainMenu.js) =====
+  useEffect(() => {
+    console.log('🔍 PollsPage: Состояние изменилось:', {
+      logoAnimated,
+      buttonsAnimated,
+      homeAnimated,
+      isExiting
+    });
+  }, [logoAnimated, buttonsAnimated, homeAnimated, isExiting]);
 
   return (
     <div className={getContainerClasses()}>
@@ -163,19 +226,33 @@ export default function PollsPage() {
         />
       </div>
 
-      {/* ===== КНОПКА ДОМОЙ ===== */}
+      {/* ===== КНОПКА ДОМОЙ С ПОЛНОЙ ПОДДЕРЖКОЙ СОБЫТИЙ ===== */}
       <button
         ref={homeRef}
-        onClick={handleHomeClick}
+        onClick={(e) => {
+          console.log('🖱️ PollsPage: Home onClick обработчик вызван');
+          handleHomeClick();
+        }}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleHomeTouchEnd}
+        onPointerDown={() => console.log('👉 PollsPage: Home PointerDown')}
         className={getHomeButtonClasses()}
         title="Назад в главное меню"
+        style={{
+          // ПРИНУДИТЕЛЬНЫЕ СТИЛИ для обеспечения кликабельности (КАК В MainMenu.js)
+          userSelect: 'auto',
+          WebkitUserSelect: 'auto',
+          pointerEvents: 'auto',
+          cursor: 'pointer',
+          touchAction: 'manipulation'
+        }}
       >
         <svg viewBox="0 0 24 24">
           <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
         </svg>
       </button>
 
-      {/* ===== КНОПКИ ОПРОСОВ ===== */}
+      {/* ===== КНОПКИ ОПРОСОВ С ПОЛНОЙ ПОДДЕРЖКОЙ СОБЫТИЙ ===== */}
       <div className={getButtonContainerClasses()}>
         {polls.map((poll, index) => (
           <div key={poll.path} className={`poll-row ${buttonsAnimated ? 'animated' : ''}`}>
@@ -184,8 +261,23 @@ export default function PollsPage() {
               className={getPollButtonClasses(index)}
               data-index={index}
               onClick={(e) => {
+                console.log('🖱️ PollsPage: onClick обработчик вызван', poll.label);
                 createRipple(e);
                 handleClick(poll.path);
+              }}
+              onTouchStart={handleTouchStart}
+              onTouchEnd={(e) => {
+                e.preventDefault(); // Предотвращаем двойной вызов
+                handleTouchEnd(e, poll.path);
+              }}
+              onPointerDown={() => console.log('👉 PollsPage: PointerDown', poll.label)}
+              style={{
+                // ПРИНУДИТЕЛЬНЫЕ СТИЛИ для обеспечения кликабельности (КАК В MainMenu.js)
+                userSelect: 'auto',
+                WebkitUserSelect: 'auto',
+                pointerEvents: 'auto',
+                cursor: 'pointer',
+                touchAction: 'manipulation'
               }}
             >
               {poll.label}
@@ -196,6 +288,14 @@ export default function PollsPage() {
               onClick={(e) => handleQrClick(e, poll)}
               className={getQrButtonClasses()}
               title={`QR-код для ${poll.label}`}
+              style={{
+                // ПРИНУДИТЕЛЬНЫЕ СТИЛИ для обеспечения кликабельности
+                userSelect: 'auto',
+                WebkitUserSelect: 'auto',
+                pointerEvents: 'auto',
+                cursor: 'pointer',
+                touchAction: 'manipulation'
+              }}
             >
               <svg 
                 xmlns="http://www.w3.org/2000/svg" 
@@ -229,6 +329,13 @@ export default function PollsPage() {
               onClick={closeQr}
               className="modal-close"
               aria-label="Закрыть"
+              style={{
+                userSelect: 'auto',
+                WebkitUserSelect: 'auto',
+                pointerEvents: 'auto',
+                cursor: 'pointer',
+                touchAction: 'manipulation'
+              }}
             >
               ×
             </button>
@@ -270,12 +377,37 @@ export default function PollsPage() {
                 });
               }}
               className="btn-universal btn-primary btn-medium"
+              style={{
+                userSelect: 'auto',
+                WebkitUserSelect: 'auto',
+                pointerEvents: 'auto',
+                cursor: 'pointer',
+                touchAction: 'manipulation'
+              }}
             >
               Скопировать ссылку
             </button>
           </div>
         </div>
       )}
+
+      {/* ОТЛАДОЧНАЯ ИНФОРМАЦИЯ (КАК В MainMenu.js) */}
+      <div style={{
+        position: 'fixed',
+        bottom: '20px',
+        left: '20px',
+        background: 'black',
+        color: 'yellow',
+        padding: '10px',
+        fontSize: '12px',
+        zIndex: 9999,
+        borderRadius: '4px'
+      }}>
+        <div>isExiting: {String(isExiting)}</div>
+        <div>buttonsAnimated: {String(buttonsAnimated)}</div>
+        <div>homeAnimated: {String(homeAnimated)}</div>
+        <div>logoAnimated: {String(logoAnimated)}</div>
+      </div>
     </div>
   );
 }
