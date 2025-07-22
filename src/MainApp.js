@@ -1,7 +1,7 @@
-// MainApp.js - ПРОСТАЯ ВЕРСИЯ С WEBP
-// ✅ Один размер WebP для всех устройств
-// ✅ Автоматический fallback на PNG
-// ✅ Простая и быстрая загрузка
+// MainApp.js - ИСПРАВЛЕННАЯ ВЕРСИЯ
+// ✅ Файлы загружаются из public/backgrounds/
+// ✅ Исправлено предупреждение о неиспользуемой переменной
+// ✅ WebP с автоматическим fallback на PNG
 
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
@@ -75,7 +75,6 @@ function AutoNavigator({ children }) {
 
 // ===== КОМПОНЕНТ УПРАВЛЕНИЯ ФОНАМИ =====
 function BackgroundManager() {
-  const [currentIndex, setCurrentIndex] = useState(0);
   const [isLoaded, setIsLoaded] = useState(false);
   const { backgrounds, changeInterval, transitionDuration } = BACKGROUNDS_CONFIG;
 
@@ -98,7 +97,8 @@ function BackgroundManager() {
   useEffect(() => {
     const isWebP = document.documentElement.classList.contains('webp');
     const extension = isWebP ? '.webp' : '.png';
-    const imagePath = `/components/background/background1${extension}`;
+    // Исправленный путь для public папки
+    const imagePath = `/backgrounds/background1${extension}`;
     
     const testImg = new Image();
     
@@ -130,44 +130,44 @@ function BackgroundManager() {
   useEffect(() => {
     if (!isLoaded || backgrounds.length <= 1) return;
 
+    let currentIndex = 0; // Локальная переменная вместо state
+
     const interval = setInterval(() => {
-      setCurrentIndex(prevIndex => {
-        const nextIndex = (prevIndex + 1) % backgrounds.length;
-        
-        // Обновляем классы для анимации
-        const layers = document.querySelectorAll('.background-layer');
-        
-        // Убираем active у всех
-        layers.forEach(layer => {
-          layer.classList.remove('active', 'transitioning');
-        });
-        
-        // Текущий слой остается видимым во время перехода
-        if (layers[prevIndex]) {
-          layers[prevIndex].classList.add('active');
-        }
-        
-        // Новый слой начинает появляться
-        if (layers[nextIndex]) {
-          layers[nextIndex].classList.add('transitioning');
-          
-          // Через небольшую задержку делаем его активным
-          setTimeout(() => {
-            layers[nextIndex].classList.add('active');
-            layers[nextIndex].classList.remove('transitioning');
-            
-            // Убираем старый слой после завершения анимации
-            setTimeout(() => {
-              if (layers[prevIndex]) {
-                layers[prevIndex].classList.remove('active');
-              }
-            }, transitionDuration);
-          }, 50);
-        }
-        
-        console.log(`🔄 Смена фона: ${prevIndex + 1} → ${nextIndex + 1}`);
-        return nextIndex;
+      const prevIndex = currentIndex;
+      currentIndex = (currentIndex + 1) % backgrounds.length;
+      
+      // Обновляем классы для анимации
+      const layers = document.querySelectorAll('.background-layer');
+      
+      // Убираем active у всех
+      layers.forEach(layer => {
+        layer.classList.remove('active', 'transitioning');
       });
+      
+      // Текущий слой остается видимым во время перехода
+      if (layers[prevIndex]) {
+        layers[prevIndex].classList.add('active');
+      }
+      
+      // Новый слой начинает появляться
+      if (layers[currentIndex]) {
+        layers[currentIndex].classList.add('transitioning');
+        
+        // Через небольшую задержку делаем его активным
+        setTimeout(() => {
+          layers[currentIndex].classList.add('active');
+          layers[currentIndex].classList.remove('transitioning');
+          
+          // Убираем старый слой после завершения анимации
+          setTimeout(() => {
+            if (layers[prevIndex]) {
+              layers[prevIndex].classList.remove('active');
+            }
+          }, transitionDuration);
+        }, 50);
+      }
+      
+      console.log(`🔄 Смена фона: ${prevIndex + 1} → ${currentIndex + 1}`);
     }, changeInterval);
 
     return () => clearInterval(interval);

@@ -1846,3 +1846,88 @@ AttributeError: '_io._WindowsConsoleIO' object has no attribute 'buffer'
 2025-07-21 18:22:37,559 - server - INFO - 🔍 Incoming request: GET /static/css/main.6182b823.css
 2025-07-21 18:22:37,561 - server - INFO - 🔍 Incoming request: GET /static/js/main.e8d4518d.js
 2025-07-21 18:22:38,953 - server - INFO - 🔍 Incoming request: GET /static/css/main.6182b823.css
+2025-07-21 19:52:32,791 - server - INFO - Socket.IO: running without Redis message queue
+2025-07-21 19:52:32,793 - db_saver - INFO - Использую базу данных: postgresql://postgres:secret@176.109.110.217:1112/postgres
+2025-07-21 19:52:39,434 - db_saver - INFO - Таблицы созданы (или уже существуют)
+2025-07-21 19:52:42,259 - care_future_models - INFO - БД калькулятора НСЖ инициализирована: {'survival_coefficients_count': 16, 'risk_tariffs_count': 16, 'redemption_terms_count': 16, 'available_terms': [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20], 'calculations_count': 152}
+2025-07-21 19:52:42,573 - care_future_routes_updated - INFO - ✅ Care Future routes с исправленной логикой зарегистрированы успешно
+2025-07-21 19:52:42,574 - NSJCalculator - INFO - 🧮 Начинаем расчет: from_premium, сумма: 960000, срок: 5
+2025-07-21 19:52:42,574 - NSJCalculator - INFO - 📅 Возраст на начало: 35, на окончание: 40
+2025-07-21 19:52:42,574 - NSJCalculator - INFO - 📊 Расчет страховой суммы:
+2025-07-21 19:52:42,574 - NSJCalculator - INFO -    Премия: 960,000 руб.
+2025-07-21 19:52:42,574 - NSJCalculator - INFO -    Срок: 5 лет
+2025-07-21 19:52:42,574 - NSJCalculator - INFO -    Коэффициент дожития: 1.34
+2025-07-21 19:52:42,574 - NSJCalculator - INFO -    Результат: 960000 * 5 * 1.34 = 6,432,000 руб.
+2025-07-21 19:52:42,574 - NSJCalculator - INFO - 💰 Премия: 960000, Страховая сумма: 6432000
+2025-07-21 19:52:42,574 - NSJCalculator - INFO - 📊 Кэшбэк для срока 5 лет: 0.3400
+2025-07-21 19:52:42,574 - NSJCalculator - INFO - 💰 Налоговый вычет: 19500/год × 5 лет = 97500
+2025-07-21 19:52:43,516 - NSJCalculator - INFO - 💾 Расчет сохранен в БД: 62512302-9993-4d89-b566-f56dcf96c4a8
+2025-07-21 19:52:43,516 - NSJCalculator - INFO - ✅ Расчет завершен успешно: 62512302-9993-4d89-b566-f56dcf96c4a8
+2025-07-21 19:52:43,517 - care_future_routes_updated - INFO - ✅ Исправленный калькулятор НСЖ готов к работе: 62512302-9993-4d89-b566-f56dcf96c4a8
+2025-07-21 19:52:43,517 - care_future_routes_updated - INFO - 📍 Доступные endpoints:
+2025-07-21 19:52:43,517 - care_future_routes_updated - INFO -   - POST /api/care-future/calculate (исправленная логика)
+2025-07-21 19:52:43,517 - care_future_routes_updated - INFO -   - GET  /api/care-future/test-excel-logic
+2025-07-21 19:52:43,517 - care_future_routes_updated - INFO -   - GET  /api/care-future/admin/status
+2025-07-21 19:52:43,519 - justincase_routes - INFO - ✅ Маршруты полного калькулятора 'На всякий случай' зарегистрированы
+2025-07-21 19:52:43,519 - justincase_calculator - INFO - 🚀 Инициализация МОДУЛЬНОГО калькулятора 'На всякий случай'
+2025-07-21 19:52:43,521 - justincase_calculator - INFO - 🚀 МОДУЛЬНЫЙ расчет с правильными коэффициентами через отдельные модули
+2025-07-21 19:52:43,521 - justincase_calculator - INFO - 💰 МОДУЛЬНАЯ базовая премия:
+2025-07-21 19:52:43,521 - justincase_calculator - INFO -    Возраст: 35, пол: male, срок: 5 лет
+2025-07-21 19:52:43,521 - justincase_calculator - INFO -    Тариф жизни: 4.868
+2025-07-21 19:52:43,521 - justincase_calculator - INFO -    Премия жизни: 4868.00 руб
+2025-07-21 19:52:43,521 - justincase_calculator - INFO -    Премия инвалидности: 973.60 руб
+2025-07-21 19:52:43,522 - justincase_calculator - INFO -    Годовая база: 5841.60 руб
+2025-07-21 19:52:43,522 - justincase_calculator - INFO -    Коэфф. частоты (Ежегодно): 1.0
+2025-07-21 19:52:43,522 - justincase_calculator - INFO -    ИТОГО базовая: 5841.60 руб
+2025-07-21 19:52:43,522 - justincase_calculator - INFO - 🎯 ФИНАЛЬНЫЙ МОДУЛЬНЫЙ РЕЗУЛЬТАТ:
+2025-07-21 19:52:43,522 - justincase_calculator - INFO -    Базовая: 5,841.60 руб
+2025-07-21 19:52:43,522 - justincase_calculator - INFO -    НС: 0.00 руб
+2025-07-21 19:52:43,522 - justincase_calculator - INFO -    КЗ: 0.00 руб
+2025-07-21 19:52:43,522 - justincase_calculator - INFO -    ИТОГО: 5,841.60 руб
+2025-07-21 19:52:43,522 - justincase_calculator - INFO -    Коэффициент частоты (Ежегодно): 1.0
+2025-07-21 19:52:43,522 - justincase_routes - INFO - ✅ Полный калькулятор готов: тест-премия 5,841.6 руб.
+2025-07-21 19:52:43,523 - justincase_routes - INFO - 📍 Доступные endpoints:
+2025-07-21 19:52:43,523 - justincase_routes - INFO -   - POST /api/proxy/calculator/save (основной, для фронтенда)
+2025-07-21 19:52:43,523 - justincase_routes - INFO -   - POST /api/justincase/calculate (расширенный)
+2025-07-21 19:52:43,523 - justincase_routes - INFO -   - POST /api/justincase/validate (валидация)
+2025-07-21 19:52:43,523 - justincase_routes - INFO -   - POST /api/justincase/validate-sum (валидация суммы)
+2025-07-21 19:52:43,523 - justincase_routes - INFO -   - POST /api/justincase/recommend-sum (рекомендуемая сумма)
+2025-07-21 19:52:43,523 - justincase_routes - INFO -   - GET  /api/justincase/config (конфигурация)
+2025-07-21 19:52:43,523 - justincase_routes - INFO -   - GET  /api/justincase/test (тестирование)
+2025-07-21 19:52:43,523 - justincase_routes - INFO -   - GET  /api/justincase/status (статус)
+2025-07-21 19:52:43,528 - server - INFO - 🚀 Starting MiniApp Server...
+2025-07-21 19:52:43,528 - server - INFO - ✅ Build folder found with 3 items
+2025-07-21 19:52:43,529 - server - INFO - 📧 Email configured: rgszh-miniapp@yandex.ru -> zerotlt@mail.ru, Polina.Iureva@rgsl.ru
+2025-07-21 19:52:43,529 - server - INFO - 📧 Additional recipient configured: Polina.Iureva@rgsl.ru
+2025-07-21 19:52:43,529 - server - INFO - 🧮 Care Future калькулятор НСЖ: ДОСТУПЕН
+2025-07-21 19:52:43,529 - server - INFO - 📍 Endpoints: /api/care-future/* и /care-future/calculate
+2025-07-21 19:52:43,530 - server - INFO - 📍 Server will run on port 4000
+2025-07-21 19:52:43,530 - server - INFO - 📍 Open http://localhost:4000/ in your browser
+2025-07-21 19:52:51,270 - server - INFO - 🔍 Incoming request: GET /static/css/main.6182b823.css
+2025-07-21 19:52:51,462 - server - INFO - 🔍 Incoming request: GET /static/js/main.e8d4518d.js
+2025-07-21 19:52:51,833 - server - INFO - 🔍 Incoming request: GET /components/background/background1.png
+2025-07-21 19:52:57,085 - server - INFO - 🔍 Incoming request: GET /static/css/main.6182b823.css
+2025-07-21 19:53:44,018 - server - INFO - 🔍 Incoming request: GET /static/css/main.6182b823.css
+2025-07-21 19:53:44,242 - server - INFO - 🔍 Incoming request: GET /static/js/main.e8d4518d.js
+2025-07-21 19:53:44,592 - server - INFO - 🔍 Incoming request: GET /components/background/background1.png
+2025-07-21 19:54:25,446 - server - INFO - 🔍 Incoming request: GET /static/css/main.6182b823.css
+2025-07-21 19:54:42,325 - server - INFO - 🔍 Incoming request: GET /static/css/main.6182b823.css
+2025-07-21 19:54:42,522 - server - INFO - 🔍 Incoming request: GET /static/js/main.e8d4518d.js
+2025-07-21 19:54:42,887 - server - INFO - 🔍 Incoming request: GET /components/background/background1.png
+2025-07-21 19:54:44,896 - server - INFO - 🔍 Incoming request: GET /static/css/main.6182b823.css
+2025-07-21 19:55:23,079 - server - INFO - 📨 OPTIONS /api/questionnaire/1 - 127.0.0.1
+2025-07-21 19:55:23,081 - server - INFO - 📨 OPTIONS /api/questionnaire/1 - 127.0.0.1
+2025-07-21 19:55:23,081 - server - INFO - 📤 OPTIONS /api/questionnaire/1 -> 200
+2025-07-21 19:55:23,082 - server - INFO - 📤 OPTIONS /api/questionnaire/1 -> 200
+2025-07-21 19:55:23,331 - server - INFO - 📨 GET /api/questionnaire/1 - 127.0.0.1
+2025-07-21 19:55:23,394 - server - INFO - 📨 GET /api/questionnaire/1 - 127.0.0.1
+2025-07-21 19:55:24,596 - server - INFO - 📤 GET /api/questionnaire/1 -> 200
+2025-07-21 19:55:26,930 - server - INFO - 📤 GET /api/questionnaire/1 -> 200
+2025-07-21 19:55:33,566 - server - INFO - 📨 OPTIONS /api/questionnaire/1 - 127.0.0.1
+2025-07-21 19:55:33,568 - server - INFO - 📤 OPTIONS /api/questionnaire/1 -> 200
+2025-07-21 19:55:33,877 - server - INFO - 📨 OPTIONS /api/questionnaire/1 - 127.0.0.1
+2025-07-21 19:55:33,877 - server - INFO - 📤 OPTIONS /api/questionnaire/1 -> 200
+2025-07-21 19:55:33,880 - server - INFO - 📨 GET /api/questionnaire/1 - 127.0.0.1
+2025-07-21 19:55:34,184 - server - INFO - 📨 GET /api/questionnaire/1 - 127.0.0.1
+2025-07-21 19:55:35,135 - server - INFO - 📤 GET /api/questionnaire/1 -> 200
+2025-07-21 19:55:35,439 - server - INFO - 📤 GET /api/questionnaire/1 -> 200
