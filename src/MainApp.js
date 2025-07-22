@@ -1,10 +1,9 @@
-// MainApp.js - ИСПРАВЛЕННАЯ ВЕРСИЯ
-// ✅ Файлы загружаются из public/backgrounds/
-// ✅ Исправлено предупреждение о неиспользуемой переменной
-// ✅ WebP с автоматическим fallback на PNG
+// MainApp.js - ВЕРСИЯ БЕЗ ЛОГОВ
+// ✅ Убраны все console.log для чистой консоли
+// ✅ Исправлен AutoNavigator
 
 import React, { useState, useEffect } from 'react';
-import { Routes, Route, useNavigate } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 
 // Импорт CSS для фонов
 import './Styles/backgrounds.css';
@@ -56,23 +55,6 @@ class ErrorBoundary extends React.Component {
   }
 }
 
-// ===== АВТОНАВИГАЦИЯ =====
-function AutoNavigator({ children }) {
-  const navigate = useNavigate();
-  
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (window.location.pathname === '/') {
-        navigate('/main-menu');
-      }
-    }, 3000);
-    
-    return () => clearTimeout(timer);
-  }, [navigate]);
-  
-  return children;
-}
-
 // ===== КОМПОНЕНТ УПРАВЛЕНИЯ ФОНАМИ =====
 function BackgroundManager() {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -85,7 +67,7 @@ function BackgroundManager() {
       webP.onload = webP.onerror = function () {
         const isSupported = webP.height === 2;
         document.documentElement.classList.add(isSupported ? 'webp' : 'no-webp');
-        console.log(`🎨 WebP поддержка: ${isSupported ? 'Да ✅' : 'Нет ❌ (используем PNG)'}`);
+        // Лог убран
       };
       webP.src = 'data:image/webp;base64,UklGRjoAAABXRUJQVlA4IC4AAACyAgCdASoCAAIALmk0mk0iIiIiIgBoSygABc6WWgAA/veff/0PP8bA//LwYAAA';
     };
@@ -97,7 +79,6 @@ function BackgroundManager() {
   useEffect(() => {
     const isWebP = document.documentElement.classList.contains('webp');
     const extension = isWebP ? '.webp' : '.png';
-    // Исправленный путь для public папки
     const imagePath = `/backgrounds/background1${extension}`;
     
     const testImg = new Image();
@@ -108,11 +89,11 @@ function BackgroundManager() {
       if (skeleton) {
         skeleton.classList.add('loaded');
       }
-      console.log(`✅ Первый фон загружен: background1${extension}`);
+      // Лог убран
     };
     
     testImg.onerror = () => {
-      console.warn(`❌ Не удалось загрузить фон, используем градиент`);
+      // Лог убран, но функциональность сохранена
       setIsLoaded(true);
       const firstLayer = document.querySelector('.background-layer');
       if (firstLayer) {
@@ -130,7 +111,7 @@ function BackgroundManager() {
   useEffect(() => {
     if (!isLoaded || backgrounds.length <= 1) return;
 
-    let currentIndex = 0; // Локальная переменная вместо state
+    let currentIndex = 0;
 
     const interval = setInterval(() => {
       const prevIndex = currentIndex;
@@ -167,7 +148,7 @@ function BackgroundManager() {
         }, 50);
       }
       
-      console.log(`🔄 Смена фона: ${prevIndex + 1} → ${currentIndex + 1}`);
+      // Лог смены фона убран
     }, changeInterval);
 
     return () => clearInterval(interval);
@@ -239,23 +220,21 @@ function MainApp() {
         <BackgroundManager />
         
         {/* Основной контент */}
-        <AutoNavigator>
-          <div style={contentContainerStyle}>
-            <Routes>
-              <Route path="/" element={<WelcomePage />} />
-              <Route path="/main-menu" element={<MainMenu />} />
-              <Route path="/polls" element={<PollsPage />} />
-              <Route path="/employee" element={<EmployeePage />} />
-              <Route path="/snp" element={<SNPPage />} />
-              <Route path="/assessment" element={<AssessmentPage />} />
-              <Route path="/feedback" element={<FeedbackPage />} />
-              <Route path="/justincase" element={<JustincasePage />} />
-              <Route path="/care-future" element={<CareFuturePage />} />
-              <Route path="/marza-poll" element={<MarzaPollPage />} />
-              <Route path="*" element={<WelcomePage />} />
-            </Routes>
-          </div>
-        </AutoNavigator>
+        <div style={contentContainerStyle}>
+          <Routes>
+            <Route path="/" element={<WelcomePage />} />
+            <Route path="/main-menu" element={<MainMenu />} />
+            <Route path="/polls" element={<PollsPage />} />
+            <Route path="/employee" element={<EmployeePage />} />
+            <Route path="/snp" element={<SNPPage />} />
+            <Route path="/assessment" element={<AssessmentPage />} />
+            <Route path="/feedback" element={<FeedbackPage />} />
+            <Route path="/justincase" element={<JustincasePage />} />
+            <Route path="/care-future" element={<CareFuturePage />} />
+            <Route path="/marza-poll" element={<MarzaPollPage />} />
+            <Route path="*" element={<WelcomePage />} />
+          </Routes>
+        </div>
       </div>
     </ErrorBoundary>
   );
