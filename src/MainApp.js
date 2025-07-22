@@ -77,34 +77,26 @@ function BackgroundManager() {
 
   // Проверка загрузки первого фона
   useEffect(() => {
-    const isWebP = document.documentElement.classList.contains('webp');
-    const extension = isWebP ? '.webp' : '.png';
-    const imagePath = `/backgrounds/background1${extension}`;
-    
     const testImg = new Image();
-    
+  
     testImg.onload = () => {
       setIsLoaded(true);
       const skeleton = document.querySelector('.backgrounds-skeleton');
       if (skeleton) {
         skeleton.classList.add('loaded');
       }
-      // Лог убран
     };
-    
+  
     testImg.onerror = () => {
-      // Лог убран, но функциональность сохранена
       setIsLoaded(true);
       const firstLayer = document.querySelector('.background-layer');
       if (firstLayer) {
         firstLayer.classList.add('gradient-fallback');
       }
     };
-    
-    // Небольшая задержка для определения WebP
-    setTimeout(() => {
-      testImg.src = imagePath;
-    }, 100);
+  
+    // Прямой путь к WebP
+    testImg.src = require('./components/background/background1.webp');
   }, []);
 
   // Смена фонов
@@ -166,6 +158,9 @@ function BackgroundManager() {
             key={`bg-${bg}`}
             className={`background-layer ${index === 0 ? 'active' : ''}`}
             data-bg={bg}
+            style={{
+            backgroundImage: `url('/images/background${bg}.webp')`
+            }}
           />
         ))}
       </div>
