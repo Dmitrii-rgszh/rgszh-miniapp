@@ -159,7 +159,21 @@ function BackgroundManager() {
             className={`background-layer ${index === 0 ? 'active' : ''}`}
             data-bg={bg}
             style={{
-            backgroundImage: `url('/images/background${bg}.webp')`
+              backgroundImage: `url('/images/background${bg}.webp')`,
+              // Добавьте остальные стили если их нет в CSS
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              width: '100vw',
+              height: '100vh',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat',
+              opacity: index === 0 ? 1 : 0,
+              transition: 'opacity 2s ease-in-out',
+              zIndex: index === 0 ? 2 : 1
             }}
           />
         ))}
