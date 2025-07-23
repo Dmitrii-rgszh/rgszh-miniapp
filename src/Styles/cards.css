@@ -288,7 +288,7 @@
    ====================================== */
 .content-container.with-card {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   padding: 20px 0;
   margin-top: 80px;
@@ -495,7 +495,7 @@
   
   /* Позиционирование контента */
   .content-container.with-card {
-    margin-top: 60px;
+    margin-top: 0px;
     padding: 15px 0;
   }
   
