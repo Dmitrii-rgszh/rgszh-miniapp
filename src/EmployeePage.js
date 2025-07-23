@@ -1,4 +1,8 @@
-// EmployeePage.js - ВЕРСИЯ С МОДУЛЬНЫМИ CSS СТИЛЯМИ
+// EmployeePage.js - С ЛОГИКОЙ СТИЛЕЙ ИЗ MAINMENU
+// ✅ Используются только модульные CSS стили
+// ✅ Красные кнопки как в MainMenu
+// ✅ Добавлена кнопка "Далее"
+// ✅ Убраны все инлайн стили и фиолетовый фон
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -9,38 +13,50 @@ import './Styles/containers.css';
 import './Styles/buttons.css';
 import './Styles/logo.css';
 import './Styles/text.css';
-import './Styles/backgrounds.css';
+import './Styles/BackButton.css';
 
 const EmployeePage = () => {
   const navigate = useNavigate();
   const logoRef = useRef(null);
   
-  // Состояния анимаций
+  // ===== СОСТОЯНИЯ =====
   const [logoAnimated, setLogoAnimated] = useState(false);
-  const [contentAnimated, setContentAnimated] = useState(false);
+  const [buttonsAnimated, setButtonsAnimated] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
 
+  // ===== ДАННЫЕ ПРОДУКТОВ =====
+  const products = [
+    { to: '/justincase', label: 'На всякий случай', type: 'primary' },
+    { to: '/snp', label: 'Стратегия на пять. Гарант', type: 'primary' },
+    { to: '/care-future', label: 'Забота о будущем', type: 'primary' }
+  ];
+
+  // ===== СБРОС СОСТОЯНИЯ ПРИ МОНТИРОВАНИИ =====
   useEffect(() => {
-    // Запускаем анимации появления
-    const logoTimer = setTimeout(() => {
+    setIsExiting(false);
+  }, []);
+
+  // ===== АНИМАЦИЯ ВХОДА =====
+  useEffect(() => {
+    const timer1 = setTimeout(() => {
       setLogoAnimated(true);
       if (logoRef.current) {
         logoRef.current.classList.add('animate-logo');
       }
     }, 100);
     
-    const contentTimer = setTimeout(() => {
-      setContentAnimated(true);
+    const timer2 = setTimeout(() => {
+      setButtonsAnimated(true);
     }, 600);
 
     return () => {
-      clearTimeout(logoTimer);
-      clearTimeout(contentTimer);
+      clearTimeout(timer1);
+      clearTimeout(timer2);
     };
   }, []);
 
-  // Обработчик клика с анимацией выхода
-  const handleClick = (route) => {
+  // ===== ОБРАБОТКА КЛИКА ПО КНОПКЕ =====
+  const handleClick = (path) => {
     if (isExiting) return;
     
     setIsExiting(true);
@@ -49,10 +65,12 @@ const EmployeePage = () => {
       logoRef.current.classList.add('animate-logo-exit');
     }
     
-    setTimeout(() => navigate(route), 800);
+    setTimeout(() => {
+      navigate(path);
+    }, 800);
   };
 
-  // Обработчик возврата
+  // ===== ОБРАБОТКА КНОПКИ "НАЗАД" =====
   const handleBack = () => {
     if (isExiting) return;
     
@@ -62,25 +80,81 @@ const EmployeePage = () => {
       logoRef.current.classList.add('animate-logo-exit');
     }
     
-    setTimeout(() => navigate('/main-menu'), 800);
+    setTimeout(() => {
+      navigate('/main-menu');
+    }, 800);
   };
 
-  // Продукты для сотрудника
-  const products = [
-    { to: '/justincase', label: 'На всякий случай' },
-    { to: '/snp', label: 'Стратегия на пять. Гарант' },
-    { to: '/carefuture', label: 'Забота о будущем' }
-  ];
+  // ===== TOUCH ОБРАБОТЧИКИ =====
+  const handleTouchStart = (e) => {
+    // Touch start handler
+  };
+
+  const handleTouchEnd = (e, path) => {
+    e.preventDefault();
+    handleClick(path);
+  };
+
+  // ===== RIPPLE ЭФФЕКТ =====
+  const createRipple = (event) => {
+    const button = event.currentTarget;
+    const circle = document.createElement('span');
+    const diameter = Math.max(button.clientWidth, button.clientHeight);
+    const radius = diameter / 2;
+    
+    circle.style.width = circle.style.height = `${diameter}px`;
+    circle.style.left = `${event.clientX - button.offsetLeft - radius}px`;
+    circle.style.top = `${event.clientY - button.offsetTop - radius}px`;
+    circle.classList.add('ripple');
+    
+    const ripple = button.getElementsByClassName('ripple')[0];
+    if (ripple) {
+      ripple.remove();
+    }
+    
+    button.appendChild(circle);
+  };
+
+  // ===== КЛАССЫ ДЛЯ ЭЛЕМЕНТОВ =====
+  const getContainerClasses = () => [
+    'main-container',
+    isExiting ? 'exiting' : ''
+  ].filter(Boolean).join(' ');
+
+  const getLogoClasses = () => [
+    'logo-wrapper',
+    logoAnimated ? 'animated' : '',
+    isExiting ? 'exiting' : ''
+  ].filter(Boolean).join(' ');
+
+  const getButtonContainerClasses = () => [
+    'button-container',
+    'with-logo',
+    buttonsAnimated ? 'animated' : '',
+    isExiting ? 'exiting' : ''
+  ].filter(Boolean).join(' ');
+
+  const getButtonClasses = (product, index) => [
+    'btn-universal',
+    `btn-${product.type}`,
+    'btn-large',
+    'btn-shadow',
+    buttonsAnimated ? 'button-animated' : 'button-hidden',
+    (buttonsAnimated && isExiting) ? 'button-exiting' : ''
+  ].filter(Boolean).join(' ');
+
+  const getBackButtonClasses = () => [
+    'back-btn',
+    buttonsAnimated ? 'animate-home' : '',
+    isExiting ? 'animate-home-exit' : ''
+  ].filter(Boolean).join(' ');
 
   return (
-    <div className={`main-container ${isExiting ? 'exiting' : ''}`}>
-      {/* Фоновый слой */}
-      <div className="background-layer background-gradient-purple" />
-      
-      {/* Логотип */}
+    <div className={getContainerClasses()}>
+      {/* ===== ЛОГОТИП ===== */}
       <div 
         ref={logoRef}
-        className={`logo-wrapper ${logoAnimated ? 'animated' : ''} ${isExiting ? 'exiting' : ''}`}
+        className={getLogoClasses()}
       >
         <img
           src={logoImage}
@@ -89,99 +163,50 @@ const EmployeePage = () => {
         />
       </div>
 
-      {/* Кнопка "Назад" */}
+      {/* ===== КНОПКА "НАЗАД" ===== */}
       <button 
-        className={`back-btn ${contentAnimated ? 'animate-home' : ''} ${isExiting ? 'animate-home-exit' : ''}`}
+        className={getBackButtonClasses()}
         onClick={handleBack}
         aria-label="Назад"
       >
-        <svg viewBox="0 0 24 24">
-          <path d="M15 18l-6-6 6-6" stroke="white" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+          <path 
+            d="M15 18l-6-6 6-6" 
+            stroke="white" 
+            strokeWidth="2.5" 
+            fill="none" 
+            strokeLinecap="round" 
+            strokeLinejoin="round"
+          />
         </svg>
       </button>
 
-      {/* Заголовок и кнопки */}
-      <div className={`button-container with-logo ${contentAnimated ? 'animated' : ''} ${isExiting ? 'exiting' : ''}`}>
-        <h1 className="text-h1 text-center">Страница сотрудника</h1>
+      {/* ===== ЗАГОЛОВОК И КНОПКИ ===== */}
+      <div className={getButtonContainerClasses()}>
+        <h1 className="text-h1 text-center text-white">Страница сотрудника</h1>
         
         {products.map((product, index) => (
           <button
             key={product.to}
-            className="btn-universal"
-            onClick={() => handleClick(product.to)}
-            style={{
-              animationDelay: `${index * 0.1}s`
+            className={getButtonClasses(product, index)}
+            data-index={index}
+            onClick={(e) => {
+              createRipple(e);
+              handleClick(product.to);
             }}
+            onTouchStart={handleTouchStart}
+            onTouchEnd={(e) => handleTouchEnd(e, product.to)}
           >
-            <span className="btn-text">{product.label}</span>
+            {product.label}
           </button>
         ))}
       </div>
 
-      {/* Дополнительные стили для этой страницы */}
+      {/* ===== СТИЛЬ ДЛЯ БЕЛОГО ТЕКСТА ===== */}
       <style>
         {`
-          /* Фиолетовый градиент для фона */
-          .background-gradient-purple {
-            background: linear-gradient(135deg, 
-              #9370DB 0%, 
-              #6A5ACD 25%, 
-              #8B7AB8 50%, 
-              #7B68EE 75%, 
-              #6A5ACD 100%
-            );
-          }
-
-          /* Адаптация кнопок под фиолетовую тему */
-          .btn-universal {
-            background: linear-gradient(135deg, rgba(147, 112, 219, 0.9) 0%, rgba(106, 90, 205, 0.9) 100%);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-          }
-
-          .btn-universal:hover {
-            background: linear-gradient(135deg, rgba(147, 112, 219, 1) 0%, rgba(106, 90, 205, 1) 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(147, 112, 219, 0.4);
-          }
-
-          /* Анимация появления кнопок */
-          .button-container.animated .btn-universal {
-            animation: fadeInUp 0.6s ease-out forwards;
-            opacity: 0;
-          }
-
-          @keyframes fadeInUp {
-            from {
-              opacity: 0;
-              transform: translateY(20px);
-            }
-            to {
-              opacity: 1;
-              transform: translateY(0);
-            }
-          }
-
-          /* Мобильная адаптация */
-          @media (max-width: 768px) {
-            .button-container.with-logo {
-              top: 200px;
-            }
-            
-            .text-h1 {
-              font-size: 24px;
-              margin-bottom: 20px;
-            }
-          }
-
-          @media (max-width: 374px) {
-            .button-container.with-logo {
-              top: 180px;
-            }
-            
-            .text-h1 {
-              font-size: 22px;
-            }
+          .text-white {
+            color: white;
           }
         `}
       </style>

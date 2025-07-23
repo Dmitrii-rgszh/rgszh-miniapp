@@ -2092,3 +2092,60 @@ AttributeError: '_io._WindowsConsoleIO' object has no attribute 'buffer'
 2025-07-23 14:08:43,479 - server - INFO - 📨 GET /api/questionnaire/1 - 127.0.0.1
 2025-07-23 14:08:44,426 - server - INFO - 📤 GET /api/questionnaire/1 -> 200
 2025-07-23 14:08:44,742 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-23 14:08:44] "GET /api/questionnaire/1?include_questions=true HTTP/1.1" 200 45254 1.262606
+2025-07-23 14:40:38,102 - server - INFO - Socket.IO: running without Redis message queue
+2025-07-23 14:40:38,104 - db_saver - INFO - Использую базу данных: postgresql://postgres:secret@176.109.110.217:1112/postgres
+2025-07-23 14:40:45,141 - db_saver - INFO - Таблицы созданы (или уже существуют)
+2025-07-23 14:40:47,907 - care_future_models - INFO - БД калькулятора НСЖ инициализирована: {'survival_coefficients_count': 16, 'risk_tariffs_count': 16, 'redemption_terms_count': 16, 'available_terms': [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20], 'calculations_count': 164}
+2025-07-23 14:40:48,215 - care_future_routes_updated - INFO - ✅ Care Future routes с исправленной логикой зарегистрированы успешно
+2025-07-23 14:40:48,215 - NSJCalculator - INFO - 🧮 Начинаем расчет: from_premium, сумма: 960000, срок: 5
+2025-07-23 14:40:48,215 - NSJCalculator - INFO - 📅 Возраст на начало: 35, на окончание: 40
+2025-07-23 14:40:48,215 - NSJCalculator - INFO - 📊 Расчет страховой суммы:
+2025-07-23 14:40:48,216 - NSJCalculator - INFO -    Премия: 960,000 руб.
+2025-07-23 14:40:48,216 - NSJCalculator - INFO -    Срок: 5 лет
+2025-07-23 14:40:48,216 - NSJCalculator - INFO -    Коэффициент дожития: 1.34
+2025-07-23 14:40:48,216 - NSJCalculator - INFO -    Результат: 960000 * 5 * 1.34 = 6,432,000 руб.
+2025-07-23 14:40:48,216 - NSJCalculator - INFO - 💰 Премия: 960000, Страховая сумма: 6432000
+2025-07-23 14:40:48,216 - NSJCalculator - INFO - 📊 Кэшбэк для срока 5 лет: 0.3400
+2025-07-23 14:40:48,216 - NSJCalculator - INFO - 💰 Налоговый вычет: 19500/год × 5 лет = 97500
+2025-07-23 14:40:49,140 - NSJCalculator - INFO - 💾 Расчет сохранен в БД: c7736b35-ae75-403b-92f8-e9e5db8c59fc
+2025-07-23 14:40:49,140 - NSJCalculator - INFO - ✅ Расчет завершен успешно: c7736b35-ae75-403b-92f8-e9e5db8c59fc
+2025-07-23 14:40:49,141 - care_future_routes_updated - INFO - ✅ Исправленный калькулятор НСЖ готов к работе: c7736b35-ae75-403b-92f8-e9e5db8c59fc
+2025-07-23 14:40:49,141 - care_future_routes_updated - INFO - 📍 Доступные endpoints:
+2025-07-23 14:40:49,142 - care_future_routes_updated - INFO -   - POST /api/care-future/calculate (исправленная логика)
+2025-07-23 14:40:49,142 - care_future_routes_updated - INFO -   - GET  /api/care-future/test-excel-logic
+2025-07-23 14:40:49,144 - care_future_routes_updated - INFO -   - GET  /api/care-future/admin/status
+2025-07-23 14:40:49,153 - justincase_routes - INFO - ✅ Маршруты полного калькулятора 'На всякий случай' зарегистрированы
+2025-07-23 14:40:49,154 - justincase_calculator - INFO - 🚀 Инициализация МОДУЛЬНОГО калькулятора 'На всякий случай'
+2025-07-23 14:40:49,161 - justincase_calculator - INFO - 🚀 МОДУЛЬНЫЙ расчет с правильными коэффициентами через отдельные модули
+2025-07-23 14:40:49,161 - justincase_calculator - INFO - 💰 МОДУЛЬНАЯ базовая премия:
+2025-07-23 14:40:49,162 - justincase_calculator - INFO -    Возраст: 35, пол: male, срок: 5 лет
+2025-07-23 14:40:49,162 - justincase_calculator - INFO -    Тариф жизни: 4.868
+2025-07-23 14:40:49,164 - justincase_calculator - INFO -    Премия жизни: 4868.00 руб
+2025-07-23 14:40:49,164 - justincase_calculator - INFO -    Премия инвалидности: 973.60 руб
+2025-07-23 14:40:49,164 - justincase_calculator - INFO -    Годовая база: 5841.60 руб
+2025-07-23 14:40:49,164 - justincase_calculator - INFO -    Коэфф. частоты (Ежегодно): 1.0
+2025-07-23 14:40:49,164 - justincase_calculator - INFO -    ИТОГО базовая: 5841.60 руб
+2025-07-23 14:40:49,165 - justincase_calculator - INFO - 🎯 ФИНАЛЬНЫЙ МОДУЛЬНЫЙ РЕЗУЛЬТАТ:
+2025-07-23 14:40:49,165 - justincase_calculator - INFO -    Базовая: 5,841.60 руб
+2025-07-23 14:40:49,165 - justincase_calculator - INFO -    НС: 0.00 руб
+2025-07-23 14:40:49,166 - justincase_calculator - INFO -    КЗ: 0.00 руб
+2025-07-23 14:40:49,166 - justincase_calculator - INFO -    ИТОГО: 5,841.60 руб
+2025-07-23 14:40:49,166 - justincase_calculator - INFO -    Коэффициент частоты (Ежегодно): 1.0
+2025-07-23 14:40:49,167 - justincase_routes - INFO - ✅ Полный калькулятор готов: тест-премия 5,841.6 руб.
+2025-07-23 14:40:49,167 - justincase_routes - INFO - 📍 Доступные endpoints:
+2025-07-23 14:40:49,167 - justincase_routes - INFO -   - POST /api/proxy/calculator/save (основной, для фронтенда)
+2025-07-23 14:40:49,168 - justincase_routes - INFO -   - POST /api/justincase/calculate (расширенный)
+2025-07-23 14:40:49,168 - justincase_routes - INFO -   - POST /api/justincase/validate (валидация)
+2025-07-23 14:40:49,168 - justincase_routes - INFO -   - POST /api/justincase/validate-sum (валидация суммы)
+2025-07-23 14:40:49,169 - justincase_routes - INFO -   - POST /api/justincase/recommend-sum (рекомендуемая сумма)
+2025-07-23 14:40:49,169 - justincase_routes - INFO -   - GET  /api/justincase/config (конфигурация)
+2025-07-23 14:40:49,169 - justincase_routes - INFO -   - GET  /api/justincase/test (тестирование)
+2025-07-23 14:40:49,169 - justincase_routes - INFO -   - GET  /api/justincase/status (статус)
+2025-07-23 14:40:49,181 - server - INFO - 🚀 Starting MiniApp Server...
+2025-07-23 14:40:49,181 - server - INFO - ✅ Build folder found with 6 items
+2025-07-23 14:40:49,181 - server - INFO - 📧 Email configured: rgszh-miniapp@yandex.ru -> zerotlt@mail.ru, Polina.Iureva@rgsl.ru
+2025-07-23 14:40:49,182 - server - INFO - 📧 Additional recipient configured: Polina.Iureva@rgsl.ru
+2025-07-23 14:40:49,182 - server - INFO - 🧮 Care Future калькулятор НСЖ: ДОСТУПЕН
+2025-07-23 14:40:49,182 - server - INFO - 📍 Endpoints: /api/care-future/* и /care-future/calculate
+2025-07-23 14:40:49,187 - server - INFO - 📍 Server will run on port 4000
+2025-07-23 14:40:49,187 - server - INFO - 📍 Open http://localhost:4000/ in your browser
