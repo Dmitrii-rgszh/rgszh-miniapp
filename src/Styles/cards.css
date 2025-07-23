@@ -1,0 +1,549 @@
+/* ============================================================================
+   cards.css - СТИЛИ ДЛЯ КАРТОЧЕК И ФОРМ С БЕЛОЙ ПОДЛОЖКОЙ
+   ----------------------------------------------------------------------------
+   ✅ Корпоративные цвета для текста на белом фоне
+   ✅ Закругленные углы
+   ✅ Адаптивность для 3 разрешений
+   ============================================================================ */
+
+/* ======================================
+   БАЗОВАЯ КАРТОЧКА
+   ====================================== */
+.card-container {
+  background: white;
+  border-radius: 20px;
+  padding: 30px;
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Карточка на всю высоту */
+.card-container.full-height {
+  height: calc(100vh - 200px); /* Учитываем логотип и отступы */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Прокручиваемое содержимое */
+.card-container.scrollable {
+  max-height: calc(100vh - 200px);
+  overflow-y: auto;
+}
+
+/* Пользовательский скроллбар */
+.card-container.scrollable::-webkit-scrollbar {
+  width: 6px;
+}
+
+.card-container.scrollable::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 3px;
+}
+
+.card-container.scrollable::-webkit-scrollbar-thumb {
+  background: rgba(180, 0, 55, 0.3);
+  border-radius: 3px;
+}
+
+.card-container.scrollable::-webkit-scrollbar-thumb:hover {
+  background: rgba(180, 0, 55, 0.5);
+}
+
+/* ======================================
+   ТЕКСТОВЫЕ СТИЛИ НА БЕЛОМ ФОНЕ
+   ====================================== */
+.card-container .text-h1,
+.card-container .text-h2,
+.card-container .text-h3 {
+  color: rgb(0, 40, 130); /* Корпоративный синий */
+}
+
+.card-container .text-body {
+  color: rgb(118, 143, 146); /* Корпоративный серый */
+}
+
+.card-container .text-label {
+  color: rgb(152, 164, 174); /* Светло-серый */
+  font-weight: 500;
+}
+
+/* ======================================
+   ЭЛЕМЕНТЫ ФОРМЫ НА БЕЛОМ ФОНЕ
+   ====================================== */
+/* Основные элементы формы */
+.card-container .form-label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.card-container .form-input {
+  width: 100%;
+  padding: 12px 16px;
+  background: #f5f7fa;
+  border: 1px solid #e3e7ee;
+  border-radius: 8px;
+  color: #333;
+  font-size: 16px;
+  transition: all 0.3s ease;
+}
+
+.card-container .form-input:focus {
+  outline: none;
+  background: white;
+  border-color: rgb(180, 0, 55);
+  box-shadow: 0 0 0 3px rgba(180, 0, 55, 0.1);
+}
+
+.card-container .form-input::placeholder {
+  color: #9ca3af;
+}
+
+.card-container .form-input.error {
+  border-color: rgb(180, 0, 55);
+}
+
+/* Кнопки выбора */
+.card-container .option-button {
+  flex: 1;
+  padding: 12px;
+  background: #f5f7fa;
+  border: 1px solid #e3e7ee;
+  border-radius: 8px;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.card-container .option-button:hover {
+  background: #eef2f7;
+  border-color: #d1d5db;
+}
+
+.card-container .option-button.selected {
+  background: rgb(180, 0, 55);
+  border-color: rgb(180, 0, 55);
+  color: white;
+}
+
+/* ======================================
+   СПЕЦИАЛЬНЫЕ СЕКЦИИ
+   ====================================== */
+/* Заголовок карточки */
+.card-header {
+  text-align: center;
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+/* Контент карточки */
+.card-content {
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* Подвал карточки */
+.card-footer {
+  margin-top: auto;
+  padding-top: 20px;
+  border-top: 1px solid #f0f0f0;
+}
+
+/* ======================================
+   РЕЗУЛЬТАТЫ В КАРТОЧКЕ
+   ====================================== */
+.card-container .result-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f8f9fb;
+  padding: 15px 20px;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  border: 1px solid #e3e7ee;
+}
+
+.card-container .result-item:last-child {
+  margin-bottom: 0;
+}
+
+.card-container .result-item.highlight {
+  background: rgba(180, 0, 55, 0.05);
+  border-color: rgba(180, 0, 55, 0.2);
+}
+
+.card-container .result-label {
+  color: rgb(118, 143, 146);
+}
+
+.card-container .result-value {
+  color: rgb(0, 40, 130);
+  font-weight: 600;
+  font-size: 18px;
+}
+
+.card-container .result-item.highlight .result-value {
+  color: rgb(180, 0, 55);
+  font-size: 24px;
+}
+
+/* ======================================
+   СЕРВИСЫ В КАРТОЧКЕ
+   ====================================== */
+.card-container .service-item {
+  display: flex;
+  gap: 15px;
+  padding: 15px;
+  background: #f8f9fb;
+  border: 1px solid #e3e7ee;
+  border-radius: 12px;
+  margin-bottom: 15px;
+}
+
+.card-container .service-icon {
+  font-size: 40px;
+  flex-shrink: 0;
+}
+
+.card-container .service-title {
+  color: rgb(0, 40, 130);
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.card-container .service-description {
+  color: rgb(118, 143, 146);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+/* ======================================
+   СТАТУСЫ И СООБЩЕНИЯ
+   ====================================== */
+.card-container .form-error {
+  display: block;
+  margin-top: 5px;
+  color: rgb(180, 0, 55);
+  font-size: 14px;
+}
+
+.card-container .form-error-block {
+  padding: 12px;
+  background: rgba(180, 0, 55, 0.05);
+  border: 1px solid rgba(180, 0, 55, 0.2);
+  border-radius: 8px;
+  color: rgb(180, 0, 55);
+  margin-bottom: 20px;
+}
+
+.card-container .success-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: rgba(76, 175, 80, 0.1);
+  color: #4CAF50;
+  font-size: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 30px;
+}
+
+/* ======================================
+   АНИМАЦИИ
+   ====================================== */
+.card-container {
+  opacity: 0;
+  transform: translateY(30px);
+  animation: cardFadeIn 0.6s ease-out forwards;
+  animation-delay: 0.3s;
+}
+
+@keyframes cardFadeIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Анимация выхода */
+.card-container.exiting {
+  animation: cardFadeOut 0.5s ease-in forwards;
+}
+
+@keyframes cardFadeOut {
+  to {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+}
+
+/* ======================================
+   ПОЗИЦИОНИРОВАНИЕ КОНТЕНТА С КАРТОЧКАМИ
+   ====================================== */
+.content-container.with-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 0;
+  margin-top: 80px;
+}
+
+/* ======================================
+   ЭЛЕМЕНТЫ ФОРМ В КАРТОЧКАХ
+   ====================================== */
+/* Группа формы */
+.card-container .form-group {
+  margin-bottom: 20px;
+}
+
+/* Кнопка на всю ширину */
+.card-container .btn-fullwidth {
+  width: 100%;
+}
+
+/* Вертикальные кнопки выбора */
+.card-container .option-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.card-container .option-buttons.vertical {
+  flex-direction: column;
+}
+
+/* Слайдер */
+.card-container .slider-container {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.card-container .form-slider {
+  flex: 1;
+  -webkit-appearance: none;
+  height: 6px;
+  background: #e3e7ee;
+  border-radius: 3px;
+  outline: none;
+}
+
+.card-container .form-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  background: rgb(180, 0, 55);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.card-container .slider-value {
+  min-width: 40px;
+  text-align: center;
+  color: rgb(0, 40, 130);
+  font-weight: 600;
+}
+
+/* ======================================
+   PROCESSING / ЗАГРУЗКА
+   ====================================== */
+.card-container .processing-container {
+  text-align: center;
+  padding: 40px;
+}
+
+.card-container .progress-spinner {
+  width: 60px;
+  height: 60px;
+  border: 4px solid rgba(180, 0, 55, 0.2);
+  border-top: 4px solid rgb(180, 0, 55);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 30px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ======================================
+   КАРУСЕЛЬ В КАРТОЧКЕ
+   ====================================== */
+.card-container .carousel-container {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+/* Навигация карусели */
+.card-container .carousel-nav {
+  position: absolute;
+  top: 50%;
+  left: -20px;
+  right: -20px;
+  display: flex;
+  justify-content: space-between;
+  pointer-events: none;
+}
+
+.card-container .carousel-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(180, 0, 55, 0.8);
+  border: none;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  pointer-events: all;
+}
+
+.card-container .carousel-btn:hover {
+  background: rgb(180, 0, 55);
+  transform: scale(1.1);
+}
+
+.card-container .carousel-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Индикаторы карусели */
+.card-container .carousel-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.card-container .carousel-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(180, 0, 55, 0.3);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.card-container .carousel-dot.active {
+  background: rgb(180, 0, 55);
+  transform: scale(1.2);
+}
+
+/* Результаты */
+.card-container .result-items {
+  margin-top: 20px;
+}
+
+/* Сервисы */
+.card-container .services-list {
+  margin-top: 20px;
+}
+
+.card-container .service-content {
+  flex: 1;
+}
+
+/* ======================================
+   SUCCESS / УСПЕХ
+   ====================================== */
+.card-container .success-container {
+  text-align: center;
+  padding: 20px;
+}
+
+.card-container .success-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: rgba(76, 175, 80, 0.1);
+  color: #4CAF50;
+  font-size: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 30px;
+}
+
+/* ======================================
+   АДАПТИВНОСТЬ
+   ====================================== */
+/* Планшеты (375-768px) */
+@media (max-width: 768px) and (min-width: 375px) {
+  .card-container {
+    padding: 20px;
+    border-radius: 16px;
+    margin: 0 16px;
+  }
+  
+  .card-container.full-height {
+    height: calc(100vh - 180px);
+  }
+  
+  .card-header {
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+  }
+  
+  /* Позиционирование контента */
+  .content-container.with-card {
+    margin-top: 60px;
+    padding: 15px 0;
+  }
+  
+  /* Карусель */
+  .card-container .carousel-nav {
+    left: -15px;
+    right: -15px;
+  }
+  
+  .card-container .carousel-btn {
+    width: 35px;
+    height: 35px;
+  }
+}
+
+/* Мобильные (<375px) */
+@media (max-width: 374px) {
+  .card-container {
+    padding: 16px;
+    border-radius: 12px;
+    margin: 0 12px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+  }
+  
+  .card-container.full-height {
+    height: calc(100vh - 160px);
+  }
+  
+  .card-header {
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+  }
+  
+  .card-container .text-h1 {
+    font-size: 24px;
+  }
+  
+  .card-container .text-h2 {
+    font-size: 20px;
+  }
+  
+  .card-container .text-body {
+    font-size: 14px;
+  }
+  
+  /* Позиционирование контента */
+  .content-container.with-card {
+    margin-top: 40px;
+    padding: 12px 0;
+  }
+}

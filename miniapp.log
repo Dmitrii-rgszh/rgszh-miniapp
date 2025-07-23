@@ -2149,3 +2149,7 @@ AttributeError: '_io._WindowsConsoleIO' object has no attribute 'buffer'
 2025-07-23 14:40:49,182 - server - INFO - 📍 Endpoints: /api/care-future/* и /care-future/calculate
 2025-07-23 14:40:49,187 - server - INFO - 📍 Server will run on port 4000
 2025-07-23 14:40:49,187 - server - INFO - 📍 Open http://localhost:4000/ in your browser
+2025-07-23 15:01:26,017 - server - INFO - 🔍 Incoming request: GET /care-future/config
+2025-07-23 15:01:26,019 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-23 15:01:26] "GET /care-future/config HTTP/1.1" 404 365 0.002066
+2025-07-23 15:01:26,337 - server - INFO - 🔍 Incoming request: GET /care-future/config
+2025-07-23 15:01:26,339 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-23 15:01:26] "GET /care-future/config HTTP/1.1" 404 365 0.002631
