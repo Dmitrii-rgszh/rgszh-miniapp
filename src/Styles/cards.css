@@ -543,7 +543,7 @@
   
   /* Позиционирование контента */
   .content-container.with-card {
-    margin-top: 40px;
+    margin-top: 0px;
     padding: 12px 0;
   }
 }
