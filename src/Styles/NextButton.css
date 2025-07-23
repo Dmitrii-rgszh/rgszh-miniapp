@@ -83,7 +83,7 @@
 .next-btn.animate-next {
   opacity: 1;
   transform: translateX(0);
-  animation: nextButtonSlideIn 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: none;
 }
 
 @keyframes nextButtonSlideIn {
@@ -163,9 +163,16 @@
   100% { transform: scale(1); }
 }
 
+.shaker.shake-btn svg,
+.shaker.pop-btn svg {
+  transform: none !important;
+  animation: none !important;
+}
 .shaker.pop-btn {
   animation: pop 0.4s ease-out infinite;
 }
+
+
 
 /* ======================================
    АДАПТИВНОСТЬ: ПЛАНШЕТЫ (375-768px)
@@ -362,24 +369,3 @@
   }
 }
 
-/* ======================================
-   РАСЧЕТ ПОЗИЦИЙ (комментарий)
-   --------------------------------------
-   Desktop (>768px):
-   - Логотип: top: 55px, height: 128px
-   - Центр логотипа: 55 + 128/2 = 119px
-   - Кнопка: height: 64px
-   - Top кнопки: 119 - 64/2 = 87px
-   
-   Tablet (375-768px):
-   - Логотип: top: 40px, height: 96px
-   - Центр логотипа: 40 + 96/2 = 88px
-   - Кнопка: height: 56px
-   - Top кнопки: 88 - 56/2 = 60px
-   
-   Mobile (<375px):
-   - Логотип: top: 25px, height: 80px
-   - Центр логотипа: 25 + 80/2 = 65px
-   - Кнопка: height: 48px
-   - Top кнопки: 65 - 48/2 = 41px
-   ====================================== */

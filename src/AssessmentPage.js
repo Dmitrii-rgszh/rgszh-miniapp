@@ -717,26 +717,15 @@ export default function AssessmentPage() {
           onTouchStart={handleTouchStart}
           onTouchEnd={canGoNext() ? (e) => handleTouchEnd(e, handleNext) : undefined}
           disabled={!canGoNext()}
-          style={{
-            userSelect: 'auto',
-            WebkitUserSelect: 'auto',
-            pointerEvents: 'auto',
-            cursor: canGoNext() ? 'pointer' : 'not-allowed',
-            touchAction: 'manipulation'
-          }}
         >
-          <div className={
-            canGoNext() 
-              ? (currentStep === 3 && currentQuestion === questions.length - 1 ? 'shaker pop-btn' : 'shaker shake-btn')
-              : 'shaker'
-          }>
+          <div className={canGoNext() ? (currentStep === 3 && currentQuestion === questions.length - 1 ? 'shaker pop-btn' : 'shaker shake-btn') : 'shaker'}>
             {currentStep === 3 && currentQuestion === questions.length - 1 ? (
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M20 6L9 17l-5-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <svg viewBox="0 0 24 24">
+                <path d="M20 6L9 17l-5-5"/>
               </svg>
             ) : (
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M9 18l6-6-6-6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <svg viewBox="0 0 24 24">
+                <path d="M9 18l6-6-6-6"/>
               </svg>
             )}
           </div>
