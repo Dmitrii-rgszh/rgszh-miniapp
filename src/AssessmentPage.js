@@ -1,10 +1,9 @@
-// AssessmentPage.js - ИСПРАВЛЕНА ПРОБЛЕМА С ПУСТЫМ ЭКРАНОМ
-// ✅ Добавлен класс animated для состояний загрузки
-// ✅ Обеспечена видимость логотипа во время загрузки
-// ✅ Исправлены состояния анимации
+// AssessmentPage.js - БЕЗ АВТОПОДСКАЗОК
+// ✅ Убраны все автоподсказки
+// ✅ Простые input поля для ФИО
+// ✅ Сохранена вся остальная функциональность
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import Autosuggest from 'react-autosuggest';
 import { useNavigate } from 'react-router-dom';
 import { apiCall } from './config';
 import logoImage from './components/logo.png';
@@ -17,12 +16,7 @@ import './Styles/NextButton.css';
 import './Styles/BackButton.css';
 import './Styles/HomeButton.css';
 import './Styles/ProgressIndicator.css';
-import './Styles/Autosuggest.css';
-
-// JSON-файлы с ФИО
-import surnames from './components/autosuggest/surname.json';
-import firstnames from './components/autosuggest/firstname.json';
-import patronymics from './components/autosuggest/lastname.json';
+import './Styles/text.css';
 
 export default function AssessmentPage() {
   const navigate = useNavigate();
@@ -48,13 +42,10 @@ export default function AssessmentPage() {
   const [fadeTransition, setFadeTransition] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
-  // Данные пользователя
+  // Данные пользователя - БЕЗ автоподсказок
   const [surname, setSurname] = useState('');
   const [firstName, setFirstName] = useState('');
   const [patronymic, setPatronymic] = useState('');
-  const [surnameSuggestions, setSurnameSuggestions] = useState([]);
-  const [firstNameSuggestions, setFirstNameSuggestions] = useState([]);
-  const [patronymicSuggestions, setPatronymicSuggestions] = useState([]);
 
   // Данные опросника
   const [questionnaire, setQuestionnaire] = useState(null);
@@ -89,77 +80,6 @@ export default function AssessmentPage() {
     }
   }, [isLoading]);
 
-  // ===== ИСПРАВЛЕНИЕ INPUT ПОЛЕЙ =====
-  useEffect(() => {
-    const fixInputs = () => {
-      const inputs = document.querySelectorAll('.autosuggest-input, .react-autosuggest__input, input[type="text"]');
-      
-      inputs.forEach((input) => {
-        if (input.dataset.inputFixed) return;
-        
-        // Принудительные стили для input
-        Object.assign(input.style, {
-          userSelect: 'auto',
-          WebkitUserSelect: 'auto',
-          pointerEvents: 'auto',
-          cursor: 'text',
-          touchAction: 'manipulation',
-          WebkitTouchCallout: 'auto',
-          WebkitTapHighlightColor: 'rgba(255, 255, 255, 0.1)',
-          outline: 'none',
-          border: '1px solid rgba(255, 255, 255, 0.25)'
-        });
-        
-        // Удаляем любые блокирующие атрибуты
-        input.removeAttribute('readonly');
-        input.removeAttribute('disabled');
-        
-        // Обработчики для мобильных устройств
-        input.addEventListener('touchstart', (e) => {
-          e.stopPropagation();
-        }, { passive: true });
-        
-        input.addEventListener('touchend', (e) => {
-          e.stopPropagation();
-          setTimeout(() => {
-            if (!input.matches(':focus')) {
-              input.focus();
-            }
-          }, 10);
-        }, { passive: false });
-        
-        input.addEventListener('click', (e) => {
-          e.stopPropagation();
-          setTimeout(() => {
-            if (!input.matches(':focus')) {
-              input.focus();
-            }
-          }, 10);
-        });
-        
-        // Принудительно делаем поле редактируемым
-        input.contentEditable = false; // отключаем contentEditable если есть
-        input.readOnly = false;
-        input.disabled = false;
-        
-        input.dataset.inputFixed = 'true';
-      });
-    };
-    
-    // Множественные попытки исправления
-    const timer1 = setTimeout(fixInputs, 100);
-    const timer2 = setTimeout(fixInputs, 500);
-    const timer3 = setTimeout(fixInputs, 1000);
-    const interval = setInterval(fixInputs, 2000);
-    
-    return () => {
-      clearTimeout(timer1);
-      clearTimeout(timer2);
-      clearTimeout(timer3);
-      clearInterval(interval);
-    };
-  }, [currentStep]);
-
   // ===== TOUCH ОБРАБОТЧИКИ =====
   const handleTouchStart = (e) => {
     // Touch start handler
@@ -170,74 +90,6 @@ export default function AssessmentPage() {
     if (callback) callback();
   };
 
-  // ===== УДАЛЕНИЕ СЕРЫХ ЛИНИЙ =====
-  useEffect(() => {
-    if (currentStep === 2) {
-      const removeLines = () => {
-        document.querySelectorAll('hr').forEach(hr => hr.remove());
-        
-        const style = document.createElement('style');
-        style.setAttribute('data-remove-lines', 'true');
-        style.innerHTML = `
-          .form-container hr,
-          .form-container .divider,
-          .form-container .separator,
-          .form-container > div:empty,
-          .form-container > div[style*="border"],
-          .form-container > div[style*="height: 1px"],
-          .form-container > div[style*="height:1px"] {
-            display: none !important;
-            visibility: hidden !important;
-            height: 0 !important;
-            margin: 0 !important;
-            padding: 0 !important;
-          }
-          
-          .form-container > *::before,
-          .form-container > *::after,
-          .autosuggest-wrapper::before,
-          .autosuggest-wrapper::after,
-          .autosuggest-container::before,
-          .autosuggest-container::after {
-            display: none !important;
-            content: none !important;
-          }
-          
-          .form-container * {
-            border-top: none !important;
-            border-bottom: none !important;
-          }
-          
-          .autosuggest-input,
-          .react-autosuggest__input {
-            border: 1px solid rgba(255, 255, 255, 0.25) !important;
-          }
-          
-          .autosuggest-wrapper + * {
-            margin-top: 0 !important;
-          }
-          
-          .autosuggest-wrapper {
-            margin-bottom: 24px !important;
-          }
-          
-          .autosuggest-wrapper:last-child {
-            margin-bottom: 0 !important;
-          }
-        `;
-        document.head.appendChild(style);
-      };
-      
-      removeLines();
-      const timeout = setTimeout(removeLines, 100);
-      
-      return () => {
-        clearTimeout(timeout);
-        document.querySelectorAll('style[data-remove-lines]').forEach(s => s.remove());
-      };
-    }
-  }, [currentStep]);
-
   // ===== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ =====
   const canGoNext = () => {
     if (currentStep === 1) return true;
@@ -246,14 +98,6 @@ export default function AssessmentPage() {
     return false;
   };
 
-  const surnameList = surnames.map(item => item.male || item.female);
-  const firstNameList = firstnames.map(item =>
-    typeof item === 'string' ? item : (item.firstName || item.name)
-  );
-  const patronymicList = patronymics.map(item =>
-    typeof item === 'string' ? item : (item.patronymic || item.name)
-  );
-
   const shuffleOptions = (options) => {
     const shuffled = [...options];
     for (let i = shuffled.length - 1; i > 0; i--) {
@@ -261,84 +105,6 @@ export default function AssessmentPage() {
       [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
     return shuffled;
-  };
-
-  const getSuggestions = (value, list) => {
-    const inputValue = value.trim().toLowerCase();
-    const inputLength = inputValue.length;
-    return inputLength === 0 ? [] : list.filter(item => 
-      item.toLowerCase().slice(0, inputLength) === inputValue
-    );
-  };
-
-  const renderAutosuggest = (value, setValue, suggestions, setSuggestions, list, placeholder) => {
-    // Обработчики для принудительного фокуса
-    const handleInputClick = (e) => {
-      e.stopPropagation();
-      const input = e.target;
-      setTimeout(() => {
-        if (!input.matches(':focus')) {
-          input.focus();
-          input.click();
-        }
-      }, 10);
-    };
-
-    const handleInputTouch = (e) => {
-      e.stopPropagation();
-      const input = e.target;
-      setTimeout(() => {
-        if (!input.matches(':focus')) {
-          input.focus();
-        }
-      }, 10);
-    };
-
-    return (
-      <div className="autosuggest-container">
-        <Autosuggest
-          suggestions={suggestions}
-          onSuggestionsFetchRequested={({ value }) => setSuggestions(getSuggestions(value, list))}
-          onSuggestionsClearRequested={() => setSuggestions([])}
-          getSuggestionValue={suggestion => suggestion}
-          renderSuggestion={suggestion => (
-            <div className="autosuggest-suggestion">
-              {suggestion}
-            </div>
-          )}
-          inputProps={{
-            className: 'autosuggest-input',
-            placeholder,
-            value,
-            onChange: (_, { newValue }) => setValue(newValue),
-            onFocus: (e) => {
-              e.stopPropagation();
-            },
-            onClick: handleInputClick,
-            onTouchEnd: handleInputTouch,
-            onTouchStart: (e) => {
-              e.stopPropagation();
-            },
-            style: {
-              userSelect: 'auto',
-              WebkitUserSelect: 'auto',
-              pointerEvents: 'auto',
-              cursor: 'text',
-              touchAction: 'manipulation',
-              WebkitTouchCallout: 'auto'
-            }
-          }}
-          theme={{
-            container: 'autosuggest-container',
-            suggestionsContainer: 'autosuggest-suggestions-container',
-            suggestionsList: 'autosuggest-suggestions-list',
-            suggestion: 'autosuggest-suggestion',
-            suggestionHighlighted: 'autosuggest-suggestion--highlighted',
-            input: 'autosuggest-input'
-          }}
-        />
-      </div>
-    );
   };
 
   // ===== ОБРАБОТЧИКИ =====
@@ -600,69 +366,66 @@ export default function AssessmentPage() {
       case 2:
         return (
           <div className={`welcome-text-container ${contentAnimated ? 'animated' : ''}`}>
-            <h2 className="text-h2 text-center">Введите ваши ФИО</h2>
+            <h2 className="fio-form-title">Введите ваши ФИО</h2>
             {errorMessage && (
-              <div className="assessment-error">
+              <div className="fio-error-message">
                 {errorMessage}
               </div>
             )}
       
-            <div className="form-container">
-              <div className="autosuggest-wrapper">
-                <label 
-                  className="form-label"
-                  onClick={() => {
-                    const input = document.querySelector('.autosuggest-wrapper:nth-of-type(1) .autosuggest-input');
-                    if (input) {
-                      setTimeout(() => input.focus(), 10);
-                    }
-                  }}
-                >
+            <div className="fio-form-container">
+              <div className="fio-field">
+                <label className="fio-label" htmlFor="surname-input">
                   Фамилия
                 </label>
-                {renderAutosuggest(
-                  surname, setSurname, 
-                  surnameSuggestions, setSurnameSuggestions, 
-                  surnameList, 'Введите фамилию'
-                )}
+                <input
+                  id="surname-input"
+                  type="text"
+                  className="fio-input"
+                  placeholder="Введите фамилию"
+                  value={surname}
+                  onChange={(e) => setSurname(e.target.value)}
+                  autoComplete="off"
+                  autoCorrect="off"
+                  autoCapitalize="words"
+                  spellCheck="false"
+                />
               </div>
 
-              <div className="autosuggest-wrapper">
-                <label 
-                  className="form-label"
-                  onClick={() => {
-                    const input = document.querySelector('.autosuggest-wrapper:nth-of-type(2) .autosuggest-input');
-                    if (input) {
-                      setTimeout(() => input.focus(), 10);
-                    }
-                  }}
-                >
+              <div className="fio-field">
+                <label className="fio-label" htmlFor="firstname-input">
                   Имя
                 </label>
-                {renderAutosuggest(
-                  firstName, setFirstName, 
-                  firstNameSuggestions, setFirstNameSuggestions, 
-                  firstNameList, 'Введите имя'
-                )}
+                <input
+                  id="firstname-input"
+                  type="text"
+                  className="fio-input"
+                  placeholder="Введите имя"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  autoComplete="off"
+                  autoCorrect="off"
+                  autoCapitalize="words"
+                  spellCheck="false"
+                />
               </div>
 
-              <div className="autosuggest-wrapper">
-                <label 
-                  className="form-label"
-                  onClick={() => {
-                    const input = document.querySelector('.autosuggest-wrapper:nth-of-type(3) .autosuggest-input');
-                    if (input) {
-                      setTimeout(() => input.focus(), 10);
-                    }
-                  }}
-                >
+              <div className="fio-field">
+                <label className="fio-label" htmlFor="patronymic-input">
                   Отчество
                 </label>
-                {renderAutosuggest(
-                  patronymic, setPatronymic, 
-                  patronymicSuggestions, setPatronymicSuggestions, 
-                  patronymicList, 'Введите отчество'
-                )}
+                <input
+                  id="patronymic-input"
+                  type="text"
+                  className="fio-input"
+                  placeholder="Введите отчество"
+                  value={patronymic}
+                  onChange={(e) => setPatronymic(e.target.value)}
+                  autoComplete="off"
+                  autoCorrect="off"
+                  autoCapitalize="words"
+                  spellCheck="false"
+                />
               </div>
             </div>
           </div>
@@ -781,95 +544,133 @@ export default function AssessmentPage() {
             opacity: 1 !important;
             transform: none !important;
           }
-        `}
-      </style>
-      
-      <style>
-        {`
-          hr {
-            display: none !important;
+          
+          /* СТИЛИ ДЛЯ ФОРМЫ ФИО */
+          .fio-form-container {
+            width: 100%;
+            max-width: 450px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
           }
           
-          .react-autosuggest__container,
-          .react-autosuggest__input,
-          .react-autosuggest__suggestions-container {
-            border-top: none !important;
-            border-bottom: none !important;
+          .fio-form-title {
+            font-family: "Segoe UI Bold", sans-serif;
+            font-size: 28px;
+            font-weight: 700;
+            color: white;
+            text-align: center;
+            margin: 0 0 24px 0;
+            letter-spacing: -0.5px;
           }
           
-          /* КРИТИЧНО: Обеспечиваем кликабельность autosuggest полей */
-          .autosuggest-input,
-          .react-autosuggest__input,
-          input[type="text"] {
-            user-select: auto !important;
-            -webkit-user-select: auto !important;
-            -moz-user-select: auto !important;
-            pointer-events: auto !important;
-            cursor: text !important;
-            touch-action: manipulation !important;
-            -webkit-touch-callout: auto !important;
-            -webkit-tap-highlight-color: rgba(255, 255, 255, 0.1) !important;
-            outline: none !important;
-            border: 1px solid rgba(255, 255, 255, 0.25) !important;
-            background-color: rgba(255, 255, 255, 0.05) !important;
-            color: white !important;
-            z-index: 10 !important;
-            position: relative !important;
+          .fio-field {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
           }
           
-          /* Focus состояние для input полей */
-          .autosuggest-input:focus,
-          .react-autosuggest__input:focus,
-          input[type="text"]:focus {
-            border-color: rgba(255, 255, 255, 0.6) !important;
-            background-color: rgba(255, 255, 255, 0.1) !important;
-            outline: none !important;
-            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2) !important;
+          .fio-label {
+            font-family: "Segoe UI", sans-serif;
+            font-size: 16px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.95);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            text-align: center;
           }
           
-          /* Hover состояние для input полей */
-          .autosuggest-input:hover,
-          .react-autosuggest__input:hover,
-          input[type="text"]:hover {
-            border-color: rgba(255, 255, 255, 0.4) !important;
-            background-color: rgba(255, 255, 255, 0.08) !important;
+          .fio-input {
+            width: 100%;
+            padding: 18px 24px;
+            font-family: "Segoe UI", sans-serif;
+            font-size: 20px;
+            font-weight: 400;
+            color: white;
+            background-color: rgba(255, 255, 255, 0.08);
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            border-radius: 14px;
+            outline: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-sizing: border-box;
+            text-align: center;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
           }
           
-          /* Активное состояние для input полей */
-          .autosuggest-input:active,
-          .react-autosuggest__input:active,
-          input[type="text"]:active {
-            border-color: rgba(255, 255, 255, 0.8) !important;
-            background-color: rgba(255, 255, 255, 0.15) !important;
+          .fio-input:focus {
+            background-color: rgba(255, 255, 255, 0.12);
+            border-color: rgba(180, 0, 55, 0.5);
+            box-shadow: 0 0 0 3px rgba(180, 0, 55, 0.15);
           }
           
-          .form-container *::before,
-          .form-container *::after {
-            height: auto !important;
-            border: none !important;
-            background: transparent !important;
+          .fio-input:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.25);
           }
           
-          .autosuggest-input::placeholder {
-            background: transparent !important;
+          .fio-input::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+            font-weight: 300;
           }
           
-          .autosuggest-container {
-            margin-bottom: 0 !important;
+          .fio-error-message {
+            background: linear-gradient(135deg, rgba(255, 0, 0, 0.8), rgba(200, 0, 0, 0.8));
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 12px 20px;
+            margin-bottom: 20px;
+            color: white;
+            text-align: center;
+            font-family: "Segoe UI", sans-serif;
+            font-size: 14px;
+            box-shadow: 0 4px 15px rgba(255, 0, 0, 0.2);
+            animation: shake 0.5s ease-in-out;
           }
           
-          :root {
-            --label-font-size-desktop: 20px;
-            --label-font-size-tablet: 18px;
-            --label-font-size-mobile: 16px;
+          @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+          }
+          
+          /* Адаптивность */
+          @media (max-width: 768px) {
+            .fio-form-title {
+              font-size: 24px;
+            }
             
-            --input-font-size-desktop: 22px;
-            --input-font-size-tablet: 20px;
-            --input-font-size-mobile: 18px;
+            .fio-label {
+              font-size: 14px;
+            }
             
-            --placeholder-font-size-desktop: 20px;
-            --placeholder-font-size-tablet: 18px;
-            --placeholder-font-size-mobile: 16px;
+            .fio-input {
+              font-size: 18px;
+              padding: 16px 20px;
+            }
+          }
+          
+          @media (max-width: 374px) {
+            .fio-form-title {
+              font-size: 22px;
+            }
+            
+            .fio-label {
+              font-size: 13px;
+            }
+            
+            .fio-input {
+              font-size: 16px;
+              padding: 14px 18px;
+              border-radius: 12px;
+            }
+            
+            .fio-field {
+              gap: 8px;
+            }
           }
         `}
       </style>

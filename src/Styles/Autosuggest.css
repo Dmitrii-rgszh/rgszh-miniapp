@@ -533,3 +533,158 @@ hr,
 .autosuggest-wrapper ~ :not(.autosuggest-wrapper) {
   display: none !important;
 }
+
+/* Скругление углов для всех autosuggest полей */
+.autosuggest-input,
+.react-autosuggest__input {
+  border-radius: 12px !important;  /* Измените значение по вкусу: 8px, 16px, 20px и т.д. */
+  padding: 10px 15px !important;    /* Опционально: увеличенные отступы для лучшего вида */
+}
+
+/* Скругление углов для выпадающего списка подсказок */
+.autosuggest-suggestions-container,
+.react-autosuggest__suggestions-container {
+  border-radius: 12px !important;
+  overflow: hidden;
+}
+
+/* Скругление первого и последнего элемента в списке подсказок */
+.autosuggest-suggestion:first-child,
+.react-autosuggest__suggestion:first-child {
+  border-top-left-radius: 12px !important;
+  border-top-right-radius: 12px !important;
+}
+
+.autosuggest-suggestion:last-child,
+.react-autosuggest__suggestion:last-child {
+  border-bottom-left-radius: 12px !important;
+  border-bottom-right-radius: 12px !important;
+}
+
+/* ============================================================================
+   КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ ДЛЯ ВЫПАДАЮЩИХ ПОДСКАЗОК
+   Добавьте в конец файла Autosuggest.css
+   ============================================================================ */
+
+/* Контейнер подсказок - максимальный приоритет */
+.autosuggest-suggestions-container,
+.react-autosuggest__suggestions-container {
+  position: absolute !important;
+  z-index: 999999 !important;
+  pointer-events: auto !important;
+  -webkit-touch-callout: auto !important;
+  touch-action: auto !important;
+  background-color: rgba(30, 30, 30, 0.98) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+  max-height: 200px !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+/* Список подсказок */
+.autosuggest-suggestions-list,
+.react-autosuggest__suggestions-list {
+  margin: 0 !important;
+  padding: 0 !important;
+  list-style: none !important;
+  pointer-events: auto !important;
+}
+
+/* Каждая подсказка - КРИТИЧНО для кликабельности */
+.autosuggest-suggestion,
+.react-autosuggest__suggestion {
+  padding: 14px 18px !important;
+  cursor: pointer !important;
+  pointer-events: auto !important;
+  -webkit-user-select: none !important;
+  user-select: none !important;
+  touch-action: manipulation !important;
+  -webkit-touch-callout: none !important;
+  -webkit-tap-highlight-color: rgba(180, 0, 55, 0.2) !important;
+  color: white !important;
+  font-size: 18px !important;
+  font-family: "Segoe UI", sans-serif !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  position: relative !important;
+  z-index: 999999 !important;
+  background-color: transparent !important;
+  transition: background-color 0.2s ease !important;
+}
+
+/* Убираем border у последнего элемента */
+.autosuggest-suggestion:last-child,
+.react-autosuggest__suggestion:last-child {
+  border-bottom: none !important;
+}
+
+/* Hover и активные состояния */
+.autosuggest-suggestion:hover,
+.react-autosuggest__suggestion:hover,
+.autosuggest-suggestion:active,
+.react-autosuggest__suggestion:active,
+.autosuggest-suggestion--highlighted,
+.react-autosuggest__suggestion--highlighted {
+  background-color: rgba(180, 0, 55, 0.3) !important;
+  color: white !important;
+}
+
+/* Состояние при нажатии */
+.autosuggest-suggestion:active,
+.react-autosuggest__suggestion:active {
+  background-color: rgba(180, 0, 55, 0.5) !important;
+}
+
+/* Убираем любые блокирующие элементы */
+.autosuggest-container {
+  position: relative !important;
+  z-index: auto !important;
+}
+
+/* Фикс для мобильных устройств */
+@media (max-width: 768px) {
+  .autosuggest-suggestion,
+  .react-autosuggest__suggestion {
+    padding: 16px 20px !important;
+    font-size: 18px !important;
+    min-height: 48px !important;
+    display: flex !important;
+    align-items: center !important;
+  }
+  
+  /* Увеличиваем область клика на мобильных */
+  .autosuggest-suggestion::before,
+  .react-autosuggest__suggestion::before {
+    content: '' !important;
+    position: absolute !important;
+    top: -5px !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: -5px !important;
+    z-index: -1 !important;
+  }
+}
+
+/* Скроллбар для списка подсказок */
+.autosuggest-suggestions-container::-webkit-scrollbar,
+.react-autosuggest__suggestions-container::-webkit-scrollbar {
+  width: 4px !important;
+}
+
+.autosuggest-suggestions-container::-webkit-scrollbar-thumb,
+.react-autosuggest__suggestions-container::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3) !important;
+  border-radius: 2px !important;
+}
+
+/* ВАЖНО: Убеждаемся, что контейнер не обрезается */
+.welcome-text-container {
+  overflow: visible !important; /* Временно при открытых подсказках */
+}
+
+/* Когда подсказки открыты */
+.react-autosuggest__container--open ~ * {
+  position: relative !important;
+  z-index: auto !important;
+}
