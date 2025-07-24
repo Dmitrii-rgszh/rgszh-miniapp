@@ -670,12 +670,12 @@ export default function CareFuturePage() {
                 )}
               </div>
 
-              {/* Пол */}
+              {/* Пол - ИСПРАВЛЕНО: используем option-button вместо btn-universal */}
               <div className="form-group">
                 <label className="form-label text-label">Пол</label>
                 <div className="option-buttons">
                   <button
-                    className={`btn-universal btn-secondary btn-medium ${gender === 'male' ? 'btn-primary' : ''}`}
+                    className={`option-button ${gender === 'male' ? 'selected' : ''}`}
                     onClick={(e) => {
                       createRipple(e);
                       setGender('male');
@@ -684,7 +684,7 @@ export default function CareFuturePage() {
                     Мужской
                   </button>
                   <button
-                    className={`btn-universal btn-secondary btn-medium ${gender === 'female' ? 'btn-primary' : ''}`}
+                    className={`option-button ${gender === 'female' ? 'selected' : ''}`}
                     onClick={(e) => {
                       createRipple(e);
                       setGender('female');

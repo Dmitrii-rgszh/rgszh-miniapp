@@ -546,3 +546,160 @@
     width: 100%;
   }
 }
+
+/* ======================================
+   КНОПКИ ВЫБОРА (OPTION BUTTONS)
+   ====================================== */
+
+/* Базовый стиль кнопки выбора */
+.option-button {
+  /* Базовые стили */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  
+  /* Типографика */
+  font-family: var(--btn-font-family);
+  font-weight: 600;
+  font-size: 16px;
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  
+  /* Размеры */
+  padding: 12px 24px;
+  min-height: 44px;
+  border-radius: 10px;
+  
+  /* Интерактивность */
+  cursor: pointer;
+  user-select: none;
+  border: 2px solid var(--btn-gray-primary);
+  outline: none;
+  
+  /* Цвета по умолчанию (неактивная кнопка) */
+  background: transparent;
+  color: var(--btn-gray-primary);
+  
+  /* Переходы */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* Отключение стандартных браузерных стилей */
+  -webkit-tap-highlight-color: transparent;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+/* Состояние hover для неактивной кнопки */
+.option-button:hover:not(.selected) {
+  border-color: var(--btn-gray-secondary);
+  color: var(--btn-gray-secondary);
+  background: rgba(152, 164, 174, 0.1);
+  transform: translateY(-1px);
+}
+
+/* Активное состояние (нажатие) */
+.option-button:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* ВЫБРАННОЕ СОСТОЯНИЕ */
+.option-button.selected {
+  /* Корпоративный градиент красный -> синий */
+  background: linear-gradient(
+    135deg, 
+    var(--btn-red-primary) 0%, 
+    var(--btn-red-secondary) 35%, 
+    var(--btn-blue-primary) 100%
+  );
+  
+  border-color: var(--btn-red-primary);
+  color: white;
+  box-shadow: 
+    0 4px 15px rgba(0, 0, 0, 0.2),
+    0 2px 8px rgba(180, 0, 55, 0.3);
+}
+
+/* Hover для выбранной кнопки */
+.option-button.selected:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 6px 20px rgba(0, 0, 0, 0.3),
+    0 4px 12px rgba(180, 0, 55, 0.4);
+  
+  /* Более яркий градиент при hover */
+  background: linear-gradient(
+    135deg, 
+    rgba(180, 0, 55, 1) 0%, 
+    rgba(153, 0, 55, 1) 35%, 
+    rgba(0, 40, 130, 1) 100%
+  );
+}
+
+/* Focus состояние */
+.option-button:focus {
+  box-shadow: 
+    0 0 0 3px rgba(180, 0, 55, 0.3);
+}
+
+.option-button.selected:focus {
+  box-shadow: 
+    0 4px 15px rgba(0, 0, 0, 0.2),
+    0 0 0 3px rgba(255, 255, 255, 0.6);
+}
+
+/* Отключенное состояние */
+.option-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+  transform: none;
+  box-shadow: none;
+}
+
+/* ======================================
+   АДАПТИВНОСТЬ ДЛЯ КНОПОК ВЫБОРА
+   ====================================== */
+
+/* Desktop: кнопки выбора остаются компактными */
+@media (min-width: 769px) {
+  .option-button {
+    padding: 14px 28px;
+    font-size: 18px;
+    min-height: 48px;
+    min-width: 120px;
+  }
+}
+
+/* Tablet: стандартные размеры */
+@media (min-width: 375px) and (max-width: 768px) {
+  .option-button {
+    padding: 12px 24px;
+    font-size: 16px;
+    min-height: 44px;
+    min-width: 100px;
+  }
+}
+
+/* Mobile: кнопки на всю ширину контейнера */
+@media (max-width: 374px) {
+  .option-button {
+    padding: 12px 20px;
+    font-size: 16px;
+    min-height: 44px;
+    width: 100%;
+    flex: 1;
+  }
+  
+  /* Для мобильных устройств в вертикальной группе */
+  .option-buttons.vertical .option-button {
+    margin-bottom: 8px;
+  }
+  
+  .option-buttons.vertical .option-button:last-child {
+    margin-bottom: 0;
+  }
+}
