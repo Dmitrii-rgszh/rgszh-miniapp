@@ -4,6 +4,7 @@
    ✅ Корпоративные цвета для текста на белом фоне
    ✅ Закругленные углы
    ✅ Адаптивность для 3 разрешений
+   ✅ Прямое позиционирование карточек
    ============================================================================ */
 
 /* ======================================
@@ -19,6 +20,18 @@
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
   position: relative;
   overflow: hidden;
+}
+
+/* ======================================
+   ПОЗИЦИОНИРОВАНИЕ КАРТОЧКИ
+   ====================================== */
+.card-container.card-positioned {
+  position: absolute;
+  top: 200px; /* Логотип ~120px + отступ 20px + запас */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 500px;
 }
 
 /* Карточка на всю высоту */
@@ -264,6 +277,24 @@
   animation-delay: 0.3s;
 }
 
+/* Анимация для позиционированных карточек */
+.card-container.card-positioned {
+  animation: none;
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.card-container.card-positioned.animated {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  transition: all 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.card-container.card-positioned:not(.animated) {
+  opacity: 0;
+  transform: translateX(-50%) translateY(30px);
+}
+
 @keyframes cardFadeIn {
   to {
     opacity: 1;
@@ -276,6 +307,13 @@
   animation: cardFadeOut 0.5s ease-in forwards;
 }
 
+.card-container.card-positioned.exiting {
+  animation: none;
+  opacity: 0;
+  transform: translateX(-50%) translateY(30px);
+  transition: all 0.5s ease-in;
+}
+
 @keyframes cardFadeOut {
   to {
     opacity: 0;
@@ -283,20 +321,6 @@
   }
 }
 
-/* ======================================
-   ПОЗИЦИОНИРОВАНИЕ КОНТЕНТА С КАРТОЧКАМИ
-   ====================================== */
-.content-container.with-card {
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  padding: 20px 0;
-  margin-top: 80px;
-}
-
-/* ======================================
-   ЭЛЕМЕНТЫ ФОРМ В КАРТОЧКАХ
-   ====================================== */
 /* Группа формы */
 .card-container .form-group {
   margin-bottom: 20px;
@@ -460,19 +484,6 @@
   padding: 20px;
 }
 
-.card-container .success-icon {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  background: rgba(76, 175, 80, 0.1);
-  color: #4CAF50;
-  font-size: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 30px;
-}
-
 /* ======================================
    АДАПТИВНОСТЬ
    ====================================== */
@@ -481,22 +492,25 @@
   .card-container {
     padding: 20px;
     border-radius: 16px;
-    margin: 0 16px;
+  }
+  
+  .card-container.card-positioned {
+    top: 170px; /* Меньше отступ для планшетов */
+    width: calc(100% - 40px);
+    max-width: 450px;
   }
   
   .card-container.full-height {
     height: calc(100vh - 180px);
   }
   
+  .card-container.scrollable {
+    max-height: calc(100vh - 180px);
+  }
+  
   .card-header {
     margin-bottom: 20px;
     padding-bottom: 15px;
-  }
-  
-  /* Позиционирование контента */
-  .content-container.with-card {
-    margin-top: 0px;
-    padding: 15px 0;
   }
   
   /* Карусель */
@@ -516,12 +530,21 @@
   .card-container {
     padding: 16px;
     border-radius: 12px;
-    margin: 0 12px;
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+  }
+  
+  .card-container.card-positioned {
+    top: 170px; /* Еще меньше отступ для мобильных */
+    width: calc(100% - 40px);
+    max-width: 100%;
   }
   
   .card-container.full-height {
     height: calc(100vh - 160px);
+  }
+  
+  .card-container.scrollable {
+    max-height: calc(100vh - 160px);
   }
   
   .card-header {
@@ -539,11 +562,5 @@
   
   .card-container .text-body {
     font-size: 14px;
-  }
-  
-  /* Позиционирование контента */
-  .content-container.with-card {
-    margin-top: 0px;
-    padding: 12px 0;
   }
 }

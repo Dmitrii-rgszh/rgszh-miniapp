@@ -2,6 +2,7 @@
 // ✅ Использует модульную CSS архитектуру
 // ✅ Анимации как в MainMenu и других страницах
 // ✅ Правильная структура компонентов
+// ✅ Карточка позиционируется напрямую без content-container
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -354,13 +355,6 @@ export default function CareFuturePage() {
     isExiting ? 'exiting' : ''
   ].filter(Boolean).join(' ');
 
-  const getContentClasses = () => [
-    'content-container',
-    'with-card',
-    contentAnimated ? 'animated' : '',
-    isExiting ? 'exiting' : ''
-  ].filter(Boolean).join(' ');
-
   const getBackButtonClasses = () => [
     'back-btn',
     contentAnimated ? 'animate-home' : '',
@@ -369,6 +363,8 @@ export default function CareFuturePage() {
 
   const getCardClasses = () => [
     'card-container',
+    'card-positioned', // Новый класс для позиционирования
+    contentAnimated ? 'animated' : '',
     isExiting ? 'exiting' : ''
   ].filter(Boolean).join(' ');
 
@@ -757,10 +753,8 @@ export default function CareFuturePage() {
         </button>
       )}
 
-      {/* ===== КОНТЕНТ ===== */}
-      <div className={getContentClasses()}>
-        {renderContent()}
-      </div>
+      {/* ===== КОНТЕНТ БЕЗ ОБЕРТКИ ===== */}
+      {renderContent()}
     </div>
   );
 }
