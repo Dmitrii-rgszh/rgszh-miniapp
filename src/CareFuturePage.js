@@ -243,19 +243,45 @@ export default function CareFuturePage() {
 
   // ===== ОБНОВЛЕНИЕ ДАТЫ РОЖДЕНИЯ =====
   useEffect(() => {
-    const { day, month, year } = birthParts;
-    if (day && month && year) {
-      const d = Number(day), m = Number(month), y = Number(year);
-      const dt = new Date(y, m - 1, d);
-      if (!isNaN(dt.getTime()) && dt.getDate() === d && dt.getMonth() + 1 === m && dt.getFullYear() === y) {
-        setBirthDate(dt);
-      } else {
-        setBirthDate(null);
+  const { day, month, year } = birthParts;
+  
+  // Логируем для отладки
+  console.log('birthParts изменились:', birthParts);
+  
+  if (day && month && year) {
+    const d = Number(day);
+    const m = Number(month);
+    const y = Number(year);
+    
+    // Создаем дату
+    const dt = new Date(y, m - 1, d);
+    
+    // Проверяем валидность даты
+    if (!isNaN(dt.getTime()) && 
+        dt.getDate() === d && 
+        dt.getMonth() + 1 === m && 
+        dt.getFullYear() === y) {
+      
+      setBirthDate(dt);
+      console.log('Дата рождения установлена:', dt.toISOString().split('T')[0]);
+      
+      // Очищаем ошибку если она была
+      if (validationErrors.birthDate) {
+        setValidationErrors(prev => {
+          const newErrors = { ...prev };
+          delete newErrors.birthDate;
+          return newErrors;
+        });
       }
     } else {
+      console.log('Невалидная дата:', d, m, y);
       setBirthDate(null);
     }
-  }, [birthParts]);
+  } else {
+    console.log('Не все части даты заполнены');
+    setBirthDate(null);
+  }
+}, [birthParts]);
 
   // ===== ФОРМАТИРОВАНИЕ СУММЫ =====
   const formatAmount = (value) => {
@@ -288,6 +314,12 @@ export default function CareFuturePage() {
 
     if (!birthDate) {
       errors.birthDate = 'Укажите дату рождения';
+    } else {
+      // Проверяем возраст (18-65 лет)
+      const age = new Date().getFullYear() - birthDate.getFullYear();
+      if (age < 18 || age > 65) {
+        errors.birthDate = 'Возраст должен быть от 18 до 65 лет';
+      }
     }
 
     if (!gender) {
@@ -298,9 +330,33 @@ export default function CareFuturePage() {
       errors.calcType = 'Выберите тип расчёта';
     }
 
-    setValidationErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
+    if (!amountRaw || parseInt(amountRaw) <= 0) {
+      errors.amount = 'Укажите сумму';
+    } else {
+    const amount = parseInt(amountRaw);
+    
+    // Проверяем минимальные суммы в зависимости от типа расчета
+    if (calcType === 'from_premium' && amount < 100000) {
+      errors.amount = 'Минимальный взнос 100 000 рублей';
+    } else if (calcType === 'from_sum' && amount < 500000) {
+      errors.amount = 'Минимальная страховая сумма 500 000 рублей';
+    }
+    
+    // Проверяем максимальные суммы
+    if (amount > 100000000) {
+      errors.amount = 'Максимальная сумма 100 000 000 рублей';
+    }
+  }
+
+  setValidationErrors(errors);
+  
+  // Логируем для отладки
+  if (Object.keys(errors).length > 0) {
+    console.log('Ошибки валидации:', errors);
+  }
+  
+  return Object.keys(errors).length === 0;
+};
 
   // ===== ПРОВЕРКА ГОТОВНОСТИ КНОПКИ ДЛЯ АНИМАЦИИ (БЕЗ ПОБОЧНЫХ ЭФФЕКТОВ) =====
   const isNextButtonReady = () => {
@@ -357,83 +413,146 @@ export default function CareFuturePage() {
   };
 
   // ===== РАСЧЕТ =====
-  const handleCalculate = async () => {
-    if (!validateForm()) return;
+  // Найдите функцию handleCalculate в CareFuturePage.js и полностью замените её на эту:
 
-    setStage('processing');
+// ===== РАСЧЕТ =====
+// Найдите функцию handleCalculate в CareFuturePage.js и полностью замените её на эту:
 
-    try {
-      const requestData = {
-        birth_date: birthDate.toISOString().split('T')[0],
-        gender: gender,
-        contract_term: programTerm,
-        calculation_type: calcType,
-        input_amount: parseInt(amountRaw),
-        email: email
-      };
+// ===== РАСЧЕТ =====
+const handleCalculate = async () => {
+  // Дополнительная проверка birthDate
+  if (!birthDate) {
+    console.error('birthDate is null!');
+    setValidationErrors({ birthDate: 'Укажите дату рождения' });
+    return;
+  }
+  
+  if (!validateForm()) return;
 
-      const response = await apiCall('/api/care-future/calculate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestData)
+  setStage('processing');
+
+  try {
+    // Форматируем дату безопасно
+    const formattedDate = birthDate instanceof Date 
+      ? birthDate.toISOString().split('T')[0]
+      : new Date(birthDate).toISOString().split('T')[0];
+    
+    // ИСПРАВЛЕНО: Используем camelCase для соответствия серверу
+    const requestData = {
+      birthDate: formattedDate,
+      gender: gender,
+      contractTerm: programTerm,
+      calculationType: calcType,
+      inputAmount: parseInt(amountRaw),
+      email: email
+    };
+
+    console.log('Отправляем данные на сервер:', requestData);
+
+    // ИСПРАВЛЕНО: apiCall уже возвращает распарсенные данные
+    const data = await apiCall('/api/care-future/calculate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(requestData)
+    });
+
+    console.log('Ответ сервера:', data);
+
+    if (data.success) {
+      // Правильно обрабатываем структуру ответа
+      setResultData({
+        insurance_amount_formatted: data.results.insuranceSum.toLocaleString('ru-RU') + ' ₽',
+        single_premium_formatted: data.results.premiumAmount.toLocaleString('ru-RU') + ' ₽',
+        contract_term: data.inputParameters.contractTerm,
+        age: data.inputParameters.ageAtStart,
+        accumulated_capital: data.results.accumulatedCapital,
+        program_income: data.results.programIncome,
+        tax_deduction: data.results.taxDeduction
       });
-
-      const data = await response.json();
-
-      if (data.success) {
-        setResultData(data.results);
-        setCalculationId(data.calculationId);
-        setTimeout(() => setStage('result'), 2000);
-      } else {
-        throw new Error(data.error || 'Ошибка расчета');
-      }
-    } catch (error) {
-      console.error('Ошибка:', error);
-      setValidationErrors({ general: 'Ошибка при выполнении расчета' });
-      setStage('form');
+      setCalculationId(data.calculationId);
+      setTimeout(() => setStage('result'), 2000);
+    } else {
+      throw new Error(data.error || 'Ошибка расчета');
     }
-  };
+  } catch (error) {
+    console.error('Ошибка расчета:', error);
+    
+    // Более информативная обработка ошибок
+    if (error.message.includes('400')) {
+      setValidationErrors({ general: 'Некорректные данные. Проверьте заполнение формы.' });
+    } else if (error.message.includes('500')) {
+      setValidationErrors({ general: 'Ошибка сервера. Попробуйте позже.' });
+    } else {
+      setValidationErrors({ general: error.message || 'Ошибка при выполнении расчета' });
+    }
+    
+    setStage('form');
+  }
+};
 
   // ===== ОТПРАВКА ЗАЯВКИ МЕНЕДЖЕРУ =====
-  const handleManagerSubmit = async (e) => {
-    e.preventDefault();
+  // Альтернативная версия с дополнительной защитой:
+
+// ===== ОТПРАВКА ЗАЯВКИ МЕНЕДЖЕРУ =====
+const handleManagerSubmit = async (e) => {
+  e.preventDefault();
+  
+  if (!mgrSurname.trim() || !mgrName.trim() || !mgrCity.trim()) {
+    setMgrError('Заполните все поля');
+    return;
+  }
+
+  setIsSendingMgr(true);
+  setMgrError('');
+
+  try {
+    // Вызываем apiCall который уже возвращает распарсенные данные
+    const data = await apiCall('/api/contact-manager', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        surname: mgrSurname,
+        name: mgrName,
+        city: mgrCity,
+        email: email,
+        page: 'care-future',
+        calculationId: calculationId
+      })
+    });
+
+    console.log('Ответ сервера:', data); // для отладки
+
+    // Проверяем успешность разными способами
+    if (data && (data.success === true || data.success === 'true')) {
+      console.log('Заявка успешно отправлена');
+      setStage('manager-sent');
+    } else if (data && data.error) {
+      throw new Error(data.error);
+    } else if (data && data.message && !data.success) {
+      throw new Error(data.message);
+    } else {
+      // Если структура ответа неожиданная, но нет явной ошибки,
+      // считаем что заявка отправлена
+      console.warn('Неожиданная структура ответа:', data);
+      setStage('manager-sent');
+    }
+  } catch (error) {
+    console.error('Ошибка отправки заявки:', error);
     
-    if (!mgrSurname.trim() || !mgrName.trim() || !mgrCity.trim()) {
-      setMgrError('Заполните все поля');
-      return;
+    // Специальная обработка для случая, когда email отправился,
+    // но возникла ошибка обработки ответа
+    if (error.message && error.message.includes('json is not a function')) {
+      console.warn('Возможная ошибка обработки ответа. Заявка могла быть отправлена.');
+      // Можно даже перейти к успешному экрану, если уверены что email отправляется
+      // setStage('manager-sent');
+      // return;
     }
-
-    setIsSendingMgr(true);
-    setMgrError('');
-
-    try {
-      const response = await apiCall('/api/contact-manager', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          surname: mgrSurname,
-          name: mgrName,
-          city: mgrCity,
-          email: email,
-          page: 'care-future',
-          calculationId: calculationId
-        })
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        setStage('manager-sent');
-      } else {
-        throw new Error(data.message || 'Ошибка отправки');
-      }
-    } catch (error) {
-      console.error('Ошибка:', error);
-      setMgrError('Не удалось отправить заявку. Попробуйте позже.');
-    } finally {
-      setIsSendingMgr(false);
-    }
-  };
+    
+    setMgrError('Не удалось отправить заявку. Попробуйте позже.');
+  } finally {
+    setIsSendingMgr(false);
+  }
+};
 
   // ===== ПОДГОТОВКА ДАННЫХ ДЛЯ КАРУСЕЛИ =====
   const getCarouselData = () => {
@@ -646,371 +765,267 @@ export default function CareFuturePage() {
           </div>
         );
 
-      case 'form':
-        return (
-          <div className={`${getCardClasses()} scrollable`}>
-            <div className="card-header">
-              <h2 className="text-h2 text-center">Параметры расчёта</h2>
+      // Найдите в CareFuturePage.js секцию case 'form': и замените её содержимое на:
+
+case 'form':
+  return (
+    <div className={`${getCardClasses()} scrollable`}>
+      <div className="card-header">
+        <h2 className="text-h2 text-center">Параметры расчёта</h2>
+      </div>
+      
+      <div className="card-content">
+        {/* Дата рождения - ИСПРАВЛЕНО */}
+        <div className="form-group" style={{ marginBottom: '16px' }}>
+          <label className="form-label text-label" style={{ marginBottom: '8px' }}>
+            Дата рождения
+          </label>
+          <DateWheelPicker 
+            value={birthParts}
+            onChange={setBirthParts}
+          />
+          {validationErrors.birthDate && (
+            <span className="form-error">{validationErrors.birthDate}</span>
+          )}
+        </div>
+
+        {/* Пол */}
+        <div className="form-group">
+          <label className="form-label text-label">Пол</label>
+          <div style={{
+            display: 'flex',
+            gap: '12px',
+            justifyContent: 'center',
+            width: '100%',
+            marginTop: '4px'
+          }}>
+            <button
+              type="button"
+              style={{
+                padding: '12px 24px',
+                minHeight: '44px',
+                border: gender === 'male' ? '2px solid rgb(180, 0, 55)' : '2px solid rgb(152, 164, 174)',
+                borderRadius: '8px',
+                background: gender === 'male' ? 'rgb(180, 0, 55)' : 'white',
+                color: gender === 'male' ? 'white' : 'rgb(152, 164, 174)',
+                fontFamily: 'Segoe UI, sans-serif',
+                fontSize: '16px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                flex: '1',
+                outline: 'none'
+              }}
+              onClick={() => {
+                console.log('Clicked Male');
+                setGender('male');
+              }}
+            >
+              Мужской
+            </button>
+            <button
+              type="button"
+              style={{
+                padding: '12px 24px',
+                minHeight: '44px',
+                border: gender === 'female' ? '2px solid rgb(180, 0, 55)' : '2px solid rgb(152, 164, 174)',
+                borderRadius: '8px',
+                background: gender === 'female' ? 'rgb(180, 0, 55)' : 'white',
+                color: gender === 'female' ? 'white' : 'rgb(152, 164, 174)',
+                fontFamily: 'Segoe UI, sans-serif',
+                fontSize: '16px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                flex: '1',
+                outline: 'none'
+              }}
+              onClick={() => {
+                console.log('Clicked Female');
+                setGender('female');
+              }}
+            >
+              Женский
+            </button>
+          </div>
+          {validationErrors.gender && (
+            <span className="form-error">{validationErrors.gender}</span>
+          )}
+        </div>
+
+        {/* Срок программы - КОМПАКТНЫЙ СЛАЙДЕР В ОДНУ СТРОКУ */}
+        <div className="form-group">
+          <label className="form-label text-label">Срок программы (лет)</label>
+          <div style={{
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: '12px',
+            width: '100%',
+            marginTop: '8px',
+            padding: '8px 0'
+          }}>
+            <div style={{
+              position: 'relative',
+              flex: '1',
+              height: '20px',
+              display: 'flex',
+              alignItems: 'center'
+            }}>
+              <input
+                type="range"
+                min="5"
+                max="30"
+                step="1"
+                value={programTerm}
+                onChange={(e) => {
+                  console.log('Slider changed to:', e.target.value);
+                  setProgramTerm(parseInt(e.target.value));
+                }}
+                onTouchStart={(e) => {
+                  e.stopPropagation();
+                }}
+                onTouchMove={(e) => {
+                  e.stopPropagation();
+                }}
+                style={{
+                  width: '100%',
+                  height: '8px',
+                  borderRadius: '4px',
+                  background: `linear-gradient(to right, rgb(180, 0, 55) 0%, rgb(180, 0, 55) ${((programTerm - 5) / 25) * 100}%, #e5e5e5 ${((programTerm - 5) / 25) * 100}%, #e5e5e5 100%)`,
+                  outline: 'none',
+                  cursor: 'pointer',
+                  WebkitAppearance: 'none',
+                  appearance: 'none',
+                  position: 'relative',
+                  zIndex: '1000',
+                  touchAction: 'none',
+                  userSelect: 'none',
+                  WebkitUserSelect: 'none'
+                }}
+              />
             </div>
-            
-            <div className="card-content">
-              <div className="form-group" style={{ marginBottom: '6px' }}>
-                <label className="form-label text-label" style={{ marginBottom: '6px' }}>Дата рождения</label>
-                <div style={{
-                  display: 'flex',
-                  gap: '8px',
-                  width: '100%',
-                  marginTop: '6px'
-                }}>
-                  {/* День */}
-                  <select
-                    value={birthParts.day}
-                    onChange={(e) => {
-                      console.log('Day changed to:', e.target.value);
-                      setBirthParts(prev => ({ ...prev, day: e.target.value }));
-                    }}
-                    style={{
-                      flex: '1',
-                      padding: '12px 8px',
-                      minHeight: '44px',
-                      border: '1px solid #e3e7ee',
-                      borderRadius: '8px',
-                      background: '#f5f7fa',
-                      color: '#333',
-                      fontFamily: 'Segoe UI, sans-serif',
-                      fontSize: '16px',
-                      fontWeight: '400',
-                      cursor: 'pointer',
-                      outline: 'none',
-                      textAlign: 'center',
-                      WebkitAppearance: 'none',
-                      appearance: 'none'
-                    }}
-                  >
-                    {Array.from({ length: 31 }, (_, i) => i + 1).map(day => (
-                      <option key={day} value={day.toString().padStart(2, '0')}>
-                        {day.toString().padStart(2, '0')}
-                      </option>
-                    ))}
-                  </select>
-
-                  {/* Месяц */}
-                  <select
-                    value={birthParts.month}
-                    onChange={(e) => {
-                      console.log('Month changed to:', e.target.value);
-                      setBirthParts(prev => ({ ...prev, month: e.target.value }));
-                    }}
-                    style={{
-                      flex: '1',
-                      padding: '12px 8px',
-                      minHeight: '44px',
-                      border: '1px solid #e3e7ee',
-                      borderRadius: '8px',
-                      background: '#f5f7fa',
-                      color: '#333',
-                      fontFamily: 'Segoe UI, sans-serif',
-                      fontSize: '16px',
-                      fontWeight: '400',
-                      cursor: 'pointer',
-                      outline: 'none',
-                      textAlign: 'center',
-                      WebkitAppearance: 'none',
-                      appearance: 'none'
-                    }}
-                  >
-                    {[
-                      { value: '01', label: 'Янв' },
-                      { value: '02', label: 'Фев' },
-                      { value: '03', label: 'Мар' },
-                      { value: '04', label: 'Апр' },
-                      { value: '05', label: 'Май' },
-                      { value: '06', label: 'Июн' },
-                      { value: '07', label: 'Июл' },
-                      { value: '08', label: 'Авг' },
-                      { value: '09', label: 'Сен' },
-                      { value: '10', label: 'Окт' },
-                      { value: '11', label: 'Ноя' },
-                      { value: '12', label: 'Дек' }
-                    ].map(month => (
-                      <option key={month.value} value={month.value}>
-                        {month.label}
-                      </option>
-                    ))}
-                  </select>
-
-                  {/* Год */}
-                  <select
-                    value={birthParts.year}
-                    onChange={(e) => {
-                      console.log('Year changed to:', e.target.value);
-                      setBirthParts(prev => ({ ...prev, year: e.target.value }));
-                    }}
-                    style={{
-                      flex: '1',
-                      padding: '12px 8px',
-                      minHeight: '44px',
-                      border: '1px solid #e3e7ee',
-                      borderRadius: '8px',
-                      background: '#f5f7fa',
-                      color: '#333',
-                      fontFamily: 'Segoe UI, sans-serif',
-                      fontSize: '16px',
-                      fontWeight: '400',
-                      cursor: 'pointer',
-                      outline: 'none',
-                      textAlign: 'center',
-                      WebkitAppearance: 'none',
-                      appearance: 'none'
-                    }}
-                  >
-                    {Array.from({ length: 80 }, (_, i) => new Date().getFullYear() - i).map(year => (
-                      <option key={year} value={year.toString()}>
-                        {year}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                {validationErrors.birthDate && (
-                  <span className="form-error">{validationErrors.birthDate}</span>
-                )}
-              </div>
-
-              <div className="form-group">
-                <label className="form-label text-label">Пол</label>
-                <div style={{
-                  display: 'flex',
-                  gap: '12px',
-                  justifyContent: 'center',
-                  width: '100%',
-                  marginTop: '4px'
-                }}>
-                  <button
-                    type="button"
-                    style={{
-                      padding: '12px 24px',
-                      minHeight: '44px',
-                      border: gender === 'male' ? '2px solid rgb(180, 0, 55)' : '2px solid rgb(152, 164, 174)',
-                      borderRadius: '8px',
-                      background: gender === 'male' ? 'rgb(180, 0, 55)' : 'white',
-                      color: gender === 'male' ? 'white' : 'rgb(152, 164, 174)',
-                      fontFamily: 'Segoe UI, sans-serif',
-                      fontSize: '16px',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      flex: '1',
-                      outline: 'none'
-                    }}
-                    onClick={() => {
-                      console.log('Clicked Male'); // для отладки
-                      setGender('male');
-                    }}
-                  >
-                    Мужской
-                  </button>
-                  <button
-                    type="button"
-                    style={{
-                      padding: '12px 24px',
-                      minHeight: '44px',
-                      border: gender === 'female' ? '2px solid rgb(180, 0, 55)' : '2px solid rgb(152, 164, 174)',
-                      borderRadius: '8px',
-                      background: gender === 'female' ? 'rgb(180, 0, 55)' : 'white',
-                      color: gender === 'female' ? 'white' : 'rgb(152, 164, 174)',
-                      fontFamily: 'Segoe UI, sans-serif',
-                      fontSize: '16px',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      flex: '1',
-                      outline: 'none'
-                    }}
-                    onClick={() => {
-                      console.log('Clicked Female'); // для отладки
-                      setGender('female');
-                    }}
-                  >
-                    Женский
-                  </button>
-                </div>
-                {validationErrors.gender && (
-                  <span className="form-error">{validationErrors.gender}</span>
-                )}
-              </div>
-
-              {/* Срок программы - КОМПАКТНЫЙ СЛАЙДЕР В ОДНУ СТРОКУ */}
-              <div className="form-group">
-                <label className="form-label text-label">Срок программы (лет)</label>
-                <div style={{
-                  display: 'flex',
-                  flexDirection: 'row', // В одну строку
-                  alignItems: 'center',
-                  gap: '12px',
-                  width: '100%',
-                  marginTop: '8px',
-                  padding: '8px 0'
-                }}>
-                  <div style={{
-                    position: 'relative',
-                    flex: '1', // Занимает оставшееся место
-                    height: '20px',
-                    display: 'flex',
-                    alignItems: 'center'
-                  }}>
-                    <input
-                      type="range"
-                      min="5"
-                      max="30"
-                      step="1"
-                      value={programTerm}
-                      onChange={(e) => {
-                        console.log('Slider changed to:', e.target.value);
-                        setProgramTerm(parseInt(e.target.value));
-                      }}
-                      onTouchStart={(e) => {
-                        e.stopPropagation();
-                      }}
-                      onTouchMove={(e) => {
-                        e.stopPropagation();
-                      }}
-                      style={{
-                        width: '100%',
-                        height: '8px',
-                        borderRadius: '4px',
-                        background: `linear-gradient(to right, rgb(180, 0, 55) 0%, rgb(180, 0, 55) ${((programTerm - 5) / 25) * 100}%, #e5e5e5 ${((programTerm - 5) / 25) * 100}%, #e5e5e5 100%)`,
-                        outline: 'none',
-                        cursor: 'pointer',
-                        WebkitAppearance: 'none',
-                        appearance: 'none',
-                        position: 'relative',
-                        zIndex: '1000',
-                        touchAction: 'none',
-                        userSelect: 'none',
-                        WebkitUserSelect: 'none'
-                      }}
-                    />
-                  </div>
-                  <div style={{
-                    padding: '6px 12px',
-                    background: 'rgb(180, 0, 55)',
-                    color: 'white',
-                    borderRadius: '16px',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    fontFamily: 'Segoe UI, sans-serif',
-                    minWidth: '40px',
-                    textAlign: 'center',
-                    flexShrink: 0 // Не сжимается
-                  }}>
-                    {programTerm}
-                  </div>
-                </div>
-              </div>
-
-              {/* Тип расчёта - КОМПАКТНЫЕ КНОПКИ В СТРОКУ */}
-              <div className="form-group" style={{ marginBottom: '6px' }}>
-                <label className="form-label text-label" style={{ marginBottom: '6px' }}>Тип расчёта</label>
-                <div style={{
-                  display: 'flex',
-                  flexDirection: 'row', // В строку
-                  flexWrap: 'wrap', // Перенос если не помещается
-                  gap: '8px',
-                  width: '100%',
-                  marginTop: '0px' // Уменьшен отступ
-                }}>
-                  <button
-                    type="button"
-                    style={{
-                      padding: '12px 16px',
-                      minHeight: '56px', // Увеличено для переноса текста
-                      border: calcType === 'from_premium' ? '2px solid rgb(180, 0, 55)' : '2px solid rgb(152, 164, 174)',
-                      borderRadius: '8px',
-                      background: calcType === 'from_premium' ? 'rgb(180, 0, 55)' : 'white',
-                      color: calcType === 'from_premium' ? 'white' : 'rgb(152, 164, 174)',
-                      fontFamily: 'Segoe UI, sans-serif',
-                      fontSize: '14px',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      outline: 'none',
-                      textAlign: 'center',
-                      flex: '1', // Равная ширина
-                      minWidth: '140px', // Минимальная ширина
-                      whiteSpace: 'normal', // Разрешить перенос текста
-                      wordWrap: 'break-word', // Перенос длинных слов
-                      lineHeight: '1.3' // Межстрочный интервал
-                    }}
-                    onClick={() => {
-                      console.log('Selected calc type: from_premium');
-                      setCalcType('from_premium');
-                    }}
-                  >
-                    Рассчитать по размеру взноса
-                  </button>
-                  <button
-                    type="button"
-                    style={{
-                      padding: '12px 16px',
-                      minHeight: '56px', // Увеличено для переноса текста
-                      border: calcType === 'from_sum' ? '2px solid rgb(180, 0, 55)' : '2px solid rgb(152, 164, 174)',
-                      borderRadius: '8px',
-                      background: calcType === 'from_sum' ? 'rgb(180, 0, 55)' : 'white',
-                      color: calcType === 'from_sum' ? 'white' : 'rgb(152, 164, 174)',
-                      fontFamily: 'Segoe UI, sans-serif',
-                      fontSize: '14px',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      outline: 'none',
-                      textAlign: 'center',
-                      flex: '1', // Равная ширина
-                      minWidth: '140px', // Минимальная ширина
-                      whiteSpace: 'normal', // Разрешить перенос текста
-                      wordWrap: 'break-word', // Перенос длинных слов
-                      lineHeight: '1.3' // Межстрочный интервал
-                    }}
-                    onClick={() => {
-                      console.log('Selected calc type: from_sum');
-                      setCalcType('from_sum');
-                    }}
-                  >
-                    Рассчитать по страховой сумме
-                  </button>
-                </div>
-                {validationErrors.calcType && (
-                  <span className="form-error">{validationErrors.calcType}</span>
-                )}
-              </div>
-
-              <div className="form-group" style={{ marginBottom: '12px' }}>
-                <label className="form-label text-label" style={{ marginBottom: '6px' }}>
-                  {calcType === 'from_premium' ? 'Размер взноса' : 'Страховая сумма'} (₽)
-                </label>
-                <input
-                  type="text"
-                  className={`form-input ${validationErrors.amount ? 'error' : ''}`}
-                  value={amountDisplay}
-                  onChange={handleAmountChange}
-                  placeholder={
-                    calcType === 'from_premium' 
-                      ? 'от 100 000 рублей' 
-                      : calcType === 'from_sum' 
-                        ? 'от 500 000 рублей'
-                        : '1 000 000' // по умолчанию если ничего не выбрано
-                  }
-                  style={{
-                    ...getInputStyle(),
-                    marginTop: '6px'
-                  }}
-                />
-                {validationErrors.amount && (
-                  <span className="form-error">{validationErrors.amount}</span>
-                )}
-              </div>
-
-              {validationErrors.general && (
-                <div className="form-error-block">{validationErrors.general}</div>
-              )}
+            <div style={{
+              padding: '6px 12px',
+              background: 'rgb(180, 0, 55)',
+              color: 'white',
+              borderRadius: '16px',
+              fontSize: '14px',
+              fontWeight: '600',
+              fontFamily: 'Segoe UI, sans-serif',
+              minWidth: '40px',
+              textAlign: 'center',
+              flexShrink: 0
+            }}>
+              {programTerm}
             </div>
           </div>
-        );
+        </div>
+
+        {/* Тип расчёта - КОМПАКТНЫЕ КНОПКИ В СТРОКУ */}
+        <div className="form-group" style={{ marginBottom: '6px' }}>
+          <label className="form-label text-label" style={{ marginBottom: '6px' }}>Тип расчёта</label>
+          <div style={{
+            display: 'flex',
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            gap: '8px',
+            width: '100%',
+            marginTop: '0px'
+          }}>
+            <button
+              type="button"
+              style={{
+                padding: '12px 16px',
+                minHeight: '56px',
+                border: calcType === 'from_premium' ? '2px solid rgb(180, 0, 55)' : '2px solid rgb(152, 164, 174)',
+                borderRadius: '8px',
+                background: calcType === 'from_premium' ? 'rgb(180, 0, 55)' : 'white',
+                color: calcType === 'from_premium' ? 'white' : 'rgb(152, 164, 174)',
+                fontFamily: 'Segoe UI, sans-serif',
+                fontSize: '14px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                outline: 'none',
+                textAlign: 'center',
+                flex: '1',
+                minWidth: '140px',
+                whiteSpace: 'normal',
+                wordWrap: 'break-word',
+                lineHeight: '1.3'
+              }}
+              onClick={() => {
+                console.log('Selected calc type: from_premium');
+                setCalcType('from_premium');
+              }}
+            >
+              Рассчитать по размеру взноса
+            </button>
+            <button
+              type="button"
+              style={{
+                padding: '12px 16px',
+                minHeight: '56px',
+                border: calcType === 'from_sum' ? '2px solid rgb(180, 0, 55)' : '2px solid rgb(152, 164, 174)',
+                borderRadius: '8px',
+                background: calcType === 'from_sum' ? 'rgb(180, 0, 55)' : 'white',
+                color: calcType === 'from_sum' ? 'white' : 'rgb(152, 164, 174)',
+                fontFamily: 'Segoe UI, sans-serif',
+                fontSize: '14px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                outline: 'none',
+                textAlign: 'center',
+                flex: '1',
+                minWidth: '140px',
+                whiteSpace: 'normal',
+                wordWrap: 'break-word',
+                lineHeight: '1.3'
+              }}
+              onClick={() => {
+                console.log('Selected calc type: from_sum');
+                setCalcType('from_sum');
+              }}
+            >
+              Рассчитать по страховой сумме
+            </button>
+          </div>
+          {validationErrors.calcType && (
+            <span className="form-error">{validationErrors.calcType}</span>
+          )}
+        </div>
+
+        {/* Сумма */}
+        <div className="form-group" style={{ marginBottom: '12px' }}>
+          <label className="form-label text-label" style={{ marginBottom: '6px' }}>
+            {calcType === 'from_premium' ? 'Размер взноса' : 'Страховая сумма'} (₽)
+          </label>
+          <input
+            type="text"
+            className={`form-input ${validationErrors.amount ? 'error' : ''}`}
+            value={amountDisplay}
+            onChange={handleAmountChange}
+            placeholder={
+              calcType === 'from_premium' 
+                ? 'от 100 000 рублей' 
+                : calcType === 'from_sum' 
+                  ? 'от 500 000 рублей'
+                  : '1 000 000'
+            }
+            style={{
+              ...getInputStyle(),
+              marginTop: '6px'
+            }}
+          />
+          {validationErrors.amount && (
+            <span className="form-error">{validationErrors.amount}</span>
+          )}
+        </div>
+
+        {validationErrors.general && (
+          <div className="form-error-block">{validationErrors.general}</div>
+        )}
+      </div>
+    </div>
+  );
 
       case 'processing':
         return (

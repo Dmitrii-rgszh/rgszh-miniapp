@@ -1,5 +1,4 @@
-// ИСПРАВЛЕННЫЙ DateWheelPicker.js
-// Замените полностью содержимое файла src/DateWheelPicker.js
+// Обновленный DateWheelPicker.js с исправленной кликабельностью
 
 import React from 'react';
 
@@ -62,42 +61,98 @@ const DateWheelPicker = ({
     onChange(newValue);
   };
 
-  // ИСПРАВЛЕННЫЕ СТИЛИ - теперь с темным текстом на светлом фоне
+  // КРИТИЧНО: Усиленные стили для максимальной кликабельности
   const selectStyle = {
+    // Максимальный приоритет и кликабельность
+    position: 'relative',
+    zIndex: '9999',
+    pointerEvents: 'auto',
+    cursor: 'pointer',
+    userSelect: 'none',
+    WebkitUserSelect: 'none',
+    touchAction: 'manipulation',
+    WebkitTouchCallout: 'default',
+    WebkitTapHighlightColor: 'rgba(180, 0, 55, 0.2)',
+    
+    // Размеры и видимость
     flex: '1',
     padding: '12px 8px',
-    backgroundColor: 'white', // ✅ ИСПРАВЛЕНИЕ: белый фон вместо прозрачного
-    border: '2px solid #e1e5e9', // ✅ ИСПРАВЛЕНИЕ: такая же рамка как у других полей
-    borderRadius: '8px',
-    color: '#333', // ✅ ИСПРАВЛЕНИЕ: темный текст вместо белого
-    fontSize: '16px', // ✅ ИСПРАВЛЕНИЕ: увеличили размер шрифта
-    cursor: 'pointer',
     minHeight: '48px',
-    appearance: 'none',
+    height: 'auto',
+    opacity: '1',
+    visibility: 'visible',
+    display: 'block',
+    
+    // Предотвращение zoom на iOS
+    fontSize: '16px',
+    transform: 'scale(1)',
+    transformOrigin: 'center',
+    
+    // Визуальные стили
+    backgroundColor: '#f5f7fa',
+    border: '1px solid #e3e7ee',
+    borderRadius: '8px',
+    color: '#333',
+    fontFamily: '"Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif',
+    fontWeight: '400',
+    textAlign: 'center',
+    textAlignLast: 'center',
+    boxSizing: 'border-box',
+    
+    // Убираем стандартные стили браузера
+    outline: 'none',
     WebkitAppearance: 'none',
     MozAppearance: 'none',
-    // ✅ ИСПРАВЛЕНИЕ: темная стрелка вместо белой
-    backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e")`,
+    appearance: 'none',
+    
+    // Кастомная стрелка
+    backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e")`,
     backgroundRepeat: 'no-repeat',
     backgroundPosition: 'right 8px center',
-    backgroundSize: '12px',
-    paddingRight: '28px',
-    textAlign: 'center',
-    outline: 'none', // ✅ ДОБАВЛЕНО: убираем outline при фокусе
-    transition: 'border-color 0.3s ease', // ✅ ДОБАВЛЕНО: плавная анимация
-    boxSizing: 'border-box'
+    backgroundSize: '16px',
+    paddingRight: '32px',
+    
+    // Переходы
+    transition: 'all 0.3s ease'
   };
 
-  // ✅ ДОБАВЛЕНО: стиль для фокуса
-  const selectFocusStyle = {
-    borderColor: '#9370DB'
-  };
-
-  // ✅ ИСПРАВЛЕНИЕ: темные опции вместо светлых
+  // Стили для option элементов
   const optionStyle = {
     backgroundColor: 'white',
     color: '#333',
-    padding: '12px'
+    padding: '12px',
+    fontSize: '16px'
+  };
+
+  // Обработчики событий для улучшения кликабельности
+  const handleFocus = (e) => {
+    Object.assign(e.target.style, {
+      borderColor: 'rgb(180, 0, 55)',
+      boxShadow: '0 0 0 3px rgba(180, 0, 55, 0.1)',
+      backgroundColor: 'white'
+    });
+  };
+
+  const handleBlur = (e) => {
+    Object.assign(e.target.style, {
+      borderColor: '#e3e7ee',
+      boxShadow: 'none',
+      backgroundColor: '#f5f7fa'
+    });
+  };
+
+  const handleTouch = (e) => {
+    e.stopPropagation();
+    e.target.focus();
+    // Для iOS - принудительно открываем select
+    if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+      const mouseEvent = new MouseEvent('mousedown', {
+        view: window,
+        bubbles: true,
+        cancelable: true
+      });
+      e.target.dispatchEvent(mouseEvent);
+    }
   };
 
   return (
@@ -107,7 +162,9 @@ const DateWheelPicker = ({
         display: 'flex',
         flexDirection: 'row',
         gap: '8px',
-        width: '100%'
+        width: '100%',
+        position: 'relative',
+        zIndex: '100'
       }}
     >
       {/* День */}
@@ -115,8 +172,10 @@ const DateWheelPicker = ({
         value={value.day || '01'}
         onChange={handleChange('day')}
         style={selectStyle}
-        onFocus={(e) => e.target.style.borderColor = '#9370DB'}
-        onBlur={(e) => e.target.style.borderColor = '#e1e5e9'}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
+        onTouchStart={handleTouch}
+        onMouseDown={(e) => e.stopPropagation()}
       >
         {days.map(day => (
           <option key={day.value} value={day.value} style={optionStyle}>
@@ -130,8 +189,10 @@ const DateWheelPicker = ({
         value={value.month || '01'}
         onChange={handleChange('month')}
         style={selectStyle}
-        onFocus={(e) => e.target.style.borderColor = '#9370DB'}
-        onBlur={(e) => e.target.style.borderColor = '#e1e5e9'}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
+        onTouchStart={handleTouch}
+        onMouseDown={(e) => e.stopPropagation()}
       >
         {months.map(month => (
           <option key={month.value} value={month.value} style={optionStyle}>
@@ -145,8 +206,10 @@ const DateWheelPicker = ({
         value={value.year || currentYear.toString()}
         onChange={handleChange('year')}
         style={selectStyle}
-        onFocus={(e) => e.target.style.borderColor = '#9370DB'}
-        onBlur={(e) => e.target.style.borderColor = '#e1e5e9'}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
+        onTouchStart={handleTouch}
+        onMouseDown={(e) => e.stopPropagation()}
       >
         {years.map(year => (
           <option key={year.value} value={year.value} style={optionStyle}>
