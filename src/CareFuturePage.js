@@ -1,8 +1,7 @@
-// CareFuturePage.js - С МОДУЛЬНЫМИ СТИЛЯМИ
-// ✅ Использует модульную CSS архитектуру
-// ✅ Анимации как в MainMenu и других страницах
-// ✅ Правильная структура компонентов
-// ✅ Карточка позиционируется напрямую без content-container
+// CareFuturePage.js - ИСПРАВЛЕНИЕ АНИМАЦИИ СТРЕЛКИ
+// ✅ Добавлен контейнер .shaker для анимации стрелки
+// ✅ Логика анимации shake-btn при готовности
+// ✅ Правильная структура согласно NextButton.css
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -24,6 +23,7 @@ export default function CareFuturePage() {
   const navigate = useNavigate();
   const logoRef = useRef(null);
   const nextRef = useRef(null);
+  const emailInputRef = useRef(null);
   
   // ===== СОСТОЯНИЯ АНИМАЦИЙ =====
   const [logoAnimated, setLogoAnimated] = useState(false);
@@ -65,6 +65,162 @@ export default function CareFuturePage() {
   useEffect(() => {
     setIsExiting(false);
   }, []);
+
+  // ===== АГРЕССИВНОЕ ИСПРАВЛЕНИЕ INPUT ПОЛЕЙ =====
+  useEffect(() => {
+    const aggressiveInputFix = () => {
+      // Находим все input поля в карточке
+      const cardInputs = document.querySelectorAll('.card-container input[type="email"], .card-container input[type="text"], .card-container input[type="password"]');
+      
+      cardInputs.forEach((input) => {
+        // Принудительные стили для абсолютной кликабельности
+        Object.assign(input.style, {
+          // КРИТИЧНО: Максимальный z-index
+          position: 'relative',
+          zIndex: '9999',
+          
+          // КРИТИЧНО: Полная интерактивность
+          pointerEvents: 'auto',
+          cursor: 'text',
+          userSelect: 'auto',
+          WebkitUserSelect: 'auto',
+          touchAction: 'manipulation',
+          WebkitTouchCallout: 'auto',
+          
+          // КРИТИЧНО: Размеры и видимость
+          display: 'block',
+          width: '100%',
+          height: 'auto',
+          minHeight: '44px',
+          opacity: '1',
+          visibility: 'visible',
+          
+          // КРИТИЧНО: Предотвращение zoom на iOS
+          fontSize: '16px',
+          transform: 'scale(1)',
+          transformOrigin: 'center',
+          
+          // Визуальные стили
+          background: '#f5f7fa',
+          border: '1px solid #e3e7ee',
+          borderRadius: '8px',
+          padding: '12px 16px',
+          color: '#333',
+          textAlign: 'center',
+          fontFamily: '"Segoe UI", sans-serif',
+          lineHeight: '1.4',
+          boxSizing: 'border-box',
+          
+          // Дополнительная защита
+          outline: 'none',
+          WebkitAppearance: 'none',
+          appearance: 'none'
+        });
+        
+        // Принудительные обработчики событий
+        const forceClickHandler = (e) => {
+          e.stopPropagation();
+          input.focus();
+        };
+        
+        const forceFocusHandler = (e) => {
+          Object.assign(input.style, {
+            borderColor: 'rgb(180, 0, 55)',
+            boxShadow: '0 0 0 3px rgba(180, 0, 55, 0.1)',
+            background: 'white'
+          });
+        };
+        
+        const forceBlurHandler = (e) => {
+          Object.assign(input.style, {
+            borderColor: '#e3e7ee',
+            boxShadow: 'none',
+            background: '#f5f7fa'
+          });
+        };
+        
+        // Удаляем старые обработчики и добавляем новые
+        input.removeEventListener('click', forceClickHandler);
+        input.removeEventListener('focus', forceFocusHandler);
+        input.removeEventListener('blur', forceBlurHandler);
+        
+        input.addEventListener('click', forceClickHandler, { passive: false });
+        input.addEventListener('focus', forceFocusHandler, { passive: false });
+        input.addEventListener('blur', forceBlurHandler, { passive: false });
+        input.addEventListener('touchstart', forceClickHandler, { passive: false });
+        input.addEventListener('pointerdown', forceClickHandler, { passive: false });
+      });
+    };
+    
+    // Запускаем исправление через разные интервалы
+    const timer1 = setTimeout(aggressiveInputFix, 100);
+    const timer2 = setTimeout(aggressiveInputFix, 500);
+    const timer3 = setTimeout(aggressiveInputFix, 1000);
+    
+    // Слушаем изменения DOM
+    const observer = new MutationObserver(() => {
+      setTimeout(aggressiveInputFix, 50);
+    });
+    
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
+    
+    return () => {
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+      clearTimeout(timer3);
+      observer.disconnect();
+    };
+  }, [stage]); // Перезапускаем при смене stage
+
+  // ===== ДОПОЛНИТЕЛЬНОЕ ИСПРАВЛЕНИЕ ДЛЯ EMAIL ПОЛЯ =====
+  useEffect(() => {
+    if (stage === 'email' && emailInputRef.current) {
+      const emailInput = emailInputRef.current;
+      
+      // Принудительное исправление для email поля
+      const forceEmailClickability = () => {
+        Object.assign(emailInput.style, {
+          position: 'relative',
+          zIndex: '99999',
+          pointerEvents: 'auto',
+          cursor: 'text',
+          userSelect: 'auto',
+          WebkitUserSelect: 'auto',
+          touchAction: 'manipulation',
+          display: 'block',
+          width: '100%',
+          height: '44px',
+          fontSize: '16px',
+          transform: 'scale(1)',
+          opacity: '1',
+          visibility: 'visible'
+        });
+      };
+      
+      forceEmailClickability();
+      
+      // Принудительный клик обработчик
+      const handleEmailClick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        emailInput.focus();
+        emailInput.click();
+      };
+      
+      emailInput.addEventListener('touchstart', handleEmailClick, { passive: false });
+      emailInput.addEventListener('mousedown', handleEmailClick, { passive: false });
+      emailInput.addEventListener('pointerdown', handleEmailClick, { passive: false });
+      
+      return () => {
+        emailInput.removeEventListener('touchstart', handleEmailClick);
+        emailInput.removeEventListener('mousedown', handleEmailClick);
+        emailInput.removeEventListener('pointerdown', handleEmailClick);
+      };
+    }
+  }, [stage]);
 
   // ===== АНИМАЦИЯ ВХОДА =====
   useEffect(() => {
@@ -126,6 +282,40 @@ export default function CareFuturePage() {
     return emailRegex.test(email);
   };
 
+  // ===== ВАЛИДАЦИЯ ФОРМЫ =====
+  const validateForm = () => {
+    const errors = {};
+
+    if (!birthDate) {
+      errors.birthDate = 'Укажите дату рождения';
+    }
+
+    if (!gender) {
+      errors.gender = 'Выберите пол';
+    }
+
+    if (!calcType) {
+      errors.calcType = 'Выберите тип расчёта';
+    }
+
+    if (!amountRaw || parseInt(amountRaw) === 0) {
+      errors.amount = 'Введите сумму';
+    }
+
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  // ===== ПРОВЕРКА ГОТОВНОСТИ КНОПКИ ДЛЯ АНИМАЦИИ =====
+  const isNextButtonReady = () => {
+    if (stage === 'email') {
+      return validateEmail(email);
+    } else if (stage === 'form') {
+      return validateForm();
+    }
+    return false;
+  };
+
   // ===== ОБРАБОТКА КНОПКИ "НАЗАД" =====
   const handleBack = () => {
     if (isExiting) return;
@@ -167,30 +357,6 @@ export default function CareFuturePage() {
     
     setEmailError('');
     setStage('form');
-  };
-
-  // ===== ВАЛИДАЦИЯ ФОРМЫ =====
-  const validateForm = () => {
-    const errors = {};
-
-    if (!birthDate) {
-      errors.birthDate = 'Укажите дату рождения';
-    }
-
-    if (!gender) {
-      errors.gender = 'Выберите пол';
-    }
-
-    if (!calcType) {
-      errors.calcType = 'Выберите тип расчёта';
-    }
-
-    if (!amountRaw || parseInt(amountRaw) === 0) {
-      errors.amount = 'Введите сумму';
-    }
-
-    setValidationErrors(errors);
-    return Object.keys(errors).length === 0;
   };
 
   // ===== РАСЧЕТ =====
@@ -369,16 +535,69 @@ export default function CareFuturePage() {
   ].filter(Boolean).join(' ');
 
   const getNextButtonClasses = () => {
-    const canProceed = stage === 'email' ? validateEmail(email) : 
-                      stage === 'form' ? validateForm() : 
-                      false;
+    const canProceed = isNextButtonReady();
     
     return [
       'next-btn',
       canProceed && contentAnimated ? 'animate-next' : '',
-      isExiting ? 'animate-next-exit' : ''
+      isExiting ? 'animate-next-exit' : '',
+      !canProceed ? 'disabled' : ''
     ].filter(Boolean).join(' ');
   };
+
+  // ===== КЛАССЫ ДЛЯ АНИМАЦИИ СТРЕЛКИ =====
+  const getShakerClasses = () => {
+    const isReady = isNextButtonReady();
+    
+    return [
+      'shaker',
+      isReady && contentAnimated ? 'shake-btn' : ''
+    ].filter(Boolean).join(' ');
+  };
+
+  // ===== ПРИНУДИТЕЛЬНЫЕ СТИЛИ ДЛЯ INPUT ПОЛЕЙ =====
+  const getInputStyle = (isEmail = false) => ({
+    // КРИТИЧНО: Максимальная кликабельность
+    position: 'relative',
+    zIndex: isEmail ? '99999' : '9999',
+    pointerEvents: 'auto',
+    cursor: 'text',
+    userSelect: 'auto',
+    WebkitUserSelect: 'auto',
+    touchAction: 'manipulation',
+    WebkitTouchCallout: 'auto',
+    WebkitTapHighlightColor: 'rgba(180, 0, 55, 0.2)',
+    
+    // КРИТИЧНО: Размеры и видимость
+    display: 'block',
+    width: '100%',
+    height: '44px',
+    minHeight: '44px',
+    opacity: '1',
+    visibility: 'visible',
+    
+    // КРИТИЧНО: Предотвращение zoom на iOS
+    fontSize: '16px',
+    transform: 'scale(1)',
+    transformOrigin: 'center',
+    
+    // Визуальные стили
+    background: '#f5f7fa',
+    border: '1px solid #e3e7ee',
+    borderRadius: '8px',
+    padding: '12px 16px',
+    color: '#333',
+    textAlign: 'center',
+    fontFamily: '"Segoe UI", sans-serif',
+    lineHeight: '1.4',
+    boxSizing: 'border-box',
+    
+    // Дополнительная защита
+    outline: 'none',
+    WebkitAppearance: 'none',
+    appearance: 'none',
+    transition: 'all 0.3s ease'
+  });
 
   // ===== РЕНДЕР ПО СТАДИЯМ =====
   const renderContent = () => {
@@ -396,20 +615,33 @@ export default function CareFuturePage() {
             <div className="form-group">
               <label className="form-label text-label">Введите ваш email</label>
               <input
+                ref={emailInputRef}
                 type="email"
                 className={`form-input ${emailError ? 'error' : ''}`}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="example@mail.ru"
-                style={{ 
-                  textAlign: 'center', 
-                  position: 'relative', 
-                  zIndex: 15,
-                  userSelect: 'auto',
-                  WebkitUserSelect: 'auto',
-                  pointerEvents: 'auto',
-                  cursor: 'text',
-                  touchAction: 'manipulation'
+                style={getInputStyle(true)}
+                onFocus={(e) => {
+                  Object.assign(e.target.style, {
+                    borderColor: 'rgb(180, 0, 55)',
+                    boxShadow: '0 0 0 3px rgba(180, 0, 55, 0.1)',
+                    background: 'white'
+                  });
+                }}
+                onBlur={(e) => {
+                  Object.assign(e.target.style, {
+                    borderColor: '#e3e7ee',
+                    boxShadow: 'none',
+                    background: '#f5f7fa'
+                  });
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.target.focus();
+                }}
+                onTouchStart={(e) => {
+                  e.stopPropagation();
                 }}
               />
               {emailError && <span className="form-error">{emailError}</span>}
@@ -509,6 +741,7 @@ export default function CareFuturePage() {
                   value={amountDisplay}
                   onChange={handleAmountChange}
                   placeholder="1 000 000"
+                  style={getInputStyle()}
                 />
                 {validationErrors.amount && (
                   <span className="form-error">{validationErrors.amount}</span>
@@ -637,6 +870,7 @@ export default function CareFuturePage() {
                   value={mgrSurname}
                   onChange={(e) => setMgrSurname(e.target.value)}
                   placeholder="Иванов"
+                  style={getInputStyle()}
                 />
               </div>
 
@@ -648,6 +882,7 @@ export default function CareFuturePage() {
                   value={mgrName}
                   onChange={(e) => setMgrName(e.target.value)}
                   placeholder="Иван"
+                  style={getInputStyle()}
                 />
               </div>
 
@@ -659,6 +894,7 @@ export default function CareFuturePage() {
                   value={mgrCity}
                   onChange={(e) => setMgrCity(e.target.value)}
                   placeholder="Москва"
+                  style={getInputStyle()}
                 />
               </div>
 
@@ -732,7 +968,7 @@ export default function CareFuturePage() {
         </svg>
       </button>
 
-      {/* ===== КНОПКА "ДАЛЕЕ" ===== */}
+      {/* ===== КНОПКА "ДАЛЕЕ" С АНИМИРОВАННОЙ СТРЕЛКОЙ ===== */}
       {(stage === 'email' || stage === 'form') && (
         <button
           ref={nextRef}
@@ -744,22 +980,21 @@ export default function CareFuturePage() {
               handleCalculate();
             }
           }}
-          disabled={
-            stage === 'email' ? !validateEmail(email) : 
-            stage === 'form' ? !validateForm() : 
-            false
-          }
+          disabled={!isNextButtonReady()}
         >
-          <svg viewBox="0 0 24 24">
-            <path 
-              d="M9 18l6-6-6-6" 
-              stroke="white" 
-              strokeWidth="3" 
-              fill="none" 
-              strokeLinecap="round" 
-              strokeLinejoin="round"
-            />
-          </svg>
+          {/* ✅ ДОБАВЛЯЕМ КОНТЕЙНЕР .shaker ДЛЯ АНИМАЦИИ */}
+          <div className={getShakerClasses()}>
+            <svg viewBox="0 0 24 24">
+              <path 
+                d="M9 18l6-6-6-6" 
+                stroke="white" 
+                strokeWidth="3" 
+                fill="none" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+              />
+            </svg>
+          </div>
         </button>
       )}
 
