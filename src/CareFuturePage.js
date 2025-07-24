@@ -401,6 +401,7 @@ export default function CareFuturePage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="example@mail.ru"
+                style={{ textAlign: 'center' }}
               />
               {emailError && <span className="form-error">{emailError}</span>}
             </div>

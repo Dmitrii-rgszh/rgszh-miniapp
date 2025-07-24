@@ -32,6 +32,7 @@
   transform: translateX(-50%);
   width: 90%;
   max-width: 500px;
+  z-index: 10;
 }
 
 /* Карточка на всю высоту */
@@ -103,6 +104,7 @@
   color: #333;
   font-size: 16px;
   transition: all 0.3s ease;
+  text-align: center !important;
 }
 
 .card-container .form-input:focus {
@@ -114,6 +116,7 @@
 
 .card-container .form-input::placeholder {
   color: #9ca3af;
+  text-align: center !important;
 }
 
 .card-container .form-input.error {
