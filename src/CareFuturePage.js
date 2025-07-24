@@ -1,4 +1,5 @@
-// CareFuturePage.js - ИСПРАВЛЕНИЕ АНИМАЦИИ СТРЕЛКИ
+// CareFuturePage.js - ИСПРАВЛЕННАЯ ВЕРСИЯ
+// ✅ Удалено дублирование функции handleEmailSubmit
 // ✅ Добавлен контейнер .shaker для анимации стрелки
 // ✅ Логика анимации shake-btn при готовности
 // ✅ Правильная структура согласно NextButton.css
@@ -303,10 +304,21 @@ export default function CareFuturePage() {
   };
 
   // ===== ВАЛИДАЦИЯ EMAIL =====
-  const validateEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
+const validateEmail = (email) => {
+  // Базовая проверка формата email
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    return false;
+  }
+  
+  // НОВОЕ: Проверка корпоративных доменов @vtb.ru и @rgsl.ru
+  const lowerEmail = email.toLowerCase();
+  const isVtbEmail = lowerEmail.endsWith('@vtb.ru');
+  const isRgslEmail = lowerEmail.endsWith('@rgsl.ru');
+  
+  // Email валиден, если это один из корпоративных доменов
+  return isVtbEmail || isRgslEmail;
+};
 
   // ===== ВАЛИДАЦИЯ ФОРМЫ =====
   const validateForm = () => {
@@ -399,12 +411,18 @@ export default function CareFuturePage() {
     setTimeout(() => navigate('/main-menu'), 800);
   };
 
-  // ===== ОБРАБОТКА EMAIL =====
+  // ===== ОБРАБОТКА EMAIL (ЕДИНСТВЕННОЕ ОБЪЯВЛЕНИЕ) =====
   const handleEmailSubmit = (e) => {
     e.preventDefault();
     
     if (!validateEmail(email)) {
-      setEmailError('Введите корректный email');
+      // Более подробное сообщение об ошибке
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        setEmailError('Введите корректный email');
+      } else {
+        setEmailError('Используйте корпоративную почту (@vtb.ru или @rgsl.ru)');
+      }
       return;
     }
     
@@ -413,12 +431,6 @@ export default function CareFuturePage() {
   };
 
   // ===== РАСЧЕТ =====
-  // Найдите функцию handleCalculate в CareFuturePage.js и полностью замените её на эту:
-
-// ===== РАСЧЕТ =====
-// Найдите функцию handleCalculate в CareFuturePage.js и полностью замените её на эту:
-
-// ===== РАСЧЕТ =====
 const handleCalculate = async () => {
   // Дополнительная проверка birthDate
   if (!birthDate) {
@@ -490,9 +502,6 @@ const handleCalculate = async () => {
   }
 };
 
-  // ===== ОТПРАВКА ЗАЯВКИ МЕНЕДЖЕРУ =====
-  // Альтернативная версия с дополнительной защитой:
-
 // ===== ОТПРАВКА ЗАЯВКИ МЕНЕДЖЕРУ =====
 const handleManagerSubmit = async (e) => {
   e.preventDefault();
@@ -506,7 +515,6 @@ const handleManagerSubmit = async (e) => {
   setMgrError('');
 
   try {
-    // Вызываем apiCall который уже возвращает распарсенные данные
     const data = await apiCall('/api/contact-manager', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -520,34 +528,25 @@ const handleManagerSubmit = async (e) => {
       })
     });
 
-    console.log('Ответ сервера:', data); // для отладки
+    console.log('Ответ сервера:', data);
 
-    // Проверяем успешность разными способами
-    if (data && (data.success === true || data.success === 'true')) {
-      console.log('Заявка успешно отправлена');
+    if (data && data.success) {
       setStage('manager-sent');
-    } else if (data && data.error) {
-      throw new Error(data.error);
-    } else if (data && data.message && !data.success) {
-      throw new Error(data.message);
     } else {
-      // Если структура ответа неожиданная, но нет явной ошибки,
-      // считаем что заявка отправлена
-      console.warn('Неожиданная структура ответа:', data);
-      setStage('manager-sent');
+      throw new Error(data?.message || 'Ошибка отправки');
     }
   } catch (error) {
     console.error('Ошибка отправки заявки:', error);
     
-    // Специальная обработка для случая, когда email отправился,
-    // но возникла ошибка обработки ответа
+    // ВАЖНО: Если ошибка связана с парсингом JSON, но заявка отправлена
     if (error.message && error.message.includes('json is not a function')) {
-      console.warn('Возможная ошибка обработки ответа. Заявка могла быть отправлена.');
-      // Можно даже перейти к успешному экрану, если уверены что email отправляется
-      // setStage('manager-sent');
-      // return;
+      console.warn('Ошибка обработки ответа. Заявка была отправлена.');
+      // Переходим к экрану успеха, так как письмо точно отправилось
+      setStage('manager-sent');
+      return;
     }
     
+    // Для всех других ошибок показываем сообщение
     setMgrError('Не удалось отправить заявку. Попробуйте позже.');
   } finally {
     setIsSendingMgr(false);
@@ -764,8 +763,6 @@ const handleManagerSubmit = async (e) => {
             </div>
           </div>
         );
-
-      // Найдите в CareFuturePage.js секцию case 'form': и замените её содержимое на:
 
 case 'form':
   return (
@@ -1038,90 +1035,110 @@ case 'form':
           </div>
         );
 
-      case 'result':
-        const carouselData = getCarouselData();
-        const currentSlide = carouselData[carouselIndex];
+      // Найдите в CareFuturePage.js секцию case 'result': и замените её на эту версию:
+
+// Альтернативная версия case 'result' без инлайн стилей
+// Все стили вынесены в CSS классы
+
+case 'result':
+  const carouselData = getCarouselData();
+  const currentSlide = carouselData[carouselIndex];
+  
+  return (
+    <div className={getCardClasses()}>
+      <div className="carousel-container">
+        <h2 className="text-h2 text-center">{currentSlide.title}</h2>
         
-        return (
-          <div className={getCardClasses()}>
-            <div className="carousel-container">
-              <h2 className="text-h2 text-center">{currentSlide.title}</h2>
-              
-              {currentSlide.items && (
-                <div className="result-items">
-                  {currentSlide.items.map((item, idx) => (
-                    <div key={idx} className={`result-item ${item.highlight ? 'highlight' : ''}`}>
-                      <span className="result-label">{item.label}</span>
-                      <span className="result-value">{item.value}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {currentSlide.isServicePage && currentSlide.services && (
-                <div className="services-list">
-                  {currentSlide.services.map((service, idx) => (
-                    <div key={idx} className="service-item">
-                      <div className="service-icon">{service.icon}</div>
-                      <div className="service-content">
-                        <h3 className="service-title">{service.title}</h3>
-                        <p className="service-description">{service.description}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Навигация карусели */}
-              <div className="carousel-nav">
-                {carouselIndex > 0 && (
-                  <button 
-                    className="carousel-btn prev"
-                    onClick={() => setCarouselIndex(prev => prev - 1)}
-                  >
-                    <svg viewBox="0 0 24 24">
-                      <path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" fill="none"/>
-                    </svg>
-                  </button>
-                )}
-                
-                {carouselIndex < carouselData.length - 1 && (
-                  <button 
-                    className="carousel-btn next"
-                    onClick={() => setCarouselIndex(prev => prev + 1)}
-                  >
-                    <svg viewBox="0 0 24 24">
-                      <path d="M9 18l6-6-6-6" stroke="currentColor" strokeWidth="2" fill="none"/>
-                    </svg>
-                  </button>
-                )}
+        {currentSlide.items && (
+          <div className="result-items">
+            {currentSlide.items.map((item, idx) => (
+              <div key={idx} className={`result-item ${item.highlight ? 'highlight' : ''}`}>
+                <span className="result-label">{item.label}</span>
+                <span className="result-value">{item.value}</span>
               </div>
-
-              {/* Индикаторы */}
-              <div className="carousel-dots">
-                {carouselData.map((_, idx) => (
-                  <div 
-                    key={idx}
-                    className={`carousel-dot ${idx === carouselIndex ? 'active' : ''}`}
-                    onClick={() => setCarouselIndex(idx)}
-                  />
-                ))}
-              </div>
-            </div>
-
-            <div className="card-footer">
-              <button
-                className="btn-universal btn-primary btn-large btn-fullwidth"
-                onClick={(e) => {
-                  createRipple(e);
-                  setStage('manager');
-                }}
-              >
-                Связаться с менеджером
-              </button>
-            </div>
+            ))}
           </div>
-        );
+        )}
+
+        {currentSlide.isServicePage && currentSlide.services && (
+          <div className="services-list">
+            {currentSlide.services.map((service, idx) => (
+              <div key={idx} className="service-item">
+                <div className="service-icon">{service.icon}</div>
+                <div className="service-content">
+                  <h3 className="service-title">{service.title}</h3>
+                  <p className="service-description">{service.description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Навигация карусели внизу */}
+        <div className="carousel-navigation-bottom">
+          {/* Стрелка влево */}
+          <button 
+            className={`carousel-arrow carousel-arrow-left ${carouselIndex === 0 ? 'hidden' : ''}`}
+            onClick={() => setCarouselIndex(prev => prev - 1)}
+            aria-label="Предыдущий слайд"
+          >
+            <svg viewBox="0 0 24 24" width="20" height="20">
+              <path 
+                d="M15 18l-6-6 6-6" 
+                stroke="currentColor" 
+                strokeWidth="2.5" 
+                fill="none"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+          
+          {/* Индикаторы точки */}
+          <div className="carousel-dots">
+            {carouselData.map((_, idx) => (
+              <button
+                key={idx}
+                className={`carousel-dot ${idx === carouselIndex ? 'active' : ''}`}
+                onClick={() => setCarouselIndex(idx)}
+                aria-label={`Слайд ${idx + 1}`}
+              />
+            ))}
+          </div>
+          
+          {/* Стрелка вправо */}
+          <button 
+            className={`carousel-arrow carousel-arrow-right ${carouselIndex === carouselData.length - 1 ? 'hidden' : ''}`}
+            onClick={() => setCarouselIndex(prev => prev + 1)}
+            aria-label="Следующий слайд"
+          >
+            <svg viewBox="0 0 24 24" width="20" height="20">
+              <path 
+                d="M9 18l6-6-6-6" 
+                stroke="currentColor" 
+                strokeWidth="2.5" 
+                fill="none"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div className="card-footer">
+        <button
+          className="btn-universal btn-primary btn-large btn-fullwidth"
+          onClick={(e) => {
+            createRipple(e);
+            setStage('manager');
+          }}
+        >
+          Связаться с менеджером
+        </button>
+      </div>
+    </div>
+  );
 
       case 'manager':
         return (

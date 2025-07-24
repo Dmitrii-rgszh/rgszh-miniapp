@@ -242,7 +242,7 @@ def print_summary():
         validation = NSJDataManager.validate_database()
         
         print("\n" + "="*60)
-        print("📊 СВОДКА КАЛЬКУЛЯТОРА НСЖ 'ЗАБОТА О БУДУЩЕМ УЛЬТРА'")
+        print("📊 СВОДКА КАЛЬКУЛЯТОРА НСЖ 'ЗАБОТА О БУДУЩЕМ'")
         print("="*60)
         print(f"Программа: {info['program_name']}")
         print(f"Версия: {info['program_version']}")

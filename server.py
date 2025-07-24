@@ -15,11 +15,18 @@ from datetime import datetime
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from flask_socketio import SocketIO
+from flask_compress import Compress
+from care_future_models import NSJCalculator, CalculationInput, NSJCalculations
 
 from db_saver import init_db, save_feedback_to_db
 from polls_ws import register_poll_ws
 from polls_routes import register_poll_routes
 from assessment_routes import register_assessment_routes  # Новый импорт
+try:
+    from care_future_models import NSJCalculations
+except ImportError:
+    NSJCalculations = None
+    logger.warning("⚠️ Модуль care_future_models не найден")
 
 # ===== ИМПОРТЫ ДЛЯ КАЛЬКУЛЯТОРА НСЖ =====
 CARE_FUTURE_AVAILABLE = False
@@ -97,6 +104,8 @@ logging.getLogger('urllib3').setLevel(logging.WARNING)
 
 # ====== Flask app ======
 app = Flask(__name__, static_folder="build", static_url_path="")
+Compress(app)
+
 
 CORS(app, resources={
     r"/*": {
@@ -976,6 +985,9 @@ def send_carefuture_email():
         logger.error(f"❌ [CareFuture] Error in Care Future email endpoint: {e}")
         return jsonify({"success": False, "error": "Internal server error"}), 500
 
+
+# Обновленная функция contact_manager для server.py:
+
 @app.route('/api/contact-manager', methods=['POST', 'OPTIONS'])
 def contact_manager():
     """Обработка заявок на связь с менеджером из Care Future"""
@@ -987,19 +999,71 @@ def contact_manager():
     try:
         data = request.get_json()
         
+        # Получаем данные расчета из БД, если есть calculationId
+        calculation_data = None
+        if data.get('calculationId'):
+            try:
+                from care_future_models import NSJCalculations
+                calculation = NSJCalculations.find_by_uuid(data['calculationId'])
+                if calculation:
+                    calculation_data = calculation.to_dict()
+                    logger.info(f"✅ Найден расчет: {data['calculationId']}")
+                else:
+                    logger.warning(f"⚠️ Расчет не найден: {data['calculationId']}")
+            except Exception as e:
+                logger.error(f"❌ Ошибка получения расчета: {e}")
+        
         # Формируем email для менеджера
         subject = f"Новая заявка с калькулятора НСЖ от {data.get('surname', '')} {data.get('name', '')}"
         
+        # Формируем тело письма с полными данными
         body = f"""
-Новая заявка на консультацию по программе "Забота о будущем Ультра"
+Новая заявка на консультацию по программе "Забота о будущем для партнеров"
 
-Данные клиента:
+ДАННЫЕ КЛИЕНТА:
 - Фамилия: {data.get('surname', 'Не указана')}
 - Имя: {data.get('name', 'Не указано')}
 - Город: {data.get('city', 'Не указан')}
 - Email: {data.get('email', 'Не указан')}
+"""
+        
+        # Добавляем данные из расчета, если они есть
+        if calculation_data:
+            # Форматируем пол на русском
+            gender_ru = 'Мужской' if calculation_data['gender'] == 'male' else 'Женский'
+            
+            # Форматируем даты
+            birth_date_str = calculation_data.get('birth_date', '').split('T')[0] if calculation_data.get('birth_date') else 'Не указана'
+            
+            body += f"""
 
-Дополнительная информация:
+ПАРАМЕТРЫ СТРАХОВАНИЯ:
+- Дата рождения: {birth_date_str}
+- Пол: {gender_ru}
+- Возраст на момент заключения: {calculation_data.get('age_at_start', 'Не указан')} лет
+- Срок программы: {calculation_data.get('contract_term', 'Не указан')} лет
+
+ФИНАНСОВЫЕ ПАРАМЕТРЫ:
+- Ежегодный взнос: {calculation_data.get('premium_amount', 0):,} ₽
+- Страховая сумма: {calculation_data.get('insurance_sum', 0):,} ₽
+- Накопленный капитал: {calculation_data.get('accumulated_capital', 0):,} ₽
+- Доход по программе: {calculation_data.get('program_income', 0):,} ₽
+- Налоговый вычет (за весь срок): {calculation_data.get('tax_deduction', 0):,} ₽
+
+ТИП РАСЧЕТА:
+- {('По размеру взноса' if calculation_data.get('calculation_type') == 'from_premium' else 'По страховой сумме')}
+- Введенная сумма: {calculation_data.get('input_amount', 0):,} ₽
+"""
+        else:
+            body += f"""
+
+ПАРАМЕТРЫ СТРАХОВАНИЯ:
+- Расчет не найден в базе данных (ID: {data.get('calculationId', 'Нет')})
+"""
+        
+        body += f"""
+
+ДОПОЛНИТЕЛЬНАЯ ИНФОРМАЦИЯ:
 - Страница: {data.get('page', 'care-future')}
 - ID расчета: {data.get('calculationId', 'Нет')}
 - Дата заявки: {datetime.now().strftime('%d.%m.%Y %H:%M')}

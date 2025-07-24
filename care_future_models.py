@@ -650,7 +650,7 @@ class NSJDataManager:
     def get_calculator_info() -> Dict[str, Any]:
         """Получить общую информацию о калькуляторе"""
         return {
-            'program_name': 'Забота о будущем Ультра',
+            'program_name': 'Забота о будущем',
             'program_version': 'v.1.15 (Excel logic)',
             'currency': 'RUB',
             'supports_tax_calculation': True,

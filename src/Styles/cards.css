@@ -8,7 +8,27 @@
    ✅ ИСПРАВЛЕНО: Центрирование placeholder на всех разрешениях
    ✅ ИСПРАВЛЕНО: Кликабельность input полей на мобильных
    ============================================================================ */
+/* === ОСНОВНОЙ КОНТЕЙНЕР КАРТОЧКИ === */
+.card-container {
+  position: relative; /* Важно для абсолютного позиционирования внутри */
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  max-width: 400px;
+  width: 90%;
+  margin: 0 auto;
+  overflow: visible; /* Чтобы стрелки не обрезались */
+}
 
+.card-container.card-positioned {
+  margin-top: 40px;
+}
+
+/* Убеждаемся, что старые стили навигации не мешают */
+.carousel-nav {
+  display: none !important;
+}
 /* ======================================
    БАЗОВАЯ КАРТОЧКА
    ====================================== */
@@ -885,4 +905,255 @@
   box-shadow: 0 0 0 3px rgba(180, 0, 55, 0.1) !important;
   background: white !important;
   outline: none !important;
+}
+
+/* Контейнер карусели */
+.carousel-container {
+  position: relative;
+  padding-bottom: 80px; /* Место для навигации внизу */
+  min-height: 300px;
+}
+
+/* Обертка для навигации */
+.carousel-navigation-wrapper {
+  position: relative;
+  width: 100%;
+  height: 60px;
+}
+
+/* Стили для кнопок карусели */
+.carousel-btn {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid rgba(180, 0, 55, 0.3);
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 10;
+  outline: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.carousel-btn:hover {
+  border-color: rgb(180, 0, 55);
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(180, 0, 55, 0.2);
+}
+
+.carousel-btn:active {
+  transform: scale(0.95);
+}
+
+.carousel-btn.prev {
+  left: 20px;
+  bottom: 20px;
+}
+
+.carousel-btn.next {
+  right: 20px;
+  bottom: 20px;
+}
+
+/* Точки индикаторы */
+.carousel-dots {
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  z-index: 5;
+}
+
+.carousel-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(180, 0, 55, 0.3);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.carousel-dot.active {
+  background: rgb(180, 0, 55);
+  transform: scale(1.2);
+}
+
+.carousel-dot:hover:not(.active) {
+  background: rgba(180, 0, 55, 0.5);
+}
+
+/* Адаптация для мобильных устройств */
+@media (max-width: 375px) {
+  .carousel-btn {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .carousel-btn.prev {
+    left: 10px;
+  }
+  
+  .carousel-btn.next {
+    right: 10px;
+  }
+  
+  .carousel-btn svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+/* Убираем старые стили навигации если они есть */
+.carousel-nav {
+  display: none;
+}
+
+/* === СТИЛИ КОНТЕНТА КАРУСЕЛИ === */
+
+/* Результаты расчета */
+.result-items {
+  margin: 20px 0;
+  padding: 0 20px;
+}
+
+.result-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #e3e7ee;
+}
+
+.result-item:last-child {
+  border-bottom: none;
+}
+
+.result-item.highlight {
+  background: rgba(180, 0, 55, 0.05);
+  margin: 0 -20px;
+  padding-left: 20px;
+  padding-right: 20px;
+  border-radius: 8px;
+}
+
+.result-label {
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 14px;
+  color: #666;
+}
+
+.result-value {
+  font-family: 'Segoe UI', sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  color: #333;
+}
+
+.result-item.highlight .result-value {
+  color: rgb(180, 0, 55);
+  font-size: 18px;
+}
+
+/* Список сервисов */
+.services-list {
+  margin: 20px 0;
+  padding: 0 20px;
+}
+
+.service-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 20px;
+  padding: 16px;
+  background: #f5f7fa;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.service-item:hover {
+  background: #e8ecf2;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.service-icon {
+  font-size: 28px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.service-content {
+  flex: 1;
+}
+
+.service-title {
+  font-family: 'Segoe UI', sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  color: #333;
+  margin: 0 0 4px 0;
+}
+
+.service-description {
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 14px;
+  color: #666;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Заголовок карусели */
+.carousel-container .text-h2 {
+  margin-bottom: 24px;
+}
+
+/* === АДАПТИВНОСТЬ КОНТЕНТА === */
+
+@media (max-width: 375px) {
+  .result-items,
+  .services-list {
+    padding: 0 16px;
+  }
+  
+  .result-item.highlight {
+    margin: 0 -16px;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  
+  .result-label {
+    font-size: 13px;
+  }
+  
+  .result-value {
+    font-size: 15px;
+  }
+  
+  .result-item.highlight .result-value {
+    font-size: 17px;
+  }
+  
+  .service-item {
+    padding: 12px;
+    gap: 12px;
+  }
+  
+  .service-icon {
+    font-size: 24px;
+  }
+  
+  .service-title {
+    font-size: 15px;
+  }
+  
+  .service-description {
+    font-size: 13px;
+  }
 }
