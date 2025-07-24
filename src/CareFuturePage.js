@@ -1,8 +1,8 @@
-// CareFuturePage.js - ОБНОВЛЕННАЯ ВЕРСИЯ
+// CareFuturePage.js - ИСПРАВЛЕННАЯ НАВИГАЦИЯ
 // ✅ Добавлено поле выбора дохода в год
 // ✅ Логика расчета налогового вычета по доходам
 // ✅ Новая страница карусели с покрытиями между существующими
-// ✅ Сохранены все инлайн стили
+// ✅ ИСПРАВЛЕНА НАВИГАЦИЯ - БЕЗ ПРОСКАКИВАНИЯ СТРАНИЦ
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -17,8 +17,8 @@ import './Styles/logo.css';
 import './Styles/text.css';
 import './Styles/BackButton.css';
 import './Styles/NextButton.css';
-import './Styles/ProgressIndicator.css'; // Для индикаторов
-import './Styles/cards.css'; // Для белых карточек
+import './Styles/ProgressIndicator.css';
+import './Styles/cards.css';
 
 export default function CareFuturePage() {
   const navigate = useNavigate();
@@ -49,7 +49,7 @@ export default function CareFuturePage() {
   const [amountRaw, setAmountRaw] = useState('');
   const [amountDisplay, setAmountDisplay] = useState('');
   
-  // ===== НОВОЕ: Состояние для дохода в год =====
+  // Состояние для дохода в год
   const [yearlyIncome, setYearlyIncome] = useState('');
   
   // Результаты
@@ -58,7 +58,7 @@ export default function CareFuturePage() {
   const [calculationId, setCalculationId] = useState(null);
   const [validationErrors, setValidationErrors] = useState({});
   
-  // ===== НОВОЕ: Состояние для предотвращения быстрых кликов по карусели =====
+  // Состояние для предотвращения быстрых кликов по карусели
   const [carouselNavigating, setCarouselNavigating] = useState(false);
   
   // Данные менеджера
@@ -69,10 +69,37 @@ export default function CareFuturePage() {
   const [isSendingMgr, setIsSendingMgr] = useState(false);
   const [hasCalculated, setHasCalculated] = useState(false);
 
+  // ===== НОВЫЕ СОСТОЯНИЯ ДЛЯ ЗАЩИТЫ НАВИГАЦИИ =====
+  const [isNavigating, setIsNavigating] = useState(false);
+  const [stageHistory, setStageHistory] = useState(['email']);
+
+  // ===== ЗАЩИЩЕННАЯ ФУНКЦИЯ ИЗМЕНЕНИЯ STAGE =====
+  const setStageProtected = (newStage, source = 'unknown') => {
+    console.log(`🔄 Stage change: ${stage} → ${newStage} (source: ${source})`);
+    
+    // Предотвращаем быстрые переключения
+    if (isNavigating) {
+      console.warn('⚠️ Navigation blocked - already navigating');
+      return;
+    }
+    
+    setIsNavigating(true);
+    setStage(newStage);
+    
+    // Обновляем историю переходов
+    setStageHistory(prev => [...prev, newStage].slice(-5));
+    
+    // Разблокируем навигацию через 300ms
+    setTimeout(() => {
+      setIsNavigating(false);
+    }, 300);
+  };
+
   // ===== СБРОС СОСТОЯНИЯ ПРИ МОНТИРОВАНИИ =====
   useEffect(() => {
     setIsExiting(false);
-    setCarouselNavigating(false); // Сбрасываем навигацию карусели
+    setCarouselNavigating(false);
+    setIsNavigating(false);
   }, []);
 
   // ===== СБРОС НАВИГАЦИИ КАРУСЕЛИ ПРИ СМЕНЕ STAGE =====
@@ -83,41 +110,42 @@ export default function CareFuturePage() {
     }
   }, [stage]);
 
+  // ===== ОТЛАДОЧНЫЙ useEffect ДЛЯ МОНИТОРИНГА ИЗМЕНЕНИЙ STAGE =====
+  useEffect(() => {
+    console.log(`🎯 Stage changed to: ${stage}`);
+    console.log('Navigation state:', { isNavigating, isExiting, hasCalculated });
+    console.log('Data state:', { 
+      hasResultData: !!resultData, 
+      hasEmail: !!email, 
+      hasBirthDate: !!birthDate,
+      hasGender: !!gender
+    });
+  }, [stage, isNavigating, isExiting, hasCalculated, resultData, email, birthDate, gender]);
+
   // ===== АГРЕССИВНОЕ ИСПРАВЛЕНИЕ INPUT ПОЛЕЙ =====
   useEffect(() => {
     const aggressiveInputFix = () => {
-      // Находим все input поля в карточке
       const cardInputs = document.querySelectorAll('.card-container input[type="email"], .card-container input[type="text"], .card-container input[type="password"], .card-container select');
       
       cardInputs.forEach((input) => {
-        // Принудительные стили для абсолютной кликабельности
         Object.assign(input.style, {
-          // КРИТИЧНО: Максимальный z-index
           position: 'relative',
           zIndex: '9999',
-          
-          // КРИТИЧНО: Полная интерактивность
           pointerEvents: 'auto',
           cursor: input.tagName === 'SELECT' ? 'pointer' : 'text',
           userSelect: 'auto',
           WebkitUserSelect: 'auto',
           touchAction: 'manipulation',
           WebkitTouchCallout: 'auto',
-          
-          // КРИТИЧНО: Размеры и видимость
           display: 'block',
           width: '100%',
           height: 'auto',
           minHeight: '32px',
           opacity: '1',
           visibility: 'visible',
-          
-          // КРИТИЧНО: Предотвращение zoom на iOS
           fontSize: '14px',
           transform: 'scale(1)',
           transformOrigin: 'center',
-          
-          // Визуальные стили
           background: '#f0f2f5',
           border: '1px solid #e3e7ee',
           borderRadius: '8px',
@@ -127,20 +155,15 @@ export default function CareFuturePage() {
           fontFamily: '"Segoe UI", sans-serif',
           lineHeight: '1.4',
           boxSizing: 'border-box',
-          
-          // Дополнительная защита
           outline: 'none',
           WebkitAppearance: 'none',
           appearance: 'none'
         });
         
-        // Принудительные обработчики событий
         const forceClickHandler = (e) => {
           e.stopPropagation();
           input.focus();
         };
-
-  // ===== НОВАЯ ФУНКЦИЯ: РАСЧЕТ НАЛОГОВОГО ВЫЧЕТА ПО ДОХОДУ =====
         
         const forceFocusHandler = (e) => {
           Object.assign(input.style, {
@@ -158,7 +181,6 @@ export default function CareFuturePage() {
           });
         };
         
-        // Удаляем старые обработчики и добавляем новые
         input.removeEventListener('click', forceClickHandler);
         input.removeEventListener('focus', forceFocusHandler);
         input.removeEventListener('blur', forceBlurHandler);
@@ -171,12 +193,10 @@ export default function CareFuturePage() {
       });
     };
     
-    // Запускаем исправление через разные интервалы
     const timer1 = setTimeout(aggressiveInputFix, 100);
     const timer2 = setTimeout(aggressiveInputFix, 500);
     const timer3 = setTimeout(aggressiveInputFix, 1000);
     
-    // Слушаем изменения DOM
     const observer = new MutationObserver(() => {
       setTimeout(aggressiveInputFix, 50);
     });
@@ -192,14 +212,13 @@ export default function CareFuturePage() {
       clearTimeout(timer3);
       observer.disconnect();
     };
-  }, [stage]); // Перезапускаем при смене stage
+  }, [stage]);
 
   // ===== ДОПОЛНИТЕЛЬНОЕ ИСПРАВЛЕНИЕ ДЛЯ EMAIL ПОЛЯ =====
   useEffect(() => {
     if (stage === 'email' && emailInputRef.current) {
       const emailInput = emailInputRef.current;
       
-      // Принудительное исправление для email поля
       const forceEmailClickability = () => {
         Object.assign(emailInput.style, {
           position: 'relative',
@@ -221,7 +240,6 @@ export default function CareFuturePage() {
       
       forceEmailClickability();
       
-      // Принудительный клик обработчик
       const handleEmailClick = (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -264,27 +282,20 @@ export default function CareFuturePage() {
   useEffect(() => {
     const { day, month, year } = birthParts;
     
-    // Логируем для отладки
-    console.log('birthParts изменились:', birthParts);
-    
     if (day && month && year) {
       const d = Number(day);
       const m = Number(month);
       const y = Number(year);
       
-      // Создаем дату
       const dt = new Date(y, m - 1, d);
       
-      // Проверяем валидность даты
       if (!isNaN(dt.getTime()) && 
           dt.getDate() === d && 
           dt.getMonth() + 1 === m && 
           dt.getFullYear() === y) {
         
         setBirthDate(dt);
-        console.log('Дата рождения установлена:', dt.toISOString().split('T')[0]);
         
-        // Очищаем ошибку если она была
         if (validationErrors.birthDate) {
           setValidationErrors(prev => {
             const newErrors = { ...prev };
@@ -293,11 +304,9 @@ export default function CareFuturePage() {
           });
         }
       } else {
-        console.log('Невалидная дата:', d, m, y);
         setBirthDate(null);
       }
     } else {
-      console.log('Не все части даты заполнены');
       setBirthDate(null);
     }
   }, [birthParts]);
@@ -321,12 +330,9 @@ export default function CareFuturePage() {
     }
   };
 
-  // ===== НОВЫЕ ФУНКЦИИ: БЕЗОПАСНАЯ НАВИГАЦИЯ ПО КАРУСЕЛИ =====
+  // ===== НАВИГАЦИЯ ПО КАРУСЕЛИ =====
   const navigateCarousel = (direction) => {
-    if (carouselNavigating) {
-      console.log('Навигация заблокирована, уже идет переход');
-      return;
-    }
+    if (carouselNavigating) return;
 
     setCarouselNavigating(true);
     
@@ -340,28 +346,20 @@ export default function CareFuturePage() {
       newIndex = Math.max(0, currentIndex - 1);
     }
     
-    console.log(`Навигация карусели: ${currentIndex} → ${newIndex} (${direction})`);
-    
     if (newIndex !== currentIndex) {
       setCarouselIndex(newIndex);
     }
     
-    // Разблокируем навигацию через 500ms
     setTimeout(() => {
       setCarouselNavigating(false);
     }, 500);
   };
 
   const goToCarouselSlide = (index) => {
-    if (carouselNavigating) {
-      console.log('Навигация заблокирована, уже идет переход');
-      return;
-    }
+    if (carouselNavigating) return;
 
     const carouselData = getCarouselData();
     const safeIndex = Math.max(0, Math.min(carouselData.length - 1, index));
-    
-    console.log(`Переход к слайду: ${carouselIndex} → ${safeIndex}`);
     
     if (safeIndex !== carouselIndex) {
       setCarouselNavigating(true);
@@ -372,6 +370,8 @@ export default function CareFuturePage() {
       }, 500);
     }
   };
+
+  // ===== РАСЧЕТ НАЛОГОВОГО ВЫЧЕТА =====
   const calculateTaxDeduction = (premiumAmount, contractTerm, incomeLevel) => {
     if (!incomeLevel || !premiumAmount || !contractTerm) return 0;
 
@@ -386,35 +386,25 @@ export default function CareFuturePage() {
     const config = incomeConfig[incomeLevel];
     if (!config) return 0;
 
-    // Рассчитываем ежегодный вычет
     const annualDeduction = Math.min(
       premiumAmount * config.rate,
       config.maxPerYear
     );
 
-    // Общая сумма за весь срок
-    const totalDeduction = Math.round(annualDeduction * contractTerm);
-    
-    console.log(`Налоговый вычет: ${premiumAmount} * ${config.rate} = ${premiumAmount * config.rate}, но не более ${config.maxPerYear}/год`);
-    console.log(`Итого за ${contractTerm} лет: ${totalDeduction}`);
-    
-    return totalDeduction;
+    return Math.round(annualDeduction * contractTerm);
   };
 
   // ===== ВАЛИДАЦИЯ EMAIL =====
   const validateEmail = (email) => {
-    // Базовая проверка формата email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return false;
     }
     
-    // НОВОЕ: Проверка корпоративных доменов @vtb.ru и @rgsl.ru
     const lowerEmail = email.toLowerCase();
     const isVtbEmail = lowerEmail.endsWith('@vtb.ru');
     const isRgslEmail = lowerEmail.endsWith('@rgsl.ru');
     
-    // Email валиден, если это один из корпоративных доменов
     return isVtbEmail || isRgslEmail;
   };
 
@@ -425,7 +415,6 @@ export default function CareFuturePage() {
     if (!birthDate) {
       errors.birthDate = 'Укажите дату рождения';
     } else {
-      // Проверяем возраст (18-65 лет)
       const age = new Date().getFullYear() - birthDate.getFullYear();
       if (age < 18 || age > 65) {
         errors.birthDate = 'Возраст должен быть от 18 до 65 лет';
@@ -445,76 +434,86 @@ export default function CareFuturePage() {
     } else {
       const amount = parseInt(amountRaw);
       
-      // Проверяем минимальные суммы в зависимости от типа расчета
       if (calcType === 'from_premium' && amount < 100000) {
         errors.amount = 'Минимальный взнос 100 000 рублей';
       } else if (calcType === 'from_sum' && amount < 500000) {
         errors.amount = 'Минимальная страховая сумма 500 000 рублей';
       }
       
-      // Проверяем максимальные суммы
       if (amount > 100000000) {
         errors.amount = 'Максимальная сумма 100 000 000 рублей';
       }
     }
 
-    // ===== НОВАЯ ВАЛИДАЦИЯ: Проверка дохода =====
     if (!yearlyIncome) {
       errors.yearlyIncome = 'Выберите уровень дохода';
     }
 
     setValidationErrors(errors);
     
-    // Логируем для отладки
-    if (Object.keys(errors).length > 0) {
-      console.log('Ошибки валидации:', errors);
-    }
-    
     return Object.keys(errors).length === 0;
   };
 
-  // ===== ПРОВЕРКА ГОТОВНОСТИ КНОПКИ ДЛЯ АНИМАЦИИ (БЕЗ ПОБОЧНЫХ ЭФФЕКТОВ) =====
+  // ===== ПРОВЕРКА ГОТОВНОСТИ КНОПКИ =====
   const isNextButtonReady = () => {
     if (stage === 'email') {
       return validateEmail(email);
     } else if (stage === 'form') {
-      // Проверка без setValidationErrors для избежания re-renders
       return birthDate && gender && calcType && amountRaw && parseInt(amountRaw) > 0 && yearlyIncome;
     }
     return false;
   };
 
-  // ===== ОБРАБОТКА КНОПКИ "НАЗАД" =====
+  // ===== ПРОСТАЯ И НАДЕЖНАЯ ФУНКЦИЯ handleBack =====
   const handleBack = () => {
-    console.log('handleBack clicked, current stage:', stage, 'isExiting:', isExiting, 'hasCalculated:', hasCalculated);
+    console.log('🔙 handleBack clicked, current stage:', stage);
     
-    if (isExiting) return;
+    if (isExiting || isNavigating) {
+      console.log('⚠️ Navigation blocked');
+      return;
+    }
     
-    if (stage === 'form') {
-      if (hasCalculated) {
-        // Если уже был расчет, возвращаемся к результатам
-        console.log('Going from form back to result');
-        setStage('result');
-        // НЕ сбрасываем resultData, так как возвращаемся к уже посчитанным результатам
-      } else {
-        // Если расчета не было, идем к email
-        console.log('Going from form to email');
-        setStage('email');
-      }
-    } else if (stage === 'result' || stage === 'manager' || stage === 'manager-sent') {
-      console.log('Going from', stage, 'to form');
-      setStage('form');
-      // При переходе с результатов на форму НЕ сбрасываем resultData
-      // setResultData(null); // УБРАНО
-      setCarouselIndex(0);
-      setCarouselNavigating(false); // Сбрасываем состояние навигации
-    } else {
-      console.log('Exiting to employee page');
-      setIsExiting(true);
-      if (logoRef.current) {
-        logoRef.current.classList.add('animate-logo-exit');
-      }
-      setTimeout(() => navigate('/employee'), 800);
+    // ✅ ПРОСТАЯ ЛОГИКА БЕЗ УСЛОВИЙ
+    switch (stage) {
+      case 'email':
+        console.log('📧 Email → Employee page');
+        setIsExiting(true);
+        if (logoRef.current) {
+          logoRef.current.classList.add('animate-logo-exit');
+        }
+        setTimeout(() => navigate('/employee'), 800);
+        break;
+        
+      case 'form':
+        console.log('📝 Form → Email');
+        setStageProtected('email', 'handleBack-form');
+        break;
+        
+      case 'result':
+        console.log('📊 Result → Form');
+        setStageProtected('form', 'handleBack-result');
+        setCarouselIndex(0);
+        setCarouselNavigating(false);
+        break;
+        
+      case 'manager':
+        console.log('👤 Manager → Result');
+        setStageProtected('result', 'handleBack-manager');
+        setMgrError('');
+        break;
+        
+      case 'manager-sent':
+        console.log('✅ Manager-sent → Result');
+        setStageProtected('result', 'handleBack-manager-sent');
+        break;
+        
+      default:
+        console.log('❓ Unknown stage → Employee page');
+        setIsExiting(true);
+        if (logoRef.current) {
+          logoRef.current.classList.add('animate-logo-exit');
+        }
+        setTimeout(() => navigate('/employee'), 800);
     }
   };
 
@@ -529,12 +528,18 @@ export default function CareFuturePage() {
     setTimeout(() => navigate('/main-menu'), 800);
   };
 
-  // ===== ОБРАБОТКА EMAIL (ЕДИНСТВЕННОЕ ОБЪЯВЛЕНИЕ) =====
+  // ===== ОБРАБОТКА EMAIL =====
   const handleEmailSubmit = (e) => {
     e.preventDefault();
     
+    console.log('📧 Email submit clicked');
+    
+    if (isNavigating) {
+      console.log('⚠️ Email submit blocked - already navigating');
+      return;
+    }
+    
     if (!validateEmail(email)) {
-      // Более подробное сообщение об ошибке
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(email)) {
         setEmailError('Введите корректный email');
@@ -545,12 +550,19 @@ export default function CareFuturePage() {
     }
     
     setEmailError('');
-    setStage('form');
+    console.log('📧 Email → Form');
+    setStageProtected('form', 'handleEmailSubmit');
   };
 
   // ===== РАСЧЕТ =====
   const handleCalculate = async () => {
-    // Дополнительная проверка birthDate
+    console.log('🧮 Calculate clicked');
+    
+    if (isNavigating) {
+      console.log('⚠️ Calculate blocked - already navigating');
+      return;
+    }
+    
     if (!birthDate) {
       console.error('birthDate is null!');
       setValidationErrors({ birthDate: 'Укажите дату рождения' });
@@ -559,69 +571,73 @@ export default function CareFuturePage() {
     
     if (!validateForm()) return;
 
-    setStage('processing');
+    setStageProtected('processing', 'handleCalculate-start');
 
     try {
-      // Форматируем дату безопасно
       const formattedDate = birthDate instanceof Date 
         ? birthDate.toISOString().split('T')[0]
         : new Date(birthDate).toISOString().split('T')[0];
       
-      // ИСПРАВЛЕНО: Используем camelCase для соответствия серверу
       const requestData = {
         birthDate: formattedDate,
         gender: gender,
         contractTerm: programTerm,
         calculationType: calcType,
         inputAmount: parseInt(amountRaw),
-        email: email
+        email: email,
+        yearlyIncome: yearlyIncome
       };
 
-      console.log('Отправляем данные на сервер:', requestData);
+      console.log('🧮 Отправляем данные на сервер для расчета НСЖ:', requestData);
 
-      // ИСПРАВЛЕНО: apiCall уже возвращает распарсенные данные
       const data = await apiCall('/api/care-future/calculate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(requestData)
       });
 
-      console.log('Ответ сервера:', data);
+      console.log('✅ Ответ сервера получен:', data);
 
       if (data.success) {
-        // НОВОЕ: Рассчитываем налоговый вычет по выбранному доходу
         const customTaxDeduction = calculateTaxDeduction(
           data.results.premiumAmount,
           data.inputParameters.contractTerm,
           yearlyIncome
         );
 
-        // Правильно обрабатываем структуру ответа
-        setResultData({
+        const processedResultData = {
           insurance_amount_formatted: data.results.insuranceSum.toLocaleString('ru-RU') + ' ₽',
           single_premium_formatted: data.results.premiumAmount.toLocaleString('ru-RU') + ' ₽',
           contract_term: data.inputParameters.contractTerm,
           age: data.inputParameters.ageAtStart,
           accumulated_capital: data.results.accumulatedCapital,
           program_income: data.results.programIncome,
-          tax_deduction: customTaxDeduction, // Используем наш расчет
-          premium_amount: data.results.premiumAmount, // Добавляем для расчетов
-          insurance_sum: data.results.insuranceSum // Добавляем для карусели
-        });
+          tax_deduction: customTaxDeduction,
+          premium_amount: data.results.premiumAmount,
+          insurance_sum: data.results.insuranceSum
+        };
+
+        setResultData(processedResultData);
         setCalculationId(data.calculationId);
+        setHasCalculated(true); // ✅ ВАЖНО!
         
-        // Сбрасываем карусель в начальное состояние
         setCarouselIndex(0);
         setCarouselNavigating(false);
         
-        setTimeout(() => setStage('result'), 2000);
+        console.log('✅ Данные результата обработаны и сохранены:', processedResultData);
+        console.log('✅ Флаг hasCalculated установлен в true');
+        
+        setTimeout(() => {
+          console.log('🧮 Processing → Result');
+          setStageProtected('result', 'handleCalculate-success');
+        }, 2000);
+        
       } else {
         throw new Error(data.error || 'Ошибка расчета');
       }
     } catch (error) {
-      console.error('Ошибка расчета:', error);
+      console.error('❌ Ошибка расчета НСЖ:', error);
       
-      // Более информативная обработка ошибок
       if (error.message.includes('400')) {
         setValidationErrors({ general: 'Некорректные данные. Проверьте заполнение формы.' });
       } else if (error.message.includes('500')) {
@@ -630,7 +646,8 @@ export default function CareFuturePage() {
         setValidationErrors({ general: error.message || 'Ошибка при выполнении расчета' });
       }
       
-      setStage('form');
+      console.log('❌ Processing → Form (error)');
+      setStageProtected('form', 'handleCalculate-error');
     }
   };
 
@@ -663,34 +680,30 @@ export default function CareFuturePage() {
       console.log('Ответ сервера:', data);
 
       if (data && data.success) {
-        setStage('manager-sent');
+        setStageProtected('manager-sent', 'handleManagerSubmit-success');
       } else {
         throw new Error(data?.message || 'Ошибка отправки');
       }
     } catch (error) {
       console.error('Ошибка отправки заявки:', error);
       
-      // ВАЖНО: Если ошибка связана с парсингом JSON, но заявка отправлена
       if (error.message && error.message.includes('json is not a function')) {
         console.warn('Ошибка обработки ответа. Заявка была отправлена.');
-        // Переходим к экрану успеха, так как письмо точно отправилось
-        setStage('manager-sent');
+        setStageProtected('manager-sent', 'handleManagerSubmit-json-error');
         return;
       }
       
-      // Для всех других ошибок показываем сообщение
       setMgrError('Не удалось отправить заявку. Попробуйте позже.');
     } finally {
       setIsSendingMgr(false);
     }
   };
 
-  // ===== ПОДГОТОВКА ДАННЫХ ДЛЯ КАРУСЕЛИ С НОВОЙ СТРАНИЦЕЙ =====
+  // ===== ПОДГОТОВКА ДАННЫХ ДЛЯ КАРУСЕЛИ =====
   const getCarouselData = () => {
     if (!resultData) return [];
 
     return [
-      // Страница 1: Основные результаты расчета
       {
         title: 'Ваш расчет "Забота о будущем"',
         items: [
@@ -717,7 +730,6 @@ export default function CareFuturePage() {
           }
         ]
       },
-      // НОВАЯ Страница 2: Покрытия и выплаты
       {
         title: 'Покрытия и выплаты',
         items: [
@@ -739,7 +751,6 @@ export default function CareFuturePage() {
           }
         ]
       },
-      // Страница 3: Дополнительные сервисы
       {
         title: 'Дополнительные сервисы',
         isServicePage: true,
@@ -804,7 +815,7 @@ export default function CareFuturePage() {
 
   const getCardClasses = () => [
     'card-container',
-    'card-positioned', // Новый класс для позиционирования
+    'card-positioned',
     contentAnimated ? 'animated' : '',
     isExiting ? 'exiting' : ''
   ].filter(Boolean).join(' ');
@@ -820,7 +831,6 @@ export default function CareFuturePage() {
     ].filter(Boolean).join(' ');
   };
 
-  // ===== КЛАССЫ ДЛЯ АНИМАЦИИ СТРЕЛКИ =====
   const getShakerClasses = () => {
     const isReady = isNextButtonReady();
     
@@ -830,9 +840,8 @@ export default function CareFuturePage() {
     ].filter(Boolean).join(' ');
   };
 
-  // ===== ПРИНУДИТЕЛЬНЫЕ СТИЛИ ДЛЯ INPUT ПОЛЕЙ =====
+  // ===== СТИЛИ ДЛЯ INPUT =====
   const getInputStyle = (isEmail = false) => ({
-    // КРИТИЧНО: Максимальная кликабельность
     position: 'relative',
     zIndex: isEmail ? '99999' : '9999',
     pointerEvents: 'auto',
@@ -842,21 +851,15 @@ export default function CareFuturePage() {
     touchAction: 'manipulation',
     WebkitTouchCallout: 'auto',
     WebkitTapHighlightColor: 'rgba(180, 0, 55, 0.2)',
-    
-    // КРИТИЧНО: Размеры и видимость
     display: 'block',
     width: '100%',
     height: '32px',
     minHeight: '32px',
     opacity: '1',
     visibility: 'visible',
-    
-    // КРИТИЧНО: Предотвращение zoom на iOS
     fontSize: '14px',
     transform: 'scale(1)',
     transformOrigin: 'center',
-    
-    // Визуальные стили
     background: '#f0f2f5',
     border: '1px solid #e3e7ee',
     borderRadius: '8px',
@@ -866,64 +869,26 @@ export default function CareFuturePage() {
     fontFamily: '"Segoe UI", sans-serif',
     lineHeight: '1.4',
     boxSizing: 'border-box',
-    
-    // Дополнительная защита
     outline: 'none',
     WebkitAppearance: 'none',
     appearance: 'none',
     transition: 'all 0.3s ease'
   });
 
-  // ===== ПРИНУДИТЕЛЬНЫЕ СТИЛИ ДЛЯ SELECT ПОЛЕЙ =====
   const getSelectStyle = () => ({
-    // КРИТИЧНО: Максимальная кликабельность
-    position: 'relative',
-    zIndex: '9999',
-    pointerEvents: 'auto',
+    ...getInputStyle(),
     cursor: 'pointer',
-    userSelect: 'auto',
-    WebkitUserSelect: 'auto',
-    touchAction: 'manipulation',
-    WebkitTouchCallout: 'auto',
-    
-    // КРИТИЧНО: Размеры и видимость
-    display: 'block',
-    width: '100%',
-    height: '32px',
-    minHeight: '32px',
-    opacity: '1',
-    visibility: 'visible',
-    
-    // КРИТИЧНО: Предотвращение zoom на iOS
-    fontSize: '14px',
-    transform: 'scale(1)',
-    transformOrigin: 'center',
-    
-    // Визуальные стили
-    background: '#f0f2f5',
-    border: '1px solid #e3e7ee',
-    borderRadius: '8px',
-    padding: '6px 10px',
-    color: '#333',
-    textAlign: 'center',
-    fontFamily: '"Segoe UI", sans-serif',
-    lineHeight: '1.4',
-    boxSizing: 'border-box',
-    
-    // Дополнительная защита
-    outline: 'none',
-    WebkitAppearance: 'none',
-    appearance: 'none',
     backgroundImage: 'url("data:image/svg+xml;utf8,<svg fill=\'%23333\' height=\'20\' viewBox=\'0 0 24 24\' width=\'20\' xmlns=\'http://www.w3.org/2000/svg\'><path d=\'M7 10l5 5 5-5z\'/></svg>")',
     backgroundRepeat: 'no-repeat',
     backgroundPosition: 'right 6px center',
     backgroundSize: '14px',
-    paddingRight: '28px',
-    transition: 'all 0.3s ease'
+    paddingRight: '28px'
   });
 
-  // ===== РЕНДЕР ПО СТАДИЯМ =====
+  // ===== РЕНДЕР КОНТЕНТА =====
   const renderContent = () => {
+    console.log(`🎨 Rendering content for stage: ${stage}`);
+    
     switch (stage) {
       case 'email':
         return (
@@ -980,7 +945,7 @@ export default function CareFuturePage() {
             </div>
             
             <div className="card-content">
-              {/* Дата рождения - ИСПРАВЛЕНО */}
+              {/* Дата рождения */}
               <div className="form-group" style={{ marginBottom: '8px' }}>
                 <label className="form-label text-label" style={{ marginBottom: '4px' }}>
                   Дата рождения
@@ -1020,10 +985,7 @@ export default function CareFuturePage() {
                       flex: '1',
                       outline: 'none'
                     }}
-                    onClick={() => {
-                      console.log('Clicked Male');
-                      setGender('male');
-                    }}
+                    onClick={() => setGender('male')}
                   >
                     Мужской
                   </button>
@@ -1043,10 +1005,7 @@ export default function CareFuturePage() {
                       flex: '1',
                       outline: 'none'
                     }}
-                    onClick={() => {
-                      console.log('Clicked Female');
-                      setGender('female');
-                    }}
+                    onClick={() => setGender('female')}
                   >
                     Женский
                   </button>
@@ -1056,7 +1015,7 @@ export default function CareFuturePage() {
                 )}
               </div>
 
-              {/* Срок программы - КОМПАКТНЫЙ СЛАЙДЕР В ОДНУ СТРОКУ */}
+              {/* Срок программы */}
               <div className="form-group" style={{ marginBottom: '8px' }}>
                 <label className="form-label text-label">Срок программы (лет)</label>
                 <div style={{
@@ -1125,7 +1084,7 @@ export default function CareFuturePage() {
                 </div>
               </div>
 
-              {/* Тип расчёта - КОМПАКТНЫЕ КНОПКИ В СТРОКУ */}
+              {/* Тип расчёта */}
               <div className="form-group" style={{ marginBottom: '4px' }}>
                 <label className="form-label text-label" style={{ marginBottom: '4px' }}>Тип расчёта</label>
                 <div style={{
@@ -1157,10 +1116,7 @@ export default function CareFuturePage() {
                       wordWrap: 'break-word',
                       lineHeight: '1.2'
                     }}
-                    onClick={() => {
-                      console.log('Selected calc type: from_premium');
-                      setCalcType('from_premium');
-                    }}
+                    onClick={() => setCalcType('from_premium')}
                   >
                     Рассчитать по размеру взноса
                   </button>
@@ -1185,10 +1141,7 @@ export default function CareFuturePage() {
                       wordWrap: 'break-word',
                       lineHeight: '1.2'
                     }}
-                    onClick={() => {
-                      console.log('Selected calc type: from_sum');
-                      setCalcType('from_sum');
-                    }}
+                    onClick={() => setCalcType('from_sum')}
                   >
                     Рассчитать по страховой сумме
                   </button>
@@ -1225,7 +1178,7 @@ export default function CareFuturePage() {
                 )}
               </div>
 
-              {/* ===== НОВОЕ ПОЛЕ: МОЙ ДОХОД В ГОД ===== */}
+              {/* Доход в год */}
               <div className="form-group" style={{ marginBottom: '8px' }}>
                 <label className="form-label text-label" style={{ marginBottom: '4px' }}>
                   Мой доход в год:
@@ -1233,10 +1186,7 @@ export default function CareFuturePage() {
                 <select
                   className={`form-input ${validationErrors.yearlyIncome ? 'error' : ''}`}
                   value={yearlyIncome}
-                  onChange={(e) => {
-                    console.log('Selected income level:', e.target.value);
-                    setYearlyIncome(e.target.value);
-                  }}
+                  onChange={(e) => setYearlyIncome(e.target.value)}
                   style={{
                     ...getSelectStyle(),
                     marginTop: '4px'
@@ -1289,7 +1239,6 @@ export default function CareFuturePage() {
       case 'result':
         const carouselData = getCarouselData();
         
-        // Защита от пустых данных
         if (!carouselData || carouselData.length === 0) {
           return (
             <div className={getCardClasses()}>
@@ -1300,11 +1249,9 @@ export default function CareFuturePage() {
           );
         }
         
-        // Проверяем корректность индекса
         const safeCarouselIndex = Math.min(carouselIndex, carouselData.length - 1);
         const currentSlide = carouselData[safeCarouselIndex];
         
-        // Дополнительная защита
         if (!currentSlide) {
           return (
             <div className={getCardClasses()}>
@@ -1345,9 +1292,8 @@ export default function CareFuturePage() {
                 </div>
               )}
 
-              {/* Навигация карусели внизу */}
+              {/* Навигация карусели */}
               <div className="carousel-navigation-bottom">
-                {/* Стрелка влево */}
                 {safeCarouselIndex > 0 && (
                   <button 
                     type="button"
@@ -1355,11 +1301,6 @@ export default function CareFuturePage() {
                     onClick={() => navigateCarousel('prev')}
                     disabled={carouselNavigating}
                     aria-label="Предыдущий слайд"
-                    style={{
-                      opacity: carouselNavigating ? 0.5 : 1,
-                      cursor: carouselNavigating ? 'not-allowed' : 'pointer',
-                      pointerEvents: carouselNavigating ? 'none' : 'auto'
-                    }}
                   >
                     <svg viewBox="0 0 24 24" width="20" height="20">
                       <path 
@@ -1374,7 +1315,6 @@ export default function CareFuturePage() {
                   </button>
                 )}
                 
-                {/* Индикаторы точки */}
                 <div className="carousel-dots">
                   {carouselData.map((_, idx) => (
                     <button
@@ -1384,16 +1324,10 @@ export default function CareFuturePage() {
                       onClick={() => goToCarouselSlide(idx)}
                       disabled={carouselNavigating}
                       aria-label={`Слайд ${idx + 1}`}
-                      style={{
-                        opacity: carouselNavigating ? 0.5 : 1,
-                        cursor: carouselNavigating ? 'not-allowed' : 'pointer',
-                        pointerEvents: carouselNavigating ? 'none' : 'auto'
-                      }}
                     />
                   ))}
                 </div>
                 
-                {/* Стрелка вправо */}
                 {safeCarouselIndex < carouselData.length - 1 && (
                   <button 
                     type="button"
@@ -1401,11 +1335,6 @@ export default function CareFuturePage() {
                     onClick={() => navigateCarousel('next')}
                     disabled={carouselNavigating}
                     aria-label="Следующий слайд"
-                    style={{
-                      opacity: carouselNavigating ? 0.5 : 1,
-                      cursor: carouselNavigating ? 'not-allowed' : 'pointer',
-                      pointerEvents: carouselNavigating ? 'none' : 'auto'
-                    }}
                   >
                     <svg viewBox="0 0 24 24" width="20" height="20">
                       <path 
@@ -1428,7 +1357,7 @@ export default function CareFuturePage() {
                 className="btn-universal btn-primary btn-large btn-fullwidth"
                 onClick={(e) => {
                   createRipple(e);
-                  setStage('manager');
+                  setStageProtected('manager', 'contact-manager-button');
                 }}
               >
                 Связаться с менеджером
@@ -1527,7 +1456,7 @@ export default function CareFuturePage() {
 
   return (
     <div className={getContainerClasses()}>
-      {/* ===== ЛОГОТИП ===== */}
+      {/* Логотип */}
       <div ref={logoRef} className={getLogoClasses()}>
         <img
           src={logoImage}
@@ -1536,7 +1465,7 @@ export default function CareFuturePage() {
         />
       </div>
 
-      {/* ===== КНОПКА "НАЗАД" ===== */}
+      {/* Кнопка "Назад" */}
       <button 
         className={getBackButtonClasses()}
         onClick={handleBack}
@@ -1554,7 +1483,7 @@ export default function CareFuturePage() {
         </svg>
       </button>
 
-      {/* ===== КНОПКА "ДАЛЕЕ" С АНИМИРОВАННОЙ СТРЕЛКОЙ ===== */}
+      {/* Кнопка "Далее" */}
       {(stage === 'email' || stage === 'form') && (
         <button
           ref={nextRef}
@@ -1568,7 +1497,6 @@ export default function CareFuturePage() {
           }}
           disabled={!isNextButtonReady()}
         >
-          {/* ✅ ДОБАВЛЯЕМ КОНТЕЙНЕР .shaker ДЛЯ АНИМАЦИИ */}
           <div className={getShakerClasses()}>
             <svg viewBox="0 0 24 24">
               <path 
@@ -1584,7 +1512,7 @@ export default function CareFuturePage() {
         </button>
       )}
 
-      {/* ===== КОНТЕНТ БЕЗ ОБЕРТКИ ===== */}
+      {/* Контент */}
       {renderContent()}
     </div>
   );
