@@ -401,7 +401,16 @@ export default function CareFuturePage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="example@mail.ru"
-                style={{ textAlign: 'center', position: 'relative', zIndex: 15 }}
+                style={{ 
+                  textAlign: 'center', 
+                  position: 'relative', 
+                  zIndex: 15,
+                  userSelect: 'auto',
+                  WebkitUserSelect: 'auto',
+                  pointerEvents: 'auto',
+                  cursor: 'text',
+                  touchAction: 'manipulation'
+                }}
               />
               {emailError && <span className="form-error">{emailError}</span>}
             </div>

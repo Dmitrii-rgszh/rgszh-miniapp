@@ -1,5 +1,6 @@
-// MainApp.js - ФИНАЛЬНАЯ ВЕРСИЯ БЕЗ ОТЛАДКИ
+// MainApp.js - ФИНАЛЬНАЯ ВЕРСИЯ С ИСПРАВЛЕНИЕМ INPUT ПОЛЕЙ
 // ✅ Исправлена логика автонавигации
+// ✅ Добавлена функция fixAllInputs для исправления кликабельности input полей
 // ✅ Убраны все логи и тестовые элементы
 // ✅ Готовая к продакшену версия
 
@@ -185,7 +186,7 @@ function MainApp() {
       allButtons.forEach((button) => {
         if (button.dataset.globalFixed) return;
         
-        // ИСКЛЮЧАЕМ autosuggest input поля
+        // ИСКЛЮЧАЕМ autosuggest input поля и обычные input поля
         if (button.classList.contains('autosuggest-input') || 
             button.classList.contains('react-autosuggest__input') ||
             button.type === 'text' || 
@@ -237,21 +238,120 @@ function MainApp() {
         button.dataset.globalFixed = 'true';
       });
     };
-    
-    const initialTimer = setTimeout(fixAllButtons, 500);
+
+    // ===== НОВАЯ ФУНКЦИЯ ДЛЯ ИСПРАВЛЕНИЯ INPUT ПОЛЕЙ =====
+    const fixAllInputs = () => {
+      const allInputs = document.querySelectorAll('input[type="text"], input[type="email"], input[type="password"], input[type="search"], textarea, .autosuggest-input, .react-autosuggest__input');
+      
+      allInputs.forEach((input) => {
+        if (input.dataset.globalInputFixed) return;
+        
+        Object.assign(input.style, {
+          userSelect: 'auto',
+          WebkitUserSelect: 'auto',
+          pointerEvents: 'auto',
+          cursor: 'text',
+          touchAction: 'manipulation',
+          WebkitTouchCallout: 'auto',
+          WebkitTapHighlightColor: 'rgba(255, 255, 255, 0.1)',
+          // Обеспечиваем правильную высоту z-index для кликабельности
+          position: 'relative',
+          zIndex: '10',
+          // Предотвращаем zoom на iOS
+          fontSize: '16px',
+          transform: 'scale(1)',
+          // Базовые стили для видимости
+          backgroundColor: 'rgba(255, 255, 255, 0.05)',
+          border: '1px solid rgba(255, 255, 255, 0.25)',
+          color: 'white',
+          borderRadius: '4px',
+          padding: '10px 15px',
+          fontFamily: '"Segoe UI", sans-serif',
+          lineHeight: '1.4',
+          width: '100%',
+          boxSizing: 'border-box'
+        });
+
+        // Добавляем обработчики focus для улучшения UX
+        const handleFocus = () => {
+          Object.assign(input.style, {
+            borderColor: 'rgba(255, 255, 255, 0.6)',
+            backgroundColor: 'rgba(255, 255, 255, 0.1)',
+            boxShadow: '0 0 0 2px rgba(255, 255, 255, 0.2)',
+            outline: 'none'
+          });
+        };
+
+        const handleBlur = () => {
+          Object.assign(input.style, {
+            borderColor: 'rgba(255, 255, 255, 0.25)',
+            backgroundColor: 'rgba(255, 255, 255, 0.05)',
+            boxShadow: 'none'
+          });
+        };
+
+        const handleHover = () => {
+          if (document.activeElement !== input) {
+            Object.assign(input.style, {
+              borderColor: 'rgba(255, 255, 255, 0.4)',
+              backgroundColor: 'rgba(255, 255, 255, 0.08)'
+            });
+          }
+        };
+
+        const handleMouseLeave = () => {
+          if (document.activeElement !== input) {
+            Object.assign(input.style, {
+              borderColor: 'rgba(255, 255, 255, 0.25)',
+              backgroundColor: 'rgba(255, 255, 255, 0.05)'
+            });
+          }
+        };
+
+        // Удаляем старые обработчики если они есть
+        input.removeEventListener('focus', handleFocus);
+        input.removeEventListener('blur', handleBlur);
+        input.removeEventListener('mouseenter', handleHover);
+        input.removeEventListener('mouseleave', handleMouseLeave);
+
+        // Добавляем новые обработчики
+        input.addEventListener('focus', handleFocus, { passive: true });
+        input.addEventListener('blur', handleBlur, { passive: true });
+        input.addEventListener('mouseenter', handleHover, { passive: true });
+        input.addEventListener('mouseleave', handleMouseLeave, { passive: true });
+        
+        input.dataset.globalInputFixed = 'true';
+      });
+    };
+
+    // ===== ИНИЦИАЛИЗАЦИЯ И НАБЛЮДЕНИЕ =====
+    const initialButtonTimer = setTimeout(fixAllButtons, 500);
+    const initialInputTimer = setTimeout(fixAllInputs, 600);
     
     const observer = new MutationObserver((mutations) => {
       let hasNewButtons = false;
+      let hasNewInputs = false;
       
       mutations.forEach((mutation) => {
         mutation.addedNodes.forEach((node) => {
           if (node.nodeType === 1) {
+            // Проверяем новые кнопки
             if (node.matches?.('button, [role="button"], .btn, .btn-universal, input[type="button"], input[type="submit"]')) {
               hasNewButtons = true;
             } else if (node.querySelectorAll) {
               const newButtons = node.querySelectorAll('button, [role="button"], .btn, .btn-universal, input[type="button"], input[type="submit"]');
               if (newButtons.length > 0) {
                 hasNewButtons = true;
+              }
+            }
+
+            // Проверяем новые input поля
+            if (node.matches?.('input[type="text"], input[type="email"], input[type="password"], input[type="search"], textarea, .autosuggest-input, .react-autosuggest__input')) {
+              hasNewInputs = true;
+            } else if (node.querySelectorAll) {
+              const newInputs = node.querySelectorAll('input[type="text"], input[type="email"], input[type="password"], input[type="search"], textarea, .autosuggest-input, .react-autosuggest__input');
+              if (newInputs.length > 0) {
+                hasNewInputs = true;
               }
             }
           }
@@ -261,6 +361,10 @@ function MainApp() {
       if (hasNewButtons) {
         setTimeout(fixAllButtons, 100);
       }
+      
+      if (hasNewInputs) {
+        setTimeout(fixAllInputs, 150);
+      }
     });
     
     observer.observe(document.body, {
@@ -268,11 +372,15 @@ function MainApp() {
       subtree: true
     });
     
-    const periodicTimer = setInterval(fixAllButtons, 5000);
+    // Периодическое исправление
+    const periodicButtonTimer = setInterval(fixAllButtons, 5000);
+    const periodicInputTimer = setInterval(fixAllInputs, 5500);
     
     return () => {
-      clearTimeout(initialTimer);
-      clearInterval(periodicTimer);
+      clearTimeout(initialButtonTimer);
+      clearTimeout(initialInputTimer);
+      clearInterval(periodicButtonTimer);
+      clearInterval(periodicInputTimer);
       observer.disconnect();
     };
   }, []);
