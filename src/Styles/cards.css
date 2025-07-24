@@ -482,8 +482,8 @@ html body .card-container input[type="password"]:-moz-placeholder {
 
 /* Результаты расчета */
 .result-items {
-  margin: 20px 0;
-  padding: 0 20px;
+  margin: 0px 0;
+  padding: 0 10px;
 }
 
 .result-item {
