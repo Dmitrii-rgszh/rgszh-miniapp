@@ -1,0 +1,152 @@
+/* ============================================== */
+/* Анимация для логотипа                           */
+/* ============================================== */
+.logo-wrapper {
+  position: absolute;
+  top: 50px;
+  left: 50%;
+  transform: translateX(-50%);
+  transition: top 1s ease-out;
+}
+.logo-wrapper.animate-logo {
+  top: 110px; /* Финальная позиция логотипа */
+}
+.logo-wrapper.animate-logo-exit {
+  top: -200px;        /* Когда логотип уезжает, он уходит за экран */
+  opacity: 0;
+  transition: top 1s ease-out, opacity 0.5s ease-out;
+}
+
+/* ============================================== */
+/* Контейнер кнопок и сами кнопки                  */
+/* ============================================== */
+.button-container {
+  position: absolute;
+  bottom: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  z-index: 10;
+}
+
+.btn-custom {
+  background-color: #FF3366; /* Цвет фона кнопки */
+  color: white;
+  padding: 16px 32px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+
+  /* Изначально спрятаны (ниже экрана) */
+  opacity: 0;
+  transform: translateY(50px);
+  transition: transform 0.6s ease, opacity 0.6s ease;
+}
+
+/* Когда need анимировать кнопку «выезд» изнизу вверх */
+.btn-custom.animate-btn {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Стагеринг через nth-child: первая button — 0.1s задержка, вторая — 0.3s, и т.д. */
+.button-container .btn-custom:nth-child(1).animate-btn {
+  transition-delay: 0.1s;
+}
+.button-container .btn-custom:nth-child(2).animate-btn {
+  transition-delay: 0.3s;
+}
+.button-container .btn-custom:nth-child(3).animate-btn {
+  transition-delay: 0.5s;
+}
+.button-container .btn-custom:nth-child(4).animate-btn {
+  transition-delay: 0.7s;
+}
+/* Добавляйте дальше по необходимости */
+
+/* Hover / Active / Focus */
+.btn-custom:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+}
+.btn-custom:active {
+  transform: translateY(0) scale(0.95);
+}
+.btn-custom:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.6);
+}
+
+/* Ripple-эффект */
+.btn-custom .ripple {
+  position: absolute;
+  border-radius: 50%;
+  transform: scale(0);
+  background: rgba(255, 255, 255, 0.8);
+  animation: ripple-animation 600ms linear;
+  pointer-events: none;
+}
+@keyframes ripple-animation {
+  to {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+/* ============================================== */
+/* Exit-анимация для кнопок (сдвиг вниз + исчезнуть) */
+/* ============================================== */
+.btn-custom.animate-exit {
+  animation-name: slideDownFromTop;
+  animation-duration: 0.6s;
+  animation-timing-function: cubic-bezier(0.65, 0.05, 0.36, 1);
+  animation-fill-mode: forwards;
+}
+
+/* Поэтапная задержка exit-анимации (если потребуется) */
+.btn-exit1 { animation-delay: 0.1s; }
+.btn-exit2 { animation-delay: 0.2s; }
+.btn-exit3 { animation-delay: 0.3s; }
+/* и т.д. */
+
+/* Ключевые кадры для slideDownFromTop */
+@keyframes slideDownFromTop {
+  0% { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(100vh); opacity: 0; }
+}
+
+/* ============================================== */
+/* Fade-out-анимация, когда нужно скрыть кнопки   */
+/* ============================================== */
+.animate-exit {
+  animation: fadeOutButtons 1s forwards;
+  animation-delay: 0.5s;
+}
+@keyframes fadeOutButtons {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(100vh);
+  }
+}
+
+/* ============================================== */
+/* Анимация для логотипа перед выходом (exit)      */
+/* ============================================== */
+.animate-logo-exit {
+  animation: slideUpLogoExit 1s ease-in forwards;
+}
+@keyframes slideUpLogoExit {
+  0% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-150px); }
+}
+
+
+
+
