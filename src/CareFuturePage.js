@@ -553,30 +553,33 @@ const handleManagerSubmit = async (e) => {
   }
 };
 
+  // Найдите в CareFuturePage.js функцию getCarouselData() (примерно строка 700-750)
+// и замените её ПОЛНОСТЬЮ на эту версию:
+
   // ===== ПОДГОТОВКА ДАННЫХ ДЛЯ КАРУСЕЛИ =====
   const getCarouselData = () => {
     if (!resultData) return [];
 
     return [
       {
-        title: 'Ваш расчёт готов!',
+        title: 'Ваш расчет "Забота о будущем"',
         items: [
           { 
-            label: 'Страховая сумма:', 
-            value: resultData.insurance_amount_formatted,
-            highlight: true
-          },
-          { 
-            label: 'Единовременный взнос:', 
-            value: resultData.single_premium_formatted 
+            label: 'Ваш возраст:', 
+            value: `${resultData.age} лет` 
           },
           { 
             label: 'Срок программы:', 
             value: `${resultData.contract_term} лет` 
           },
           { 
-            label: 'Ваш возраст:', 
-            value: `${resultData.age} лет` 
+            label: 'Ежегодный взнос:', 
+            value: resultData.single_premium_formatted 
+          },
+          { 
+            label: 'Страховая сумма:', 
+            value: resultData.insurance_amount_formatted,
+            highlight: true
           }
         ]
       },
@@ -1040,6 +1043,8 @@ case 'form':
 // Альтернативная версия case 'result' без инлайн стилей
 // Все стили вынесены в CSS классы
 
+// Найдите в CareFuturePage.js секцию case 'result': и замените её ПОЛНОСТЬЮ на эту:
+
 case 'result':
   const carouselData = getCarouselData();
   const currentSlide = carouselData[carouselIndex];
@@ -1077,28 +1082,32 @@ case 'result':
         {/* Навигация карусели внизу */}
         <div className="carousel-navigation-bottom">
           {/* Стрелка влево */}
-          <button 
-            className={`carousel-arrow carousel-arrow-left ${carouselIndex === 0 ? 'hidden' : ''}`}
-            onClick={() => setCarouselIndex(prev => prev - 1)}
-            aria-label="Предыдущий слайд"
-          >
-            <svg viewBox="0 0 24 24" width="20" height="20">
-              <path 
-                d="M15 18l-6-6 6-6" 
-                stroke="currentColor" 
-                strokeWidth="2.5" 
-                fill="none"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
+          {carouselIndex > 0 && (
+            <button 
+              type="button"
+              className="carousel-arrow carousel-arrow-left"
+              onClick={() => setCarouselIndex(prev => prev - 1)}
+              aria-label="Предыдущий слайд"
+            >
+              <svg viewBox="0 0 24 24" width="20" height="20">
+                <path 
+                  d="M15 18l-6-6 6-6" 
+                  stroke="currentColor" 
+                  strokeWidth="2.5" 
+                  fill="none"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+          )}
           
           {/* Индикаторы точки */}
           <div className="carousel-dots">
             {carouselData.map((_, idx) => (
               <button
                 key={idx}
+                type="button"
                 className={`carousel-dot ${idx === carouselIndex ? 'active' : ''}`}
                 onClick={() => setCarouselIndex(idx)}
                 aria-label={`Слайд ${idx + 1}`}
@@ -1107,27 +1116,31 @@ case 'result':
           </div>
           
           {/* Стрелка вправо */}
-          <button 
-            className={`carousel-arrow carousel-arrow-right ${carouselIndex === carouselData.length - 1 ? 'hidden' : ''}`}
-            onClick={() => setCarouselIndex(prev => prev + 1)}
-            aria-label="Следующий слайд"
-          >
-            <svg viewBox="0 0 24 24" width="20" height="20">
-              <path 
-                d="M9 18l6-6-6-6" 
-                stroke="currentColor" 
-                strokeWidth="2.5" 
-                fill="none"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
+          {carouselIndex < carouselData.length - 1 && (
+            <button 
+              type="button"
+              className="carousel-arrow carousel-arrow-right"
+              onClick={() => setCarouselIndex(prev => prev + 1)}
+              aria-label="Следующий слайд"
+            >
+              <svg viewBox="0 0 24 24" width="20" height="20">
+                <path 
+                  d="M9 18l6-6-6-6" 
+                  stroke="currentColor" 
+                  strokeWidth="2.5" 
+                  fill="none"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+          )}
         </div>
       </div>
 
       <div className="card-footer">
         <button
+          type="button"
           className="btn-universal btn-primary btn-large btn-fullwidth"
           onClick={(e) => {
             createRipple(e);
