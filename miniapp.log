@@ -2153,3 +2153,191 @@ AttributeError: '_io._WindowsConsoleIO' object has no attribute 'buffer'
 2025-07-23 15:01:26,019 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-23 15:01:26] "GET /care-future/config HTTP/1.1" 404 365 0.002066
 2025-07-23 15:01:26,337 - server - INFO - 🔍 Incoming request: GET /care-future/config
 2025-07-23 15:01:26,339 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-23 15:01:26] "GET /care-future/config HTTP/1.1" 404 365 0.002631
+2025-07-23 16:13:56,969 - server - INFO - 📨 OPTIONS /api/questionnaire/1 - 127.0.0.1
+2025-07-23 16:13:56,971 - server - INFO - 📤 OPTIONS /api/questionnaire/1 -> 200
+2025-07-23 16:13:56,972 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-23 16:13:56] "OPTIONS /api/questionnaire/1?include_questions=true HTTP/1.1" 200 355 0.004232
+2025-07-23 16:13:56,974 - server - INFO - 📨 OPTIONS /api/questionnaire/1 - 127.0.0.1
+2025-07-23 16:13:56,975 - server - INFO - 📤 OPTIONS /api/questionnaire/1 -> 200
+2025-07-23 16:13:56,977 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-23 16:13:56] "OPTIONS /api/questionnaire/1?include_questions=true HTTP/1.1" 200 355 0.003190
+2025-07-23 16:13:56,979 - server - INFO - 📨 GET /api/questionnaire/1 - 127.0.0.1
+2025-07-23 16:13:58,524 - server - INFO - 📤 GET /api/questionnaire/1 -> 200
+2025-07-23 16:13:58,832 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-23 16:13:58] "GET /api/questionnaire/1?include_questions=true HTTP/1.1" 200 45254 1.853123
+2025-07-23 16:13:58,835 - server - INFO - 📨 GET /api/questionnaire/1 - 127.0.0.1
+2025-07-23 16:14:00,063 - server - INFO - 📤 GET /api/questionnaire/1 -> 200
+2025-07-23 16:14:00,370 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-23 16:14:00] "GET /api/questionnaire/1?include_questions=true HTTP/1.1" 200 45254 1.535754
+2025-07-23 16:15:04,870 - server - INFO - 📨 OPTIONS /api/assessment/save - 127.0.0.1
+2025-07-23 16:15:04,870 - assessment_routes - INFO - 🌐 ➜ OPTIONS /api/assessment/save
+2025-07-23 16:15:04,871 - server - INFO - 📤 OPTIONS /api/assessment/save -> 200
+2025-07-23 16:15:04,871 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-23 16:15:04] "OPTIONS /api/assessment/save HTTP/1.1" 200 328 0.002228
+2025-07-23 16:15:04,873 - server - INFO - 📨 POST /api/assessment/save - 127.0.0.1
+2025-07-23 16:15:04,873 - server - INFO -    📋 JSON keys: ['questionnaireId', 'surname', 'firstName', 'patronymic', 'answers', 'completionTime']
+2025-07-23 16:15:04,873 - assessment_routes - INFO - 🌐 ➜ POST /api/assessment/save
+2025-07-23 16:15:04,873 - assessment_routes - INFO - 📦 Request headers: {'Content-Type': 'application/json', 'Content-Length': '3562', 'Host': 'localhost:4000', 'Connection': 'keep-alive', 'Sec-Ch-Ua-Platform': '"Windows"', 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36', 'Sec-Ch-Ua': '"Not)A;Brand";v="8", "Chromium";v="138", "Google Chrome";v="138"', 'Sec-Ch-Ua-Mobile': '?0', 'Accept': '*/*', 'Origin': 'http://localhost:3000', 'Sec-Fetch-Site': 'same-site', 'Sec-Fetch-Mode': 'cors', 'Sec-Fetch-Dest': 'empty', 'Referer': 'http://localhost:3000/', 'Accept-Encoding': 'gzip, deflate, br, zstd', 'Accept-Language': 'ru,en-US;q=0.9,en;q=0.8'}
+2025-07-23 16:15:04,874 - assessment_routes - INFO - 📋 Content-Type: application/json
+2025-07-23 16:15:04,874 - assessment_routes - INFO - 📄 Raw data length: 3562
+2025-07-23 16:15:04,875 - assessment_routes - INFO - 📥 Parsed JSON successfully
+2025-07-23 16:15:04,875 - assessment_routes - INFO - 📝 Data keys: ['questionnaireId', 'surname', 'firstName', 'patronymic', 'answers', 'completionTime']
+2025-07-23 16:15:04,875 - assessment_routes - INFO - 📊 Data details: surname='Поляков', firstName='Дмитрий', answers_count=25
+2025-07-23 16:15:04,875 - assessment_routes - INFO - 🔍 Field 'surname': value='Поляков', type=<class 'str'>, empty=False
+2025-07-23 16:15:04,875 - assessment_routes - INFO - 🔍 Field 'firstName': value='Дмитрий', type=<class 'str'>, empty=False
+2025-07-23 16:15:04,875 - assessment_routes - INFO - 🔍 Field 'patronymic': value='АЛександрович', type=<class 'str'>, empty=False
+2025-07-23 16:15:04,875 - assessment_routes - INFO - 🔍 Field 'answers': value='['Когда можно детально разобраться в процессах и построить устойчивую систему', 'Понять, что пошло не так, и вместе найти пути исправления', 'Наблюдаю за развитием ситуации и при необходимости высказываю своё мнение', 'Если работа выполнена по стандартам, дополнительные замечания не критичны', 'Если всё сделано согласно договорённостям, считаю, что моя задача выполнена', 'Выстраивать системные процессы, учитывая интересы всех сторон надолго вперёд', 'Считаю это важным для выстраивания долгосрочных отношений', 'Зависит от ситуации — оцениваю риски, возможности и совокупную пользу', 'Сосредотачиваюсь на своей зоне ответственности, дополнительные усилия — опциональны', 'Предпочитаю решать задачи в индивидуальном порядке, без лишних обсуждений', 'Считаю, что уже имеющихся знаний обычно достаточно для базовых процессов', 'С радостью вижу шанс изучить новую область и расширить компетенции', 'Готов(а) поделиться опытом, если вижу, что это действительно кому-то полезно', 'Предлагаю альтернативы, если вижу в этом реальную пользу', 'Постоянно ищу и пробую инновационные подходы, слежу за профессиональными сообществами', 'Использую знакомые шаблоны, которые уже доказали свою эффективность', 'Если метод работает, то лишний анализ может только замедлить процесс', 'Когда можно глубоко вникнуть и довести методику до высокого уровня', 'Если всё сделано надёжно, в срок и соответствует ключевым целям', 'Высказываю предложения, когда вижу, что это принесёт реальную пользу', 'Готов(а) их рассмотреть, если они оправданы и не слишком рискованны', 'Когда просто подтверждают, что всё соответствует заранее установленным требованиям', 'Оцениваю плюсы и минусы, предлагаю улучшения, если они действительно востребованы', 'Уделяю им внимание, когда это влияет на общее впечатление и удовлетворённость клиентов', 'Главное — соответствие техническим требованиям и срокам, без лишних нюансов']', type=<class 'list'>, empty=False
+2025-07-23 16:15:04,876 - assessment_routes - INFO - 📋 Processing 25 answers...
+2025-07-23 16:15:12,860 - assessment_routes - INFO - 🎯 Calculated total score: 23
+2025-07-23 16:15:20,531 - assessment_routes - INFO - 📊 Type scores: {'innovator': 14, 'optimizer': 9, 'executor': 0}
+2025-07-23 16:15:20,532 - assessment_routes - INFO - 📝 Transcription: Кандидат поддерживает многие принципы, но может ну...
+2025-07-23 16:15:20,532 - assessment_routes - INFO - 💾 Saving to database...
+2025-07-23 16:15:20,840 - assessment_routes - INFO - 📋 Candidate saved with ID: 48
+2025-07-23 16:15:36,181 - assessment_routes - INFO - 📝 Saved 25/25 answers
+2025-07-23 16:15:36,489 - email_sender - INFO - 📧 Preparing notification for candidate: Поляков Дмитрий АЛександрович
+2025-07-23 16:15:36,495 - email_sender - ERROR - ❌ Error in process_new_candidate_notification: '_io._WindowsConsoleIO' object has no attribute 'buffer'
+2025-07-23 16:15:36,501 - email_sender - ERROR - 📋 Traceback: Traceback (most recent call last):
+  File "C:\TRAIN\MINIAPP\email_sender.py", line 135, in process_new_candidate_notification
+    from server import send_email
+  File "C:\TRAIN\MINIAPP\server.py", line 76, in <module>
+    sys.stdout = codecs.getwriter('utf-8')(sys.stdout.buffer)
+                                           ^^^^^^^^^^^^^^^^^
+  File "<frozen codecs>", line 409, in __getattr__
+AttributeError: '_io._WindowsConsoleIO' object has no attribute 'buffer'
+
+2025-07-23 16:15:36,502 - email_sender - INFO - 📝 FALLBACK: Logging candidate data instead of email
+2025-07-23 16:15:36,503 - email_sender - INFO - 📋 Candidate: Поляков Дмитрий АЛександрович
+2025-07-23 16:15:36,503 - email_sender - INFO - 🎯 Score: 23 (46.0%)
+2025-07-23 16:15:36,503 - email_sender - INFO - ⏱️ Time: 1 minutes
+2025-07-23 16:15:36,504 - assessment_routes - INFO - 📧 Email уведомление не отправлено
+2025-07-23 16:15:36,504 - assessment_routes - INFO - ✅ Assessment saved for Дмитрий Поляков: 23/50 points (46.0%)
+2025-07-23 16:15:36,505 - assessment_routes - INFO -    Type scores: I:14 O:9 E:0
+2025-07-23 16:15:36,506 - server - INFO - 📤 POST /api/assessment/save -> 201
+2025-07-23 16:15:36,507 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-23 16:15:36] "POST /api/assessment/save HTTP/1.1" 201 1490 31.634592
+2025-07-23 16:32:51,888 - server - INFO - 📨 OPTIONS /api/questionnaire/1 - 127.0.0.1
+2025-07-23 16:32:51,889 - server - INFO - 📤 OPTIONS /api/questionnaire/1 -> 200
+2025-07-23 16:32:51,889 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-23 16:32:51] "OPTIONS /api/questionnaire/1?include_questions=true HTTP/1.1" 200 355 0.001020
+2025-07-23 16:32:51,890 - server - INFO - 📨 OPTIONS /api/questionnaire/1 - 127.0.0.1
+2025-07-23 16:32:51,891 - server - INFO - 📤 OPTIONS /api/questionnaire/1 -> 200
+2025-07-23 16:32:51,892 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-23 16:32:51] "OPTIONS /api/questionnaire/1?include_questions=true HTTP/1.1" 200 355 0.002100
+2025-07-23 16:32:51,894 - server - INFO - 📨 GET /api/questionnaire/1 - 127.0.0.1
+2025-07-23 16:32:53,124 - server - INFO - 📤 GET /api/questionnaire/1 -> 200
+2025-07-23 16:32:53,432 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-23 16:32:53] "GET /api/questionnaire/1?include_questions=true HTTP/1.1" 200 45254 1.539040
+2025-07-23 16:32:53,433 - server - INFO - 📨 GET /api/questionnaire/1 - 127.0.0.1
+2025-07-23 16:32:54,660 - server - INFO - 📤 GET /api/questionnaire/1 -> 200
+2025-07-23 16:32:54,967 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-23 16:32:54] "GET /api/questionnaire/1?include_questions=true HTTP/1.1" 200 45254 1.533983
+2025-07-23 16:35:39,494 - server - INFO - 📨 OPTIONS /api/questionnaire/1 - 127.0.0.1
+2025-07-23 16:35:39,494 - server - INFO - 📤 OPTIONS /api/questionnaire/1 -> 200
+2025-07-23 16:35:39,497 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-23 16:35:39] "OPTIONS /api/questionnaire/1?include_questions=true HTTP/1.1" 200 355 0.002140
+2025-07-23 16:35:39,499 - server - INFO - 📨 GET /api/questionnaire/1 - 127.0.0.1
+2025-07-23 16:35:40,731 - server - INFO - 📤 GET /api/questionnaire/1 -> 200
+2025-07-23 16:35:41,037 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-23 16:35:41] "GET /api/questionnaire/1?include_questions=true HTTP/1.1" 200 45254 1.538822
+2025-07-23 16:35:57,049 - server - INFO - 📨 OPTIONS /api/questionnaire/1 - 127.0.0.1
+2025-07-23 16:35:57,050 - server - INFO - 📤 OPTIONS /api/questionnaire/1 -> 200
+2025-07-23 16:35:57,051 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-23 16:35:57] "OPTIONS /api/questionnaire/1?include_questions=true HTTP/1.1" 200 355 0.002238
+2025-07-23 16:35:57,055 - server - INFO - 📨 GET /api/questionnaire/1 - 127.0.0.1
+2025-07-23 16:35:58,284 - server - INFO - 📤 GET /api/questionnaire/1 -> 200
+2025-07-23 16:35:58,592 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-23 16:35:58] "GET /api/questionnaire/1?include_questions=true HTTP/1.1" 200 45254 1.536488
+2025-07-23 16:40:33,261 - server - INFO - 📨 OPTIONS /api/questionnaire/1 - 127.0.0.1
+2025-07-23 16:40:33,264 - server - INFO - 📤 OPTIONS /api/questionnaire/1 -> 200
+2025-07-23 16:40:33,265 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-23 16:40:33] "OPTIONS /api/questionnaire/1?include_questions=true HTTP/1.1" 200 355 0.004786
+2025-07-23 16:40:33,268 - server - INFO - 📨 GET /api/questionnaire/1 - 127.0.0.1
+2025-07-23 16:40:34,501 - server - INFO - 📤 GET /api/questionnaire/1 -> 200
+2025-07-23 16:40:34,810 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-23 16:40:34] "GET /api/questionnaire/1?include_questions=true HTTP/1.1" 200 45254 1.541587
+2025-07-23 16:40:46,397 - server - INFO - 📨 OPTIONS /api/questionnaire/1 - 127.0.0.1
+2025-07-23 16:40:46,398 - server - INFO - 📤 OPTIONS /api/questionnaire/1 -> 200
+2025-07-23 16:40:46,399 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-23 16:40:46] "OPTIONS /api/questionnaire/1?include_questions=true HTTP/1.1" 200 355 0.003213
+2025-07-23 16:40:46,403 - server - INFO - 📨 GET /api/questionnaire/1 - 127.0.0.1
+2025-07-23 16:40:47,635 - server - INFO - 📤 GET /api/questionnaire/1 -> 200
+2025-07-23 16:40:47,942 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-23 16:40:47] "GET /api/questionnaire/1?include_questions=true HTTP/1.1" 200 45254 1.539008
+2025-07-23 16:42:55,820 - server - INFO - 📨 OPTIONS /api/questionnaire/1 - 127.0.0.1
+2025-07-23 16:42:55,822 - server - INFO - 📤 OPTIONS /api/questionnaire/1 -> 200
+2025-07-23 16:42:55,831 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-23 16:42:55] "OPTIONS /api/questionnaire/1?include_questions=true HTTP/1.1" 200 355 0.010698
+2025-07-23 16:42:55,837 - server - INFO - 📨 GET /api/questionnaire/1 - 127.0.0.1
+2025-07-23 16:42:57,067 - server - INFO - 📤 GET /api/questionnaire/1 -> 200
+2025-07-23 16:42:57,374 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-23 16:42:57] "GET /api/questionnaire/1?include_questions=true HTTP/1.1" 200 45254 1.537179
+2025-07-23 16:42:59,988 - server - INFO - 📨 OPTIONS /api/questionnaire/1 - 127.0.0.1
+2025-07-23 16:42:59,989 - server - INFO - 📤 OPTIONS /api/questionnaire/1 -> 200
+2025-07-23 16:42:59,991 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-23 16:42:59] "OPTIONS /api/questionnaire/1?include_questions=true HTTP/1.1" 200 355 0.002151
+2025-07-23 16:42:59,994 - server - INFO - 📨 GET /api/questionnaire/1 - 127.0.0.1
+2025-07-23 16:43:01,219 - server - INFO - 📤 GET /api/questionnaire/1 -> 200
+2025-07-23 16:43:01,526 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-23 16:43:01] "GET /api/questionnaire/1?include_questions=true HTTP/1.1" 200 45254 1.533206
+2025-07-23 16:43:14,090 - server - INFO - 📨 OPTIONS /api/questionnaire/1 - 127.0.0.1
+2025-07-23 16:43:14,090 - server - INFO - 📤 OPTIONS /api/questionnaire/1 -> 200
+2025-07-23 16:43:14,092 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-23 16:43:14] "OPTIONS /api/questionnaire/1?include_questions=true HTTP/1.1" 200 355 0.002084
+2025-07-23 16:43:14,097 - server - INFO - 📨 GET /api/questionnaire/1 - 127.0.0.1
+2025-07-23 16:43:15,325 - server - INFO - 📤 GET /api/questionnaire/1 -> 200
+2025-07-23 16:43:15,632 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-23 16:43:15] "GET /api/questionnaire/1?include_questions=true HTTP/1.1" 200 45254 1.535098
+2025-07-23 16:43:27,618 - server - INFO - 📨 OPTIONS /api/questionnaire/1 - 127.0.0.1
+2025-07-23 16:43:27,619 - server - INFO - 📤 OPTIONS /api/questionnaire/1 -> 200
+2025-07-23 16:43:27,621 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-23 16:43:27] "OPTIONS /api/questionnaire/1?include_questions=true HTTP/1.1" 200 355 0.002678
+2025-07-23 16:43:27,625 - server - INFO - 📨 GET /api/questionnaire/1 - 127.0.0.1
+2025-07-23 16:43:28,859 - server - INFO - 📤 GET /api/questionnaire/1 -> 200
+2025-07-23 16:43:29,166 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-23 16:43:29] "GET /api/questionnaire/1?include_questions=true HTTP/1.1" 200 45254 1.540559
+2025-07-23 16:44:06,892 - server - INFO - 📨 OPTIONS /api/questionnaire/1 - 127.0.0.1
+2025-07-23 16:44:06,893 - server - INFO - 📤 OPTIONS /api/questionnaire/1 -> 200
+2025-07-23 16:44:06,893 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-23 16:44:06] "OPTIONS /api/questionnaire/1?include_questions=true HTTP/1.1" 200 355 0.002093
+2025-07-23 16:44:06,899 - server - INFO - 📨 GET /api/questionnaire/1 - 127.0.0.1
+2025-07-23 16:44:08,129 - server - INFO - 📤 GET /api/questionnaire/1 -> 200
+2025-07-23 16:44:08,435 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-23 16:44:08] "GET /api/questionnaire/1?include_questions=true HTTP/1.1" 200 45254 1.536686
+2025-07-23 16:44:16,345 - server - INFO - 📨 OPTIONS /api/questionnaire/1 - 127.0.0.1
+2025-07-23 16:44:16,346 - server - INFO - 📤 OPTIONS /api/questionnaire/1 -> 200
+2025-07-23 16:44:16,347 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-23 16:44:16] "OPTIONS /api/questionnaire/1?include_questions=true HTTP/1.1" 200 355 0.002118
+2025-07-23 16:44:16,349 - server - INFO - 📨 GET /api/questionnaire/1 - 127.0.0.1
+2025-07-23 16:44:17,580 - server - INFO - 📤 GET /api/questionnaire/1 -> 200
+2025-07-23 16:44:17,888 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-23 16:44:17] "GET /api/questionnaire/1?include_questions=true HTTP/1.1" 200 45254 1.537927
+2025-07-23 16:46:40,459 - server - INFO - 📨 OPTIONS /api/questionnaire/1 - 127.0.0.1
+2025-07-23 16:46:40,460 - server - INFO - 📤 OPTIONS /api/questionnaire/1 -> 200
+2025-07-23 16:46:40,461 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-23 16:46:40] "OPTIONS /api/questionnaire/1?include_questions=true HTTP/1.1" 200 355 0.002121
+2025-07-23 16:46:40,465 - server - INFO - 📨 GET /api/questionnaire/1 - 127.0.0.1
+2025-07-23 16:46:41,692 - server - INFO - 📤 GET /api/questionnaire/1 -> 200
+2025-07-23 16:46:41,999 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-23 16:46:41] "GET /api/questionnaire/1?include_questions=true HTTP/1.1" 200 45254 1.534874
+2025-07-23 16:49:27,920 - server - INFO - 📨 OPTIONS /api/questionnaire/1 - 127.0.0.1
+2025-07-23 16:49:27,921 - server - INFO - 📤 OPTIONS /api/questionnaire/1 -> 200
+2025-07-23 16:49:27,923 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-23 16:49:27] "OPTIONS /api/questionnaire/1?include_questions=true HTTP/1.1" 200 355 0.002165
+2025-07-23 16:49:27,929 - server - INFO - 📨 GET /api/questionnaire/1 - 127.0.0.1
+2025-07-23 16:49:29,164 - server - INFO - 📤 GET /api/questionnaire/1 -> 200
+2025-07-23 16:49:29,472 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-23 16:49:29] "GET /api/questionnaire/1?include_questions=true HTTP/1.1" 200 45254 1.542012
+2025-07-23 16:56:48,389 - server - INFO - 📨 OPTIONS /api/questionnaire/1 - 127.0.0.1
+2025-07-23 16:56:48,391 - server - INFO - 📤 OPTIONS /api/questionnaire/1 -> 200
+2025-07-23 16:56:48,393 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-23 16:56:48] "OPTIONS /api/questionnaire/1?include_questions=true HTTP/1.1" 200 355 0.004255
+2025-07-23 16:56:48,395 - server - INFO - 📨 OPTIONS /api/questionnaire/1 - 127.0.0.1
+2025-07-23 16:56:48,395 - server - INFO - 📤 OPTIONS /api/questionnaire/1 -> 200
+2025-07-23 16:56:48,397 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-23 16:56:48] "OPTIONS /api/questionnaire/1?include_questions=true HTTP/1.1" 200 355 0.003189
+2025-07-23 16:56:48,399 - server - INFO - 📨 GET /api/questionnaire/1 - 127.0.0.1
+2025-07-23 16:56:49,630 - server - INFO - 📤 GET /api/questionnaire/1 -> 200
+2025-07-23 16:56:49,938 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-23 16:56:49] "GET /api/questionnaire/1?include_questions=true HTTP/1.1" 200 45254 1.539067
+2025-07-23 16:56:49,939 - server - INFO - 📨 GET /api/questionnaire/1 - 127.0.0.1
+2025-07-23 16:56:50,860 - server - INFO - 📤 GET /api/questionnaire/1 -> 200
+2025-07-23 16:56:51,167 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-23 16:56:51] "GET /api/questionnaire/1?include_questions=true HTTP/1.1" 200 45254 1.228544
+2025-07-23 16:58:22,320 - server - INFO - 📨 OPTIONS /api/questionnaire/1 - 127.0.0.1
+2025-07-23 16:58:22,323 - server - INFO - 📤 OPTIONS /api/questionnaire/1 -> 200
+2025-07-23 16:58:22,325 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-23 16:58:22] "OPTIONS /api/questionnaire/1?include_questions=true HTTP/1.1" 200 355 0.004706
+2025-07-23 16:58:22,326 - server - INFO - 📨 OPTIONS /api/questionnaire/1 - 127.0.0.1
+2025-07-23 16:58:22,327 - server - INFO - 📤 OPTIONS /api/questionnaire/1 -> 200
+2025-07-23 16:58:22,328 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-23 16:58:22] "OPTIONS /api/questionnaire/1?include_questions=true HTTP/1.1" 200 355 0.002069
+2025-07-23 16:58:22,330 - server - INFO - 📨 GET /api/questionnaire/1 - 127.0.0.1
+2025-07-23 16:58:23,568 - server - INFO - 📤 GET /api/questionnaire/1 -> 200
+2025-07-23 16:58:23,876 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-23 16:58:23] "GET /api/questionnaire/1?include_questions=true HTTP/1.1" 200 45254 1.545943
+2025-07-23 16:58:23,877 - server - INFO - 📨 GET /api/questionnaire/1 - 127.0.0.1
+2025-07-23 16:58:24,799 - server - INFO - 📤 GET /api/questionnaire/1 -> 200
+2025-07-23 16:58:25,105 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-23 16:58:25] "GET /api/questionnaire/1?include_questions=true HTTP/1.1" 200 45254 1.229798
+2025-07-23 17:09:24,372 - server - INFO - 📨 OPTIONS /api/questionnaire/1 - 127.0.0.1
+2025-07-23 17:09:24,372 - server - INFO - 📤 OPTIONS /api/questionnaire/1 -> 200
+2025-07-23 17:09:24,373 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-23 17:09:24] "OPTIONS /api/questionnaire/1?include_questions=true HTTP/1.1" 200 355 0.002069
+2025-07-23 17:09:24,378 - server - INFO - 📨 GET /api/questionnaire/1 - 127.0.0.1
+2025-07-23 17:09:25,612 - server - INFO - 📤 GET /api/questionnaire/1 -> 200
+2025-07-23 17:09:25,920 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-23 17:09:25] "GET /api/questionnaire/1?include_questions=true HTTP/1.1" 200 45254 1.541941
+2025-07-23 17:09:33,100 - server - INFO - 📨 OPTIONS /api/questionnaire/1 - 127.0.0.1
+2025-07-23 17:09:33,100 - server - INFO - 📤 OPTIONS /api/questionnaire/1 -> 200
+2025-07-23 17:09:33,101 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-23 17:09:33] "OPTIONS /api/questionnaire/1?include_questions=true HTTP/1.1" 200 355 0.002190
+2025-07-23 17:09:33,105 - server - INFO - 📨 GET /api/questionnaire/1 - 127.0.0.1
+2025-07-23 17:09:34,331 - server - INFO - 📤 GET /api/questionnaire/1 -> 200
+2025-07-23 17:09:34,639 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-23 17:09:34] "GET /api/questionnaire/1?include_questions=true HTTP/1.1" 200 45254 1.534259
+2025-07-23 17:09:45,429 - server - INFO - 📨 OPTIONS /api/questionnaire/1 - 127.0.0.1
+2025-07-23 17:09:45,430 - server - INFO - 📤 OPTIONS /api/questionnaire/1 -> 200
+2025-07-23 17:09:45,431 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-23 17:09:45] "OPTIONS /api/questionnaire/1?include_questions=true HTTP/1.1" 200 355 0.002041
+2025-07-23 17:09:45,436 - server - INFO - 📨 GET /api/questionnaire/1 - 127.0.0.1
+2025-07-23 17:09:46,667 - server - INFO - 📤 GET /api/questionnaire/1 -> 200
+2025-07-23 17:09:46,975 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-23 17:09:46] "GET /api/questionnaire/1?include_questions=true HTTP/1.1" 200 45254 1.539935
+2025-07-23 17:15:56,611 - server - INFO - 📨 OPTIONS /api/questionnaire/1 - 127.0.0.1
+2025-07-23 17:15:56,612 - server - INFO - 📤 OPTIONS /api/questionnaire/1 -> 200
+2025-07-23 17:15:56,613 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-23 17:15:56] "OPTIONS /api/questionnaire/1?include_questions=true HTTP/1.1" 200 355 0.003281
+2025-07-23 17:15:56,617 - server - INFO - 📨 GET /api/questionnaire/1 - 127.0.0.1
+2025-07-23 17:15:57,852 - server - INFO - 📤 GET /api/questionnaire/1 -> 200
+2025-07-23 17:15:58,159 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-23 17:15:58] "GET /api/questionnaire/1?include_questions=true HTTP/1.1" 200 45254 1.543560
