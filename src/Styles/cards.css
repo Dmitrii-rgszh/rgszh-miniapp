@@ -95,7 +95,6 @@
   display: block;
   margin-bottom: 8px;
   font-weight: 500;
-  text-align: center !important;
 }
 
 .card-container .form-input {
@@ -181,17 +180,44 @@
   color: #333;
   cursor: pointer;
   transition: all 0.3s ease;
+  
+  /* ИСПРАВЛЕНИЕ: Обеспечиваем видимость и кликабельность */
+  position: relative !important;
+  z-index: 15 !important;
+  user-select: auto !important;
+  -webkit-user-select: auto !important;
+  pointer-events: auto !important;
+  touch-action: manipulation !important;
+  -webkit-tap-highlight-color: rgba(180, 0, 55, 0.1) !important;
+  
+  /* Размеры и видимость */
+  display: inline-block !important;
+  min-height: 44px !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  
+  /* Типографика */
+  font-family: "Segoe UI", sans-serif !important;
+  font-size: 16px !important;
+  font-weight: 500 !important;
+  text-align: center !important;
+  white-space: nowrap !important;
 }
 
 .card-container .option-button:hover {
   background: #eef2f7;
   border-color: #d1d5db;
+  transform: none; /* Не мешаем позиционированию */
 }
 
 .card-container .option-button.selected {
   background: rgb(180, 0, 55);
   border-color: rgb(180, 0, 55);
   color: white;
+}
+
+.card-container .option-button:active {
+  transform: scale(0.98);
 }
 
 /* ======================================
@@ -375,6 +401,18 @@
 /* Группа формы */
 .card-container .form-group {
   margin-bottom: 20px;
+  
+  /* ИСПРАВЛЕНИЕ: Обеспечиваем видимость и кликабельность групп */
+  position: relative !important;
+  z-index: 5 !important;
+  pointer-events: auto !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  
+  /* Четкое позиционирование */
+  display: block !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
 }
 
 /* Кнопка на всю ширину */
@@ -386,6 +424,13 @@
 .card-container .option-buttons {
   display: flex;
   gap: 10px;
+  
+  /* ИСПРАВЛЕНИЕ: Обеспечиваем видимость контейнера */
+  position: relative !important;
+  z-index: 10 !important;
+  pointer-events: auto !important;
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 
 .card-container .option-buttons.vertical {
@@ -397,6 +442,13 @@
   display: flex;
   align-items: center;
   gap: 20px;
+  
+  /* ИСПРАВЛЕНИЕ: Обеспечиваем кликабельность слайдера */
+  position: relative !important;
+  z-index: 15 !important;
+  pointer-events: auto !important;
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 
 .card-container .form-slider {
@@ -406,6 +458,20 @@
   background: #e3e7ee;
   border-radius: 3px;
   outline: none;
+  
+  /* ИСПРАВЛЕНИЕ: Принудительная кликабельность слайдера */
+  position: relative !important;
+  z-index: 20 !important;
+  user-select: auto !important;
+  -webkit-user-select: auto !important;
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  touch-action: manipulation !important;
+  -webkit-tap-highlight-color: rgba(180, 0, 55, 0.1) !important;
+  
+  /* Размеры для touch */
+  min-height: 20px !important;
+  padding: 7px 0 !important; /* Увеличиваем область клика */
 }
 
 .card-container .form-slider::-webkit-slider-thumb {
@@ -415,6 +481,12 @@
   background: rgb(180, 0, 55);
   border-radius: 50%;
   cursor: pointer;
+  
+  /* ИСПРАВЛЕНИЕ: Обеспечиваем кликабельность thumb */
+  position: relative !important;
+  z-index: 25 !important;
+  pointer-events: auto !important;
+  touch-action: manipulation !important;
 }
 
 .card-container .slider-value {
@@ -422,6 +494,13 @@
   text-align: center;
   color: rgb(0, 40, 130);
   font-weight: 600;
+  
+  /* ИСПРАВЛЕНИЕ: Видимость значения */
+  position: relative !important;
+  z-index: 15 !important;
+  pointer-events: none !important; /* Не мешаем кликам на слайдер */
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 
 /* ======================================
@@ -705,6 +784,49 @@
    ====================================== */
 .card-container.card-positioned * {
   pointer-events: auto;
+}
+
+/* ИСПРАВЛЕНИЕ: Стили для DateWheelPicker */
+.card-container .date-wheel-picker {
+  position: relative !important;
+  z-index: 15 !important;
+  pointer-events: auto !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.card-container .date-wheel-picker select {
+  position: relative !important;
+  z-index: 20 !important;
+  user-select: auto !important;
+  -webkit-user-select: auto !important;
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  touch-action: manipulation !important;
+  -webkit-tap-highlight-color: rgba(180, 0, 55, 0.1) !important;
+  
+  /* Обеспечиваем видимость */
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: block !important;
+  
+  /* Базовые стили для совместимости с карточкой */
+  background: white !important;
+  border: 2px solid #e1e5e9 !important;
+  color: #333 !important;
+  font-size: 16px !important;
+  min-height: 48px !important;
+  border-radius: 8px !important;
+  
+  /* Предотвращение zoom на iOS */
+  font-size: 16px !important;
+  transform: scale(1) !important;
+}
+
+.card-container .date-wheel-picker select:focus {
+  border-color: rgb(180, 0, 55) !important;
+  box-shadow: 0 0 0 3px rgba(180, 0, 55, 0.1) !important;
+  outline: none !important;
 }
 
 /* Специальное правило для input полей в карточках */

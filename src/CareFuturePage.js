@@ -306,12 +306,13 @@ export default function CareFuturePage() {
     return Object.keys(errors).length === 0;
   };
 
-  // ===== ПРОВЕРКА ГОТОВНОСТИ КНОПКИ ДЛЯ АНИМАЦИИ =====
+  // ===== ПРОВЕРКА ГОТОВНОСТИ КНОПКИ ДЛЯ АНИМАЦИИ (БЕЗ ПОБОЧНЫХ ЭФФЕКТОВ) =====
   const isNextButtonReady = () => {
     if (stage === 'email') {
       return validateEmail(email);
     } else if (stage === 'form') {
-      return validateForm();
+      // Проверка без setValidationErrors для избежания re-renders
+      return birthDate && gender && calcType && amountRaw && parseInt(amountRaw) > 0;
     }
     return false;
   };
