@@ -494,19 +494,19 @@
   flex-direction: column;
 }
 
-/* Кнопки в группах выбора должны быть одинакового размера */
-.option-buttons .btn-universal {
+/* ИСПРАВЛЕНО: Кнопки option-button в группах выбора должны быть одинакового размера */
+.option-buttons .option-button {
   flex: 1;
   min-width: 0; /* Позволяет кнопкам сжиматься */
 }
 
-/* Специальные стили для вертикальных групп */
-.option-buttons.vertical .btn-universal {
+/* ИСПРАВЛЕНО: Специальные стили для вертикальных групп */
+.option-buttons.vertical .option-button {
   width: 100%;
   margin-bottom: 8px;
 }
 
-.option-buttons.vertical .btn-universal:last-child {
+.option-buttons.vertical .option-button:last-child {
   margin-bottom: 0;
 }
 
@@ -520,7 +520,8 @@
     flex-direction: row;
   }
   
-  .option-buttons:not(.vertical) .btn-universal {
+  /* ИСПРАВЛЕНО: option-button вместо btn-universal */
+  .option-buttons:not(.vertical) .option-button {
     max-width: 200px;
   }
 }
@@ -531,7 +532,8 @@
     flex-direction: row;
   }
   
-  .option-buttons:not(.vertical) .btn-universal {
+  /* ИСПРАВЛЕНО: option-button вместо btn-universal */
+  .option-buttons:not(.vertical) .option-button {
     max-width: 180px;
   }
 }
@@ -542,7 +544,8 @@
     flex-direction: column;
   }
   
-  .option-buttons .btn-universal {
+  /* ИСПРАВЛЕНО: option-button вместо btn-universal */
+  .option-buttons .option-button {
     width: 100%;
   }
 }

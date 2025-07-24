@@ -298,10 +298,6 @@ export default function CareFuturePage() {
       errors.calcType = 'Выберите тип расчёта';
     }
 
-    if (!amountRaw || parseInt(amountRaw) === 0) {
-      errors.amount = 'Введите сумму';
-    }
-
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -658,35 +654,178 @@ export default function CareFuturePage() {
             </div>
             
             <div className="card-content">
-              {/* Дата рождения */}
-              <div className="form-group">
-                <label className="form-label text-label">Дата рождения</label>
-                <DateWheelPicker 
-                  value={birthParts}
-                  onChange={setBirthParts}
-                />
+              <div className="form-group" style={{ marginBottom: '6px' }}>
+                <label className="form-label text-label" style={{ marginBottom: '6px' }}>Дата рождения</label>
+                <div style={{
+                  display: 'flex',
+                  gap: '8px',
+                  width: '100%',
+                  marginTop: '6px'
+                }}>
+                  {/* День */}
+                  <select
+                    value={birthParts.day}
+                    onChange={(e) => {
+                      console.log('Day changed to:', e.target.value);
+                      setBirthParts(prev => ({ ...prev, day: e.target.value }));
+                    }}
+                    style={{
+                      flex: '1',
+                      padding: '12px 8px',
+                      minHeight: '44px',
+                      border: '1px solid #e3e7ee',
+                      borderRadius: '8px',
+                      background: '#f5f7fa',
+                      color: '#333',
+                      fontFamily: 'Segoe UI, sans-serif',
+                      fontSize: '16px',
+                      fontWeight: '400',
+                      cursor: 'pointer',
+                      outline: 'none',
+                      textAlign: 'center',
+                      WebkitAppearance: 'none',
+                      appearance: 'none'
+                    }}
+                  >
+                    {Array.from({ length: 31 }, (_, i) => i + 1).map(day => (
+                      <option key={day} value={day.toString().padStart(2, '0')}>
+                        {day.toString().padStart(2, '0')}
+                      </option>
+                    ))}
+                  </select>
+
+                  {/* Месяц */}
+                  <select
+                    value={birthParts.month}
+                    onChange={(e) => {
+                      console.log('Month changed to:', e.target.value);
+                      setBirthParts(prev => ({ ...prev, month: e.target.value }));
+                    }}
+                    style={{
+                      flex: '1',
+                      padding: '12px 8px',
+                      minHeight: '44px',
+                      border: '1px solid #e3e7ee',
+                      borderRadius: '8px',
+                      background: '#f5f7fa',
+                      color: '#333',
+                      fontFamily: 'Segoe UI, sans-serif',
+                      fontSize: '16px',
+                      fontWeight: '400',
+                      cursor: 'pointer',
+                      outline: 'none',
+                      textAlign: 'center',
+                      WebkitAppearance: 'none',
+                      appearance: 'none'
+                    }}
+                  >
+                    {[
+                      { value: '01', label: 'Янв' },
+                      { value: '02', label: 'Фев' },
+                      { value: '03', label: 'Мар' },
+                      { value: '04', label: 'Апр' },
+                      { value: '05', label: 'Май' },
+                      { value: '06', label: 'Июн' },
+                      { value: '07', label: 'Июл' },
+                      { value: '08', label: 'Авг' },
+                      { value: '09', label: 'Сен' },
+                      { value: '10', label: 'Окт' },
+                      { value: '11', label: 'Ноя' },
+                      { value: '12', label: 'Дек' }
+                    ].map(month => (
+                      <option key={month.value} value={month.value}>
+                        {month.label}
+                      </option>
+                    ))}
+                  </select>
+
+                  {/* Год */}
+                  <select
+                    value={birthParts.year}
+                    onChange={(e) => {
+                      console.log('Year changed to:', e.target.value);
+                      setBirthParts(prev => ({ ...prev, year: e.target.value }));
+                    }}
+                    style={{
+                      flex: '1',
+                      padding: '12px 8px',
+                      minHeight: '44px',
+                      border: '1px solid #e3e7ee',
+                      borderRadius: '8px',
+                      background: '#f5f7fa',
+                      color: '#333',
+                      fontFamily: 'Segoe UI, sans-serif',
+                      fontSize: '16px',
+                      fontWeight: '400',
+                      cursor: 'pointer',
+                      outline: 'none',
+                      textAlign: 'center',
+                      WebkitAppearance: 'none',
+                      appearance: 'none'
+                    }}
+                  >
+                    {Array.from({ length: 80 }, (_, i) => new Date().getFullYear() - i).map(year => (
+                      <option key={year} value={year.toString()}>
+                        {year}
+                      </option>
+                    ))}
+                  </select>
+                </div>
                 {validationErrors.birthDate && (
                   <span className="form-error">{validationErrors.birthDate}</span>
                 )}
               </div>
 
-              {/* Пол - ИСПРАВЛЕНО: используем option-button вместо btn-universal */}
               <div className="form-group">
                 <label className="form-label text-label">Пол</label>
-                <div className="option-buttons">
+                <div style={{
+                  display: 'flex',
+                  gap: '12px',
+                  justifyContent: 'center',
+                  width: '100%',
+                  marginTop: '4px'
+                }}>
                   <button
-                    className={`option-button ${gender === 'male' ? 'selected' : ''}`}
-                    onClick={(e) => {
-                      createRipple(e);
+                    type="button"
+                    style={{
+                      padding: '12px 24px',
+                      minHeight: '44px',
+                      border: gender === 'male' ? '2px solid rgb(180, 0, 55)' : '2px solid rgb(152, 164, 174)',
+                      borderRadius: '8px',
+                      background: gender === 'male' ? 'rgb(180, 0, 55)' : 'white',
+                      color: gender === 'male' ? 'white' : 'rgb(152, 164, 174)',
+                      fontFamily: 'Segoe UI, sans-serif',
+                      fontSize: '16px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      flex: '1',
+                      outline: 'none'
+                    }}
+                    onClick={() => {
+                      console.log('Clicked Male'); // для отладки
                       setGender('male');
                     }}
                   >
                     Мужской
                   </button>
                   <button
-                    className={`option-button ${gender === 'female' ? 'selected' : ''}`}
-                    onClick={(e) => {
-                      createRipple(e);
+                    type="button"
+                    style={{
+                      padding: '12px 24px',
+                      minHeight: '44px',
+                      border: gender === 'female' ? '2px solid rgb(180, 0, 55)' : '2px solid rgb(152, 164, 174)',
+                      borderRadius: '8px',
+                      background: gender === 'female' ? 'rgb(180, 0, 55)' : 'white',
+                      color: gender === 'female' ? 'white' : 'rgb(152, 164, 174)',
+                      fontFamily: 'Segoe UI, sans-serif',
+                      fontSize: '16px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      flex: '1',
+                      outline: 'none'
+                    }}
+                    onClick={() => {
+                      console.log('Clicked Female'); // для отладки
                       setGender('female');
                     }}
                   >
@@ -698,36 +837,139 @@ export default function CareFuturePage() {
                 )}
               </div>
 
-              {/* Срок программы */}
+              {/* Срок программы - КОМПАКТНЫЙ СЛАЙДЕР В ОДНУ СТРОКУ */}
               <div className="form-group">
                 <label className="form-label text-label">Срок программы (лет)</label>
-                <div className="slider-container">
-                  <input
-                    type="range"
-                    className="form-slider"
-                    min="5"
-                    max="30"
-                    step="1"
-                    value={programTerm}
-                    onChange={(e) => setProgramTerm(parseInt(e.target.value))}
-                  />
-                  <div className="slider-value">{programTerm}</div>
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'row', // В одну строку
+                  alignItems: 'center',
+                  gap: '12px',
+                  width: '100%',
+                  marginTop: '8px',
+                  padding: '8px 0'
+                }}>
+                  <div style={{
+                    position: 'relative',
+                    flex: '1', // Занимает оставшееся место
+                    height: '20px',
+                    display: 'flex',
+                    alignItems: 'center'
+                  }}>
+                    <input
+                      type="range"
+                      min="5"
+                      max="30"
+                      step="1"
+                      value={programTerm}
+                      onChange={(e) => {
+                        console.log('Slider changed to:', e.target.value);
+                        setProgramTerm(parseInt(e.target.value));
+                      }}
+                      onTouchStart={(e) => {
+                        e.stopPropagation();
+                      }}
+                      onTouchMove={(e) => {
+                        e.stopPropagation();
+                      }}
+                      style={{
+                        width: '100%',
+                        height: '8px',
+                        borderRadius: '4px',
+                        background: `linear-gradient(to right, rgb(180, 0, 55) 0%, rgb(180, 0, 55) ${((programTerm - 5) / 25) * 100}%, #e5e5e5 ${((programTerm - 5) / 25) * 100}%, #e5e5e5 100%)`,
+                        outline: 'none',
+                        cursor: 'pointer',
+                        WebkitAppearance: 'none',
+                        appearance: 'none',
+                        position: 'relative',
+                        zIndex: '1000',
+                        touchAction: 'none',
+                        userSelect: 'none',
+                        WebkitUserSelect: 'none'
+                      }}
+                    />
+                  </div>
+                  <div style={{
+                    padding: '6px 12px',
+                    background: 'rgb(180, 0, 55)',
+                    color: 'white',
+                    borderRadius: '16px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    fontFamily: 'Segoe UI, sans-serif',
+                    minWidth: '40px',
+                    textAlign: 'center',
+                    flexShrink: 0 // Не сжимается
+                  }}>
+                    {programTerm}
+                  </div>
                 </div>
               </div>
 
-              {/* Тип расчёта */}
-              <div className="form-group">
-                <label className="form-label text-label">Тип расчёта</label>
-                <div className="option-buttons vertical">
+              {/* Тип расчёта - КОМПАКТНЫЕ КНОПКИ В СТРОКУ */}
+              <div className="form-group" style={{ marginBottom: '6px' }}>
+                <label className="form-label text-label" style={{ marginBottom: '6px' }}>Тип расчёта</label>
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'row', // В строку
+                  flexWrap: 'wrap', // Перенос если не помещается
+                  gap: '8px',
+                  width: '100%',
+                  marginTop: '0px' // Уменьшен отступ
+                }}>
                   <button
-                    className={`option-button ${calcType === 'from_premium' ? 'selected' : ''}`}
-                    onClick={() => setCalcType('from_premium')}
+                    type="button"
+                    style={{
+                      padding: '12px 16px',
+                      minHeight: '56px', // Увеличено для переноса текста
+                      border: calcType === 'from_premium' ? '2px solid rgb(180, 0, 55)' : '2px solid rgb(152, 164, 174)',
+                      borderRadius: '8px',
+                      background: calcType === 'from_premium' ? 'rgb(180, 0, 55)' : 'white',
+                      color: calcType === 'from_premium' ? 'white' : 'rgb(152, 164, 174)',
+                      fontFamily: 'Segoe UI, sans-serif',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      outline: 'none',
+                      textAlign: 'center',
+                      flex: '1', // Равная ширина
+                      minWidth: '140px', // Минимальная ширина
+                      whiteSpace: 'normal', // Разрешить перенос текста
+                      wordWrap: 'break-word', // Перенос длинных слов
+                      lineHeight: '1.3' // Межстрочный интервал
+                    }}
+                    onClick={() => {
+                      console.log('Selected calc type: from_premium');
+                      setCalcType('from_premium');
+                    }}
                   >
                     Рассчитать по размеру взноса
                   </button>
                   <button
-                    className={`option-button ${calcType === 'from_sum' ? 'selected' : ''}`}
-                    onClick={() => setCalcType('from_sum')}
+                    type="button"
+                    style={{
+                      padding: '12px 16px',
+                      minHeight: '56px', // Увеличено для переноса текста
+                      border: calcType === 'from_sum' ? '2px solid rgb(180, 0, 55)' : '2px solid rgb(152, 164, 174)',
+                      borderRadius: '8px',
+                      background: calcType === 'from_sum' ? 'rgb(180, 0, 55)' : 'white',
+                      color: calcType === 'from_sum' ? 'white' : 'rgb(152, 164, 174)',
+                      fontFamily: 'Segoe UI, sans-serif',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      outline: 'none',
+                      textAlign: 'center',
+                      flex: '1', // Равная ширина
+                      minWidth: '140px', // Минимальная ширина
+                      whiteSpace: 'normal', // Разрешить перенос текста
+                      wordWrap: 'break-word', // Перенос длинных слов
+                      lineHeight: '1.3' // Межстрочный интервал
+                    }}
+                    onClick={() => {
+                      console.log('Selected calc type: from_sum');
+                      setCalcType('from_sum');
+                    }}
                   >
                     Рассчитать по страховой сумме
                   </button>
@@ -737,9 +979,8 @@ export default function CareFuturePage() {
                 )}
               </div>
 
-              {/* Сумма */}
-              <div className="form-group">
-                <label className="form-label text-label">
+              <div className="form-group" style={{ marginBottom: '12px' }}>
+                <label className="form-label text-label" style={{ marginBottom: '6px' }}>
                   {calcType === 'from_premium' ? 'Размер взноса' : 'Страховая сумма'} (₽)
                 </label>
                 <input
@@ -747,8 +988,17 @@ export default function CareFuturePage() {
                   className={`form-input ${validationErrors.amount ? 'error' : ''}`}
                   value={amountDisplay}
                   onChange={handleAmountChange}
-                  placeholder="1 000 000"
-                  style={getInputStyle()}
+                  placeholder={
+                    calcType === 'from_premium' 
+                      ? 'от 100 000 рублей' 
+                      : calcType === 'from_sum' 
+                        ? 'от 500 000 рублей'
+                        : '1 000 000' // по умолчанию если ничего не выбрано
+                  }
+                  style={{
+                    ...getInputStyle(),
+                    marginTop: '6px'
+                  }}
                 />
                 {validationErrors.amount && (
                   <span className="form-error">{validationErrors.amount}</span>
