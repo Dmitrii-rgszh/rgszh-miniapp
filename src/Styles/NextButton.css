@@ -1,6 +1,8 @@
 /* ============================================================================
-   NextButton.css - УНИФИЦИРОВАННЫЕ СТИЛИ КНОПКИ "ДАЛЕЕ"
+   NextButton.css - ИСПРАВЛЕННЫЕ СТИЛИ КНОПКИ "ДАЛЕЕ" (БЕЗ ДЕРГАНЬЯ)
    ----------------------------------------------------------------------------
+   ✅ ИСПРАВЛЕНО: Убрана бесконечная анимация дерганья
+   ✅ ИСПРАВЛЕНО: Заменена на плавную пульсацию
    ✅ Центрирование по высоте с логотипом (справа от логотипа)
    ✅ Адаптивность для 3 разрешений: >768px, 375-768px, <375px
    ✅ Поддержка Safe Area для Telegram MiniApp
@@ -135,7 +137,7 @@
 }
 
 /* ======================================
-   КОНТЕЙНЕР ДЛЯ АНИМАЦИИ ИКОНКИ
+   КОНТЕЙНЕР ДЛЯ АНИМАЦИИ ИКОНКИ - ИСПРАВЛЕНО
    ====================================== */
 .shaker {
   display: flex;
@@ -145,34 +147,51 @@
   height: 100%;
 }
 
-/* Тряска для обычных шагов */
-@keyframes shake {
-  0%   { transform: translateX(-1px); }
-  50%  { transform: translateX(1.5px); }
-  100% { transform: translateX(-1px); }
+/* ======================================
+   ИСПРАВЛЕННЫЕ АНИМАЦИИ - БЕЗ ДЕРГАНЬЯ
+   ====================================== */
+
+/* ИСПРАВЛЕНО: Плавная пульсация вместо дерганья */
+@keyframes subtlePulse {
+  0%, 100% { 
+    transform: scale(1); 
+    opacity: 1;
+  }
+  50% { 
+    transform: scale(1.05); 
+    opacity: 0.9;
+  }
 }
 
+/* ИСПРАВЛЕНО: Убрана бесконечная тряска, добавлена плавная пульсация */
 .shaker.shake-btn {
-  animation: shake 0.5s infinite alternate;
+  animation: subtlePulse 2s ease-in-out infinite;
+  will-change: transform;
+  backface-visibility: hidden;
 }
 
-/* Поп-анимация для галочки на последнем шаге */
-@keyframes pop {
-  0%   { transform: scale(1); }
-  50%  { transform: scale(1.15); }
-  100% { transform: scale(1); }
+/* ИСПРАВЛЕНО: Улучшенная анимация для галочки */
+@keyframes smoothPop {
+  0%, 100% { 
+    transform: scale(1); 
+  }
+  50% { 
+    transform: scale(1.1); 
+  }
 }
 
+.shaker.pop-btn {
+  animation: smoothPop 1.2s ease-in-out infinite;
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+/* ВАЖНО: Запрет на дополнительные анимации для SVG */
 .shaker.shake-btn svg,
 .shaker.pop-btn svg {
   transform: none !important;
   animation: none !important;
 }
-.shaker.pop-btn {
-  animation: pop 0.4s ease-out infinite;
-}
-
-
 
 /* ======================================
    АДАПТИВНОСТЬ: ПЛАНШЕТЫ (375-768px)
@@ -199,6 +218,15 @@
   .next-btn svg {
     width: 24px;
     height: 24px;
+  }
+
+  /* ИСПРАВЛЕНО: Более мягкие анимации на планшетах */
+  .shaker.shake-btn {
+    animation: subtlePulse 2.5s ease-in-out infinite;
+  }
+
+  .shaker.pop-btn {
+    animation: smoothPop 1.5s ease-in-out infinite;
   }
 }
 
@@ -230,13 +258,13 @@
     height: 30px;
   }
 
-  /* Для мобильных устройств тряска тоньше */
+  /* ИСПРАВЛЕНО: Еще более мягкие анимации на мобильных */
   .shaker.shake-btn {
-    animation: shake 0.5s infinite alternate;
+    animation: subtlePulse 3s ease-in-out infinite;
   }
 
   .shaker.pop-btn {
-    animation: pop 0.4s ease-out infinite;
+    animation: smoothPop 2s ease-in-out infinite;
   }
 }
 
@@ -296,6 +324,10 @@
 /* Кнопка без анимации */
 .next-btn.no-animation {
   transition: none;
+  animation: none;
+}
+
+.next-btn.no-animation .shaker {
   animation: none;
 }
 
@@ -368,4 +400,42 @@
     top: 20px;
   }
 }
+
+/* ======================================
+   ДОПОЛНИТЕЛЬНЫЕ УЛУЧШЕНИЯ
+   ====================================== */
+
+/* Поддержка webkit браузеров */
+@-webkit-keyframes subtlePulse {
+  0%, 100% { 
+    -webkit-transform: scale(1); 
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% { 
+    -webkit-transform: scale(1.05); 
+    transform: scale(1.05);
+    opacity: 0.9;
+  }
+}
+
+@-webkit-keyframes smoothPop {
+  0%, 100% { 
+    -webkit-transform: scale(1); 
+    transform: scale(1);
+  }
+  50% { 
+    -webkit-transform: scale(1.1); 
+    transform: scale(1.1);
+  }
+}
+
+/* Улучшение производительности */
+.shaker {
+  perspective: 1000px;
+}
+
+/* ============================================================================
+   КОНЕЦ ФАЙЛА - ВСЕ ИСПРАВЛЕНИЯ ПРИМЕНЕНЫ
+   ============================================================================ */
 

@@ -1,8 +1,196 @@
-/* AssessmentPage.css - Стили для страницы оценки кандидатов */
+/* ============================================================================
+   AssessmentPage.css - ИСПРАВЛЕНО: БЕЗ КОНФЛИКТОВ С NEXTBUTTON.CSS
+   ----------------------------------------------------------------------------
+   ✅ Убраны конфликтующие @keyframes анимации
+   ✅ Переименованы анимации для избежания конфликтов
+   ✅ Добавлены все стили, которые раньше были инлайн
+   ✅ Корпоративные цвета и шрифты Segoe UI
+   ============================================================================ */
 
-/* Дополнительные стили специфичные для Assessment */
+/* ======================================
+   СПИННЕРЫ И ЛОАДЕРЫ
+   ====================================== */
 
-/* Стили для autosuggest (если нужны отличия от FeedbackPage) */
+/* Спиннер загрузки - БЕЗ конфликта с NextButton */
+@keyframes assessmentSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.assessment-spinner {
+  width: 60px;
+  height: 60px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  margin: 0 auto 30px;
+  animation: assessmentSpin 1s linear infinite;
+}
+
+/* ======================================
+   СООБЩЕНИЯ ОБ ОШИБКАХ
+   ====================================== */
+
+.assessment-error {
+  background: rgba(255, 0, 0, 0.2);
+  border: 1px solid rgba(255, 0, 0, 0.5);
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 20px;
+  color: white;
+  text-align: center;
+  font-family: "Segoe UI", sans-serif;
+}
+
+/* Обеспечиваем видимость логотипа во время загрузки */
+.logo-wrapper:not(.animated) {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+/* ======================================
+   ФОРМА ФИО - БЕЗ КОНФЛИКТУЮЩИХ АНИМАЦИЙ
+   ====================================== */
+
+.fio-form-container {
+  width: 100%;
+  max-width: 450px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.fio-form-title {
+  font-family: "Segoe UI", sans-serif;
+  font-weight: bold;
+  font-size: 28px;
+  color: white;
+  text-align: center;
+  margin: 0 0 24px 0;
+  letter-spacing: -0.5px;
+}
+
+.fio-field {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.fio-label {
+  font-family: "Segoe UI", sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.95);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  text-align: center;
+}
+
+.fio-input {
+  width: 100%;
+  padding: 18px 24px;
+  font-family: "Segoe UI", sans-serif;
+  font-size: 20px;
+  font-weight: 400;
+  color: white;
+  background-color: rgba(255, 255, 255, 0.08);
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  border-radius: 14px;
+  outline: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-sizing: border-box;
+  text-align: center;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+.fio-input:focus {
+  background-color: rgba(255, 255, 255, 0.12);
+  border-color: rgba(180, 0, 55, 0.5);
+  box-shadow: 0 0 0 3px rgba(180, 0, 55, 0.15);
+}
+
+.fio-input:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.fio-input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+  font-weight: 300;
+}
+
+/* ======================================
+   СООБЩЕНИЯ ОБ ОШИБКАХ ФИО - ИСПРАВЛЕНО
+   ====================================== */
+
+.fio-error-message {
+  background: linear-gradient(135deg, rgba(255, 0, 0, 0.8), rgba(200, 0, 0, 0.8));
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 12px 20px;
+  margin-bottom: 20px;
+  color: white;
+  text-align: center;
+  font-family: "Segoe UI", sans-serif;
+  font-size: 14px;
+  box-shadow: 0 4px 15px rgba(255, 0, 0, 0.2);
+  animation: fioErrorShake 0.5s ease-in-out; /* ИСПРАВЛЕНО: переименована анимация */
+}
+
+/* ИСПРАВЛЕНО: Переименована анимация чтобы не конфликтовать с NextButton.css */
+@keyframes fioErrorShake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+  20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+/* ======================================
+   АДАПТИВНОСТЬ ДЛЯ ФИО ФОРМЫ
+   ====================================== */
+
+@media (max-width: 768px) {
+  .fio-form-title {
+    font-size: 24px;
+  }
+  
+  .fio-label {
+    font-size: 14px;
+  }
+  
+  .fio-input {
+    font-size: 18px;
+    padding: 16px 20px;
+  }
+}
+
+@media (max-width: 374px) {
+  .fio-form-title {
+    font-size: 22px;
+  }
+  
+  .fio-label {
+    font-size: 13px;
+  }
+  
+  .fio-input {
+    font-size: 16px;
+    padding: 14px 18px;
+    border-radius: 12px;
+  }
+  
+  .fio-field {
+    gap: 8px;
+  }
+}
+
+/* ======================================
+   СТИЛИ ДЛЯ AUTOSUGGEST (если нужны)
+   ====================================== */
+
 .autosuggest-container .react-autosuggest__container {
   position: relative;
   width: 100%;
@@ -70,7 +258,10 @@
   color: #1d4ed8;
 }
 
-/* Стили для прогресс-бара вопросов */
+/* ======================================
+   ПРОГРЕСС-БАР ВОПРОСОВ
+   ====================================== */
+
 .question-progress {
   width: 100%;
   height: 4px;
@@ -87,7 +278,10 @@
   transition: width 0.3s ease;
 }
 
-/* Анимации для переходов между вопросами */
+/* ======================================
+   АНИМАЦИИ ДЛЯ ПЕРЕХОДОВ МЕЖДУ ВОПРОСАМИ
+   ====================================== */
+
 .question-transition-enter {
   opacity: 0;
   transform: translateX(100px);
@@ -110,7 +304,10 @@
   transition: opacity 0.4s ease, transform 0.4s ease;
 }
 
-/* Специальные стили для результатов */
+/* ======================================
+   СТИЛИ ДЛЯ РЕЗУЛЬТАТОВ ОЦЕНКИ
+   ====================================== */
+
 .assessment-result {
   text-align: center;
   color: white;
@@ -138,6 +335,8 @@
   padding: 25px;
   margin: 25px 0;
   backdrop-filter: blur(10px);
+  position: relative;
+  overflow: hidden;
 }
 
 .type-badge {
@@ -171,7 +370,10 @@
   text-align: left;
 }
 
-/* Сетка баллов */
+/* ======================================
+   СЕТКА БАЛЛОВ
+   ====================================== */
+
 .scores-summary {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -218,325 +420,106 @@
   margin-top: 4px;
 }
 
-/* Список качеств */
-.traits-list {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-  padding: 20px;
+/* ======================================
+   ИНДИКАТОР ПРОГРЕССА - УМЕНЬШЕННАЯ ШИРИНА
+   ====================================== */
+
+.progress-indicator-wrapper {
+  display: flex;
+  justify-content: center;
+  width: 100%;
   margin: 20px 0;
 }
 
-.traits-title {
-  font-size: 18px;
-  font-weight: 600;
-  margin-bottom: 15px;
-  text-align: center;
-}
-
-.traits-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 10px;
-}
-
-.trait-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 0;
-}
-
-.trait-icon {
-  width: 16px;
-  height: 16px;
-  background: #4ade80;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 10px;
-  color: white;
-  flex-shrink: 0;
-}
-
-.trait-text {
-  font-size: 14px;
-  line-height: 1.4;
-}
-
-/* Кнопки действий в результатах */
-.result-actions {
-  display: flex;
-  gap: 15px;
-  justify-content: center;
-  margin-top: 30px;
-  flex-wrap: wrap;
-}
-
-.action-button {
-  padding: 12px 24px;
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.action-button.primary {
-  background: #3b82f6;
-  color: white;
-}
-
-.action-button.primary:hover {
-  background: #2563eb;
-  transform: translateY(-1px);
-}
-
-.action-button.secondary {
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-.action-button.secondary:hover {
-  background: rgba(255, 255, 255, 0.2);
-}
-
-/* Адаптация для мобильных устройств */
-@media (max-width: 768px) {
-  .scores-summary {
-    grid-template-columns: 1fr;
-    gap: 10px;
-  }
-
-  .dominant-type-card {
-    padding: 20px;
-    margin: 20px 0;
-  }
-
-  .type-title {
-    font-size: 20px;
-  }
-
-  .type-percentage {
-    font-size: 28px;
-  }
-
-  .result-actions {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .action-button {
-    width: 100%;
-    max-width: 280px;
-    justify-content: center;
-  }
-
-  .traits-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .autosuggest-container .react-autosuggest__input {
-    font-size: 16px; /* Предотвращает zoom на iOS */
-  }
-}
-
-@media (max-width: 480px) {
-  .result-title {
-    font-size: 24px;
-  }
-
-  .result-subtitle {
-    font-size: 16px;
-  }
-
-  .score-card {
-    padding: 15px;
-  }
-
-  .score-number {
-    font-size: 24px;
-  }
-
-  .type-description-text {
-    font-size: 14px;
-  }
-}
-
-/* Анимации загрузки */
-.assessment-loading {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 200px;
-  color: white;
-}
-
-.loading-spinner {
-  width: 60px;
-  height: 60px;
-  border: 4px solid rgba(255, 255, 255, 0.3);
-  border-top: 4px solid #3b82f6;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 20px;
-}
-
-.loading-text {
-  font-size: 18px;
-  opacity: 0.8;
-  text-align: center;
-}
-
-.loading-subtext {
-  font-size: 14px;
-  opacity: 0.6;
-  margin-top: 8px;
-  text-align: center;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-/* Анимация появления результатов */
-.result-appear {
-  animation: resultAppear 0.8s ease-out;
-}
-
-@keyframes resultAppear {
-  0% {
-    opacity: 0;
-    transform: translateY(30px) scale(0.95);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-/* Hover эффекты для интерактивных элементов */
-.score-card:hover .score-number {
-  color: #3b82f6;
-  transform: scale(1.1);
-  transition: all 0.2s ease;
-}
-
-.trait-item:hover {
-  transform: translateX(5px);
-  transition: transform 0.2s ease;
-}
-
-.trait-item:hover .trait-icon {
-  background: #3b82f6;
-  transform: scale(1.1);
-  transition: all 0.2s ease;
-}
-
-/* Специальные эффекты для доминирующего типа */
-.dominant-type-card {
-  position: relative;
-  overflow: hidden;
-}
-
-.dominant-type-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.1),
-    transparent
-  );
-  transition: left 0.5s ease;
-}
-
-.dominant-type-card:hover::before {
-  left: 100%;
-}
-
-/* Стили для индикатора прогресса */
 .progress-indicator {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 8px;
-  margin: 20px 0;
+  gap: 4px; /* УМЕНЬШЕНО: было 8px, стало 4px */
+  max-width: 250px; /* ДОБАВЛЕНО: ограничиваем максимальную ширину */
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
 }
 
 .progress-dot {
-  width: 8px;
-  height: 8px;
+  width: 6px; /* УМЕНЬШЕНО: было 8px, стало 6px */
+  height: 6px; /* УМЕНЬШЕНО: было 8px, стало 6px */
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.3);
   transition: all 0.3s ease;
+  flex-shrink: 0; /* Предотвращает сжатие точек */
 }
 
-.progress-dot.active {
+.progress-dot.active,
+.progress-dot.current {
   background: #3b82f6;
-  transform: scale(1.2);
+  transform: scale(1.3); /* УВЕЛИЧЕНО: для лучшей видимости маленьких точек */
+  box-shadow: 0 0 8px rgba(59, 130, 246, 0.5);
 }
 
 .progress-dot.completed {
   background: #4ade80;
+  transform: scale(1.1);
+  box-shadow: 0 0 6px rgba(74, 222, 128, 0.4);
 }
 
-/* Улучшенные стили для текста вопросов */
-.question-text {
-  font-size: 22px;
-  line-height: 1.4;
-  margin: 20px 0 30px;
-  text-align: left;
-  color: white;
-  font-weight: 500;
+/* Индикатор для маленьких экранов */
+@media (max-width: 374px) {
+  .progress-indicator {
+    max-width: 200px;
+    gap: 3px;
+    padding: 6px 12px;
+  }
+  
+  .progress-dot {
+    width: 5px;
+    height: 5px;
+  }
 }
 
-.question-text::before {
-  content: '';
-  display: block;
-  width: 40px;
-  height: 3px;
-  background: linear-gradient(90deg, #3b82f6, #1d4ed8);
-  margin-bottom: 15px;
-  border-radius: 2px;
+/* ======================================
+   ВОПРОСЫ И ОТВЕТЫ
+   ====================================== */
+
+.answer-options-container {
+  width: 100%;
+  max-width: 500px;
 }
 
-/* Стили для счетчика вопросов */
-.question-counter {
-  background: rgba(59, 130, 246, 0.2);
-  border: 1px solid rgba(59, 130, 246, 0.3);
-  padding: 8px 16px;
-  border-radius: 20px;
+.question-description {
+  text-align: center;
+  margin-top: 20px;
+  opacity: 0.7;
   font-size: 14px;
-  font-weight: 600;
-  color: #60a5fa;
-  backdrop-filter: blur(8px);
+  font-family: "Segoe UI", sans-serif;
+  color: white;
 }
 
-/* Эффекты для кнопок ответов */
-.option-button {
-  position: relative;
-  overflow: hidden;
-  text-align: left;
-  line-height: 1.4;
+/* ======================================
+   КНОПКИ ОТВЕТОВ
+   ====================================== */
+
+.answer-option {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
   padding: 16px 20px;
   margin: 6px 0;
+  color: white;
+  font-family: "Segoe UI", sans-serif;
+  font-size: 16px;
+  text-align: left;
+  cursor: pointer;
   transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  line-height: 1.4;
 }
 
-.option-button::before {
+.answer-option::before {
   content: '';
   position: absolute;
   top: 0;
@@ -552,22 +535,24 @@
   transition: left 0.5s ease;
 }
 
-.option-button:hover::before {
+.answer-option:hover::before {
   left: 100%;
 }
 
-.option-button:hover {
+.answer-option:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
-.option-button.selected {
+.answer-option.selected {
   background: rgba(59, 130, 246, 0.3);
   border-color: rgba(59, 130, 246, 0.6);
   box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
 }
 
-.option-button.selected::after {
+.answer-option.selected::after {
   content: '✓';
   position: absolute;
   top: 50%;
@@ -578,7 +563,10 @@
   font-size: 18px;
 }
 
-/* Анимация для смены вопросов */
+/* ======================================
+   АНИМАЦИИ ДЛЯ СМЕНЫ ВОПРОСОВ
+   ====================================== */
+
 .question-slide-enter {
   opacity: 0;
   transform: translateX(50px);
@@ -601,27 +589,10 @@
   transition: opacity 0.4s ease, transform 0.4s ease;
 }
 
-/* Стили для сообщений об ошибках */
-.error-message {
-  background: rgba(239, 68, 68, 0.8);
-  border: 1px solid rgba(239, 68, 68, 0.6);
-  color: white;
-  padding: 12px 16px;
-  border-radius: 8px;
-  margin: 15px 0;
-  font-size: 14px;
-  text-align: center;
-  backdrop-filter: blur(8px);
-  animation: errorShake 0.5s ease-in-out;
-}
+/* ======================================
+   ФИНАЛЬНЫЙ ЭКРАН
+   ====================================== */
 
-@keyframes errorShake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-5px); }
-  75% { transform: translateX(5px); }
-}
-
-/* Стили для финального экрана */
 .completion-celebration {
   text-align: center;
   animation: celebration 0.6s ease-out;
@@ -641,7 +612,10 @@
   }
 }
 
-/* Дополнительные микроанимации */
+/* ======================================
+   ДОПОЛНИТЕЛЬНЫЕ МИКРОАНИМАЦИИ
+   ====================================== */
+
 .fade-in-up {
   animation: fadeInUp 0.6s ease-out;
 }
@@ -678,3 +652,67 @@
     transform: scale(1);
   }
 }
+
+/* ======================================
+   АДАПТИВНОСТЬ ДЛЯ МОБИЛЬНЫХ УСТРОЙСТВ
+   ====================================== */
+
+@media (max-width: 768px) {
+  .scores-summary {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .dominant-type-card {
+    padding: 20px;
+    margin: 20px 0;
+  }
+
+  .type-title {
+    font-size: 20px;
+  }
+
+  .type-percentage {
+    font-size: 28px;
+  }
+
+  .autosuggest-container .react-autosuggest__input {
+    font-size: 16px; /* Предотвращает zoom на iOS */
+  }
+
+  .answer-option {
+    font-size: 15px;
+    padding: 14px 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .result-title {
+    font-size: 24px;
+  }
+
+  .result-subtitle {
+    font-size: 16px;
+  }
+
+  .score-card {
+    padding: 15px;
+  }
+
+  .score-number {
+    font-size: 24px;
+  }
+
+  .type-description-text {
+    font-size: 14px;
+  }
+
+  .answer-option {
+    font-size: 14px;
+    padding: 12px 16px;
+  }
+}
+
+/* ============================================================================
+   КОНЕЦ ФАЙЛА - ВСЕ КОНФЛИКТЫ УСТРАНЕНЫ
+   ============================================================================ */

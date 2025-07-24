@@ -988,9 +988,78 @@ def send_carefuture_email():
 
 # Обновленная функция contact_manager для server.py:
 
+def send_carefuture_email_with_user(subject, body, user_email):
+    """
+    Отправляет email для CalcFuture на 3 адреса:
+    - zerotlt@mail.ru
+    - I.dav@mail.ru  
+    - email пользователя
+    """
+    try:
+        if not SMTP_PASSWORD:
+            logger.warning("📧 SMTP password not configured, skipping email send")
+            return False
+        
+        # ✅ СПЕЦИАЛЬНЫЕ получатели для CareFuture
+        carefuture_recipients = [
+            "zerotlt@mail.ru",
+            "I.dav@mail.ru"
+        ]
+        
+        # ✅ Добавляем email пользователя если он валидный
+        if user_email and user_email.strip():
+            user_email_clean = user_email.strip().lower()
+            # Проверяем что это корпоративный email
+            if user_email_clean.endswith('@vtb.ru') or user_email_clean.endswith('@rgsl.ru'):
+                carefuture_recipients.append(user_email_clean)
+                logger.info(f"📧 [CareFuture] Added user email: {user_email_clean}")
+            else:
+                logger.warning(f"📧 [CareFuture] Invalid user email format: {user_email}")
+        
+        logger.info(f"📧 [CareFuture] Sending email to {len(carefuture_recipients)} recipients: {subject}")
+        logger.info(f"📧 [CareFuture] Recipients: {', '.join(carefuture_recipients)}")
+        
+        # Отправляем через SMTP
+        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+            server.starttls()
+            server.login(SMTP_USER, SMTP_PASSWORD)
+            
+            success_count = 0
+            for recipient in carefuture_recipients:
+                try:
+                    # Создаем сообщение для каждого получателя
+                    msg = MIMEMultipart()
+                    msg['From'] = SMTP_FROM
+                    msg['To'] = recipient
+                    msg['Subject'] = subject
+                    
+                    # Добавляем тело письма
+                    msg.attach(MIMEText(body, 'plain', 'utf-8'))
+                    
+                    # Отправляем
+                    text = msg.as_string()
+                    server.sendmail(SMTP_FROM, recipient, text)
+                    logger.info(f"✅ [CareFuture] Email sent successfully to {recipient}")
+                    success_count += 1
+                    
+                except Exception as e:
+                    logger.error(f"❌ [CareFuture] Failed to send email to {recipient}: {e}")
+        
+        success = success_count > 0
+        logger.info(f"📧 [CareFuture] Email sending summary: {success_count}/{len(carefuture_recipients)} successful")
+        return success
+        
+    except Exception as e:
+        logger.error(f"❌ [CareFuture] Failed to send email: {e}")
+        return False
+    
 @app.route('/api/contact-manager', methods=['POST', 'OPTIONS'])
 def contact_manager():
-    """Обработка заявок на связь с менеджером из Care Future"""
+    """
+    Обработка заявок на связь с менеджером из разных страниц
+    ✅ CareFuture: отправляет на zerotlt@mail.ru, I.dav@mail.ru + email пользователя
+    ✅ Assessment: отправляет на стандартные адреса (включая Polina.Iureva@rgsl.ru)
+    """
     logger.info("🌐 ➜ %s %s", request.method, request.path)
     
     if request.method == "OPTIONS":
@@ -1013,26 +1082,36 @@ def contact_manager():
             except Exception as e:
                 logger.error(f"❌ Ошибка получения расчета: {e}")
         
-        # Формируем email для менеджера
-        subject = f"Новая заявка с калькулятора НСЖ от {data.get('surname', '')} {data.get('name', '')}"
+        # Формируем email
+        page = data.get('page', 'unknown')
+        surname = data.get('surname', 'Не указана')
+        name = data.get('name', 'Не указано')
+        city = data.get('city', 'Не указан')
+        user_email = data.get('email', 'Не указан')
         
-        # Формируем тело письма с полными данными
+        # ✅ РАЗНАЯ ЛОГИКА ДЛЯ РАЗНЫХ СТРАНИЦ
+        if page == 'care-future':
+            subject = f"Новая заявка НСЖ «Забота о будущем» от {surname} {name}"
+            logger.info(f"📧 [CareFuture] Processing manager request from: {surname} {name}")
+        else:
+            # Для всех остальных страниц (включая Assessment)
+            subject = f"Новая заявка с калькулятора от {surname} {name}"
+            logger.info(f"📧 [Other] Processing manager request from: {surname} {name}")
+        
+        # Формируем тело письма
         body = f"""
-Новая заявка на консультацию по программе "Забота о будущем для партнеров"
+Новая заявка на консультацию
 
 ДАННЫЕ КЛИЕНТА:
-- Фамилия: {data.get('surname', 'Не указана')}
-- Имя: {data.get('name', 'Не указано')}
-- Город: {data.get('city', 'Не указан')}
-- Email: {data.get('email', 'Не указан')}
+- Фамилия: {surname}
+- Имя: {name}
+- Город: {city}
+- Email: {user_email}
 """
         
         # Добавляем данные из расчета, если они есть
         if calculation_data:
-            # Форматируем пол на русском
             gender_ru = 'Мужской' if calculation_data['gender'] == 'male' else 'Женский'
-            
-            # Форматируем даты
             birth_date_str = calculation_data.get('birth_date', '').split('T')[0] if calculation_data.get('birth_date') else 'Не указана'
             
             body += f"""
@@ -1064,7 +1143,7 @@ def contact_manager():
         body += f"""
 
 ДОПОЛНИТЕЛЬНАЯ ИНФОРМАЦИЯ:
-- Страница: {data.get('page', 'care-future')}
+- Страница: {page}
 - ID расчета: {data.get('calculationId', 'Нет')}
 - Дата заявки: {datetime.now().strftime('%d.%m.%Y %H:%M')}
 
@@ -1072,20 +1151,44 @@ def contact_manager():
 Автоматическое уведомление из MiniApp
         """
         
-        # Отправляем email
-        success = send_email(subject, body)
+        # ✅ ВЫБИРАЕМ ФУНКЦИЮ ОТПРАВКИ В ЗАВИСИМОСТИ ОТ СТРАНИЦЫ
+        if page == 'care-future':
+            # Для CareFuture отправляем на специальные 3 адреса
+            success = send_carefuture_email_with_user(subject, body, user_email)
+            logger_prefix = "[CareFuture]"
+        else:
+            # Для всех остальных страниц (включая Assessment) - стандартная отправка
+            # (включает Polina.Iureva@rgsl.ru)
+            success = send_email(subject, body)
+            logger_prefix = "[Other]"
         
         if success:
-            logger.info(f"✅ Заявка от {data.get('surname', '')} {data.get('name', '')} отправлена")
+            logger.info(f"✅ {logger_prefix} Заявка от {surname} {name} отправлена")
             return jsonify({"success": True, "message": "Заявка отправлена успешно"}), 200
         else:
+            logger.error(f"❌ {logger_prefix} Ошибка отправки заявки от {surname} {name}")
             return jsonify({"success": False, "message": "Ошибка отправки заявки"}), 500
             
     except Exception as e:
         logger.error(f"❌ Ошибка обработки заявки менеджера: {e}")
         return jsonify({"error": "Внутренняя ошибка сервера"}), 500
 
-# ====== ОБРАБОТКА ОШИБОК ДЛЯ КАЛЬКУЛЯТОРОВ =====
+# ===== ПРОВЕРЬТЕ СУЩЕСТВУЮЩУЮ ФУНКЦИЮ get_email_recipients() =====
+# Убедитесь что Polina.Iureva@rgsl.ru НЕ добавляется для CareFuture
+
+def get_email_recipients():
+    """
+    Возвращает список всех получателей email для стандартной отправки
+    (используется для Assessment и других страниц, НЕ для CareFuture)
+    """
+    recipients = [SMTP_TO]  # zerotlt@mail.ru
+    if SMTP_TO_ADDITIONAL:
+        recipients.append(SMTP_TO_ADDITIONAL)  # I.dav@mail.ru
+    
+    # ✅ Добавляем Polina.Iureva@rgsl.ru для Assessment (но НЕ для CareFuture)
+    recipients.append("Polina.Iureva@rgsl.ru")
+    
+    return recipients
 
 @app.errorhandler(404)
 def handle_404(error):

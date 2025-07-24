@@ -1,7 +1,8 @@
-// AssessmentPage.js - БЕЗ АВТОПОДСКАЗОК
+// AssessmentPage.js - ИСПРАВЛЕНО: убраны конфликтующие инлайн стили
 // ✅ Убраны все автоподсказки
 // ✅ Простые input поля для ФИО
-// ✅ Сохранена вся остальная функциональность
+// ✅ ИСПРАВЛЕНО: Убраны инлайн стили, которые конфликтуют с NextButton.css
+// ✅ Все стили перенесены в отдельный CSS файл
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -17,6 +18,8 @@ import './Styles/BackButton.css';
 import './Styles/HomeButton.css';
 import './Styles/ProgressIndicator.css';
 import './Styles/text.css';
+import './AssessmentPage.css'; // ← ВАЖНО: подключаем CSS файл страницы
+import './AssessmentPage.css'; // ← ВАЖНО: подключаем CSS файл страницы
 
 export default function AssessmentPage() {
   const navigate = useNavigate();
@@ -58,6 +61,104 @@ export default function AssessmentPage() {
   useEffect(() => {
     setIsExiting(false);
   }, []);
+
+  // ===== АГРЕССИВНОЕ ИСПРАВЛЕНИЕ INPUT ПОЛЕЙ =====
+  useEffect(() => {
+    const aggressiveInputFix = () => {
+      const fioInputs = document.querySelectorAll('.fio-input, input[type="text"]');
+      
+      fioInputs.forEach((input) => {
+        Object.assign(input.style, {
+          position: 'relative',
+          zIndex: '99999',
+          pointerEvents: 'auto',
+          cursor: 'text',
+          userSelect: 'auto',
+          WebkitUserSelect: 'auto',
+          touchAction: 'manipulation',
+          WebkitTouchCallout: 'auto',
+          display: 'block',
+          width: '100%',
+          height: 'auto',
+          minHeight: '40px',
+          opacity: '1',
+          visibility: 'visible',
+          fontSize: '18px',
+          transform: 'scale(1)',
+          transformOrigin: 'center',
+          background: 'rgba(255, 255, 255, 0.08)',
+          border: '2px solid rgba(255, 255, 255, 0.15)',
+          borderRadius: '14px',
+          padding: '16px 20px',
+          color: 'white',
+          textAlign: 'center',
+          fontFamily: '"Segoe UI", sans-serif',
+          lineHeight: '1.4',
+          boxSizing: 'border-box',
+          outline: 'none',
+          WebkitAppearance: 'none',
+          appearance: 'none',
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+        });
+        
+        // Принудительные обработчики событий
+        const forceClickHandler = (e) => {
+          e.stopPropagation();
+          input.focus();
+        };
+        
+        const forceFocusHandler = (e) => {
+          Object.assign(input.style, {
+            background: 'rgba(255, 255, 255, 0.12)',
+            borderColor: 'rgba(180, 0, 55, 0.5)',
+            boxShadow: '0 0 0 3px rgba(180, 0, 55, 0.15)'
+          });
+        };
+        
+        const forceBlurHandler = (e) => {
+          Object.assign(input.style, {
+            background: 'rgba(255, 255, 255, 0.08)',
+            borderColor: 'rgba(255, 255, 255, 0.15)',
+            boxShadow: 'none'
+          });
+        };
+        
+        // Удаляем старые обработчики
+        input.removeEventListener('click', forceClickHandler);
+        input.removeEventListener('focus', forceFocusHandler);
+        input.removeEventListener('blur', forceBlurHandler);
+        
+        // Добавляем новые обработчики
+        input.addEventListener('click', forceClickHandler, { passive: false });
+        input.addEventListener('focus', forceFocusHandler, { passive: false });
+        input.addEventListener('blur', forceBlurHandler, { passive: false });
+        input.addEventListener('touchstart', forceClickHandler, { passive: false });
+        input.addEventListener('pointerdown', forceClickHandler, { passive: false });
+      });
+    };
+    
+    // Исправляем input поля несколько раз для надежности
+    const timer1 = setTimeout(aggressiveInputFix, 100);
+    const timer2 = setTimeout(aggressiveInputFix, 500);
+    const timer3 = setTimeout(aggressiveInputFix, 1000);
+    
+    // Отслеживаем изменения DOM
+    const observer = new MutationObserver(() => {
+      setTimeout(aggressiveInputFix, 50);
+    });
+    
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
+    
+    return () => {
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+      clearTimeout(timer3);
+      observer.disconnect();
+    };
+  }, [currentStep]);
 
   // ===== АНИМАЦИЯ ВХОДА =====
   useEffect(() => {
@@ -389,6 +490,60 @@ export default function AssessmentPage() {
                   autoCorrect="off"
                   autoCapitalize="words"
                   spellCheck="false"
+                  style={{
+                    position: 'relative',
+                    zIndex: '99999',
+                    pointerEvents: 'auto',
+                    cursor: 'text',
+                    userSelect: 'auto',
+                    WebkitUserSelect: 'auto',
+                    touchAction: 'manipulation',
+                    WebkitTouchCallout: 'auto',
+                    display: 'block',
+                    width: '100%',
+                    height: 'auto',
+                    minHeight: '50px',
+                    opacity: '1',
+                    visibility: 'visible',
+                    fontSize: '18px',
+                    fontWeight: '400',
+                    transform: 'scale(1)',
+                    transformOrigin: 'center',
+                    background: 'rgba(255, 255, 255, 0.08)',
+                    border: '2px solid rgba(255, 255, 255, 0.15)',
+                    borderRadius: '14px',
+                    padding: '16px 20px',
+                    color: 'white',
+                    textAlign: 'center',
+                    fontFamily: '"Segoe UI", sans-serif',
+                    lineHeight: '1.4',
+                    boxSizing: 'border-box',
+                    outline: 'none',
+                    WebkitAppearance: 'none',
+                    appearance: 'none',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                  }}
+                  onFocus={(e) => {
+                    Object.assign(e.target.style, {
+                      background: 'rgba(255, 255, 255, 0.12)',
+                      borderColor: 'rgba(180, 0, 55, 0.5)',
+                      boxShadow: '0 0 0 3px rgba(180, 0, 55, 0.15)'
+                    });
+                  }}
+                  onBlur={(e) => {
+                    Object.assign(e.target.style, {
+                      background: 'rgba(255, 255, 255, 0.08)',
+                      borderColor: 'rgba(255, 255, 255, 0.15)',
+                      boxShadow: 'none'
+                    });
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.target.focus();
+                  }}
+                  onTouchStart={(e) => {
+                    e.stopPropagation();
+                  }}
                 />
               </div>
 
@@ -407,6 +562,60 @@ export default function AssessmentPage() {
                   autoCorrect="off"
                   autoCapitalize="words"
                   spellCheck="false"
+                  style={{
+                    position: 'relative',
+                    zIndex: '99999',
+                    pointerEvents: 'auto',
+                    cursor: 'text',
+                    userSelect: 'auto',
+                    WebkitUserSelect: 'auto',
+                    touchAction: 'manipulation',
+                    WebkitTouchCallout: 'auto',
+                    display: 'block',
+                    width: '100%',
+                    height: 'auto',
+                    minHeight: '50px',
+                    opacity: '1',
+                    visibility: 'visible',
+                    fontSize: '18px',
+                    fontWeight: '400',
+                    transform: 'scale(1)',
+                    transformOrigin: 'center',
+                    background: 'rgba(255, 255, 255, 0.08)',
+                    border: '2px solid rgba(255, 255, 255, 0.15)',
+                    borderRadius: '14px',
+                    padding: '16px 20px',
+                    color: 'white',
+                    textAlign: 'center',
+                    fontFamily: '"Segoe UI", sans-serif',
+                    lineHeight: '1.4',
+                    boxSizing: 'border-box',
+                    outline: 'none',
+                    WebkitAppearance: 'none',
+                    appearance: 'none',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                  }}
+                  onFocus={(e) => {
+                    Object.assign(e.target.style, {
+                      background: 'rgba(255, 255, 255, 0.12)',
+                      borderColor: 'rgba(180, 0, 55, 0.5)',
+                      boxShadow: '0 0 0 3px rgba(180, 0, 55, 0.15)'
+                    });
+                  }}
+                  onBlur={(e) => {
+                    Object.assign(e.target.style, {
+                      background: 'rgba(255, 255, 255, 0.08)',
+                      borderColor: 'rgba(255, 255, 255, 0.15)',
+                      boxShadow: 'none'
+                    });
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.target.focus();
+                  }}
+                  onTouchStart={(e) => {
+                    e.stopPropagation();
+                  }}
                 />
               </div>
 
@@ -425,6 +634,60 @@ export default function AssessmentPage() {
                   autoCorrect="off"
                   autoCapitalize="words"
                   spellCheck="false"
+                  style={{
+                    position: 'relative',
+                    zIndex: '99999',
+                    pointerEvents: 'auto',
+                    cursor: 'text',
+                    userSelect: 'auto',
+                    WebkitUserSelect: 'auto',
+                    touchAction: 'manipulation',
+                    WebkitTouchCallout: 'auto',
+                    display: 'block',
+                    width: '100%',
+                    height: 'auto',
+                    minHeight: '50px',
+                    opacity: '1',
+                    visibility: 'visible',
+                    fontSize: '18px',
+                    fontWeight: '400',
+                    transform: 'scale(1)',
+                    transformOrigin: 'center',
+                    background: 'rgba(255, 255, 255, 0.08)',
+                    border: '2px solid rgba(255, 255, 255, 0.15)',
+                    borderRadius: '14px',
+                    padding: '16px 20px',
+                    color: 'white',
+                    textAlign: 'center',
+                    fontFamily: '"Segoe UI", sans-serif',
+                    lineHeight: '1.4',
+                    boxSizing: 'border-box',
+                    outline: 'none',
+                    WebkitAppearance: 'none',
+                    appearance: 'none',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                  }}
+                  onFocus={(e) => {
+                    Object.assign(e.target.style, {
+                      background: 'rgba(255, 255, 255, 0.12)',
+                      borderColor: 'rgba(180, 0, 55, 0.5)',
+                      boxShadow: '0 0 0 3px rgba(180, 0, 55, 0.15)'
+                    });
+                  }}
+                  onBlur={(e) => {
+                    Object.assign(e.target.style, {
+                      background: 'rgba(255, 255, 255, 0.08)',
+                      borderColor: 'rgba(255, 255, 255, 0.15)',
+                      boxShadow: 'none'
+                    });
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.target.focus();
+                  }}
+                  onTouchStart={(e) => {
+                    e.stopPropagation();
+                  }}
                 />
               </div>
             </div>
@@ -474,7 +737,7 @@ export default function AssessmentPage() {
               </div>
             )}
 
-            <div style={{ width: '100%', maxWidth: '500px' }}>
+            <div className="answer-options-container">
               {currentQuestionData.shuffledOptions.map((option, idx) => (
                 <button
                   key={idx}
@@ -496,7 +759,7 @@ export default function AssessmentPage() {
             </div>
 
             {currentQuestionData.description && (
-              <div className="text-small text-center" style={{ marginTop: '20px', opacity: 0.7 }}>
+              <div className="question-description">
                 {currentQuestionData.description}
               </div>
             )}
@@ -510,171 +773,6 @@ export default function AssessmentPage() {
 
   return (
     <div className={getContainerClasses()}>
-      {/* CSS анимации */}
-      <style>
-        {`
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-          
-          .assessment-spinner {
-            width: 60px;
-            height: 60px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-top-color: white;
-            border-radius: 50%;
-            margin: 0 auto 30px;
-            animation: spin 1s linear infinite;
-          }
-          
-          .assessment-error {
-            background: rgba(255, 0, 0, 0.2);
-            border: 1px solid rgba(255, 0, 0, 0.5);
-            border-radius: 8px;
-            padding: 10px;
-            margin-bottom: 20px;
-            color: white;
-            text-align: center;
-            font-family: "Segoe UI", sans-serif;
-          }
-          
-          /* Обеспечиваем видимость логотипа во время загрузки */
-          .logo-wrapper:not(.animated) {
-            opacity: 1 !important;
-            transform: none !important;
-          }
-          
-          /* СТИЛИ ДЛЯ ФОРМЫ ФИО */
-          .fio-form-container {
-            width: 100%;
-            max-width: 450px;
-            margin: 0 auto;
-            display: flex;
-            flex-direction: column;
-            gap: 24px;
-          }
-          
-          .fio-form-title {
-            font-family: "Segoe UI Bold", sans-serif;
-            font-size: 28px;
-            font-weight: 700;
-            color: white;
-            text-align: center;
-            margin: 0 0 24px 0;
-            letter-spacing: -0.5px;
-          }
-          
-          .fio-field {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            width: 100%;
-          }
-          
-          .fio-label {
-            font-family: "Segoe UI", sans-serif;
-            font-size: 16px;
-            font-weight: 600;
-            color: rgba(255, 255, 255, 0.95);
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-            text-align: center;
-          }
-          
-          .fio-input {
-            width: 100%;
-            padding: 18px 24px;
-            font-family: "Segoe UI", sans-serif;
-            font-size: 20px;
-            font-weight: 400;
-            color: white;
-            background-color: rgba(255, 255, 255, 0.08);
-            border: 2px solid rgba(255, 255, 255, 0.15);
-            border-radius: 14px;
-            outline: none;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-sizing: border-box;
-            text-align: center;
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            appearance: none;
-          }
-          
-          .fio-input:focus {
-            background-color: rgba(255, 255, 255, 0.12);
-            border-color: rgba(180, 0, 55, 0.5);
-            box-shadow: 0 0 0 3px rgba(180, 0, 55, 0.15);
-          }
-          
-          .fio-input:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-            border-color: rgba(255, 255, 255, 0.25);
-          }
-          
-          .fio-input::placeholder {
-            color: rgba(255, 255, 255, 0.4);
-            font-weight: 300;
-          }
-          
-          .fio-error-message {
-            background: linear-gradient(135deg, rgba(255, 0, 0, 0.8), rgba(200, 0, 0, 0.8));
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
-            padding: 12px 20px;
-            margin-bottom: 20px;
-            color: white;
-            text-align: center;
-            font-family: "Segoe UI", sans-serif;
-            font-size: 14px;
-            box-shadow: 0 4px 15px rgba(255, 0, 0, 0.2);
-            animation: shake 0.5s ease-in-out;
-          }
-          
-          @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-            20%, 40%, 60%, 80% { transform: translateX(5px); }
-          }
-          
-          /* Адаптивность */
-          @media (max-width: 768px) {
-            .fio-form-title {
-              font-size: 24px;
-            }
-            
-            .fio-label {
-              font-size: 14px;
-            }
-            
-            .fio-input {
-              font-size: 18px;
-              padding: 16px 20px;
-            }
-          }
-          
-          @media (max-width: 374px) {
-            .fio-form-title {
-              font-size: 22px;
-            }
-            
-            .fio-label {
-              font-size: 13px;
-            }
-            
-            .fio-input {
-              font-size: 16px;
-              padding: 14px 18px;
-              border-radius: 12px;
-            }
-            
-            .fio-field {
-              gap: 8px;
-            }
-          }
-        `}
-      </style>
-
       {/* ===== ЛОГОТИП ===== */}
       <div 
         ref={logoRef} 
@@ -695,13 +793,6 @@ export default function AssessmentPage() {
           onClick={handleBack}
           onTouchStart={handleTouchStart}
           onTouchEnd={(e) => handleTouchEnd(e, handleBack)}
-          style={{
-            userSelect: 'auto',
-            WebkitUserSelect: 'auto',
-            pointerEvents: 'auto',
-            cursor: 'pointer',
-            touchAction: 'manipulation'
-          }}
         >
           <svg viewBox="0 0 24 24">
             <path d="M15 18l-6-6 6-6" stroke="white" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
