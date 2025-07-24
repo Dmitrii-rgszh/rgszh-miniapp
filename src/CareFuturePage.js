@@ -675,14 +675,20 @@ export default function CareFuturePage() {
                 <label className="form-label text-label">Пол</label>
                 <div className="option-buttons">
                   <button
-                    className={`option-button ${gender === 'male' ? 'selected' : ''}`}
-                    onClick={() => setGender('male')}
+                    className={`btn-universal btn-secondary btn-medium ${gender === 'male' ? 'btn-primary' : ''}`}
+                    onClick={(e) => {
+                      createRipple(e);
+                      setGender('male');
+                    }}
                   >
                     Мужской
                   </button>
                   <button
-                    className={`option-button ${gender === 'female' ? 'selected' : ''}`}
-                    onClick={() => setGender('female')}
+                    className={`btn-universal btn-secondary btn-medium ${gender === 'female' ? 'btn-primary' : ''}`}
+                    onClick={(e) => {
+                      createRipple(e);
+                      setGender('female');
+                    }}
                   >
                     Женский
                   </button>

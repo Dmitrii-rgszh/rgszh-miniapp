@@ -465,3 +465,84 @@
 .btn-universal.btn-glow:hover::before {
   opacity: 0.7;
 }
+
+/* ======================================
+   ГРУППЫ КНОПОК - РАСШИРЕННЫЕ СТИЛИ
+   ====================================== */
+.btn-group {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-group.btn-group-vertical {
+  flex-direction: column;
+}
+
+/* Группы кнопок выбора (для форм) */
+.option-buttons {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: stretch;
+  justify-content: center;
+}
+
+.option-buttons.vertical {
+  flex-direction: column;
+}
+
+/* Кнопки в группах выбора должны быть одинакового размера */
+.option-buttons .btn-universal {
+  flex: 1;
+  min-width: 0; /* Позволяет кнопкам сжиматься */
+}
+
+/* Специальные стили для вертикальных групп */
+.option-buttons.vertical .btn-universal {
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.option-buttons.vertical .btn-universal:last-child {
+  margin-bottom: 0;
+}
+
+/* ======================================
+   АДАПТИВНОСТЬ ДЛЯ ГРУПП КНОПОК
+   ====================================== */
+
+/* Desktop: группы кнопок горизонтально */
+@media (min-width: 769px) {
+  .option-buttons:not(.vertical) {
+    flex-direction: row;
+  }
+  
+  .option-buttons:not(.vertical) .btn-universal {
+    max-width: 200px;
+  }
+}
+
+/* Tablet: группы кнопок остаются гибкими */
+@media (min-width: 375px) and (max-width: 768px) {
+  .option-buttons:not(.vertical) {
+    flex-direction: row;
+  }
+  
+  .option-buttons:not(.vertical) .btn-universal {
+    max-width: 180px;
+  }
+}
+
+/* Mobile: все группы становятся вертикальными при малой ширине */
+@media (max-width: 374px) {
+  .option-buttons:not(.vertical) {
+    flex-direction: column;
+  }
+  
+  .option-buttons .btn-universal {
+    width: 100%;
+  }
+}
