@@ -508,6 +508,8 @@ html body .card-container input[type="password"]:-moz-placeholder {
 
 .result-label {
   font-family: 'Segoe UI', sans-serif;
+  flex: 1;
+  padding-right: 8px;
   font-size: 18px;
   color: #666;
 }
@@ -707,11 +709,14 @@ html body .card-container input[type="password"]:-moz-placeholder {
   }
   
   .result-label {
-    font-size: 15px;
+    font-size: 14px;
+    flex: 1;
+    padding-right: 8px
   }
   
   .result-value {
     font-size: 15px;
+    text-align: right;
   }
   
   .result-item.highlight .result-value {

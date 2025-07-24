@@ -67,6 +67,7 @@ export default function CareFuturePage() {
   const [mgrCity, setMgrCity] = useState('');
   const [mgrError, setMgrError] = useState('');
   const [isSendingMgr, setIsSendingMgr] = useState(false);
+  const [hasCalculated, setHasCalculated] = useState(false);
 
   // ===== СБРОС СОСТОЯНИЯ ПРИ МОНТИРОВАНИИ =====
   useEffect(() => {
@@ -485,16 +486,30 @@ export default function CareFuturePage() {
 
   // ===== ОБРАБОТКА КНОПКИ "НАЗАД" =====
   const handleBack = () => {
+    console.log('handleBack clicked, current stage:', stage, 'isExiting:', isExiting, 'hasCalculated:', hasCalculated);
+    
     if (isExiting) return;
     
     if (stage === 'form') {
-      setStage('email');
+      if (hasCalculated) {
+        // Если уже был расчет, возвращаемся к результатам
+        console.log('Going from form back to result');
+        setStage('result');
+        // НЕ сбрасываем resultData, так как возвращаемся к уже посчитанным результатам
+      } else {
+        // Если расчета не было, идем к email
+        console.log('Going from form to email');
+        setStage('email');
+      }
     } else if (stage === 'result' || stage === 'manager' || stage === 'manager-sent') {
+      console.log('Going from', stage, 'to form');
       setStage('form');
-      setResultData(null);
+      // При переходе с результатов на форму НЕ сбрасываем resultData
+      // setResultData(null); // УБРАНО
       setCarouselIndex(0);
       setCarouselNavigating(false); // Сбрасываем состояние навигации
     } else {
+      console.log('Exiting to employee page');
       setIsExiting(true);
       if (logoRef.current) {
         logoRef.current.classList.add('animate-logo-exit');
