@@ -18,8 +18,6 @@ import './Styles/BackButton.css';
 import './Styles/HomeButton.css';
 import './Styles/ProgressIndicator.css';
 import './Styles/text.css';
-import './AssessmentPage.css'; // ← ВАЖНО: подключаем CSS файл страницы
-import './AssessmentPage.css'; // ← ВАЖНО: подключаем CSS файл страницы
 
 export default function AssessmentPage() {
   const navigate = useNavigate();

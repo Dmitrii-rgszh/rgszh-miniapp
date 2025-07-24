@@ -3716,3 +3716,115 @@ AttributeError: '_io._WindowsConsoleIO' object has no attribute 'buffer'
 2025-07-24 18:38:16,875 - care_future_routes_updated - INFO - 📊 Результат: премия=100,000, сумма=1,232,000, доход=432,000
 2025-07-24 18:38:16,877 - server - INFO - 📤 POST /api/care-future/calculate -> 200
 2025-07-24 18:38:16,879 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-24 18:38:16] "POST /api/care-future/calculate HTTP/1.1" 200 674 0.985994
+2025-07-24 18:46:33,434 - server - INFO - Socket.IO: running without Redis message queue
+2025-07-24 18:46:33,435 - db_saver - INFO - Использую базу данных: postgresql://postgres:secret@176.109.110.217:1112/postgres
+2025-07-24 18:46:39,948 - db_saver - INFO - Таблицы созданы (или уже существуют)
+2025-07-24 18:46:42,722 - care_future_models - INFO - БД калькулятора НСЖ инициализирована: {'survival_coefficients_count': 16, 'risk_tariffs_count': 16, 'redemption_terms_count': 16, 'available_terms': [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20], 'calculations_count': 206}
+2025-07-24 18:46:43,031 - care_future_routes_updated - INFO - ✅ Care Future routes с исправленной логикой зарегистрированы успешно
+2025-07-24 18:46:43,031 - NSJCalculator - INFO - 🧮 Начинаем расчет: from_premium, сумма: 960000, срок: 5
+2025-07-24 18:46:43,031 - NSJCalculator - INFO - 📅 Возраст на начало: 35, на окончание: 40
+2025-07-24 18:46:43,031 - NSJCalculator - INFO - 📊 Расчет страховой суммы:
+2025-07-24 18:46:43,031 - NSJCalculator - INFO -    Премия: 960,000 руб.
+2025-07-24 18:46:43,031 - NSJCalculator - INFO -    Срок: 5 лет
+2025-07-24 18:46:43,031 - NSJCalculator - INFO -    Коэффициент дожития: 1.34
+2025-07-24 18:46:43,031 - NSJCalculator - INFO -    Результат: 960000 * 5 * 1.34 = 6,432,000 руб.
+2025-07-24 18:46:43,031 - NSJCalculator - INFO - 💰 Премия: 960000, Страховая сумма: 6432000
+2025-07-24 18:46:43,032 - NSJCalculator - INFO - 📊 Кэшбэк для срока 5 лет: 0.3400
+2025-07-24 18:46:43,032 - NSJCalculator - INFO - 💰 Налоговый вычет: 19500/год × 5 лет = 97500
+2025-07-24 18:46:43,954 - NSJCalculator - INFO - 💾 Расчет сохранен в БД: b4099096-dc97-426d-bf96-2bc911d3180c
+2025-07-24 18:46:43,956 - NSJCalculator - INFO - ✅ Расчет завершен успешно: b4099096-dc97-426d-bf96-2bc911d3180c
+2025-07-24 18:46:43,956 - care_future_routes_updated - INFO - ✅ Исправленный калькулятор НСЖ готов к работе: b4099096-dc97-426d-bf96-2bc911d3180c
+2025-07-24 18:46:43,956 - care_future_routes_updated - INFO - 📍 Доступные endpoints:
+2025-07-24 18:46:43,957 - care_future_routes_updated - INFO -   - POST /api/care-future/calculate (исправленная логика)
+2025-07-24 18:46:43,957 - care_future_routes_updated - INFO -   - GET  /api/care-future/test-excel-logic
+2025-07-24 18:46:43,958 - care_future_routes_updated - INFO -   - GET  /api/care-future/admin/status
+2025-07-24 18:46:43,968 - justincase_routes - INFO - ✅ Маршруты полного калькулятора 'На всякий случай' зарегистрированы
+2025-07-24 18:46:43,968 - justincase_calculator - INFO - 🚀 Инициализация МОДУЛЬНОГО калькулятора 'На всякий случай'
+2025-07-24 18:46:43,975 - justincase_calculator - INFO - 🚀 МОДУЛЬНЫЙ расчет с правильными коэффициентами через отдельные модули
+2025-07-24 18:46:43,975 - justincase_calculator - INFO - 💰 МОДУЛЬНАЯ базовая премия:
+2025-07-24 18:46:43,975 - justincase_calculator - INFO -    Возраст: 35, пол: male, срок: 5 лет
+2025-07-24 18:46:43,975 - justincase_calculator - INFO -    Тариф жизни: 4.868
+2025-07-24 18:46:43,975 - justincase_calculator - INFO -    Премия жизни: 4868.00 руб
+2025-07-24 18:46:43,976 - justincase_calculator - INFO -    Премия инвалидности: 973.60 руб
+2025-07-24 18:46:43,976 - justincase_calculator - INFO -    Годовая база: 5841.60 руб
+2025-07-24 18:46:43,977 - justincase_calculator - INFO -    Коэфф. частоты (Ежегодно): 1.0
+2025-07-24 18:46:43,977 - justincase_calculator - INFO -    ИТОГО базовая: 5841.60 руб
+2025-07-24 18:46:43,978 - justincase_calculator - INFO - 🎯 ФИНАЛЬНЫЙ МОДУЛЬНЫЙ РЕЗУЛЬТАТ:
+2025-07-24 18:46:43,978 - justincase_calculator - INFO -    Базовая: 5,841.60 руб
+2025-07-24 18:46:43,978 - justincase_calculator - INFO -    НС: 0.00 руб
+2025-07-24 18:46:43,979 - justincase_calculator - INFO -    КЗ: 0.00 руб
+2025-07-24 18:46:43,979 - justincase_calculator - INFO -    ИТОГО: 5,841.60 руб
+2025-07-24 18:46:43,979 - justincase_calculator - INFO -    Коэффициент частоты (Ежегодно): 1.0
+2025-07-24 18:46:43,979 - justincase_routes - INFO - ✅ Полный калькулятор готов: тест-премия 5,841.6 руб.
+2025-07-24 18:46:43,980 - justincase_routes - INFO - 📍 Доступные endpoints:
+2025-07-24 18:46:43,981 - justincase_routes - INFO -   - POST /api/proxy/calculator/save (основной, для фронтенда)
+2025-07-24 18:46:43,981 - justincase_routes - INFO -   - POST /api/justincase/calculate (расширенный)
+2025-07-24 18:46:43,981 - justincase_routes - INFO -   - POST /api/justincase/validate (валидация)
+2025-07-24 18:46:43,982 - justincase_routes - INFO -   - POST /api/justincase/validate-sum (валидация суммы)
+2025-07-24 18:46:43,982 - justincase_routes - INFO -   - POST /api/justincase/recommend-sum (рекомендуемая сумма)
+2025-07-24 18:46:43,983 - justincase_routes - INFO -   - GET  /api/justincase/config (конфигурация)
+2025-07-24 18:46:43,983 - justincase_routes - INFO -   - GET  /api/justincase/test (тестирование)
+2025-07-24 18:46:43,983 - justincase_routes - INFO -   - GET  /api/justincase/status (статус)
+2025-07-24 18:46:44,003 - server - INFO - 🚀 Starting MiniApp Server...
+2025-07-24 18:46:44,005 - server - INFO - ✅ Build folder found with 6 items
+2025-07-24 18:46:44,005 - server - INFO - 📧 Email configured: rgszh-miniapp@yandex.ru -> zerotlt@mail.ru, Polina.Iureva@rgsl.ru, Polina.Iureva@rgsl.ru
+2025-07-24 18:46:44,006 - server - INFO - 📧 Additional recipient configured: Polina.Iureva@rgsl.ru
+2025-07-24 18:46:44,007 - server - INFO - 🧮 Care Future калькулятор НСЖ: ДОСТУПЕН
+2025-07-24 18:46:44,007 - server - INFO - 📍 Endpoints: /api/care-future/* и /care-future/calculate
+2025-07-24 18:46:44,009 - server - INFO - 📍 Server will run on port 4000
+2025-07-24 18:46:44,009 - server - INFO - 📍 Open http://localhost:4000/ in your browser
+2025-07-24 18:46:54,441 - server - INFO - 📨 OPTIONS /api/contact-manager - 127.0.0.1
+2025-07-24 18:46:54,442 - server - INFO - 🌐 ➜ OPTIONS /api/contact-manager
+2025-07-24 18:46:54,443 - server - INFO - 📤 OPTIONS /api/contact-manager -> 200
+2025-07-24 18:46:54,445 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-24 18:46:54] "OPTIONS /api/contact-manager HTTP/1.1" 200 345 0.005185
+2025-07-24 18:46:54,448 - server - INFO - 📨 POST /api/contact-manager - 127.0.0.1
+2025-07-24 18:46:54,458 - server - INFO -    📋 JSON keys: ['surname', 'name', 'city', 'email', 'page', 'calculationId']
+2025-07-24 18:46:54,459 - server - INFO - 🌐 ➜ POST /api/contact-manager
+2025-07-24 18:46:55,075 - server - INFO - ✅ Найден расчет: 9d190c1b-9797-46b4-9172-735445a91fea
+2025-07-24 18:46:55,075 - server - INFO - 📧 [CareFuture] Processing manager request from: Поляков Дмитрий
+2025-07-24 18:46:55,076 - server - INFO - 📧 [CareFuture] Added user email: vtb@vtb.ru
+2025-07-24 18:46:55,076 - server - INFO - 📧 [CareFuture] Sending email to 3 recipients: Новая заявка НСЖ «Забота о будущем» от Поляков Дмитрий
+2025-07-24 18:46:55,076 - server - INFO - 📧 [CareFuture] Recipients: zerotlt@mail.ru, I.dav@mail.ru, vtb@vtb.ru
+2025-07-24 18:46:56,222 - server - INFO - ✅ [CareFuture] Email sent successfully to zerotlt@mail.ru
+2025-07-24 18:46:56,617 - server - INFO - ✅ [CareFuture] Email sent successfully to I.dav@mail.ru
+2025-07-24 18:46:57,083 - server - INFO - ✅ [CareFuture] Email sent successfully to vtb@vtb.ru
+2025-07-24 18:46:57,107 - server - INFO - 📧 [CareFuture] Email sending summary: 3/3 successful
+2025-07-24 18:46:57,108 - server - INFO - ✅ [CareFuture] Заявка от Поляков Дмитрий отправлена
+2025-07-24 18:46:57,109 - server - INFO - 📤 POST /api/contact-manager -> 200
+2025-07-24 18:46:57,416 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-24 18:46:57] "POST /api/contact-manager HTTP/1.1" 200 402 2.969083
+2025-07-24 18:47:46,181 - server - INFO - 📨 OPTIONS /api/questionnaire/1 - 127.0.0.1
+2025-07-24 18:47:46,183 - server - INFO - 📤 OPTIONS /api/questionnaire/1 -> 200
+2025-07-24 18:47:46,185 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-24 18:47:46] "OPTIONS /api/questionnaire/1?include_questions=true HTTP/1.1" 200 405 0.002021
+2025-07-24 18:47:46,186 - server - INFO - 📨 OPTIONS /api/questionnaire/1 - 127.0.0.1
+2025-07-24 18:47:46,186 - server - INFO - 📤 OPTIONS /api/questionnaire/1 -> 200
+2025-07-24 18:47:46,187 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-24 18:47:46] "OPTIONS /api/questionnaire/1?include_questions=true HTTP/1.1" 200 405 0.002559
+2025-07-24 18:47:46,189 - server - INFO - 📨 GET /api/questionnaire/1 - 127.0.0.1
+2025-07-24 18:47:47,420 - server - INFO - 📤 GET /api/questionnaire/1 -> 200
+2025-07-24 18:47:47,728 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-24 18:47:47] "GET /api/questionnaire/1?include_questions=true HTTP/1.1" 200 8039 1.538895
+2025-07-24 18:47:47,731 - server - INFO - 📨 GET /api/questionnaire/1 - 127.0.0.1
+2025-07-24 18:47:48,655 - server - INFO - 📤 GET /api/questionnaire/1 -> 200
+2025-07-24 18:47:48,961 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-24 18:47:48] "GET /api/questionnaire/1?include_questions=true HTTP/1.1" 200 8039 1.230884
+2025-07-24 19:04:09,863 - server - INFO - 📨 OPTIONS /api/questionnaire/1 - 127.0.0.1
+2025-07-24 19:04:09,865 - server - INFO - 📤 OPTIONS /api/questionnaire/1 -> 200
+2025-07-24 19:04:09,867 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-24 19:04:09] "OPTIONS /api/questionnaire/1?include_questions=true HTTP/1.1" 200 405 0.004050
+2025-07-24 19:04:09,870 - server - INFO - 📨 GET /api/questionnaire/1 - 127.0.0.1
+2025-07-24 19:04:11,102 - server - INFO - 📤 GET /api/questionnaire/1 -> 200
+2025-07-24 19:04:11,410 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-24 19:04:11] "GET /api/questionnaire/1?include_questions=true HTTP/1.1" 200 8039 1.540222
+2025-07-24 19:05:43,851 - server - INFO - 📨 OPTIONS /api/questionnaire/1 - 127.0.0.1
+2025-07-24 19:05:43,851 - server - INFO - 📤 OPTIONS /api/questionnaire/1 -> 200
+2025-07-24 19:05:43,853 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-24 19:05:43] "OPTIONS /api/questionnaire/1?include_questions=true HTTP/1.1" 200 405 0.002030
+2025-07-24 19:05:43,856 - server - INFO - 📨 GET /api/questionnaire/1 - 127.0.0.1
+2025-07-24 19:05:45,086 - server - INFO - 📤 GET /api/questionnaire/1 -> 200
+2025-07-24 19:05:45,393 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-24 19:05:45] "GET /api/questionnaire/1?include_questions=true HTTP/1.1" 200 8039 1.537690
+2025-07-24 19:11:15,653 - server - INFO - 📨 OPTIONS /api/questionnaire/1 - 127.0.0.1
+2025-07-24 19:11:15,655 - server - INFO - 📤 OPTIONS /api/questionnaire/1 -> 200
+2025-07-24 19:11:15,656 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-24 19:11:15] "OPTIONS /api/questionnaire/1?include_questions=true HTTP/1.1" 200 405 0.003056
+2025-07-24 19:11:15,657 - server - INFO - 📨 OPTIONS /api/questionnaire/1 - 127.0.0.1
+2025-07-24 19:11:15,657 - server - INFO - 📤 OPTIONS /api/questionnaire/1 -> 200
+2025-07-24 19:11:15,658 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-24 19:11:15] "OPTIONS /api/questionnaire/1?include_questions=true HTTP/1.1" 200 405 0.001024
+2025-07-24 19:11:15,659 - server - INFO - 📨 GET /api/questionnaire/1 - 127.0.0.1
+2025-07-24 19:11:16,887 - server - INFO - 📤 GET /api/questionnaire/1 -> 200
+2025-07-24 19:11:17,195 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-24 19:11:17] "GET /api/questionnaire/1?include_questions=true HTTP/1.1" 200 8039 1.534762
+2025-07-24 19:11:17,195 - server - INFO - 📨 GET /api/questionnaire/1 - 127.0.0.1
+2025-07-24 19:11:18,114 - server - INFO - 📤 GET /api/questionnaire/1 -> 200
+2025-07-24 19:11:18,419 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-24 19:11:18] "GET /api/questionnaire/1?include_questions=true HTTP/1.1" 200 8039 1.224849
