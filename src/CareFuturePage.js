@@ -1,8 +1,8 @@
-// CareFuturePage.js - ИСПРАВЛЕННАЯ ВЕРСИЯ
-// ✅ Удалено дублирование функции handleEmailSubmit
-// ✅ Добавлен контейнер .shaker для анимации стрелки
-// ✅ Логика анимации shake-btn при готовности
-// ✅ Правильная структура согласно NextButton.css
+// CareFuturePage.js - ОБНОВЛЕННАЯ ВЕРСИЯ
+// ✅ Добавлено поле выбора дохода в год
+// ✅ Логика расчета налогового вычета по доходам
+// ✅ Новая страница карусели с покрытиями между существующими
+// ✅ Сохранены все инлайн стили
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -49,11 +49,17 @@ export default function CareFuturePage() {
   const [amountRaw, setAmountRaw] = useState('');
   const [amountDisplay, setAmountDisplay] = useState('');
   
+  // ===== НОВОЕ: Состояние для дохода в год =====
+  const [yearlyIncome, setYearlyIncome] = useState('');
+  
   // Результаты
   const [resultData, setResultData] = useState(null);
   const [carouselIndex, setCarouselIndex] = useState(0);
   const [calculationId, setCalculationId] = useState(null);
   const [validationErrors, setValidationErrors] = useState({});
+  
+  // ===== НОВОЕ: Состояние для предотвращения быстрых кликов по карусели =====
+  const [carouselNavigating, setCarouselNavigating] = useState(false);
   
   // Данные менеджера
   const [mgrSurname, setMgrSurname] = useState('');
@@ -65,13 +71,22 @@ export default function CareFuturePage() {
   // ===== СБРОС СОСТОЯНИЯ ПРИ МОНТИРОВАНИИ =====
   useEffect(() => {
     setIsExiting(false);
+    setCarouselNavigating(false); // Сбрасываем навигацию карусели
   }, []);
+
+  // ===== СБРОС НАВИГАЦИИ КАРУСЕЛИ ПРИ СМЕНЕ STAGE =====
+  useEffect(() => {
+    if (stage !== 'result') {
+      setCarouselNavigating(false);
+      setCarouselIndex(0);
+    }
+  }, [stage]);
 
   // ===== АГРЕССИВНОЕ ИСПРАВЛЕНИЕ INPUT ПОЛЕЙ =====
   useEffect(() => {
     const aggressiveInputFix = () => {
       // Находим все input поля в карточке
-      const cardInputs = document.querySelectorAll('.card-container input[type="email"], .card-container input[type="text"], .card-container input[type="password"]');
+      const cardInputs = document.querySelectorAll('.card-container input[type="email"], .card-container input[type="text"], .card-container input[type="password"], .card-container select');
       
       cardInputs.forEach((input) => {
         // Принудительные стили для абсолютной кликабельности
@@ -82,7 +97,7 @@ export default function CareFuturePage() {
           
           // КРИТИЧНО: Полная интерактивность
           pointerEvents: 'auto',
-          cursor: 'text',
+          cursor: input.tagName === 'SELECT' ? 'pointer' : 'text',
           userSelect: 'auto',
           WebkitUserSelect: 'auto',
           touchAction: 'manipulation',
@@ -92,20 +107,20 @@ export default function CareFuturePage() {
           display: 'block',
           width: '100%',
           height: 'auto',
-          minHeight: '44px',
+          minHeight: '32px',
           opacity: '1',
           visibility: 'visible',
           
           // КРИТИЧНО: Предотвращение zoom на iOS
-          fontSize: '16px',
+          fontSize: '14px',
           transform: 'scale(1)',
           transformOrigin: 'center',
           
           // Визуальные стили
-          background: '#f5f7fa',
+          background: '#f0f2f5',
           border: '1px solid #e3e7ee',
           borderRadius: '8px',
-          padding: '12px 16px',
+          padding: '6px 10px',
           color: '#333',
           textAlign: 'center',
           fontFamily: '"Segoe UI", sans-serif',
@@ -123,6 +138,8 @@ export default function CareFuturePage() {
           e.stopPropagation();
           input.focus();
         };
+
+  // ===== НОВАЯ ФУНКЦИЯ: РАСЧЕТ НАЛОГОВОГО ВЫЧЕТА ПО ДОХОДУ =====
         
         const forceFocusHandler = (e) => {
           Object.assign(input.style, {
@@ -193,8 +210,8 @@ export default function CareFuturePage() {
           touchAction: 'manipulation',
           display: 'block',
           width: '100%',
-          height: '44px',
-          fontSize: '16px',
+          height: '32px',
+          fontSize: '14px',
           transform: 'scale(1)',
           opacity: '1',
           visibility: 'visible'
@@ -244,45 +261,45 @@ export default function CareFuturePage() {
 
   // ===== ОБНОВЛЕНИЕ ДАТЫ РОЖДЕНИЯ =====
   useEffect(() => {
-  const { day, month, year } = birthParts;
-  
-  // Логируем для отладки
-  console.log('birthParts изменились:', birthParts);
-  
-  if (day && month && year) {
-    const d = Number(day);
-    const m = Number(month);
-    const y = Number(year);
+    const { day, month, year } = birthParts;
     
-    // Создаем дату
-    const dt = new Date(y, m - 1, d);
+    // Логируем для отладки
+    console.log('birthParts изменились:', birthParts);
     
-    // Проверяем валидность даты
-    if (!isNaN(dt.getTime()) && 
-        dt.getDate() === d && 
-        dt.getMonth() + 1 === m && 
-        dt.getFullYear() === y) {
+    if (day && month && year) {
+      const d = Number(day);
+      const m = Number(month);
+      const y = Number(year);
       
-      setBirthDate(dt);
-      console.log('Дата рождения установлена:', dt.toISOString().split('T')[0]);
+      // Создаем дату
+      const dt = new Date(y, m - 1, d);
       
-      // Очищаем ошибку если она была
-      if (validationErrors.birthDate) {
-        setValidationErrors(prev => {
-          const newErrors = { ...prev };
-          delete newErrors.birthDate;
-          return newErrors;
-        });
+      // Проверяем валидность даты
+      if (!isNaN(dt.getTime()) && 
+          dt.getDate() === d && 
+          dt.getMonth() + 1 === m && 
+          dt.getFullYear() === y) {
+        
+        setBirthDate(dt);
+        console.log('Дата рождения установлена:', dt.toISOString().split('T')[0]);
+        
+        // Очищаем ошибку если она была
+        if (validationErrors.birthDate) {
+          setValidationErrors(prev => {
+            const newErrors = { ...prev };
+            delete newErrors.birthDate;
+            return newErrors;
+          });
+        }
+      } else {
+        console.log('Невалидная дата:', d, m, y);
+        setBirthDate(null);
       }
     } else {
-      console.log('Невалидная дата:', d, m, y);
+      console.log('Не все части даты заполнены');
       setBirthDate(null);
     }
-  } else {
-    console.log('Не все части даты заполнены');
-    setBirthDate(null);
-  }
-}, [birthParts]);
+  }, [birthParts]);
 
   // ===== ФОРМАТИРОВАНИЕ СУММЫ =====
   const formatAmount = (value) => {
@@ -303,22 +320,102 @@ export default function CareFuturePage() {
     }
   };
 
+  // ===== НОВЫЕ ФУНКЦИИ: БЕЗОПАСНАЯ НАВИГАЦИЯ ПО КАРУСЕЛИ =====
+  const navigateCarousel = (direction) => {
+    if (carouselNavigating) {
+      console.log('Навигация заблокирована, уже идет переход');
+      return;
+    }
+
+    setCarouselNavigating(true);
+    
+    const carouselData = getCarouselData();
+    const currentIndex = carouselIndex;
+    
+    let newIndex;
+    if (direction === 'next') {
+      newIndex = Math.min(carouselData.length - 1, currentIndex + 1);
+    } else {
+      newIndex = Math.max(0, currentIndex - 1);
+    }
+    
+    console.log(`Навигация карусели: ${currentIndex} → ${newIndex} (${direction})`);
+    
+    if (newIndex !== currentIndex) {
+      setCarouselIndex(newIndex);
+    }
+    
+    // Разблокируем навигацию через 500ms
+    setTimeout(() => {
+      setCarouselNavigating(false);
+    }, 500);
+  };
+
+  const goToCarouselSlide = (index) => {
+    if (carouselNavigating) {
+      console.log('Навигация заблокирована, уже идет переход');
+      return;
+    }
+
+    const carouselData = getCarouselData();
+    const safeIndex = Math.max(0, Math.min(carouselData.length - 1, index));
+    
+    console.log(`Переход к слайду: ${carouselIndex} → ${safeIndex}`);
+    
+    if (safeIndex !== carouselIndex) {
+      setCarouselNavigating(true);
+      setCarouselIndex(safeIndex);
+      
+      setTimeout(() => {
+        setCarouselNavigating(false);
+      }, 500);
+    }
+  };
+  const calculateTaxDeduction = (premiumAmount, contractTerm, incomeLevel) => {
+    if (!incomeLevel || !premiumAmount || !contractTerm) return 0;
+
+    const incomeConfig = {
+      'up_to_2_4': { rate: 0.13, maxPerYear: 19500 },
+      'over_2_4': { rate: 0.15, maxPerYear: 22500 },
+      'over_5': { rate: 0.18, maxPerYear: 27000 },
+      'over_20': { rate: 0.20, maxPerYear: 30000 },
+      'over_50': { rate: 0.22, maxPerYear: 33000 }
+    };
+
+    const config = incomeConfig[incomeLevel];
+    if (!config) return 0;
+
+    // Рассчитываем ежегодный вычет
+    const annualDeduction = Math.min(
+      premiumAmount * config.rate,
+      config.maxPerYear
+    );
+
+    // Общая сумма за весь срок
+    const totalDeduction = Math.round(annualDeduction * contractTerm);
+    
+    console.log(`Налоговый вычет: ${premiumAmount} * ${config.rate} = ${premiumAmount * config.rate}, но не более ${config.maxPerYear}/год`);
+    console.log(`Итого за ${contractTerm} лет: ${totalDeduction}`);
+    
+    return totalDeduction;
+  };
+
   // ===== ВАЛИДАЦИЯ EMAIL =====
-const validateEmail = (email) => {
-  // Базовая проверка формата email
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
-    return false;
-  }
-  
-  // НОВОЕ: Проверка корпоративных доменов @vtb.ru и @rgsl.ru
-  const lowerEmail = email.toLowerCase();
-  const isVtbEmail = lowerEmail.endsWith('@vtb.ru');
-  const isRgslEmail = lowerEmail.endsWith('@rgsl.ru');
-  
-  // Email валиден, если это один из корпоративных доменов
-  return isVtbEmail || isRgslEmail;
-};
+  const validateEmail = (email) => {
+    // Базовая проверка формата email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return false;
+    }
+    
+    // НОВОЕ: Проверка корпоративных доменов @vtb.ru и @rgsl.ru
+    const lowerEmail = email.toLowerCase();
+    const isVtbEmail = lowerEmail.endsWith('@vtb.ru');
+    const isRgslEmail = lowerEmail.endsWith('@rgsl.ru');
+    
+    // Email валиден, если это один из корпоративных доменов
+    return isVtbEmail || isRgslEmail;
+  };
 
   // ===== ВАЛИДАЦИЯ ФОРМЫ =====
   const validateForm = () => {
@@ -345,30 +442,35 @@ const validateEmail = (email) => {
     if (!amountRaw || parseInt(amountRaw) <= 0) {
       errors.amount = 'Укажите сумму';
     } else {
-    const amount = parseInt(amountRaw);
-    
-    // Проверяем минимальные суммы в зависимости от типа расчета
-    if (calcType === 'from_premium' && amount < 100000) {
-      errors.amount = 'Минимальный взнос 100 000 рублей';
-    } else if (calcType === 'from_sum' && amount < 500000) {
-      errors.amount = 'Минимальная страховая сумма 500 000 рублей';
+      const amount = parseInt(amountRaw);
+      
+      // Проверяем минимальные суммы в зависимости от типа расчета
+      if (calcType === 'from_premium' && amount < 100000) {
+        errors.amount = 'Минимальный взнос 100 000 рублей';
+      } else if (calcType === 'from_sum' && amount < 500000) {
+        errors.amount = 'Минимальная страховая сумма 500 000 рублей';
+      }
+      
+      // Проверяем максимальные суммы
+      if (amount > 100000000) {
+        errors.amount = 'Максимальная сумма 100 000 000 рублей';
+      }
     }
-    
-    // Проверяем максимальные суммы
-    if (amount > 100000000) {
-      errors.amount = 'Максимальная сумма 100 000 000 рублей';
-    }
-  }
 
-  setValidationErrors(errors);
-  
-  // Логируем для отладки
-  if (Object.keys(errors).length > 0) {
-    console.log('Ошибки валидации:', errors);
-  }
-  
-  return Object.keys(errors).length === 0;
-};
+    // ===== НОВАЯ ВАЛИДАЦИЯ: Проверка дохода =====
+    if (!yearlyIncome) {
+      errors.yearlyIncome = 'Выберите уровень дохода';
+    }
+
+    setValidationErrors(errors);
+    
+    // Логируем для отладки
+    if (Object.keys(errors).length > 0) {
+      console.log('Ошибки валидации:', errors);
+    }
+    
+    return Object.keys(errors).length === 0;
+  };
 
   // ===== ПРОВЕРКА ГОТОВНОСТИ КНОПКИ ДЛЯ АНИМАЦИИ (БЕЗ ПОБОЧНЫХ ЭФФЕКТОВ) =====
   const isNextButtonReady = () => {
@@ -376,7 +478,7 @@ const validateEmail = (email) => {
       return validateEmail(email);
     } else if (stage === 'form') {
       // Проверка без setValidationErrors для избежания re-renders
-      return birthDate && gender && calcType && amountRaw && parseInt(amountRaw) > 0;
+      return birthDate && gender && calcType && amountRaw && parseInt(amountRaw) > 0 && yearlyIncome;
     }
     return false;
   };
@@ -391,6 +493,7 @@ const validateEmail = (email) => {
       setStage('form');
       setResultData(null);
       setCarouselIndex(0);
+      setCarouselNavigating(false); // Сбрасываем состояние навигации
     } else {
       setIsExiting(true);
       if (logoRef.current) {
@@ -431,136 +534,148 @@ const validateEmail = (email) => {
   };
 
   // ===== РАСЧЕТ =====
-const handleCalculate = async () => {
-  // Дополнительная проверка birthDate
-  if (!birthDate) {
-    console.error('birthDate is null!');
-    setValidationErrors({ birthDate: 'Укажите дату рождения' });
-    return;
-  }
-  
-  if (!validateForm()) return;
-
-  setStage('processing');
-
-  try {
-    // Форматируем дату безопасно
-    const formattedDate = birthDate instanceof Date 
-      ? birthDate.toISOString().split('T')[0]
-      : new Date(birthDate).toISOString().split('T')[0];
-    
-    // ИСПРАВЛЕНО: Используем camelCase для соответствия серверу
-    const requestData = {
-      birthDate: formattedDate,
-      gender: gender,
-      contractTerm: programTerm,
-      calculationType: calcType,
-      inputAmount: parseInt(amountRaw),
-      email: email
-    };
-
-    console.log('Отправляем данные на сервер:', requestData);
-
-    // ИСПРАВЛЕНО: apiCall уже возвращает распарсенные данные
-    const data = await apiCall('/api/care-future/calculate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(requestData)
-    });
-
-    console.log('Ответ сервера:', data);
-
-    if (data.success) {
-      // Правильно обрабатываем структуру ответа
-      setResultData({
-        insurance_amount_formatted: data.results.insuranceSum.toLocaleString('ru-RU') + ' ₽',
-        single_premium_formatted: data.results.premiumAmount.toLocaleString('ru-RU') + ' ₽',
-        contract_term: data.inputParameters.contractTerm,
-        age: data.inputParameters.ageAtStart,
-        accumulated_capital: data.results.accumulatedCapital,
-        program_income: data.results.programIncome,
-        tax_deduction: data.results.taxDeduction
-      });
-      setCalculationId(data.calculationId);
-      setTimeout(() => setStage('result'), 2000);
-    } else {
-      throw new Error(data.error || 'Ошибка расчета');
-    }
-  } catch (error) {
-    console.error('Ошибка расчета:', error);
-    
-    // Более информативная обработка ошибок
-    if (error.message.includes('400')) {
-      setValidationErrors({ general: 'Некорректные данные. Проверьте заполнение формы.' });
-    } else if (error.message.includes('500')) {
-      setValidationErrors({ general: 'Ошибка сервера. Попробуйте позже.' });
-    } else {
-      setValidationErrors({ general: error.message || 'Ошибка при выполнении расчета' });
-    }
-    
-    setStage('form');
-  }
-};
-
-// ===== ОТПРАВКА ЗАЯВКИ МЕНЕДЖЕРУ =====
-const handleManagerSubmit = async (e) => {
-  e.preventDefault();
-  
-  if (!mgrSurname.trim() || !mgrName.trim() || !mgrCity.trim()) {
-    setMgrError('Заполните все поля');
-    return;
-  }
-
-  setIsSendingMgr(true);
-  setMgrError('');
-
-  try {
-    const data = await apiCall('/api/contact-manager', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        surname: mgrSurname,
-        name: mgrName,
-        city: mgrCity,
-        email: email,
-        page: 'care-future',
-        calculationId: calculationId
-      })
-    });
-
-    console.log('Ответ сервера:', data);
-
-    if (data && data.success) {
-      setStage('manager-sent');
-    } else {
-      throw new Error(data?.message || 'Ошибка отправки');
-    }
-  } catch (error) {
-    console.error('Ошибка отправки заявки:', error);
-    
-    // ВАЖНО: Если ошибка связана с парсингом JSON, но заявка отправлена
-    if (error.message && error.message.includes('json is not a function')) {
-      console.warn('Ошибка обработки ответа. Заявка была отправлена.');
-      // Переходим к экрану успеха, так как письмо точно отправилось
-      setStage('manager-sent');
+  const handleCalculate = async () => {
+    // Дополнительная проверка birthDate
+    if (!birthDate) {
+      console.error('birthDate is null!');
+      setValidationErrors({ birthDate: 'Укажите дату рождения' });
       return;
     }
     
-    // Для всех других ошибок показываем сообщение
-    setMgrError('Не удалось отправить заявку. Попробуйте позже.');
-  } finally {
-    setIsSendingMgr(false);
-  }
-};
+    if (!validateForm()) return;
 
-  // Найдите в CareFuturePage.js функцию getCarouselData() (примерно строка 700-750)
-// и замените её ПОЛНОСТЬЮ на эту версию:
+    setStage('processing');
 
-  // ===== ПОДГОТОВКА ДАННЫХ ДЛЯ КАРУСЕЛИ =====
+    try {
+      // Форматируем дату безопасно
+      const formattedDate = birthDate instanceof Date 
+        ? birthDate.toISOString().split('T')[0]
+        : new Date(birthDate).toISOString().split('T')[0];
+      
+      // ИСПРАВЛЕНО: Используем camelCase для соответствия серверу
+      const requestData = {
+        birthDate: formattedDate,
+        gender: gender,
+        contractTerm: programTerm,
+        calculationType: calcType,
+        inputAmount: parseInt(amountRaw),
+        email: email
+      };
+
+      console.log('Отправляем данные на сервер:', requestData);
+
+      // ИСПРАВЛЕНО: apiCall уже возвращает распарсенные данные
+      const data = await apiCall('/api/care-future/calculate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestData)
+      });
+
+      console.log('Ответ сервера:', data);
+
+      if (data.success) {
+        // НОВОЕ: Рассчитываем налоговый вычет по выбранному доходу
+        const customTaxDeduction = calculateTaxDeduction(
+          data.results.premiumAmount,
+          data.inputParameters.contractTerm,
+          yearlyIncome
+        );
+
+        // Правильно обрабатываем структуру ответа
+        setResultData({
+          insurance_amount_formatted: data.results.insuranceSum.toLocaleString('ru-RU') + ' ₽',
+          single_premium_formatted: data.results.premiumAmount.toLocaleString('ru-RU') + ' ₽',
+          contract_term: data.inputParameters.contractTerm,
+          age: data.inputParameters.ageAtStart,
+          accumulated_capital: data.results.accumulatedCapital,
+          program_income: data.results.programIncome,
+          tax_deduction: customTaxDeduction, // Используем наш расчет
+          premium_amount: data.results.premiumAmount, // Добавляем для расчетов
+          insurance_sum: data.results.insuranceSum // Добавляем для карусели
+        });
+        setCalculationId(data.calculationId);
+        
+        // Сбрасываем карусель в начальное состояние
+        setCarouselIndex(0);
+        setCarouselNavigating(false);
+        
+        setTimeout(() => setStage('result'), 2000);
+      } else {
+        throw new Error(data.error || 'Ошибка расчета');
+      }
+    } catch (error) {
+      console.error('Ошибка расчета:', error);
+      
+      // Более информативная обработка ошибок
+      if (error.message.includes('400')) {
+        setValidationErrors({ general: 'Некорректные данные. Проверьте заполнение формы.' });
+      } else if (error.message.includes('500')) {
+        setValidationErrors({ general: 'Ошибка сервера. Попробуйте позже.' });
+      } else {
+        setValidationErrors({ general: error.message || 'Ошибка при выполнении расчета' });
+      }
+      
+      setStage('form');
+    }
+  };
+
+  // ===== ОТПРАВКА ЗАЯВКИ МЕНЕДЖЕРУ =====
+  const handleManagerSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!mgrSurname.trim() || !mgrName.trim() || !mgrCity.trim()) {
+      setMgrError('Заполните все поля');
+      return;
+    }
+
+    setIsSendingMgr(true);
+    setMgrError('');
+
+    try {
+      const data = await apiCall('/api/contact-manager', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          surname: mgrSurname,
+          name: mgrName,
+          city: mgrCity,
+          email: email,
+          page: 'care-future',
+          calculationId: calculationId
+        })
+      });
+
+      console.log('Ответ сервера:', data);
+
+      if (data && data.success) {
+        setStage('manager-sent');
+      } else {
+        throw new Error(data?.message || 'Ошибка отправки');
+      }
+    } catch (error) {
+      console.error('Ошибка отправки заявки:', error);
+      
+      // ВАЖНО: Если ошибка связана с парсингом JSON, но заявка отправлена
+      if (error.message && error.message.includes('json is not a function')) {
+        console.warn('Ошибка обработки ответа. Заявка была отправлена.');
+        // Переходим к экрану успеха, так как письмо точно отправилось
+        setStage('manager-sent');
+        return;
+      }
+      
+      // Для всех других ошибок показываем сообщение
+      setMgrError('Не удалось отправить заявку. Попробуйте позже.');
+    } finally {
+      setIsSendingMgr(false);
+    }
+  };
+
+  // ===== ПОДГОТОВКА ДАННЫХ ДЛЯ КАРУСЕЛИ С НОВОЙ СТРАНИЦЕЙ =====
   const getCarouselData = () => {
     if (!resultData) return [];
 
     return [
+      // Страница 1: Основные результаты расчета
       {
         title: 'Ваш расчет "Забота о будущем"',
         items: [
@@ -577,12 +692,39 @@ const handleManagerSubmit = async (e) => {
             value: resultData.single_premium_formatted 
           },
           { 
+            label: 'Сумма возврата налогов:', 
+            value: resultData.tax_deduction.toLocaleString('ru-RU') + ' ₽'
+          },
+          { 
             label: 'Страховая сумма:', 
             value: resultData.insurance_amount_formatted,
             highlight: true
           }
         ]
       },
+      // НОВАЯ Страница 2: Покрытия и выплаты
+      {
+        title: 'Покрытия и выплаты',
+        items: [
+          { 
+            label: 'Дожитие ЗЛ до окончания срока страхования:', 
+            value: resultData.insurance_amount_formatted
+          },
+          { 
+            label: 'Уход по ЛП с отложенной выплатой:', 
+            value: resultData.insurance_amount_formatted
+          },
+          { 
+            label: 'Уход по ЛП (выплата в моменте):', 
+            value: 'в размере уплаченных взносов на дату страхового случая'
+          },
+          { 
+            label: 'Инвалидность I,II по ЛП:', 
+            value: 'освобождение от уплаты взносов'
+          }
+        ]
+      },
+      // Страница 3: Дополнительные сервисы
       {
         title: 'Дополнительные сервисы',
         isServicePage: true,
@@ -689,21 +831,21 @@ const handleManagerSubmit = async (e) => {
     // КРИТИЧНО: Размеры и видимость
     display: 'block',
     width: '100%',
-    height: '44px',
-    minHeight: '44px',
+    height: '32px',
+    minHeight: '32px',
     opacity: '1',
     visibility: 'visible',
     
     // КРИТИЧНО: Предотвращение zoom на iOS
-    fontSize: '16px',
+    fontSize: '14px',
     transform: 'scale(1)',
     transformOrigin: 'center',
     
     // Визуальные стили
-    background: '#f5f7fa',
+    background: '#f0f2f5',
     border: '1px solid #e3e7ee',
     borderRadius: '8px',
-    padding: '12px 16px',
+    padding: '6px 10px',
     color: '#333',
     textAlign: 'center',
     fontFamily: '"Segoe UI", sans-serif',
@@ -714,6 +856,54 @@ const handleManagerSubmit = async (e) => {
     outline: 'none',
     WebkitAppearance: 'none',
     appearance: 'none',
+    transition: 'all 0.3s ease'
+  });
+
+  // ===== ПРИНУДИТЕЛЬНЫЕ СТИЛИ ДЛЯ SELECT ПОЛЕЙ =====
+  const getSelectStyle = () => ({
+    // КРИТИЧНО: Максимальная кликабельность
+    position: 'relative',
+    zIndex: '9999',
+    pointerEvents: 'auto',
+    cursor: 'pointer',
+    userSelect: 'auto',
+    WebkitUserSelect: 'auto',
+    touchAction: 'manipulation',
+    WebkitTouchCallout: 'auto',
+    
+    // КРИТИЧНО: Размеры и видимость
+    display: 'block',
+    width: '100%',
+    height: '32px',
+    minHeight: '32px',
+    opacity: '1',
+    visibility: 'visible',
+    
+    // КРИТИЧНО: Предотвращение zoom на iOS
+    fontSize: '14px',
+    transform: 'scale(1)',
+    transformOrigin: 'center',
+    
+    // Визуальные стили
+    background: '#f0f2f5',
+    border: '1px solid #e3e7ee',
+    borderRadius: '8px',
+    padding: '6px 10px',
+    color: '#333',
+    textAlign: 'center',
+    fontFamily: '"Segoe UI", sans-serif',
+    lineHeight: '1.4',
+    boxSizing: 'border-box',
+    
+    // Дополнительная защита
+    outline: 'none',
+    WebkitAppearance: 'none',
+    appearance: 'none',
+    backgroundImage: 'url("data:image/svg+xml;utf8,<svg fill=\'%23333\' height=\'20\' viewBox=\'0 0 24 24\' width=\'20\' xmlns=\'http://www.w3.org/2000/svg\'><path d=\'M7 10l5 5 5-5z\'/></svg>")',
+    backgroundRepeat: 'no-repeat',
+    backgroundPosition: 'right 6px center',
+    backgroundSize: '14px',
+    paddingRight: '28px',
     transition: 'all 0.3s ease'
   });
 
@@ -751,7 +941,7 @@ const handleManagerSubmit = async (e) => {
                   Object.assign(e.target.style, {
                     borderColor: '#e3e7ee',
                     boxShadow: 'none',
-                    background: '#f5f7fa'
+                    background: '#f0f2f5'
                   });
                 }}
                 onClick={(e) => {
@@ -767,265 +957,308 @@ const handleManagerSubmit = async (e) => {
           </div>
         );
 
-case 'form':
-  return (
-    <div className={`${getCardClasses()} scrollable`}>
-      <div className="card-header">
-        <h2 className="text-h2 text-center">Параметры расчёта</h2>
-      </div>
-      
-      <div className="card-content">
-        {/* Дата рождения - ИСПРАВЛЕНО */}
-        <div className="form-group" style={{ marginBottom: '16px' }}>
-          <label className="form-label text-label" style={{ marginBottom: '8px' }}>
-            Дата рождения
-          </label>
-          <DateWheelPicker 
-            value={birthParts}
-            onChange={setBirthParts}
-          />
-          {validationErrors.birthDate && (
-            <span className="form-error">{validationErrors.birthDate}</span>
-          )}
-        </div>
+      case 'form':
+        return (
+          <div className={`${getCardClasses()} scrollable`}>
+            <div className="card-header">
+              <h2 className="text-h2 text-center">Параметры расчёта</h2>
+            </div>
+            
+            <div className="card-content">
+              {/* Дата рождения - ИСПРАВЛЕНО */}
+              <div className="form-group" style={{ marginBottom: '8px' }}>
+                <label className="form-label text-label" style={{ marginBottom: '4px' }}>
+                  Дата рождения
+                </label>
+                <DateWheelPicker 
+                  value={birthParts}
+                  onChange={setBirthParts}
+                />
+                {validationErrors.birthDate && (
+                  <span className="form-error">{validationErrors.birthDate}</span>
+                )}
+              </div>
 
-        {/* Пол */}
-        <div className="form-group">
-          <label className="form-label text-label">Пол</label>
-          <div style={{
-            display: 'flex',
-            gap: '12px',
-            justifyContent: 'center',
-            width: '100%',
-            marginTop: '4px'
-          }}>
-            <button
-              type="button"
-              style={{
-                padding: '12px 24px',
-                minHeight: '44px',
-                border: gender === 'male' ? '2px solid rgb(180, 0, 55)' : '2px solid rgb(152, 164, 174)',
-                borderRadius: '8px',
-                background: gender === 'male' ? 'rgb(180, 0, 55)' : 'white',
-                color: gender === 'male' ? 'white' : 'rgb(152, 164, 174)',
-                fontFamily: 'Segoe UI, sans-serif',
-                fontSize: '16px',
-                fontWeight: '600',
-                cursor: 'pointer',
-                flex: '1',
-                outline: 'none'
-              }}
-              onClick={() => {
-                console.log('Clicked Male');
-                setGender('male');
-              }}
-            >
-              Мужской
-            </button>
-            <button
-              type="button"
-              style={{
-                padding: '12px 24px',
-                minHeight: '44px',
-                border: gender === 'female' ? '2px solid rgb(180, 0, 55)' : '2px solid rgb(152, 164, 174)',
-                borderRadius: '8px',
-                background: gender === 'female' ? 'rgb(180, 0, 55)' : 'white',
-                color: gender === 'female' ? 'white' : 'rgb(152, 164, 174)',
-                fontFamily: 'Segoe UI, sans-serif',
-                fontSize: '16px',
-                fontWeight: '600',
-                cursor: 'pointer',
-                flex: '1',
-                outline: 'none'
-              }}
-              onClick={() => {
-                console.log('Clicked Female');
-                setGender('female');
-              }}
-            >
-              Женский
-            </button>
-          </div>
-          {validationErrors.gender && (
-            <span className="form-error">{validationErrors.gender}</span>
-          )}
-        </div>
-
-        {/* Срок программы - КОМПАКТНЫЙ СЛАЙДЕР В ОДНУ СТРОКУ */}
-        <div className="form-group">
-          <label className="form-label text-label">Срок программы (лет)</label>
-          <div style={{
-            display: 'flex',
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: '12px',
-            width: '100%',
-            marginTop: '8px',
-            padding: '8px 0'
-          }}>
-            <div style={{
-              position: 'relative',
-              flex: '1',
-              height: '20px',
-              display: 'flex',
-              alignItems: 'center'
-            }}>
-              <input
-                type="range"
-                min="5"
-                max="30"
-                step="1"
-                value={programTerm}
-                onChange={(e) => {
-                  console.log('Slider changed to:', e.target.value);
-                  setProgramTerm(parseInt(e.target.value));
-                }}
-                onTouchStart={(e) => {
-                  e.stopPropagation();
-                }}
-                onTouchMove={(e) => {
-                  e.stopPropagation();
-                }}
-                style={{
+              {/* Пол */}
+              <div className="form-group" style={{ marginBottom: '8px' }}>
+                <label className="form-label text-label">Пол</label>
+                <div style={{
+                  display: 'flex',
+                  gap: '12px',
+                  justifyContent: 'center',
                   width: '100%',
-                  height: '8px',
-                  borderRadius: '4px',
-                  background: `linear-gradient(to right, rgb(180, 0, 55) 0%, rgb(180, 0, 55) ${((programTerm - 5) / 25) * 100}%, #e5e5e5 ${((programTerm - 5) / 25) * 100}%, #e5e5e5 100%)`,
-                  outline: 'none',
-                  cursor: 'pointer',
-                  WebkitAppearance: 'none',
-                  appearance: 'none',
-                  position: 'relative',
-                  zIndex: '1000',
-                  touchAction: 'none',
-                  userSelect: 'none',
-                  WebkitUserSelect: 'none'
-                }}
-              />
-            </div>
-            <div style={{
-              padding: '6px 12px',
-              background: 'rgb(180, 0, 55)',
-              color: 'white',
-              borderRadius: '16px',
-              fontSize: '14px',
-              fontWeight: '600',
-              fontFamily: 'Segoe UI, sans-serif',
-              minWidth: '40px',
-              textAlign: 'center',
-              flexShrink: 0
-            }}>
-              {programTerm}
+                  marginTop: '2px'
+                }}>
+                  <button
+                    type="button"
+                    style={{
+                      padding: '8px 16px',
+                      minHeight: '36px',
+                      border: gender === 'male' ? '2px solid rgb(180, 0, 55)' : '2px solid rgb(152, 164, 174)',
+                      borderRadius: '8px',
+                      background: gender === 'male' ? 'rgb(180, 0, 55)' : 'white',
+                      color: gender === 'male' ? 'white' : 'rgb(152, 164, 174)',
+                      fontFamily: 'Segoe UI, sans-serif',
+                      fontSize: '15px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      flex: '1',
+                      outline: 'none'
+                    }}
+                    onClick={() => {
+                      console.log('Clicked Male');
+                      setGender('male');
+                    }}
+                  >
+                    Мужской
+                  </button>
+                  <button
+                    type="button"
+                    style={{
+                      padding: '8px 16px',
+                      minHeight: '36px',
+                      border: gender === 'female' ? '2px solid rgb(180, 0, 55)' : '2px solid rgb(152, 164, 174)',
+                      borderRadius: '8px',
+                      background: gender === 'female' ? 'rgb(180, 0, 55)' : 'white',
+                      color: gender === 'female' ? 'white' : 'rgb(152, 164, 174)',
+                      fontFamily: 'Segoe UI, sans-serif',
+                      fontSize: '15px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      flex: '1',
+                      outline: 'none'
+                    }}
+                    onClick={() => {
+                      console.log('Clicked Female');
+                      setGender('female');
+                    }}
+                  >
+                    Женский
+                  </button>
+                </div>
+                {validationErrors.gender && (
+                  <span className="form-error">{validationErrors.gender}</span>
+                )}
+              </div>
+
+              {/* Срок программы - КОМПАКТНЫЙ СЛАЙДЕР В ОДНУ СТРОКУ */}
+              <div className="form-group" style={{ marginBottom: '8px' }}>
+                <label className="form-label text-label">Срок программы (лет)</label>
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: '12px',
+                  width: '100%',
+                  marginTop: '4px',
+                  padding: '4px 0'
+                }}>
+                  <div style={{
+                    position: 'relative',
+                    flex: '1',
+                    height: '20px',
+                    display: 'flex',
+                    alignItems: 'center'
+                  }}>
+                    <input
+                      type="range"
+                      min="5"
+                      max="30"
+                      step="1"
+                      value={programTerm}
+                      onChange={(e) => {
+                        console.log('Slider changed to:', e.target.value);
+                        setProgramTerm(parseInt(e.target.value));
+                      }}
+                      onTouchStart={(e) => {
+                        e.stopPropagation();
+                      }}
+                      onTouchMove={(e) => {
+                        e.stopPropagation();
+                      }}
+                      style={{
+                        width: '100%',
+                        height: '8px',
+                        borderRadius: '4px',
+                        background: `linear-gradient(to right, rgb(180, 0, 55) 0%, rgb(180, 0, 55) ${((programTerm - 5) / 25) * 100}%, #e5e5e5 ${((programTerm - 5) / 25) * 100}%, #e5e5e5 100%)`,
+                        outline: 'none',
+                        cursor: 'pointer',
+                        WebkitAppearance: 'none',
+                        appearance: 'none',
+                        position: 'relative',
+                        zIndex: '1000',
+                        touchAction: 'none',
+                        userSelect: 'none',
+                        WebkitUserSelect: 'none'
+                      }}
+                    />
+                  </div>
+                  <div style={{
+                    padding: '6px 12px',
+                    background: 'rgb(180, 0, 55)',
+                    color: 'white',
+                    borderRadius: '16px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    fontFamily: 'Segoe UI, sans-serif',
+                    minWidth: '40px',
+                    textAlign: 'center',
+                    flexShrink: 0
+                  }}>
+                    {programTerm}
+                  </div>
+                </div>
+              </div>
+
+              {/* Тип расчёта - КОМПАКТНЫЕ КНОПКИ В СТРОКУ */}
+              <div className="form-group" style={{ marginBottom: '4px' }}>
+                <label className="form-label text-label" style={{ marginBottom: '4px' }}>Тип расчёта</label>
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  flexWrap: 'wrap',
+                  gap: '8px',
+                  width: '100%',
+                  marginTop: '2px'
+                }}>
+                  <button
+                    type="button"
+                    style={{
+                      padding: '8px 12px',
+                      minHeight: '44px',
+                      border: calcType === 'from_premium' ? '2px solid rgb(180, 0, 55)' : '2px solid rgb(152, 164, 174)',
+                      borderRadius: '8px',
+                      background: calcType === 'from_premium' ? 'rgb(180, 0, 55)' : 'white',
+                      color: calcType === 'from_premium' ? 'white' : 'rgb(152, 164, 174)',
+                      fontFamily: 'Segoe UI, sans-serif',
+                      fontSize: '13px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      outline: 'none',
+                      textAlign: 'center',
+                      flex: '1',
+                      minWidth: '140px',
+                      whiteSpace: 'normal',
+                      wordWrap: 'break-word',
+                      lineHeight: '1.2'
+                    }}
+                    onClick={() => {
+                      console.log('Selected calc type: from_premium');
+                      setCalcType('from_premium');
+                    }}
+                  >
+                    Рассчитать по размеру взноса
+                  </button>
+                  <button
+                    type="button"
+                    style={{
+                      padding: '8px 12px',
+                      minHeight: '44px',
+                      border: calcType === 'from_sum' ? '2px solid rgb(180, 0, 55)' : '2px solid rgb(152, 164, 174)',
+                      borderRadius: '8px',
+                      background: calcType === 'from_sum' ? 'rgb(180, 0, 55)' : 'white',
+                      color: calcType === 'from_sum' ? 'white' : 'rgb(152, 164, 174)',
+                      fontFamily: 'Segoe UI, sans-serif',
+                      fontSize: '13px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      outline: 'none',
+                      textAlign: 'center',
+                      flex: '1',
+                      minWidth: '140px',
+                      whiteSpace: 'normal',
+                      wordWrap: 'break-word',
+                      lineHeight: '1.2'
+                    }}
+                    onClick={() => {
+                      console.log('Selected calc type: from_sum');
+                      setCalcType('from_sum');
+                    }}
+                  >
+                    Рассчитать по страховой сумме
+                  </button>
+                </div>
+                {validationErrors.calcType && (
+                  <span className="form-error">{validationErrors.calcType}</span>
+                )}
+              </div>
+
+              {/* Сумма */}
+              <div className="form-group" style={{ marginBottom: '8px' }}>
+                <label className="form-label text-label" style={{ marginBottom: '4px' }}>
+                  {calcType === 'from_premium' ? 'Размер взноса' : 'Страховая сумма'} (₽)
+                </label>
+                <input
+                  type="text"
+                  className={`form-input ${validationErrors.amount ? 'error' : ''}`}
+                  value={amountDisplay}
+                  onChange={handleAmountChange}
+                  placeholder={
+                    calcType === 'from_premium' 
+                      ? 'от 100 000 рублей' 
+                      : calcType === 'from_sum' 
+                        ? 'от 500 000 рублей'
+                        : '1 000 000'
+                  }
+                  style={{
+                    ...getInputStyle(),
+                    marginTop: '4px'
+                  }}
+                />
+                {validationErrors.amount && (
+                  <span className="form-error">{validationErrors.amount}</span>
+                )}
+              </div>
+
+              {/* ===== НОВОЕ ПОЛЕ: МОЙ ДОХОД В ГОД ===== */}
+              <div className="form-group" style={{ marginBottom: '8px' }}>
+                <label className="form-label text-label" style={{ marginBottom: '4px' }}>
+                  Мой доход в год:
+                </label>
+                <select
+                  className={`form-input ${validationErrors.yearlyIncome ? 'error' : ''}`}
+                  value={yearlyIncome}
+                  onChange={(e) => {
+                    console.log('Selected income level:', e.target.value);
+                    setYearlyIncome(e.target.value);
+                  }}
+                  style={{
+                    ...getSelectStyle(),
+                    marginTop: '4px'
+                  }}
+                  onFocus={(e) => {
+                    Object.assign(e.target.style, {
+                      borderColor: 'rgb(180, 0, 55)',
+                      boxShadow: '0 0 0 3px rgba(180, 0, 55, 0.1)',
+                      background: 'white'
+                    });
+                  }}
+                  onBlur={(e) => {
+                    Object.assign(e.target.style, {
+                      borderColor: '#e3e7ee',
+                      boxShadow: 'none',
+                      background: '#f0f2f5'
+                    });
+                  }}
+                >
+                  <option value="">Выберите уровень дохода</option>
+                  <option value="up_to_2_4">До 2,4 млн</option>
+                  <option value="over_2_4">Свыше 2,4 млн</option>
+                  <option value="over_5">Свыше 5 млн</option>
+                  <option value="over_20">Свыше 20 млн</option>
+                  <option value="over_50">Свыше 50 млн</option>
+                </select>
+                {validationErrors.yearlyIncome && (
+                  <span className="form-error">{validationErrors.yearlyIncome}</span>
+                )}
+              </div>
+
+              {validationErrors.general && (
+                <div className="form-error-block">{validationErrors.general}</div>
+              )}
             </div>
           </div>
-        </div>
-
-        {/* Тип расчёта - КОМПАКТНЫЕ КНОПКИ В СТРОКУ */}
-        <div className="form-group" style={{ marginBottom: '6px' }}>
-          <label className="form-label text-label" style={{ marginBottom: '6px' }}>Тип расчёта</label>
-          <div style={{
-            display: 'flex',
-            flexDirection: 'row',
-            flexWrap: 'wrap',
-            gap: '8px',
-            width: '100%',
-            marginTop: '0px'
-          }}>
-            <button
-              type="button"
-              style={{
-                padding: '12px 16px',
-                minHeight: '56px',
-                border: calcType === 'from_premium' ? '2px solid rgb(180, 0, 55)' : '2px solid rgb(152, 164, 174)',
-                borderRadius: '8px',
-                background: calcType === 'from_premium' ? 'rgb(180, 0, 55)' : 'white',
-                color: calcType === 'from_premium' ? 'white' : 'rgb(152, 164, 174)',
-                fontFamily: 'Segoe UI, sans-serif',
-                fontSize: '14px',
-                fontWeight: '600',
-                cursor: 'pointer',
-                outline: 'none',
-                textAlign: 'center',
-                flex: '1',
-                minWidth: '140px',
-                whiteSpace: 'normal',
-                wordWrap: 'break-word',
-                lineHeight: '1.3'
-              }}
-              onClick={() => {
-                console.log('Selected calc type: from_premium');
-                setCalcType('from_premium');
-              }}
-            >
-              Рассчитать по размеру взноса
-            </button>
-            <button
-              type="button"
-              style={{
-                padding: '12px 16px',
-                minHeight: '56px',
-                border: calcType === 'from_sum' ? '2px solid rgb(180, 0, 55)' : '2px solid rgb(152, 164, 174)',
-                borderRadius: '8px',
-                background: calcType === 'from_sum' ? 'rgb(180, 0, 55)' : 'white',
-                color: calcType === 'from_sum' ? 'white' : 'rgb(152, 164, 174)',
-                fontFamily: 'Segoe UI, sans-serif',
-                fontSize: '14px',
-                fontWeight: '600',
-                cursor: 'pointer',
-                outline: 'none',
-                textAlign: 'center',
-                flex: '1',
-                minWidth: '140px',
-                whiteSpace: 'normal',
-                wordWrap: 'break-word',
-                lineHeight: '1.3'
-              }}
-              onClick={() => {
-                console.log('Selected calc type: from_sum');
-                setCalcType('from_sum');
-              }}
-            >
-              Рассчитать по страховой сумме
-            </button>
-          </div>
-          {validationErrors.calcType && (
-            <span className="form-error">{validationErrors.calcType}</span>
-          )}
-        </div>
-
-        {/* Сумма */}
-        <div className="form-group" style={{ marginBottom: '12px' }}>
-          <label className="form-label text-label" style={{ marginBottom: '6px' }}>
-            {calcType === 'from_premium' ? 'Размер взноса' : 'Страховая сумма'} (₽)
-          </label>
-          <input
-            type="text"
-            className={`form-input ${validationErrors.amount ? 'error' : ''}`}
-            value={amountDisplay}
-            onChange={handleAmountChange}
-            placeholder={
-              calcType === 'from_premium' 
-                ? 'от 100 000 рублей' 
-                : calcType === 'from_sum' 
-                  ? 'от 500 000 рублей'
-                  : '1 000 000'
-            }
-            style={{
-              ...getInputStyle(),
-              marginTop: '6px'
-            }}
-          />
-          {validationErrors.amount && (
-            <span className="form-error">{validationErrors.amount}</span>
-          )}
-        </div>
-
-        {validationErrors.general && (
-          <div className="form-error-block">{validationErrors.general}</div>
-        )}
-      </div>
-    </div>
-  );
+        );
 
       case 'processing':
         return (
@@ -1038,120 +1271,156 @@ case 'form':
           </div>
         );
 
-      // Найдите в CareFuturePage.js секцию case 'result': и замените её на эту версию:
-
-// Альтернативная версия case 'result' без инлайн стилей
-// Все стили вынесены в CSS классы
-
-// Найдите в CareFuturePage.js секцию case 'result': и замените её ПОЛНОСТЬЮ на эту:
-
-case 'result':
-  const carouselData = getCarouselData();
-  const currentSlide = carouselData[carouselIndex];
-  
-  return (
-    <div className={getCardClasses()}>
-      <div className="carousel-container">
-        <h2 className="text-h2 text-center">{currentSlide.title}</h2>
+      case 'result':
+        const carouselData = getCarouselData();
         
-        {currentSlide.items && (
-          <div className="result-items">
-            {currentSlide.items.map((item, idx) => (
-              <div key={idx} className={`result-item ${item.highlight ? 'highlight' : ''}`}>
-                <span className="result-label">{item.label}</span>
-                <span className="result-value">{item.value}</span>
+        // Защита от пустых данных
+        if (!carouselData || carouselData.length === 0) {
+          return (
+            <div className={getCardClasses()}>
+              <div className="processing-container">
+                <h2 className="text-h2">Загрузка результатов...</h2>
               </div>
-            ))}
-          </div>
-        )}
-
-        {currentSlide.isServicePage && currentSlide.services && (
-          <div className="services-list">
-            {currentSlide.services.map((service, idx) => (
-              <div key={idx} className="service-item">
-                <div className="service-icon">{service.icon}</div>
-                <div className="service-content">
-                  <h3 className="service-title">{service.title}</h3>
-                  <p className="service-description">{service.description}</p>
+            </div>
+          );
+        }
+        
+        // Проверяем корректность индекса
+        const safeCarouselIndex = Math.min(carouselIndex, carouselData.length - 1);
+        const currentSlide = carouselData[safeCarouselIndex];
+        
+        // Дополнительная защита
+        if (!currentSlide) {
+          return (
+            <div className={getCardClasses()}>
+              <div className="processing-container">
+                <h2 className="text-h2">Ошибка загрузки данных</h2>
+              </div>
+            </div>
+          );
+        }
+        
+        return (
+          <div className={getCardClasses()}>
+            <div className="carousel-container">
+              <h2 className="text-h2 text-center">{currentSlide.title}</h2>
+              
+              {currentSlide.items && (
+                <div className="result-items">
+                  {currentSlide.items.map((item, idx) => (
+                    <div key={idx} className={`result-item ${item.highlight ? 'highlight' : ''}`}>
+                      <span className="result-label">{item.label}</span>
+                      <span className="result-value">{item.value}</span>
+                    </div>
+                  ))}
                 </div>
+              )}
+
+              {currentSlide.isServicePage && currentSlide.services && (
+                <div className="services-list">
+                  {currentSlide.services.map((service, idx) => (
+                    <div key={idx} className="service-item">
+                      <div className="service-icon">{service.icon}</div>
+                      <div className="service-content">
+                        <h3 className="service-title">{service.title}</h3>
+                        <p className="service-description">{service.description}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Навигация карусели внизу */}
+              <div className="carousel-navigation-bottom">
+                {/* Стрелка влево */}
+                {safeCarouselIndex > 0 && (
+                  <button 
+                    type="button"
+                    className={`carousel-arrow carousel-arrow-left ${carouselNavigating ? 'disabled' : ''}`}
+                    onClick={() => navigateCarousel('prev')}
+                    disabled={carouselNavigating}
+                    aria-label="Предыдущий слайд"
+                    style={{
+                      opacity: carouselNavigating ? 0.5 : 1,
+                      cursor: carouselNavigating ? 'not-allowed' : 'pointer',
+                      pointerEvents: carouselNavigating ? 'none' : 'auto'
+                    }}
+                  >
+                    <svg viewBox="0 0 24 24" width="20" height="20">
+                      <path 
+                        d="M15 18l-6-6 6-6" 
+                        stroke="currentColor" 
+                        strokeWidth="2.5" 
+                        fill="none"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </button>
+                )}
+                
+                {/* Индикаторы точки */}
+                <div className="carousel-dots">
+                  {carouselData.map((_, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      className={`carousel-dot ${idx === safeCarouselIndex ? 'active' : ''} ${carouselNavigating ? 'disabled' : ''}`}
+                      onClick={() => goToCarouselSlide(idx)}
+                      disabled={carouselNavigating}
+                      aria-label={`Слайд ${idx + 1}`}
+                      style={{
+                        opacity: carouselNavigating ? 0.5 : 1,
+                        cursor: carouselNavigating ? 'not-allowed' : 'pointer',
+                        pointerEvents: carouselNavigating ? 'none' : 'auto'
+                      }}
+                    />
+                  ))}
+                </div>
+                
+                {/* Стрелка вправо */}
+                {safeCarouselIndex < carouselData.length - 1 && (
+                  <button 
+                    type="button"
+                    className={`carousel-arrow carousel-arrow-right ${carouselNavigating ? 'disabled' : ''}`}
+                    onClick={() => navigateCarousel('next')}
+                    disabled={carouselNavigating}
+                    aria-label="Следующий слайд"
+                    style={{
+                      opacity: carouselNavigating ? 0.5 : 1,
+                      cursor: carouselNavigating ? 'not-allowed' : 'pointer',
+                      pointerEvents: carouselNavigating ? 'none' : 'auto'
+                    }}
+                  >
+                    <svg viewBox="0 0 24 24" width="20" height="20">
+                      <path 
+                        d="M9 18l6-6-6-6" 
+                        stroke="currentColor" 
+                        strokeWidth="2.5" 
+                        fill="none"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </button>
+                )}
               </div>
-            ))}
-          </div>
-        )}
+            </div>
 
-        {/* Навигация карусели внизу */}
-        <div className="carousel-navigation-bottom">
-          {/* Стрелка влево */}
-          {carouselIndex > 0 && (
-            <button 
-              type="button"
-              className="carousel-arrow carousel-arrow-left"
-              onClick={() => setCarouselIndex(prev => prev - 1)}
-              aria-label="Предыдущий слайд"
-            >
-              <svg viewBox="0 0 24 24" width="20" height="20">
-                <path 
-                  d="M15 18l-6-6 6-6" 
-                  stroke="currentColor" 
-                  strokeWidth="2.5" 
-                  fill="none"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </button>
-          )}
-          
-          {/* Индикаторы точки */}
-          <div className="carousel-dots">
-            {carouselData.map((_, idx) => (
+            <div className="card-footer">
               <button
-                key={idx}
                 type="button"
-                className={`carousel-dot ${idx === carouselIndex ? 'active' : ''}`}
-                onClick={() => setCarouselIndex(idx)}
-                aria-label={`Слайд ${idx + 1}`}
-              />
-            ))}
+                className="btn-universal btn-primary btn-large btn-fullwidth"
+                onClick={(e) => {
+                  createRipple(e);
+                  setStage('manager');
+                }}
+              >
+                Связаться с менеджером
+              </button>
+            </div>
           </div>
-          
-          {/* Стрелка вправо */}
-          {carouselIndex < carouselData.length - 1 && (
-            <button 
-              type="button"
-              className="carousel-arrow carousel-arrow-right"
-              onClick={() => setCarouselIndex(prev => prev + 1)}
-              aria-label="Следующий слайд"
-            >
-              <svg viewBox="0 0 24 24" width="20" height="20">
-                <path 
-                  d="M9 18l6-6-6-6" 
-                  stroke="currentColor" 
-                  strokeWidth="2.5" 
-                  fill="none"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </button>
-          )}
-        </div>
-      </div>
-
-      <div className="card-footer">
-        <button
-          type="button"
-          className="btn-universal btn-primary btn-large btn-fullwidth"
-          onClick={(e) => {
-            createRipple(e);
-            setStage('manager');
-          }}
-        >
-          Связаться с менеджером
-        </button>
-      </div>
-    </div>
-  );
+        );
 
       case 'manager':
         return (

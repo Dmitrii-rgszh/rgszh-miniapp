@@ -1,15 +1,13 @@
 /* ============================================================================
-   index.css - ГЛОБАЛЬНЫЕ СТИЛИ + ПОЛНОЭКРАННЫЙ РЕЖИМ
+   index.css - ИСПРАВЛЕННАЯ ВЕРСИЯ БЕЗ КОНФЛИКТА С ПОЛЯМИ КАРТОЧЕК
    ----------------------------------------------------------------------------
-   ✅ Segoe UI шрифты
-   ✅ Корпоративные цвета
-   ✅ Убрана белая полоса сверху
-   ✅ Поддержка всех браузеров и устройств
-   ✅ Исправления для input полей
+   ✅ Убран конфликт с .card-container input полями
+   ✅ Глобальные стили применяются только к полям ВНЕ карточек
+   ✅ Сохранена кликабельность для всех остальных элементов
    ============================================================================ */
 
 /* ======================================
-   СБРОС И БАЗОВЫЕ СТИЛИ
+   ГЛОБАЛЬНЫЕ СТИЛИ ДЛЯ BODY И HTML
    ====================================== */
 * {
   margin: 0;
@@ -17,61 +15,34 @@
   box-sizing: border-box;
 }
 
-/* ПОЛНОЭКРАННЫЙ РЕЖИМ - УБИРАЕМ БЕЛУЮ ПОЛОСУ */
-html {
-  width: 100%;
+html, body {
   height: 100%;
-  /* Поддержка iOS Safari */
-  height: -webkit-fill-available;
-  overflow: hidden;
-  background-color: #B40037; /* Корпоративный цвет вместо белого */
-  
-  /* Фиксированный размер шрифта для отключения зума на iOS */
-  -webkit-text-size-adjust: 100%;
-  text-size-adjust: 100%;
-}
-
-body {
-  width: 100%;
-  height: 100%;
-  height: -webkit-fill-available; /* iOS Safari */
-  overflow: hidden;
-  background-color: #B40037; /* Корпоративный цвет */
-  
-  /* Шрифт по умолчанию */
-  font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, "Roboto", "Oxygen", "Ubuntu", "Cantarell", sans-serif;
-  font-weight: 400;
-  line-height: 1.5;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(
+    135deg,
+    rgb(180, 0, 55) 0%,
+    rgb(153, 0, 55) 25%,
+    rgb(0, 40, 130) 75%,
+    rgb(0, 32, 104) 100%
+  );
+  background-attachment: fixed;
+  overflow-x: hidden;
   color: white;
-}
-
-#root {
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  background-color: #B40037;
-}
-
-/* ======================================
-   CSS ПЕРЕМЕННЫЕ
-   ====================================== */
-:root {
-  /* Красный */
-  --color-red-primary: rgb(180, 0, 55);
-  --color-red-secondary: rgb(153, 0, 55);
   
-  /* Серый */
-  --color-gray-primary: rgb(152, 164, 174);
-  --color-gray-secondary: rgb(118, 143, 146);
+  /* КРИТИЧНО: Базовая кликабельность для всего приложения */
+  -webkit-user-select: auto;
+  -moz-user-select: auto;
+  -ms-user-select: auto;
+  user-select: auto;
   
-  /* Синий */
-  --color-blue-primary: rgb(0, 40, 130);
-  --color-blue-secondary: rgb(0, 32, 104);
+  -webkit-touch-callout: auto;
+  pointer-events: auto;
+  cursor: default;
   
-  /* Белый */
-  --color-white: rgb(255, 255, 255);
+  /* Touch события */
+  touch-action: manipulation;
   
-  /* Динамическая высота viewport */
+  /* CSS переменная для работы с высотой viewport */
   --vh: 1vh;
 }
 
@@ -112,17 +83,17 @@ a {
 }
 
 /* ======================================
-   СПЕЦИАЛЬНЫЕ СТИЛИ ДЛЯ INPUT ПОЛЕЙ
+   СПЕЦИАЛЬНЫЕ СТИЛИ ДЛЯ INPUT ПОЛЕЙ ВНЕ КАРТОЧЕК
    ====================================== */
 
-/* Обеспечиваем кликабельность input полей */
-input[type="text"],
-input[type="email"],
-input[type="password"],
-input[type="search"],
-textarea,
-.autosuggest-input,
-.react-autosuggest__input {
+/* 🎯 ИСПРАВЛЕНО: Глобальные стили применяются ТОЛЬКО к полям ВНЕ карточек */
+input[type="text"]:not(.card-container input),
+input[type="email"]:not(.card-container input),
+input[type="password"]:not(.card-container input),
+input[type="search"]:not(.card-container input),
+textarea:not(.card-container textarea),
+.autosuggest-input:not(.card-container .autosuggest-input),
+.react-autosuggest__input:not(.card-container .react-autosuggest__input) {
   /* КРИТИЧНО: разрешаем все события ввода */
   -webkit-user-select: auto !important;
   -moz-user-select: auto !important;
@@ -145,7 +116,7 @@ textarea,
   /* Outline для доступности */
   outline: none;
   
-  /* Базовые стили для видимости */
+  /* Базовые стили для видимости (ТОЛЬКО для полей ВНЕ карточек) */
   background-color: rgba(255, 255, 255, 0.05) !important;
   border: 1px solid rgba(255, 255, 255, 0.25) !important;
   color: white !important;
@@ -165,14 +136,14 @@ textarea,
   position: relative !important;
 }
 
-/* Focus состояние для input полей */
-input[type="text"]:focus,
-input[type="email"]:focus,
-input[type="password"]:focus,
-input[type="search"]:focus,
-textarea:focus,
-.autosuggest-input:focus,
-.react-autosuggest__input:focus {
+/* Focus состояние для input полей ВНЕ карточек */
+input[type="text"]:not(.card-container input):focus,
+input[type="email"]:not(.card-container input):focus,
+input[type="password"]:not(.card-container input):focus,
+input[type="search"]:not(.card-container input):focus,
+textarea:not(.card-container textarea):focus,
+.autosuggest-input:not(.card-container .autosuggest-input):focus,
+.react-autosuggest__input:not(.card-container .react-autosuggest__input):focus {
   /* Визуальная обратная связь при фокусе */
   border-color: rgba(255, 255, 255, 0.6) !important;
   background-color: rgba(255, 255, 255, 0.1) !important;
@@ -180,60 +151,64 @@ textarea:focus,
   outline: none !important;
 }
 
-/* Hover состояние для input полей */
-input[type="text"]:hover,
-input[type="email"]:hover,
-input[type="password"]:hover,
-input[type="search"]:hover,
-textarea:hover,
-.autosuggest-input:hover,
-.react-autosuggest__input:hover {
+/* Hover состояние для input полей ВНЕ карточек */
+input[type="text"]:not(.card-container input):hover,
+input[type="email"]:not(.card-container input):hover,
+input[type="password"]:not(.card-container input):hover,
+input[type="search"]:not(.card-container input):hover,
+textarea:not(.card-container textarea):hover,
+.autosuggest-input:not(.card-container .autosuggest-input):hover,
+.react-autosuggest__input:not(.card-container .react-autosuggest__input):hover {
   border-color: rgba(255, 255, 255, 0.4) !important;
   background-color: rgba(255, 255, 255, 0.08) !important;
 }
 
-/* Active состояние для input полей */
-input[type="text"]:active,
-input[type="email"]:active,
-input[type="password"]:active,
-input[type="search"]:active,
-textarea:active,
-.autosuggest-input:active,
-.react-autosuggest__input:active {
+/* Active состояние для input полей ВНЕ карточек */
+input[type="text"]:not(.card-container input):active,
+input[type="email"]:not(.card-container input):active,
+input[type="password"]:not(.card-container input):active,
+input[type="search"]:not(.card-container input):active,
+textarea:not(.card-container textarea):active,
+.autosuggest-input:not(.card-container .autosuggest-input):active,
+.react-autosuggest__input:not(.card-container .react-autosuggest__input):active {
   border-color: rgba(255, 255, 255, 0.8) !important;
   background-color: rgba(255, 255, 255, 0.15) !important;
 }
 
-/* Placeholder стили */
-input::placeholder,
-textarea::placeholder,
-.autosuggest-input::placeholder,
-.react-autosuggest__input::placeholder {
+/* Placeholder стили для полей ВНЕ карточек */
+input:not(.card-container input)::placeholder,
+textarea:not(.card-container textarea)::placeholder,
+.autosuggest-input:not(.card-container .autosuggest-input)::placeholder,
+.react-autosuggest__input:not(.card-container .react-autosuggest__input)::placeholder {
   color: rgba(255, 255, 255, 0.6) !important;
   opacity: 1 !important;
 }
 
-input::-webkit-input-placeholder,
-textarea::-webkit-input-placeholder,
-.autosuggest-input::-webkit-input-placeholder,
-.react-autosuggest__input::-webkit-input-placeholder {
+input:not(.card-container input)::-webkit-input-placeholder,
+textarea:not(.card-container textarea)::-webkit-input-placeholder,
+.autosuggest-input:not(.card-container .autosuggest-input)::-webkit-input-placeholder,
+.react-autosuggest__input:not(.card-container .react-autosuggest__input)::-webkit-input-placeholder {
   color: rgba(255, 255, 255, 0.6) !important;
 }
 
-input::-moz-placeholder,
-textarea::-moz-placeholder,
-.autosuggest-input::-moz-placeholder,
-.react-autosuggest__input::-moz-placeholder {
+input:not(.card-container input)::-moz-placeholder,
+textarea:not(.card-container textarea)::-moz-placeholder,
+.autosuggest-input:not(.card-container .autosuggest-input)::-moz-placeholder,
+.react-autosuggest__input:not(.card-container .react-autosuggest__input)::-moz-placeholder {
   color: rgba(255, 255, 255, 0.6) !important;
   opacity: 1 !important;
 }
 
-input:-ms-input-placeholder,
-textarea:-ms-input-placeholder,
-.autosuggest-input:-ms-input-placeholder,
-.react-autosuggest__input:-ms-input-placeholder {
+input:not(.card-container input):-ms-input-placeholder,
+textarea:not(.card-container textarea):-ms-input-placeholder,
+.autosuggest-input:not(.card-container .autosuggest-input):-ms-input-placeholder,
+.react-autosuggest__input:not(.card-container .react-autosuggest__input):-ms-input-placeholder {
   color: rgba(255, 255, 255, 0.6) !important;
 }
+
+/* ======================================
+   ОСТАЛЬНЫЕ ИНТЕРАКТИВНЫЕ ЭЛЕМЕНТЫ
+   ====================================== */
 
 /* Autosuggest suggestions */
 .react-autosuggest__suggestions-container,
@@ -295,4 +270,88 @@ button:active,
 * {
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.3) rgba(255, 255, 255, 0.1);
+}
+
+/* ======================================
+   ROOT ЭЛЕМЕНТ ДЛЯ REACT
+   ====================================== */
+#root {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ======================================
+   УНИВЕРСАЛЬНЫЕ УТИЛИТЫ
+   ====================================== */
+.full-height {
+  height: 100vh;
+}
+
+.full-width {
+  width: 100vw;
+}
+
+.flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.text-center {
+  text-align: center;
+}
+
+/* ======================================
+   МЕДИА-ЗАПРОСЫ ДЛЯ АДАПТИВНОСТИ
+   ====================================== */
+
+/* Планшеты */
+@media (max-width: 768px) and (min-width: 375px) {
+  html, body {
+    font-size: 16px;
+  }
+}
+
+/* Мобильные */
+@media (max-width: 374px) {
+  html, body {
+    font-size: 14px;
+  }
+  
+  /* Более компактные поля для маленьких экранов */
+  input[type="text"]:not(.card-container input),
+  input[type="email"]:not(.card-container input),
+  input[type="password"]:not(.card-container input),
+  input[type="search"]:not(.card-container input),
+  textarea:not(.card-container textarea) {
+    padding: 8px 12px;
+    font-size: 16px; /* Предотвращаем zoom на iOS */
+  }
+}
+
+/* ======================================
+   РЕЖИМ ВЫСОКОЙ КОНТРАСТНОСТИ
+   ====================================== */
+@media (prefers-contrast: high) {
+  input[type="text"]:not(.card-container input),
+  input[type="email"]:not(.card-container input),
+  input[type="password"]:not(.card-container input),
+  input[type="search"]:not(.card-container input),
+  textarea:not(.card-container textarea) {
+    border-color: rgba(255, 255, 255, 0.8) !important;
+    background-color: rgba(255, 255, 255, 0.1) !important;
+  }
+}
+
+/* ======================================
+   РЕЖИМ УМЕНЬШЕННОЙ АНИМАЦИИ
+   ====================================== */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

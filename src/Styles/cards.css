@@ -1,12 +1,9 @@
 /* ============================================================================
-   cards.css - СТИЛИ ДЛЯ КАРТОЧЕК И ФОРМ С БЕЛОЙ ПОДЛОЖКОЙ
+   cards.css - ИСПРАВЛЕННАЯ ВЕРСИЯ ДЛЯ ПОЛЕЙ ВВОДА В КАРТОЧКАХ
    ----------------------------------------------------------------------------
-   ✅ Корпоративные цвета для текста на белом фоне
-   ✅ Закругленные углы
-   ✅ Адаптивность для 3 разрешений
-   ✅ Прямое позиционирование карточек
-   ✅ ИСПРАВЛЕНО: Центрирование placeholder на всех разрешениях
-   ✅ ИСПРАВЛЕНО: Кликабельность input полей на мобильных
+   ✅ Повышена специфичность CSS для переопределения глобальных стилей
+   ✅ Добавлены !important флаги для критических стилей
+   ✅ Исправлен конфликт с index.css
    ============================================================================ */
 
 /* ======================================
@@ -89,25 +86,31 @@
 }
 
 /* ======================================
-   ЭЛЕМЕНТЫ ФОРМЫ НА БЕЛОМ ФОНЕ
+   ЭЛЕМЕНТЫ ФОРМЫ НА БЕЛОМ ФОНЕ - ИСПРАВЛЕНО
    ====================================== */
 .card-container .form-label {
+  color: #2d3748;
   display: block;
   margin-bottom: 8px;
   font-weight: 500;
   text-align: center !important;
 }
 
-.card-container .form-input {
-  width: 100%;
-  padding: 12px 16px;
-  background: #f5f7fa;
-  border: 1px solid #e3e7ee;
-  border-radius: 8px;
+/* 🎯 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Увеличиваем специфичность и добавляем !important */
+html body .card-container .form-input,
+html body .card-container input[type="email"],
+html body .card-container input[type="text"],
+html body .card-container input[type="password"] {
+  width: 100% !important;
+  padding: 14px 18px !important;
+  background: #f0f2f5 !important;  /* 🎯 ПРИНУДИТЕЛЬНО УСТАНАВЛИВАЕМ СЕРЫЙ ФОН */
+  border: 2px solid #e3e7ee !important;
+  border-radius: 12px !important;
   color: #333 !important;
-  font-size: 16px;
-  transition: all 0.3s ease;
+  font-size: 16px !important;
+  transition: all 0.3s ease !important;
   text-align: center !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
   
   /* ИСПРАВЛЕНИЕ: Усиленная кликабельность */
   position: relative !important;
@@ -129,21 +132,81 @@
   visibility: visible !important;
 }
 
-.card-container .form-input:focus {
-  outline: none;
-  background: white;
-  border-color: rgb(180, 0, 55);
-  box-shadow: 0 0 0 3px rgba(180, 0, 55, 0.1);
+/* 🎯 СОСТОЯНИЕ ФОКУСА - ПЕРЕОПРЕДЕЛЯЕМ ГЛОБАЛЬНЫЕ СТИЛИ */
+html body .card-container .form-input:focus,
+html body .card-container input[type="email"]:focus,
+html body .card-container input[type="text"]:focus,
+html body .card-container input[type="password"]:focus {
+  outline: none !important;
+  background: white !important;  /* 🎯 БЕЛЫЙ ФОН ПРИ ФОКУСЕ */
+  border-color: rgb(180, 0, 55) !important;  /* 🎯 КРАСНАЯ ГРАНИЦА */
+  box-shadow: 0 0 0 3px rgba(180, 0, 55, 0.1) !important;  /* 🎯 КРАСНОЕ СВЕЧЕНИЕ */
 }
 
-.card-container .form-input::placeholder {
-  color: #9ca3af;
+/* 🎯 СОСТОЯНИЕ HOVER */
+html body .card-container .form-input:hover,
+html body .card-container input[type="email"]:hover,
+html body .card-container input[type="text"]:hover,
+html body .card-container input[type="password"]:hover {
+  background: #e8ecf2 !important;  /* 🎯 ЧУТЬ ТЕМНЕЕ ПРИ НАВЕДЕНИИ */
+  border-color: #d1d9e0 !important;
+}
+
+/* Placeholder текст более заметный */
+html body .card-container .form-input::placeholder,
+html body .card-container input[type="email"]::placeholder,
+html body .card-container input[type="text"]::placeholder,
+html body .card-container input[type="password"]::placeholder {
+  color: #999 !important;
+  text-align: center !important;
+  opacity: 1 !important;
+  font-size: 15px !important;
+}
+
+/* Ошибочное состояние */
+html body .card-container .form-input.error,
+html body .card-container input[type="email"].error,
+html body .card-container input[type="text"].error,
+html body .card-container input[type="password"].error {
+  border-color: rgb(180, 0, 55) !important;
+  background: rgba(180, 0, 55, 0.05) !important;
+}
+
+/* === Для всех браузеров === */
+html body .card-container .form-input::-webkit-input-placeholder,
+html body .card-container input[type="email"]::-webkit-input-placeholder,
+html body .card-container input[type="text"]::-webkit-input-placeholder,
+html body .card-container input[type="password"]::-webkit-input-placeholder {
+  color: #999 !important;
   text-align: center !important;
   opacity: 1 !important;
 }
 
-.card-container .form-input.error {
-  border-color: rgb(180, 0, 55);
+html body .card-container .form-input::-moz-placeholder,
+html body .card-container input[type="email"]::-moz-placeholder,
+html body .card-container input[type="text"]::-moz-placeholder,
+html body .card-container input[type="password"]::-moz-placeholder {
+  color: #999 !important;
+  text-align: center !important;
+  opacity: 1 !important;
+}
+
+html body .card-container .form-input:-ms-input-placeholder,
+html body .card-container input[type="email"]:-ms-input-placeholder,
+html body .card-container input[type="text"]:-ms-input-placeholder,
+html body .card-container input[type="password"]:-ms-input-placeholder {
+  color: #999 !important;
+  text-align: center !important;
+  opacity: 1 !important;
+}
+
+html body .card-container .form-input:-moz-placeholder,
+html body .card-container input[type="email"]:-moz-placeholder,
+html body .card-container input[type="text"]:-moz-placeholder,
+html body .card-container input[type="password"]:-moz-placeholder {
+  color: #999 !important;
+  text-align: center !important;
+  opacity: 1 !important;
 }
 
 /* ======================================
@@ -445,14 +508,14 @@
 
 .result-label {
   font-family: 'Segoe UI', sans-serif;
-  font-size: 14px;
+  font-size: 18px;
   color: #666;
 }
 
 .result-value {
   font-family: 'Segoe UI', sans-serif;
   font-weight: 600;
-  font-size: 16px;
+  font-size: 18px;
   color: #333;
 }
 
