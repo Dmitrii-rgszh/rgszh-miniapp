@@ -1,11 +1,11 @@
-# deploy.ps1 - ОБНОВЛЕННЫЙ PowerShell скрипт для деплоя RGSZH MiniApp
-# ЗАЩИТА SSL СЕРТИФИКАТОВ И NGINX КОНФИГУРАЦИИ
+# deploy.ps1 - ИСПРАВЛЕННЫЙ PowerShell скрипт для деплоя RGSZH MiniApp
+# ЗАЩИТА SSL СЕРТИФИКАТОВ И NGINX КОНФИГУРАЦИИ + УСТОЙЧИВОЕ SSH СОЕДИНЕНИЕ
 
 param(
     [switch]$SkipBuild,
     [switch]$SkipCopy,
     [switch]$SkipDeploy,
-    [switch]$ForceConfig,  # ← НОВЫЙ ПАРАМЕТР: принудительно перезаписать конфигурации
+    [switch]$ForceConfig,
     [switch]$Verbose
 )
 
@@ -15,6 +15,9 @@ $VM_HOST = "176.109.110.217"
 $DOCKER_REGISTRY = "zerotlt"
 $PROJECT_NAME = "rgszh-miniapp"
 $SOCKET_URL = "https://rgszh-miniapp.org"
+
+# SSH опции для стабильного соединения
+$SSH_OPTIONS = "-o ServerAliveInterval=30 -o ServerAliveCountMax=5 -o ConnectTimeout=30 -o TCPKeepAlive=yes"
 
 # Генерируем уникальный тег на основе времени для принудительного обновления
 $DEPLOY_TAG = (Get-Date -Format "yyyyMMdd-HHmmss")
@@ -53,6 +56,40 @@ function Write-Warning {
 function Write-Info {
     param([string]$Message)
     Write-Log "ℹ️ $Message" -Color $Colors.Blue
+}
+
+# Функция для выполнения команд с повторными попытками
+function Invoke-WithRetry {
+    param(
+        [string]$Command,
+        [int]$MaxAttempts = 3,
+        [int]$DelaySeconds = 5
+    )
+    
+    for ($i = 1; $i -le $MaxAttempts; $i++) {
+        try {
+            if ($Verbose) { Write-Info "Попытка $i из ${MaxAttempts}: $Command" }
+            Invoke-Expression $Command
+            
+            if ($LASTEXITCODE -eq 0) {
+                return $true
+            }
+            
+            if ($i -lt $MaxAttempts) {
+                Write-Warning "Команда не выполнена, повтор через $DelaySeconds секунд..."
+                Start-Sleep -Seconds $DelaySeconds
+            }
+        } catch {
+            if ($i -lt $MaxAttempts) {
+                Write-Warning "Ошибка: $_. Повтор через $DelaySeconds секунд..."
+                Start-Sleep -Seconds $DelaySeconds
+            } else {
+                throw $_
+            }
+        }
+    }
+    
+    return $false
 }
 
 # Проверка зависимостей
@@ -96,7 +133,6 @@ function Build-And-Push-Images {
         # Сборка серверного образа с уникальным тегом
         Write-Log "📦 Сборка серверного образа..."
         $cmd = "docker build --no-cache -f Dockerfile.server -t ${DOCKER_REGISTRY}/${PROJECT_NAME}-api:$DEPLOY_TAG -t ${DOCKER_REGISTRY}/${PROJECT_NAME}-api:latest ."
-        
         if ($Verbose) { Write-Info "Выполняем: $cmd" }
         Invoke-Expression $cmd
         
@@ -105,24 +141,17 @@ function Build-And-Push-Images {
         }
         
         Write-Log "📤 Отправка серверного образа..."
-        $cmd = "docker push ${DOCKER_REGISTRY}/${PROJECT_NAME}-api:$DEPLOY_TAG"
-        if ($Verbose) { Write-Info "Выполняем: $cmd" }
-        Invoke-Expression $cmd
+        $success = Invoke-WithRetry -Command "docker push ${DOCKER_REGISTRY}/${PROJECT_NAME}-api:$DEPLOY_TAG"
+        if (-not $success) { throw "Ошибка отправки серверного образа с тегом" }
         
-        $cmd = "docker push ${DOCKER_REGISTRY}/${PROJECT_NAME}-api:latest"
-        if ($Verbose) { Write-Info "Выполняем: $cmd" }
-        Invoke-Expression $cmd
-        
-        if ($LASTEXITCODE -ne 0) {
-            throw "Ошибка отправки серверного образа"
-        }
+        $success = Invoke-WithRetry -Command "docker push ${DOCKER_REGISTRY}/${PROJECT_NAME}-api:latest"
+        if (-not $success) { throw "Ошибка отправки серверного образа latest" }
         
         Write-Success "Серверный образ собран и отправлен (тег: $DEPLOY_TAG)"
         
         # Сборка клиентского образа с уникальным тегом
         Write-Log "📦 Сборка клиентского образа..."
         $cmd = "docker build --no-cache -f Dockerfile.client --build-arg REACT_APP_SOCKET_URL=`"$SOCKET_URL`" -t ${DOCKER_REGISTRY}/${PROJECT_NAME}:$DEPLOY_TAG -t ${DOCKER_REGISTRY}/${PROJECT_NAME}:latest ."
-        
         if ($Verbose) { Write-Info "Выполняем: $cmd" }
         Invoke-Expression $cmd
         
@@ -131,17 +160,11 @@ function Build-And-Push-Images {
         }
         
         Write-Log "📤 Отправка клиентского образа..."
-        $cmd = "docker push ${DOCKER_REGISTRY}/${PROJECT_NAME}:$DEPLOY_TAG"
-        if ($Verbose) { Write-Info "Выполняем: $cmd" }
-        Invoke-Expression $cmd
+        $success = Invoke-WithRetry -Command "docker push ${DOCKER_REGISTRY}/${PROJECT_NAME}:$DEPLOY_TAG"
+        if (-not $success) { throw "Ошибка отправки клиентского образа с тегом" }
         
-        $cmd = "docker push ${DOCKER_REGISTRY}/${PROJECT_NAME}:latest"
-        if ($Verbose) { Write-Info "Выполняем: $cmd" }
-        Invoke-Expression $cmd
-        
-        if ($LASTEXITCODE -ne 0) {
-            throw "Ошибка отправки клиентского образа"
-        }
+        $success = Invoke-WithRetry -Command "docker push ${DOCKER_REGISTRY}/${PROJECT_NAME}:latest"
+        if (-not $success) { throw "Ошибка отправки клиентского образа latest" }
         
         Write-Success "Клиентский образ собран и отправлен (тег: $DEPLOY_TAG)"
         
@@ -170,22 +193,26 @@ function Copy-Files-To-VM {
     
     try {
         # Создаем папку если не существует
-        $cmd = "ssh ${VM_USER}@${VM_HOST} 'mkdir -p /home/${VM_USER}/${PROJECT_NAME}'"
-        if ($Verbose) { Write-Info "Выполняем: $cmd" }
-        Invoke-Expression $cmd
+        $cmd = "ssh $SSH_OPTIONS ${VM_USER}@${VM_HOST} 'mkdir -p /home/${VM_USER}/${PROJECT_NAME}'"
+        $success = Invoke-WithRetry -Command $cmd
+        if (-not $success) { throw "Не удалось создать папку на сервере" }
         
-        # Копируем основные файлы
+        # Копируем основные файлы по одному с паузами для стабильности
         foreach ($file in $alwaysCopyFiles) {
             if (Test-Path $file) {
                 Write-Log "📋 Копируем $file..."
-                $cmd = "scp $file ${VM_USER}@${VM_HOST}:/home/${VM_USER}/${PROJECT_NAME}/"
                 
-                if ($Verbose) { Write-Info "Выполняем: $cmd" }
-                Invoke-Expression $cmd
+                # Добавляем небольшую паузу между файлами
+                Start-Sleep -Seconds 2
                 
-                if ($LASTEXITCODE -ne 0) {
-                    throw "Ошибка копирования $file"
+                $cmd = "scp $SSH_OPTIONS $file ${VM_USER}@${VM_HOST}:/home/${VM_USER}/${PROJECT_NAME}/"
+                $success = Invoke-WithRetry -Command $cmd -MaxAttempts 5 -DelaySeconds 10
+                
+                if (-not $success) {
+                    throw "Ошибка копирования $file после нескольких попыток"
                 }
+                
+                Write-Success "$file скопирован"
             } else {
                 Write-Warning "Файл $file не найден, пропускаем"
             }
@@ -195,61 +222,66 @@ function Copy-Files-To-VM {
         Write-Log "🔐 Проверка nginx конфигурации на сервере..."
         
         # Проверяем существует ли nginx/default.conf на сервере
-        $nginxExists = ssh ${VM_USER}@${VM_HOST} "test -f /home/${VM_USER}/${PROJECT_NAME}/nginx/default.conf && echo 'exists' || echo 'not exists'"
+        $checkCmd = "ssh $SSH_OPTIONS ${VM_USER}@${VM_HOST} 'test -f /home/${VM_USER}/${PROJECT_NAME}/nginx/default.conf && echo exists || echo not_exists'"
+        $nginxExists = Invoke-Expression $checkCmd
         
         if ($nginxExists -eq "exists" -and -not $ForceConfig) {
             Write-Warning "nginx/default.conf уже существует на сервере. Пропускаем копирование."
-            Write-Info "Используйте -ForceConfig для принудительного обновления"
+            Write-Info "Используйте -ForceConfig для принудительной перезаписи"
         } else {
-            if (Test-Path "nginx/default.conf") {
+            # Копируем nginx конфигурацию
+            if (Test-Path "nginx") {
                 Write-Log "📋 Копируем nginx конфигурацию..."
                 
-                # Создаем директорию nginx если её нет
-                $cmd = "ssh ${VM_USER}@${VM_HOST} 'mkdir -p /home/${VM_USER}/${PROJECT_NAME}/nginx'"
-                if ($Verbose) { Write-Info "Выполняем: $cmd" }
-                Invoke-Expression $cmd
+                # Создаем папку nginx на сервере
+                $cmd = "ssh $SSH_OPTIONS ${VM_USER}@${VM_HOST} 'mkdir -p /home/${VM_USER}/${PROJECT_NAME}/nginx'"
+                Invoke-WithRetry -Command $cmd
                 
-                # Копируем конфигурацию
-                $cmd = "scp nginx/default.conf ${VM_USER}@${VM_HOST}:/home/${VM_USER}/${PROJECT_NAME}/nginx/"
-                if ($Verbose) { Write-Info "Выполняем: $cmd" }
-                Invoke-Expression $cmd
+                Start-Sleep -Seconds 2
                 
-                Write-Success "nginx конфигурация обновлена"
-            } else {
-                Write-Warning "nginx/default.conf не найден локально"
+                # Копируем папку nginx
+                $cmd = "scp $SSH_OPTIONS -r nginx/* ${VM_USER}@${VM_HOST}:/home/${VM_USER}/${PROJECT_NAME}/nginx/"
+                $success = Invoke-WithRetry -Command $cmd -MaxAttempts 5 -DelaySeconds 10
+                
+                if ($success) {
+                    Write-Success "nginx конфигурация скопирована"
+                } else {
+                    Write-Warning "Не удалось скопировать nginx конфигурацию"
+                }
             }
         }
         
         # ===== ЗАЩИТА SSL СЕРТИФИКАТОВ =====
         Write-Log "🔐 Проверка SSL сертификатов на сервере..."
         
-        # Проверяем существуют ли сертификаты на сервере
-        $certsExist = ssh ${VM_USER}@${VM_HOST} "test -f /home/${VM_USER}/${PROJECT_NAME}/certs/fullchain.pem && echo 'exists' || echo 'not exists'"
+        $checkCmd = "ssh $SSH_OPTIONS ${VM_USER}@${VM_HOST} 'test -f /home/${VM_USER}/${PROJECT_NAME}/certs/fullchain.pem && echo exists || echo not_exists'"
+        $certsExist = Invoke-Expression $checkCmd
         
         if ($certsExist -eq "exists" -and -not $ForceConfig) {
-            Write-Success "SSL сертификаты Let's Encrypt найдены на сервере. НЕ трогаем их!"
-            Write-Info "Сертификаты автоматически обновляются через certbot"
+            Write-Warning "SSL сертификаты уже существуют на сервере. Пропускаем копирование."
+            Write-Success "Используем существующие сертификаты на сервере."
         } else {
+            # Копируем сертификаты если есть локально
             if (Test-Path "certs") {
-                Write-Warning "Копирование локальных сертификатов (самоподписанные?)"
+                Write-Log "📋 Копируем SSL сертификаты..."
                 
-                # Создаем директорию certs если её нет
-                $cmd = "ssh ${VM_USER}@${VM_HOST} 'mkdir -p /home/${VM_USER}/${PROJECT_NAME}/certs'"
-                if ($Verbose) { Write-Info "Выполняем: $cmd" }
-                Invoke-Expression $cmd
+                # Создаем папку certs на сервере
+                $cmd = "ssh $SSH_OPTIONS ${VM_USER}@${VM_HOST} 'mkdir -p /home/${VM_USER}/${PROJECT_NAME}/certs'"
+                Invoke-WithRetry -Command $cmd
                 
-                # Копируем сертификаты
-                $certFiles = @("privkey.pem", "fullchain.pem")
-                foreach ($certFile in $certFiles) {
-                    if (Test-Path "certs/$certFile") {
-                        Write-Log "📋 Копируем certs/$certFile..."
-                        $cmd = "scp certs/$certFile ${VM_USER}@${VM_HOST}:/home/${VM_USER}/${PROJECT_NAME}/certs/"
-                        if ($Verbose) { Write-Info "Выполняем: $cmd" }
-                        Invoke-Expression $cmd
-                    }
+                Start-Sleep -Seconds 2
+                
+                # Копируем папку certs
+                $cmd = "scp $SSH_OPTIONS -r certs/* ${VM_USER}@${VM_HOST}:/home/${VM_USER}/${PROJECT_NAME}/certs/"
+                $success = Invoke-WithRetry -Command $cmd -MaxAttempts 5 -DelaySeconds 10
+                
+                if ($success) {
+                    Write-Success "SSL сертификаты скопированы"
+                } else {
+                    Write-Warning "Не удалось скопировать SSL сертификаты"
                 }
             } else {
-                Write-Info "Локальная директория certs не найдена. Используем существующие сертификаты на сервере."
+                Write-Warning "Локальная папка certs не найдена"
             }
         }
         
@@ -257,6 +289,20 @@ function Copy-Files-To-VM {
         
     } catch {
         Write-Error "Ошибка при копировании файлов: $_"
+        
+        # Предлагаем альтернативное решение
+        Write-Info ""
+        Write-Info "🔧 Альтернативное решение:"
+        Write-Info "1. Попробуйте подключиться вручную:"
+        Write-Info "   ssh $VM_USER@$VM_HOST"
+        Write-Info ""
+        Write-Info "2. Скопируйте файлы вручную:"
+        Write-Info "   scp docker-compose.yml $VM_USER@${VM_HOST}:/home/$VM_USER/$PROJECT_NAME/"
+        Write-Info "   scp Dockerfile.* $VM_USER@${VM_HOST}:/home/$VM_USER/$PROJECT_NAME/"
+        Write-Info "   scp .env $VM_USER@${VM_HOST}:/home/$VM_USER/$PROJECT_NAME/"
+        Write-Info ""
+        Write-Info "3. Или используйте скрипт manual-cleanup.sh для очистки на сервере"
+        
         exit 1
     }
 }
@@ -295,13 +341,13 @@ echo "🚀 Запуск контейнеров..."
 docker compose up -d --force-recreate
 
 echo "⏳ Ожидание запуска контейнеров..."
-sleep 15
+sleep 20
 
 echo "📊 Проверка статуса контейнеров..."
 docker compose ps
 
-echo "📋 Показ логов последних 30 строк..."
-docker compose logs --tail=30
+echo "📋 Показ логов сервера..."
+docker compose logs server --tail=30
 
 echo "🎉 Деплой завершен! Тег образов: $DEPLOY_TAG"
 "@
@@ -317,16 +363,15 @@ echo "🎉 Деплой завершен! Тег образов: $DEPLOY_TAG"
         Write-Log "🔗 Подключение к ВМ и выполнение деплоя..."
         
         # Копируем скрипт на ВМ
-        $cmd = "scp `"$tempScriptPath`" ${VM_USER}@${VM_HOST}:/tmp/deploy_script.sh"
-        if ($Verbose) { Write-Info "Копируем скрипт на ВМ: $cmd" }
-        Invoke-Expression $cmd
+        $cmd = "scp $SSH_OPTIONS `"$tempScriptPath`" ${VM_USER}@${VM_HOST}:/tmp/deploy_script.sh"
+        $success = Invoke-WithRetry -Command $cmd
         
-        if ($LASTEXITCODE -ne 0) {
+        if (-not $success) {
             throw "Ошибка копирования скрипта на ВМ"
         }
         
         # Выполняем скрипт на ВМ
-        $cmd = "ssh ${VM_USER}@${VM_HOST} 'chmod +x /tmp/deploy_script.sh && bash /tmp/deploy_script.sh'"
+        $cmd = "ssh $SSH_OPTIONS ${VM_USER}@${VM_HOST} 'chmod +x /tmp/deploy_script.sh && bash /tmp/deploy_script.sh'"
         if ($Verbose) { Write-Info "Выполняем скрипт на ВМ: $cmd" }
         Invoke-Expression $cmd
         
@@ -335,7 +380,7 @@ echo "🎉 Деплой завершен! Тег образов: $DEPLOY_TAG"
         }
         
         # Удаляем временный скрипт с ВМ
-        $cmd = "ssh ${VM_USER}@${VM_HOST} 'rm -f /tmp/deploy_script.sh'"
+        $cmd = "ssh $SSH_OPTIONS ${VM_USER}@${VM_HOST} 'rm -f /tmp/deploy_script.sh'"
         Invoke-Expression $cmd
         
         Write-Success "Деплой на ВМ завершен успешно"
@@ -364,7 +409,7 @@ function Test-Deployment {
     
     # Проверка SSL статуса
     Write-Log "🔐 Проверка SSL..."
-    $sslCheck = ssh ${VM_USER}@${VM_HOST} "cd ${PROJECT_NAME} && test -f certs/fullchain.pem && echo 'SSL OK' || echo 'NO SSL'"
+    $sslCheck = ssh $SSH_OPTIONS ${VM_USER}@${VM_HOST} "cd ${PROJECT_NAME} && test -f certs/fullchain.pem && echo 'SSL OK' || echo 'NO SSL'"
     if ($sslCheck -eq "SSL OK") {
         Write-Success "SSL сертификаты на месте"
     } else {

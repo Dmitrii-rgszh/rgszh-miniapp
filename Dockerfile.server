@@ -32,17 +32,17 @@ COPY care_future_routes.py* .
 COPY init_care_future.py* .
 
 # Копируем SQL файлы для инициализации assessment таблиц
-COPY assessment_schema.sql .
-COPY assessment_questions.sql .
+COPY assessment_schema.sql* .
+COPY assessment_questions.sql* .
 
 # Копируем React build для раздачи статики
 COPY build/ ./build/
 
-# Скрипт запуска
-COPY docker-entrypoint.sh .
-RUN chmod +x docker-entrypoint.sh
+# Скрипт запуска (копируем, но не используем как ENTRYPOINT)
+COPY docker-entrypoint.sh* .
+RUN if [ -f docker-entrypoint.sh ]; then chmod +x docker-entrypoint.sh; fi
 
 EXPOSE 4000
 
-# Запуск через entrypoint
-ENTRYPOINT ["./docker-entrypoint.sh"]
+# Запускаем напрямую Python, обходя проблемы с entrypoint
+CMD ["python", "server.py"]
