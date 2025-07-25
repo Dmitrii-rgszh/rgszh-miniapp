@@ -800,7 +800,7 @@ export default function AssessmentPage() {
 
       {/* ===== КНОПКА "ДАЛЕЕ" ===== */}
       {(currentStep <= 3 && !isProcessing && !isFinished && !isLoading) && (
-        <button className={`next-btn ${!canProceed() ? 'disabled' : ''}`}>
+        <button className={`next-btn ${!canGoNext() ? 'disabled' : ''}`}>
           <span className="shaker">
             <svg viewBox="0 0 24 24">
               <path d="M5 12H19M19 12L12 5M19 12L12 19" />
