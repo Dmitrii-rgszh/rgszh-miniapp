@@ -54,6 +54,17 @@ export default function AssessmentPage() {
   const [shuffledQuestions, setShuffledQuestions] = useState([]);
 
   const MAIN_QUESTIONNAIRE_ID = 1;
+  const getShakerClass = () => {
+  if (!canGoNext()) return 'shaker';
+  
+  // На последнем вопросе - галочка с анимацией pop
+  if (currentStep === 3 && currentQuestion === questions.length - 1) {
+    return 'shaker pop-btn';
+  }
+  
+  // Во всех остальных случаях - стрелка с анимацией shake
+  return 'shaker shake-btn';
+};
 
   // ===== СБРОС СОСТОЯНИЯ ПРИ МОНТИРОВАНИИ =====
   useEffect(() => {
@@ -160,24 +171,31 @@ export default function AssessmentPage() {
 
   // ===== АНИМАЦИЯ ВХОДА =====
   useEffect(() => {
-    if (!isLoading) {
+    // Устанавливаем isLoading = false для первого шага
+    if (currentStep === 1) {
+      setIsLoading(false);
+    }
+  
+    // Анимация появления элементов
+    if (currentStep === 1 || !isLoading) {
       const timer1 = setTimeout(() => {
         setLogoAnimated(true);
         if (logoRef.current) {
           logoRef.current.classList.add('animate-logo');
         }
       }, 100);
-      
+    
       const timer2 = setTimeout(() => {
         setContentAnimated(true);
+        console.log('✅ Content animated activated');
       }, 600);
-      
+    
       return () => {
         clearTimeout(timer1);
         clearTimeout(timer2);
       };
     }
-  }, [isLoading]);
+  }, [currentStep, isLoading]);
 
   // ===== TOUCH ОБРАБОТЧИКИ =====
   const handleTouchStart = (e) => {
@@ -503,7 +521,7 @@ export default function AssessmentPage() {
                     minHeight: '50px',
                     opacity: '1',
                     visibility: 'visible',
-                    fontSize: '180px',
+                    fontSize: '18px',
                     fontWeight: '400',
                     transform: 'scale(1)',
                     transformOrigin: 'center',
@@ -799,13 +817,23 @@ export default function AssessmentPage() {
       )}
 
       {/* ===== КНОПКА "ДАЛЕЕ" ===== */}
-      {(currentStep <= 3 && !isProcessing && !isFinished && !isLoading) && (
-        <button className={`next-btn ${!canGoNext() ? 'disabled' : ''}`}>
-          <span className="shaker">
-            <svg viewBox="0 0 24 24">
-              <path d="M5 12H19M19 12L12 5M19 12L12 19" />
-            </svg>
-          </span>
+      {(currentStep <= 3 && !isProcessing && !isFinished && (currentStep === 1 || !isLoading)) && (
+        <button 
+          className={`next-btn ${contentAnimated ? 'animate-next' : ''} ${isExiting ? 'animate-next-exit' : ''} ${!canGoNext() ? 'disabled' : ''}`}
+          onClick={canGoNext() ? handleNext : undefined}
+          disabled={!canGoNext()}
+        >
+          <div className={getShakerClass()}>
+            {currentStep === 3 && currentQuestion === questions.length - 1 ? (
+              <svg viewBox="0 0 24 24">
+                <path d="M20 6L9 17l-5-5" stroke="white" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            ) : (
+              <svg viewBox="0 0 24 24">
+                <path d="M9 18l6-6-6-6" stroke="white" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            )}
+          </div>
         </button>
       )}
 

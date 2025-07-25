@@ -407,13 +407,17 @@ class NSJCalculator:
             
             # 3. Определяем премию и страховую сумму (ИСПРАВЛЕННАЯ ЛОГИКА)
             if input_data.calculation_type == 'from_premium':
-                premium_amount = input_data.input_amount
-                insurance_sum = self._calculate_insurance_sum_from_premium(premium_amount, input_data.contract_term)
+              premium_amount = input_data.input_amount
+              insurance_sum = self._calculate_insurance_sum_from_premium(premium_amount, input_data.contract_term)
             else:  # from_sum
-                insurance_sum = input_data.input_amount
-                premium_amount = self._calculate_premium_from_sum(insurance_sum, input_data.contract_term)
-            
+              insurance_sum = input_data.input_amount
+              premium_amount = self._calculate_premium_from_sum(insurance_sum, input_data.contract_term)
+
             self.logger.info(f"💰 Премия: {premium_amount}, Страховая сумма: {insurance_sum}")
+
+            # ✅ НОВАЯ ПРОВЕРКА: Валидируем рассчитанную премию
+            if premium_amount < 100000:
+              raise ValueError(f"Рассчитанная премия ({premium_amount:,} руб.) меньше минимального взноса 100,000 руб. Увеличьте страховую сумму.")
             
             # 4. ИСПРАВЛЕННЫЕ основные расчеты (по логике Excel)
             cashback_rate = self._get_cashback_rate(input_data.contract_term)

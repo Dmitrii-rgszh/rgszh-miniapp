@@ -436,8 +436,6 @@ export default function CareFuturePage() {
       
       if (calcType === 'from_premium' && amount < 100000) {
         errors.amount = 'Минимальный взнос 100 000 рублей';
-      } else if (calcType === 'from_sum' && amount < 500000) {
-        errors.amount = 'Минимальная страховая сумма 500 000 рублей';
       }
       
       if (amount > 100000000) {
@@ -639,7 +637,7 @@ export default function CareFuturePage() {
       console.error('❌ Ошибка расчета НСЖ:', error);
       
       if (error.message.includes('400')) {
-        setValidationErrors({ general: 'Некорректные данные. Проверьте заполнение формы.' });
+        setValidationErrors({ general: 'Минимальный взнос ниже допустимого' });
       } else if (error.message.includes('500')) {
         setValidationErrors({ general: 'Ошибка сервера. Попробуйте позже.' });
       } else {
@@ -1165,7 +1163,7 @@ export default function CareFuturePage() {
                     calcType === 'from_premium' 
                       ? 'от 100 000 рублей' 
                       : calcType === 'from_sum' 
-                        ? 'от 500 000 рублей'
+                        ? 'Введите сумму'
                         : '1 000 000'
                   }
                   style={{

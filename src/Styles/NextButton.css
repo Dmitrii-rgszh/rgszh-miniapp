@@ -1,46 +1,19 @@
-/* ============================================================================
-   NextButton.css - ИСПРАВЛЕННЫЕ СТИЛИ КНОПКИ "ДАЛЕЕ" (БЕЗ ДЕРГАНЬЯ)
-   ----------------------------------------------------------------------------
-   ✅ ИСПРАВЛЕНО: Убрана бесконечная анимация дерганья
-   ✅ ИСПРАВЛЕНО: Заменена на плавную пульсацию
-   ✅ Центрирование по высоте с логотипом (справа от логотипа)
-   ✅ Адаптивность для 3 разрешений: >768px, 375-768px, <375px
-   ✅ Поддержка Safe Area для Telegram MiniApp
-   ✅ Корпоративные стили
-   ✅ Аналогично HomeButton.css, но справа
-   ============================================================================ */
-
-/* ======================================
-   БАЗОВЫЕ СТИЛИ КНОПКИ "ДАЛЕЕ"
-   ====================================== */
 .next-btn {
   position: absolute;
-  
-  /* Размеры кнопки */
   width: 64px;
   height: 64px;
-  
-  /* Запрет изменения размера */
   min-width: 64px;
   max-width: 64px;
   min-height: 64px;
   max-height: 64px;
-  flex-shrink: 0;
-  flex-grow: 0;
-  
-  /* Позиционирование - справа от логотипа с адаптивным отступом */
-  /* Desktop: логотип по центру (left: 50%), кнопка справа от него */
-  top: 87px; /* Центр по высоте с логотипом: 55 + 128/2 - 64/2 = 87px */
-  right: calc(50% - 128px - 50px); /* 50% - ширина_логотипа - отступ */
-  
-  /* Стили */
+  top: 87px;
+  right: calc(50% - 128px - 50px);
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 16px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-  
-  /* Центрирование иконки */
+
   display: flex;
   align-items: center;
   justify-content: center;
@@ -54,64 +27,26 @@
   padding: 0;
   margin: 0;
   outline: none;
-  text-decoration: none;
   box-sizing: border-box;
   
-  /* Начальное состояние для анимации */
+  /* Начальное состояние */
   opacity: 0;
-  transform: translateX(0px);
+  transform: translateX(0);
 }
-
-/* ======================================
-   ИКОНКА ВНУТРИ КНОПКИ
-   ====================================== */
-.next-btn svg {
-  width: 28px;
-  height: 28px;
-  stroke: white;
-  fill: none;
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  pointer-events: none;
-  transition: transform 0.2s ease;
-}
-
-/* ======================================
-   СОСТОЯНИЯ И АНИМАЦИИ
-   ====================================== */
 
 /* Анимация появления */
 .next-btn.animate-next {
   opacity: 1;
   transform: translateX(0);
-  animation: none;
-}
-
-@keyframes nextButtonSlideIn {
-  from {
-    opacity: 0;
-    transform: translateX(50px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
 }
 
 /* Анимация выхода */
 .next-btn.animate-next-exit {
-  animation: nextButtonSlideOut 0.6s cubic-bezier(0.65, 0.05, 0.36, 1) forwards;
+  opacity: 0;
+  transform: translateX(50px);
 }
 
-@keyframes nextButtonSlideOut {
-  to {
-    opacity: 0;
-    transform: translateX(50px);
-  }
-}
-
-/* Состояние неактивной кнопки */
+/* Неактивная кнопка */
 .next-btn.disabled {
   opacity: 0.4;
   cursor: not-allowed;
@@ -122,22 +57,17 @@
 .next-btn:hover:not(.disabled) {
   background: rgba(255, 255, 255, 0.15);
   border-color: rgba(255, 255, 255, 0.3);
-  transform: translateX(0) scale(1.05);
+  transform: scale(1.05);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
-}
-
-.next-btn:hover:not(.disabled) svg {
-  transform: scale(1.1);
 }
 
 /* Active состояние */
 .next-btn:active:not(.disabled) {
-  transform: translateX(0) scale(0.95);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  transform: scale(0.95);
 }
 
 /* ======================================
-   КОНТЕЙНЕР ДЛЯ АНИМАЦИИ ИКОНКИ - ИСПРАВЛЕНО
+   КОНТЕЙНЕР ДЛЯ ИКОНКИ
    ====================================== */
 .shaker {
   display: flex;
@@ -148,85 +78,70 @@
 }
 
 /* ======================================
-   ИСПРАВЛЕННЫЕ АНИМАЦИИ - БЕЗ ДЕРГАНЬЯ
+   SVG ИКОНКА
+   ====================================== */
+.next-btn svg {
+  width: 24px;
+  height: 24px;
+  stroke: white;
+  fill: none;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+
+/* ======================================
+   АНИМАЦИИ ИКОНКИ
    ====================================== */
 
-/* ИСПРАВЛЕНО: Плавная пульсация вместо дерганья */
-@keyframes subtlePulse {
+/* Анимация для стрелки */
+@keyframes pulseArrow {
   0%, 100% { 
-    transform: scale(1); 
-    opacity: 1;
+    transform: translateX(0);
   }
   50% { 
-    transform: scale(1.05); 
-    opacity: 0.9;
+    transform: translateX(5px);
   }
 }
 
-/* ИСПРАВЛЕНО: Убрана бесконечная тряска, добавлена плавная пульсация */
 .shaker.shake-btn {
-  animation: subtlePulse 2s ease-in-out infinite;
-  will-change: transform;
-  backface-visibility: hidden;
+  animation: pulseArrow 1.2s ease-in-out infinite;
 }
 
-/* ИСПРАВЛЕНО: Улучшенная анимация для галочки */
-@keyframes smoothPop {
+/* Анимация для галочки */  
+@keyframes pulseCheck {
   0%, 100% { 
-    transform: scale(1); 
+    transform: scale(1);
   }
   50% { 
-    transform: scale(1.1); 
+    transform: scale(1.1);
   }
 }
 
 .shaker.pop-btn {
-  animation: smoothPop 1.2s ease-in-out infinite;
-  will-change: transform;
-  backface-visibility: hidden;
-}
-
-/* ВАЖНО: Запрет на дополнительные анимации для SVG */
-.shaker.shake-btn svg,
-.shaker.pop-btn svg {
-  transform: none !important;
-  animation: none !important;
+  animation: pulseCheck 1.2s ease-in-out infinite;
 }
 
 /* ======================================
    АДАПТИВНОСТЬ: ПЛАНШЕТЫ (375-768px)
    ====================================== */
-@media (min-width: 375px) and (max-width: 768px) {
+@media (max-width: 768px) and (min-width: 375px) {
   .next-btn {
-    /* Размеры кнопки */
     width: 56px;
     height: 56px;
     min-width: 56px;
     max-width: 56px;
     min-height: 56px;
     max-height: 56px;
-    
-    /* Позиционирование - центр совпадает с логотипом */
-    /* Tablet: логотип top: 40px + height: 96px / 2 = 88px */
-    top: 82px; /* 88px - 56px/2 = 60px */
+    top: 82px;
     right: 24px;
-    
-    /* Стили */
     border-radius: 14px;
   }
   
   .next-btn svg {
-    width: 24px;
-    height: 24px;
-  }
-
-  /* ИСПРАВЛЕНО: Более мягкие анимации на планшетах */
-  .shaker.shake-btn {
-    animation: subtlePulse 2.5s ease-in-out infinite;
-  }
-
-  .shaker.pop-btn {
-    animation: smoothPop 1.5s ease-in-out infinite;
+    width: 22px;
+    height: 22px;
   }
 }
 
@@ -235,207 +150,46 @@
    ====================================== */
 @media (max-width: 374px) {
   .next-btn {
-    /* Размеры кнопки */
     width: 60px;
     height: 60px;
     min-width: 60px;
     max-width: 60px;
     min-height: 60px;
     max-height: 60px;
-    
-    /* Позиционирование - на маленьких экранах фиксированно справа */
-    /* Mobile: логотип top: 25px + height: 80px / 2 = 65px */
-    top: 82px; /* 65px - 48px/2 = 41px */
-    right: 20px; /* Фиксированный отступ на маленьких экранах */
-    
-    /* Стили */
+    top: 82px;
+    right: 20px;
     border-radius: 12px;
-    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.15);
   }
   
   .next-btn svg {
     width: 30px;
     height: 30px;
   }
-
-  /* ИСПРАВЛЕНО: Еще более мягкие анимации на мобильных */
-  .shaker.shake-btn {
-    animation: subtlePulse 3s ease-in-out infinite;
-  }
-
-  .shaker.pop-btn {
-    animation: smoothPop 2s ease-in-out infinite;
-  }
 }
 
 /* ======================================
-   SAFE AREA ПОДДЕРЖКА (Telegram MiniApp)
+   БОЛЬШИЕ ЭКРАНЫ
    ====================================== */
+@media (min-width: 1200px) {
+  .next-btn {
+    right: calc(50% - 200px) !important;
+  }
+}
+
 @supports (padding: max(0px)) {
   .next-btn {
-    right: max(30px, env(safe-area-inset-right, 30px));
+    right: max(120px, env(safe-area-inset-right, 70px));
   }
   
   @media (max-width: 768px) and (min-width: 375px) {
     .next-btn {
-      right: max(70px, env(safe-area-inset-left, 70px));
+      right: max(70px, env(safe-area-inset-right, 70px));
     }
   }
   
   @media (max-width: 374px) {
     .next-btn {
-      right: max(60px, env(safe-area-inset-left, 60px));
+      right: max(60px, env(safe-area-inset-right, 60px));
     }
   }
 }
-
-/* ======================================
-   СПЕЦИАЛЬНЫЕ ВАРИАНТЫ
-   ====================================== */
-
-/* Кнопка далее слева */
-.next-btn.left {
-  right: auto;
-  left: 30px;
-}
-
-@media (max-width: 768px) and (min-width: 375px) {
-  .next-btn.left {
-    left: 24px;
-  }
-}
-
-@media (max-width: 374px) {
-  .next-btn.left {
-    left: 20px;
-  }
-}
-
-/* ======================================
-   УТИЛИТАРНЫЕ КЛАССЫ
-   ====================================== */
-
-/* Скрытая кнопка */
-.next-btn.hidden {
-  opacity: 0;
-  pointer-events: none;
-}
-
-/* Кнопка без анимации */
-.next-btn.no-animation {
-  transition: none;
-  animation: none;
-}
-
-.next-btn.no-animation .shaker {
-  animation: none;
-}
-
-/* Альтернативные стили */
-.next-btn.primary {
-  background: linear-gradient(
-    135deg, 
-    rgba(180, 0, 55, 0.3) 0%, 
-    rgba(153, 0, 55, 0.3) 100%
-  );
-  border-color: rgba(180, 0, 55, 0.3);
-}
-
-.next-btn.primary:hover:not(.disabled) {
-  background: linear-gradient(
-    135deg, 
-    rgba(180, 0, 55, 0.5) 0%, 
-    rgba(153, 0, 55, 0.5) 100%
-  );
-  border-color: rgba(180, 0, 55, 0.5);
-}
-
-/* ======================================
-   АДАПТИВНОСТЬ ДЛЯ БОЛЬШИХ ЭКРАНОВ
-   ====================================== */
-/* Очень большие экраны (>1400px) */
-@media (min-width: 1400px) {
-  .next-btn {
-    /* Максимальное расстояние от центра */
-    right: calc(50% - 200px);
-  }
-}
-
-/* Широкие экраны (1200-1400px) */
-@media (min-width: 1200px) and (max-width: 1399px) {
-  .next-btn {
-    right: calc(50% - 180px);
-  }
-}
-
-/* Средние экраны (992-1199px) */
-@media (min-width: 992px) and (max-width: 1199px) {
-  .next-btn {
-    right: calc(50% - 160px);
-  }
-}
-
-/* ======================================
-   ПОЗИЦИОНИРОВАНИЕ ДЛЯ РАЗНЫХ СТРАНИЦ
-   ====================================== */
-
-/* Для страниц с логотипом наверху */
-.with-top-logo .next-btn {
-  /* Desktop позиции уже установлены выше */
-}
-
-/* Для страниц без логотипа */
-.no-logo .next-btn {
-  top: 30px;
-}
-
-@media (max-width: 768px) and (min-width: 375px) {
-  .no-logo .next-btn {
-    top: 24px;
-  }
-}
-
-@media (max-width: 374px) {
-  .no-logo .next-btn {
-    top: 20px;
-  }
-}
-
-/* ======================================
-   ДОПОЛНИТЕЛЬНЫЕ УЛУЧШЕНИЯ
-   ====================================== */
-
-/* Поддержка webkit браузеров */
-@-webkit-keyframes subtlePulse {
-  0%, 100% { 
-    -webkit-transform: scale(1); 
-    transform: scale(1);
-    opacity: 1;
-  }
-  50% { 
-    -webkit-transform: scale(1.05); 
-    transform: scale(1.05);
-    opacity: 0.9;
-  }
-}
-
-@-webkit-keyframes smoothPop {
-  0%, 100% { 
-    -webkit-transform: scale(1); 
-    transform: scale(1);
-  }
-  50% { 
-    -webkit-transform: scale(1.1); 
-    transform: scale(1.1);
-  }
-}
-
-/* Улучшение производительности */
-.shaker {
-  perspective: 1000px;
-}
-
-/* ============================================================================
-   КОНЕЦ ФАЙЛА - ВСЕ ИСПРАВЛЕНИЯ ПРИМЕНЕНЫ
-   ============================================================================ */
-
