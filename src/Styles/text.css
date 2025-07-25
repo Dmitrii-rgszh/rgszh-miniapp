@@ -430,8 +430,8 @@
     --text-size-h1: 24px;
     --text-size-h2: 20px;
     --text-size-h3: 16px;
-    --text-size-body: 14px;
-    --text-size-small: 12px;
+    --text-size-body: 16px;
+    --text-size-small: 16px;
   }
   
   .text-greeting {

@@ -503,7 +503,7 @@ export default function AssessmentPage() {
                     minHeight: '50px',
                     opacity: '1',
                     visibility: 'visible',
-                    fontSize: '18px',
+                    fontSize: '180px',
                     fontWeight: '400',
                     transform: 'scale(1)',
                     transformOrigin: 'center',
@@ -800,24 +800,12 @@ export default function AssessmentPage() {
 
       {/* ===== КНОПКА "ДАЛЕЕ" ===== */}
       {(currentStep <= 3 && !isProcessing && !isFinished && !isLoading) && (
-        <button 
-          className={`next-btn ${contentAnimated ? 'animate-next' : ''} ${isExiting ? 'animate-next-exit' : ''} ${!canGoNext() ? 'disabled' : ''}`}
-          onClick={canGoNext() ? handleNext : undefined}
-          onTouchStart={handleTouchStart}
-          onTouchEnd={canGoNext() ? (e) => handleTouchEnd(e, handleNext) : undefined}
-          disabled={!canGoNext()}
-        >
-          <div className={canGoNext() ? (currentStep === 3 && currentQuestion === questions.length - 1 ? 'shaker pop-btn' : 'shaker shake-btn') : 'shaker'}>
-            {currentStep === 3 && currentQuestion === questions.length - 1 ? (
-              <svg viewBox="0 0 24 24">
-                <path d="M20 6L9 17l-5-5"/>
-              </svg>
-            ) : (
-              <svg viewBox="0 0 24 24">
-                <path d="M9 18l6-6-6-6"/>
-              </svg>
-            )}
-          </div>
+        <button className={`next-btn ${!canProceed() ? 'disabled' : ''}`}>
+          <span className="shaker">
+            <svg viewBox="0 0 24 24">
+              <path d="M5 12H19M19 12L12 5M19 12L12 19" />
+            </svg>
+          </span>
         </button>
       )}
 
