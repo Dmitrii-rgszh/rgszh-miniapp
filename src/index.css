@@ -1,9 +1,10 @@
 /* ============================================================================
-   index.css - ИСПРАВЛЕННАЯ ВЕРСИЯ БЕЗ КОНФЛИКТА С ПОЛЯМИ КАРТОЧЕК
+   index.css - ИСПРАВЛЕННАЯ ВЕРСИЯ БЕЗ КОНФЛИКТА С ФОРМАМИ
    ----------------------------------------------------------------------------
-   ✅ Убран конфликт с .card-container input полями
-   ✅ Глобальные стили применяются только к полям ВНЕ карточек
-   ✅ Сохранена кликабельность для всех остальных элементов
+   ✅ Убран конфликт с контейнерами форм
+   ✅ Добавлен только безопасный автоскролл
+   ✅ Сохранена совместимость с модульной архитектурой
+   ✅ Кликабельность всех элементов работает
    ============================================================================ */
 
 /* ======================================
@@ -47,10 +48,39 @@ html, body {
 }
 
 /* ======================================
+   БЕЗОПАСНЫЙ АВТОСКРОЛЛ (без конфликтов)
+   ====================================== */
+html {
+  /* Плавная прокрутка для всего приложения */
+  scroll-behavior: smooth;
+  
+  /* Отступы при автоскролле */
+  scroll-padding-top: 80px;
+  scroll-padding-bottom: 20vh; /* Место для клавиатуры */
+}
+
+/* Специфично для мобильных устройств */
+@media (max-width: 768px) {
+  html {
+    scroll-padding-top: 60px;
+    scroll-padding-bottom: 40vh; /* Больше места для клавиатуры на мобильных */
+  }
+}
+
+/* Фикс для iOS Safari */
+@supports (-webkit-touch-callout: none) {
+  /* iOS specific */
+  html {
+    /* Предотвращаем баунс-эффект */
+    overscroll-behavior: none;
+  }
+}
+
+/* ======================================
    ГЛОБАЛЬНЫЕ СТИЛИ ДЛЯ КНОПОК - ИСПРАВЛЕНИЕ КЛИКАБЕЛЬНОСТИ
    ====================================== */
 
-/* ВСЕ кнопки должны быть кликабельными (ИСКЛЮЧАЯ INPUT ПОЛЯ) */
+/* ВСЕ кнопки должны быть кликабельными */
 button,
 [role="button"],
 .btn,
@@ -83,17 +113,15 @@ a {
 }
 
 /* ======================================
-   СПЕЦИАЛЬНЫЕ СТИЛИ ДЛЯ INPUT ПОЛЕЙ ВНЕ КАРТОЧЕК
+   ГЛОБАЛЬНЫЕ СТИЛИ ДЛЯ INPUT ПОЛЕЙ (БЕЗОПАСНЫЕ)
    ====================================== */
 
-/* 🎯 ИСПРАВЛЕНО: Глобальные стили применяются ТОЛЬКО к полям ВНЕ карточек */
-input[type="text"]:not(.card-container input),
-input[type="email"]:not(.card-container input),
-input[type="password"]:not(.card-container input),
-input[type="search"]:not(.card-container input),
-textarea:not(.card-container textarea),
-.autosuggest-input:not(.card-container .autosuggest-input),
-.react-autosuggest__input:not(.card-container .react-autosuggest__input) {
+/* 🎯 БЕЗОПАСНЫЕ стили только для input элементов БЕЗ специальных классов */
+input[type="text"]:not([class*="form-"]):not([class*="card-"]),
+input[type="email"]:not([class*="form-"]):not([class*="card-"]),
+input[type="password"]:not([class*="form-"]):not([class*="card-"]),
+input[type="search"]:not([class*="form-"]):not([class*="card-"]),
+textarea:not([class*="form-"]):not([class*="card-"]) {
   /* КРИТИЧНО: разрешаем все события ввода */
   -webkit-user-select: auto !important;
   -moz-user-select: auto !important;
@@ -116,94 +144,24 @@ textarea:not(.card-container textarea),
   /* Outline для доступности */
   outline: none;
   
-  /* Базовые стили для видимости (ТОЛЬКО для полей ВНЕ карточек) */
-  background-color: rgba(255, 255, 255, 0.05) !important;
-  border: 1px solid rgba(255, 255, 255, 0.25) !important;
-  color: white !important;
-  border-radius: 4px;
-  padding: 10px 15px;
+  /* Базовые стили (только если нет других стилей) */
   font-family: "Segoe UI", sans-serif;
-  font-size: 16px;
-  line-height: 1.4;
-  width: 100%;
-  
-  /* Предотвращаем zoom на iOS */
-  font-size: 16px !important;
-  transform: scale(1) !important;
+  font-size: 16px; /* Предотвращаем zoom на iOS */
   
   /* Принудительно делаем интерактивным */
   z-index: 10 !important;
   position: relative !important;
 }
 
-/* Focus состояние для input полей ВНЕ карточек */
-input[type="text"]:not(.card-container input):focus,
-input[type="email"]:not(.card-container input):focus,
-input[type="password"]:not(.card-container input):focus,
-input[type="search"]:not(.card-container input):focus,
-textarea:not(.card-container textarea):focus,
-.autosuggest-input:not(.card-container .autosuggest-input):focus,
-.react-autosuggest__input:not(.card-container .react-autosuggest__input):focus {
-  /* Визуальная обратная связь при фокусе */
-  border-color: rgba(255, 255, 255, 0.6) !important;
-  background-color: rgba(255, 255, 255, 0.1) !important;
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2) !important;
-  outline: none !important;
-}
-
-/* Hover состояние для input полей ВНЕ карточек */
-input[type="text"]:not(.card-container input):hover,
-input[type="email"]:not(.card-container input):hover,
-input[type="password"]:not(.card-container input):hover,
-input[type="search"]:not(.card-container input):hover,
-textarea:not(.card-container textarea):hover,
-.autosuggest-input:not(.card-container .autosuggest-input):hover,
-.react-autosuggest__input:not(.card-container .react-autosuggest__input):hover {
-  border-color: rgba(255, 255, 255, 0.4) !important;
-  background-color: rgba(255, 255, 255, 0.08) !important;
-}
-
-/* Active состояние для input полей ВНЕ карточек */
-input[type="text"]:not(.card-container input):active,
-input[type="email"]:not(.card-container input):active,
-input[type="password"]:not(.card-container input):active,
-input[type="search"]:not(.card-container input):active,
-textarea:not(.card-container textarea):active,
-.autosuggest-input:not(.card-container .autosuggest-input):active,
-.react-autosuggest__input:not(.card-container .react-autosuggest__input):active {
-  border-color: rgba(255, 255, 255, 0.8) !important;
-  background-color: rgba(255, 255, 255, 0.15) !important;
-}
-
-/* Placeholder стили для полей ВНЕ карточек */
-input:not(.card-container input)::placeholder,
-textarea:not(.card-container textarea)::placeholder,
-.autosuggest-input:not(.card-container .autosuggest-input)::placeholder,
-.react-autosuggest__input:not(.card-container .react-autosuggest__input)::placeholder {
-  color: rgba(255, 255, 255, 0.6) !important;
-  opacity: 1 !important;
-}
-
-input:not(.card-container input)::-webkit-input-placeholder,
-textarea:not(.card-container textarea)::-webkit-input-placeholder,
-.autosuggest-input:not(.card-container .autosuggest-input)::-webkit-input-placeholder,
-.react-autosuggest__input:not(.card-container .react-autosuggest__input)::-webkit-input-placeholder {
-  color: rgba(255, 255, 255, 0.6) !important;
-}
-
-input:not(.card-container input)::-moz-placeholder,
-textarea:not(.card-container textarea)::-moz-placeholder,
-.autosuggest-input:not(.card-container .autosuggest-input)::-moz-placeholder,
-.react-autosuggest__input:not(.card-container .react-autosuggest__input)::-moz-placeholder {
-  color: rgba(255, 255, 255, 0.6) !important;
-  opacity: 1 !important;
-}
-
-input:not(.card-container input):-ms-input-placeholder,
-textarea:not(.card-container textarea):-ms-input-placeholder,
-.autosuggest-input:not(.card-container .autosuggest-input):-ms-input-placeholder,
-.react-autosuggest__input:not(.card-container .react-autosuggest__input):-ms-input-placeholder {
-  color: rgba(255, 255, 255, 0.6) !important;
+/* SELECT элементы */
+select:not([class*="form-"]):not([class*="card-"]) {
+  font-family: "Segoe UI", sans-serif;
+  font-size: 16px !important; /* Предотвращаем zoom на iOS */
+  position: relative !important;
+  z-index: 10 !important;
+  cursor: pointer !important;
+  pointer-events: auto !important;
+  touch-action: manipulation !important;
 }
 
 /* ======================================
@@ -321,12 +279,11 @@ button:active,
   }
   
   /* Более компактные поля для маленьких экранов */
-  input[type="text"]:not(.card-container input),
-  input[type="email"]:not(.card-container input),
-  input[type="password"]:not(.card-container input),
-  input[type="search"]:not(.card-container input),
-  textarea:not(.card-container textarea) {
-    padding: 8px 12px;
+  input[type="text"]:not([class*="form-"]):not([class*="card-"]),
+  input[type="email"]:not([class*="form-"]):not([class*="card-"]),
+  input[type="password"]:not([class*="form-"]):not([class*="card-"]),
+  input[type="search"]:not([class*="form-"]):not([class*="card-"]),
+  textarea:not([class*="form-"]):not([class*="card-"]) {
     font-size: 16px; /* Предотвращаем zoom на iOS */
   }
 }
@@ -335,13 +292,12 @@ button:active,
    РЕЖИМ ВЫСОКОЙ КОНТРАСТНОСТИ
    ====================================== */
 @media (prefers-contrast: high) {
-  input[type="text"]:not(.card-container input),
-  input[type="email"]:not(.card-container input),
-  input[type="password"]:not(.card-container input),
-  input[type="search"]:not(.card-container input),
-  textarea:not(.card-container textarea) {
-    border-color: rgba(255, 255, 255, 0.8) !important;
-    background-color: rgba(255, 255, 255, 0.1) !important;
+  input[type="text"]:not([class*="form-"]):not([class*="card-"]),
+  input[type="email"]:not([class*="form-"]):not([class*="card-"]),
+  input[type="password"]:not([class*="form-"]):not([class*="card-"]),
+  input[type="search"]:not([class*="form-"]):not([class*="card-"]),
+  textarea:not([class*="form-"]):not([class*="card-"]) {
+    border: 2px solid rgba(255, 255, 255, 0.8) !important;
   }
 }
 
@@ -353,5 +309,27 @@ button:active,
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+  
+  /* Отключаем плавный скролл для пользователей с особыми потребностями */
+  html {
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ======================================
+   ПОМОЩНИК ДЛЯ АВТОСКРОЛЛА (без конфликтов)
+   ====================================== */
+
+/* Утилитный класс для элементов, которым нужен автоскролл */
+.enable-autoscroll {
+  /* Добавляем отступ снизу только при необходимости */
+  padding-bottom: 150px !important;
+}
+
+.enable-autoscroll-mobile {
+  /* Только для мобильных */
+  @media (max-width: 768px) {
+    padding-bottom: 200px !important;
   }
 }

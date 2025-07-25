@@ -1,3 +1,6 @@
+/* ======================================
+   ОСНОВНЫЕ СТИЛИ КНОПКИ
+   ====================================== */
 .next-btn {
   position: absolute;
   width: 64px;
@@ -8,8 +11,18 @@
   max-height: 64px;
   top: 87px;
   right: calc(50% - 128px - 50px);
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
+  
+  /* ИСПРАВЛЕНИЕ: Базовый фон для старых браузеров */
+  background: rgba(255, 255, 255, 0.1) !important;
+  background-color: transparent !important;
+  
+  /* ИСПРАВЛЕНИЕ: Backdrop filter с префиксами и проверкой поддержки */
+  @supports (backdrop-filter: blur(10px)) or (-webkit-backdrop-filter: blur(10px)) {
+    background: rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+  }
+  
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 16px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
@@ -20,7 +33,7 @@
   
   /* Интерактивность */
   cursor: pointer;
-  z-index: 5;
+  z-index: 1000; /* Увеличен z-index */
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   
   /* Сброс стандартных стилей */
@@ -29,41 +42,108 @@
   outline: none;
   box-sizing: border-box;
   
+  /* ИСПРАВЛЕНИЕ: Аппаратное ускорение */
+  will-change: transform, opacity;
+  transform: translateX(0) translateZ(0);
+  -webkit-transform: translateX(0) translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  
   /* Начальное состояние */
   opacity: 0;
-  transform: translateX(0);
 }
 
-/* Анимация появления */
+/* ======================================
+   АНИМАЦИИ ПОЯВЛЕНИЯ/ИСЧЕЗНОВЕНИЯ
+   ====================================== */
+
+/* ИСПРАВЛЕНИЕ: Усиленная анимация появления */
 .next-btn.animate-next {
-  opacity: 1;
-  transform: translateX(0);
+  opacity: 1 !important;
+  transform: translateX(0) translateZ(0) !important;
+  -webkit-transform: translateX(0) translateZ(0) !important;
+  animation: nextButtonFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
+  -webkit-animation: nextButtonFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
+}
+
+@keyframes nextButtonFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(50px) translateZ(0);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) translateZ(0);
+  }
+}
+
+@-webkit-keyframes nextButtonFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(50px) translateZ(0);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) translateZ(0);
+  }
 }
 
 /* Анимация выхода */
 .next-btn.animate-next-exit {
-  opacity: 0;
-  transform: translateX(50px);
+  opacity: 0 !important;
+  transform: translateX(50px) translateZ(0) !important;
+  -webkit-transform: translateX(50px) translateZ(0) !important;
+  animation: nextButtonFadeOut 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
+  -webkit-animation: nextButtonFadeOut 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
 }
+
+@keyframes nextButtonFadeOut {
+  from {
+    opacity: 1;
+    transform: translateX(0) translateZ(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(50px) translateZ(0);
+  }
+}
+
+@-webkit-keyframes nextButtonFadeOut {
+  from {
+    opacity: 1;
+    transform: translateX(0) translateZ(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(50px) translateZ(0);
+  }
+}
+
+/* ======================================
+   СОСТОЯНИЯ КНОПКИ
+   ====================================== */
 
 /* Неактивная кнопка */
 .next-btn.disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-  pointer-events: none;
+  opacity: 0.4 !important;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
 }
 
 /* Hover эффект */
 .next-btn:hover:not(.disabled) {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.15) !important;
+  background-color: transparent !important;
   border-color: rgba(255, 255, 255, 0.3);
-  transform: scale(1.05);
+  transform: scale(1.05) translateZ(0);
+  -webkit-transform: scale(1.05) translateZ(0);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
 }
 
 /* Active состояние */
 .next-btn:active:not(.disabled) {
-  transform: scale(0.95);
+  transform: scale(0.95) translateZ(0);
+  -webkit-transform: scale(0.95) translateZ(0);
 }
 
 /* ======================================
@@ -75,17 +155,18 @@
   justify-content: center;
   width: 100%;
   height: 100%;
+  will-change: transform;
 }
 
 /* ======================================
    SVG ИКОНКА
    ====================================== */
 .next-btn svg {
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   stroke: white;
   fill: none;
-  stroke-width: 3;
+  stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
   pointer-events: none;
@@ -95,7 +176,7 @@
    АНИМАЦИИ ИКОНКИ
    ====================================== */
 
-/* Анимация для стрелки */
+/* ИСПРАВЛЕНИЕ: Усиленная анимация стрелки */
 @keyframes pulseArrow {
   0%, 100% { 
     transform: translateX(0);
@@ -105,8 +186,18 @@
   }
 }
 
+@-webkit-keyframes pulseArrow {
+  0%, 100% { 
+    transform: translateX(0);
+  }
+  50% { 
+    transform: translateX(5px);
+  }
+}
+
 .shaker.shake-btn {
-  animation: pulseArrow 1.2s ease-in-out infinite;
+  animation: pulseArrow 0.5s ease-in-out infinite !important;
+  -webkit-animation: pulseArrow 0.5s ease-in-out infinite !important;
 }
 
 /* Анимация для галочки */  
@@ -115,12 +206,22 @@
     transform: scale(1);
   }
   50% { 
-    transform: scale(1.1);
+    transform: scale(1.2);
+  }
+}
+
+@-webkit-keyframes pulseCheck {
+  0%, 100% { 
+    transform: scale(1);
+  }
+  50% { 
+    transform: scale(1.2);
   }
 }
 
 .shaker.pop-btn {
-  animation: pulseCheck 1.2s ease-in-out infinite;
+  animation: pulseCheck 1.0s ease-in-out infinite !important;
+  -webkit-animation: pulseCheck 1.0s ease-in-out infinite !important;
 }
 
 /* ======================================
@@ -137,6 +238,13 @@
     top: 82px;
     right: 24px;
     border-radius: 14px;
+    
+    /* Более плотный фон для мобильных */
+    background: rgba(255, 255, 255, 0.1) !important;
+    
+    @supports (backdrop-filter: blur(10px)) {
+      background: rgba(255, 255, 255, 0.15) !important;
+    }
   }
   
   .next-btn svg {
@@ -159,6 +267,13 @@
     top: 82px;
     right: 20px;
     border-radius: 12px;
+    
+    /* Более плотный фон для маленьких экранов */
+    background: rgba(255, 255, 255, 0.1) !important;
+    
+    @supports (backdrop-filter: blur(10px)) {
+      background: rgba(255, 255, 255, 0.1) !important;
+    }
   }
   
   .next-btn svg {
@@ -176,6 +291,9 @@
   }
 }
 
+/* ======================================
+   БЕЗОПАСНЫЕ ОТСТУПЫ ДЛЯ iPhone
+   ====================================== */
 @supports (padding: max(0px)) {
   .next-btn {
     right: max(120px, env(safe-area-inset-right, 70px));
@@ -192,4 +310,14 @@
       right: max(60px, env(safe-area-inset-right, 60px));
     }
   }
+}
+
+/* ======================================
+   ДОПОЛНИТЕЛЬНЫЕ ИСПРАВЛЕНИЯ ДЛЯ TELEGRAM
+   ====================================== */
+.next-btn {
+  -webkit-tap-highlight-color: transparent !important;
+  -webkit-touch-callout: none !important;
+  -webkit-user-select: none !important;
+  user-select: none !important;
 }

@@ -1,7 +1,6 @@
-// MainApp.js - ФИНАЛЬНАЯ ВЕРСИЯ С ИСПРАВЛЕНИЕМ INPUT ПОЛЕЙ
-// ✅ Исправлена логика автонавигации
-// ✅ Добавлена функция fixAllInputs для исправления кликабельности input полей
-// ✅ Убраны все логи и тестовые элементы
+// MainApp.js - ФИНАЛЬНАЯ ВЕРСИЯ БЕЗ ЛОГОВ
+// ✅ Добавлена система рандомных CSS анимаций фонов
+// ✅ Удалены все логи и отладочная информация
 // ✅ Готовая к продакшену версия
 
 import React, { useState, useEffect } from 'react';
@@ -18,6 +17,9 @@ import FeedbackPage    from './FeedbackPage';
 import JustincasePage  from './JustincasePage';
 import CareFuturePage  from './CareFuturePage';
 import MarzaPollPage   from './MarzaPollPage';
+
+// ===== ИМПОРТ CSS АНИМАЦИЙ ФОНОВ =====
+import './Styles/background-animations.css';
 
 // ===== ИМПОРТ ФОНОВЫХ ИЗОБРАЖЕНИЙ =====
 let backgroundImage1, backgroundImage2, backgroundImage3, backgroundImage4;
@@ -62,6 +64,18 @@ const availableBackgrounds = [
 if (availableBackgrounds.length === 0) {
   availableBackgrounds.push(null);
 }
+
+// ===== НАСТРОЙКИ РАНДОМНЫХ АНИМАЦИЙ =====
+const ANIMATION_TYPES = ['ken-burns', 'floating', 'tilt-3d', 'breathing'];
+
+// Функция для случайного выбора анимации (избегаем повторения)
+const getRandomAnimationType = (excludeType = null) => {
+  const availableTypes = excludeType 
+    ? ANIMATION_TYPES.filter(type => type !== excludeType)
+    : ANIMATION_TYPES;
+  
+  return availableTypes[Math.floor(Math.random() * availableTypes.length)];
+};
 
 // ===== ERROR BOUNDARY =====
 class ErrorBoundary extends React.Component {
@@ -148,7 +162,7 @@ function AutoNavigator({ children }) {
 
 // ===== ГЛАВНЫЙ КОМПОНЕНТ =====
 function MainApp() {
-  // ===== СОСТОЯНИЕ ДЛЯ ФОНОВ =====
+  // ===== СОСТОЯНИЕ ДЛЯ ФОНОВ И РАНДОМНЫХ АНИМАЦИЙ =====
   const [activeBackgroundIndex, setActiveBackgroundIndex] = useState(0);
   const [viewportHeight, setViewportHeight] = useState(window.innerHeight);
   const [backgroundOpacities, setBackgroundOpacities] = useState(
@@ -156,6 +170,21 @@ function MainApp() {
   );
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [imagesLoaded, setImagesLoaded] = useState(false);
+  
+  // Состояние для рандомных анимаций каждого фона
+  const [backgroundAnimations, setBackgroundAnimations] = useState(() => {
+    // Инициализируем рандомными анимациями для каждого фона
+    const animations = [];
+    let previousAnimation = null;
+    
+    for (let i = 0; i < availableBackgrounds.length; i++) {
+      const newAnimation = getRandomAnimationType(previousAnimation);
+      animations.push(newAnimation);
+      previousAnimation = newAnimation;
+    }
+    
+    return animations;
+  });
 
   // ===== RESIZE HANDLING =====
   useEffect(() => {
@@ -178,7 +207,57 @@ function MainApp() {
     };
   }, []);
 
-  // ===== ГЛОБАЛЬНОЕ ИСПРАВЛЕНИЕ КЛИКАБЕЛЬНОСТИ КНОПОК =====
+  // ===== УНИВЕРСАЛЬНЫЙ АВТОСКРОЛЛ =====
+  useEffect(() => {
+    const handleAutoScroll = (event) => {
+      const element = event.target;
+      const tagName = element.tagName.toUpperCase();
+      
+      if (['INPUT', 'SELECT', 'TEXTAREA'].includes(tagName)) {
+        setTimeout(() => {
+          const rect = element.getBoundingClientRect();
+          const viewportHeight = window.innerHeight;
+          const keyboardHeight = viewportHeight * 0.4;
+          const visibleAreaBottom = viewportHeight - keyboardHeight;
+          
+          if (rect.bottom > visibleAreaBottom || rect.top < 100) {
+            element.scrollIntoView({ 
+              behavior: 'smooth', 
+              block: 'center',
+              inline: 'nearest' 
+            });
+          }
+        }, 300);
+      }
+    };
+    
+    const handleSelectClick = (event) => {
+      const element = event.target;
+      if (element.tagName === 'SELECT' && /iPhone|iPad|iPod/.test(navigator.userAgent)) {
+        setTimeout(() => {
+          element.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center' 
+          });
+        }, 100);
+      }
+    };
+    
+    document.addEventListener('focusin', handleAutoScroll, true);
+    document.addEventListener('click', handleSelectClick, true);
+    
+    if ('ontouchstart' in window) {
+      document.addEventListener('touchstart', handleSelectClick, { passive: true });
+    }
+    
+    return () => {
+      document.removeEventListener('focusin', handleAutoScroll, true);
+      document.removeEventListener('click', handleSelectClick, true);
+      document.removeEventListener('touchstart', handleSelectClick);
+    };
+  }, []);
+
+  // ===== ГЛОБАЛЬНОЕ ИСПРАВЛЕНИЕ КЛИКАБЕЛЬНОСТИ =====
   useEffect(() => {
     const fixAllButtons = () => {
       const allButtons = document.querySelectorAll('button, [role="button"], .btn, .btn-universal, input[type="button"], input[type="submit"]');
@@ -186,7 +265,6 @@ function MainApp() {
       allButtons.forEach((button) => {
         if (button.dataset.globalFixed) return;
         
-        // ИСКЛЮЧАЕМ autosuggest input поля и обычные input поля
         if (button.classList.contains('autosuggest-input') || 
             button.classList.contains('react-autosuggest__input') ||
             button.type === 'text' || 
@@ -206,40 +284,10 @@ function MainApp() {
           WebkitTapHighlightColor: 'rgba(255, 255, 255, 0.2)'
         });
         
-        const originalOnClick = button.onclick;
-        const originalOnTouchEnd = button.ontouchend;
-        
-        const universalClickHandler = (e) => {
-          if (originalOnClick && typeof originalOnClick === 'function') {
-            originalOnClick.call(button, e);
-          }
-          
-          const reactProps = Object.keys(button).find(key => key.startsWith('__reactProps') || key.startsWith('__reactInternalInstance'));
-          if (reactProps && button[reactProps]?.onClick) {
-            button[reactProps].onClick(e);
-          }
-        };
-        
-        const touchHandler = (e) => {
-          if (originalOnTouchEnd && typeof originalOnTouchEnd === 'function') {
-            originalOnTouchEnd.call(button, e);
-            return;
-          }
-          
-          setTimeout(() => {
-            button.click();
-          }, 50);
-        };
-        
-        button.addEventListener('click', universalClickHandler, { passive: false });
-        button.addEventListener('touchend', touchHandler, { passive: false });
-        button.addEventListener('pointerup', universalClickHandler, { passive: false });
-        
         button.dataset.globalFixed = 'true';
       });
     };
 
-    // ===== НОВАЯ ФУНКЦИЯ ДЛЯ ИСПРАВЛЕНИЯ INPUT ПОЛЕЙ =====
     const fixAllInputs = () => {
       const allInputs = document.querySelectorAll('input[type="text"], input[type="email"], input[type="password"], input[type="search"], textarea, .autosuggest-input, .react-autosuggest__input');
       
@@ -254,77 +302,16 @@ function MainApp() {
           touchAction: 'manipulation',
           WebkitTouchCallout: 'auto',
           WebkitTapHighlightColor: 'rgba(255, 255, 255, 0.1)',
-          // Обеспечиваем правильную высоту z-index для кликабельности
           position: 'relative',
           zIndex: '10',
-          // Предотвращаем zoom на iOS
           fontSize: '16px',
           transform: 'scale(1)',
-          // Базовые стили для видимости
-          backgroundColor: 'rgba(255, 255, 255, 0.05)',
-          border: '1px solid rgba(255, 255, 255, 0.25)',
-          color: 'white',
-          borderRadius: '4px',
-          padding: '10px 15px',
-          fontFamily: '"Segoe UI", sans-serif',
-          lineHeight: '1.4',
-          width: '100%',
-          boxSizing: 'border-box'
         });
-
-        // Добавляем обработчики focus для улучшения UX
-        const handleFocus = () => {
-          Object.assign(input.style, {
-            borderColor: 'rgba(255, 255, 255, 0.6)',
-            backgroundColor: 'rgba(255, 255, 255, 0.1)',
-            boxShadow: '0 0 0 2px rgba(255, 255, 255, 0.2)',
-            outline: 'none'
-          });
-        };
-
-        const handleBlur = () => {
-          Object.assign(input.style, {
-            borderColor: 'rgba(255, 255, 255, 0.25)',
-            backgroundColor: 'rgba(255, 255, 255, 0.05)',
-            boxShadow: 'none'
-          });
-        };
-
-        const handleHover = () => {
-          if (document.activeElement !== input) {
-            Object.assign(input.style, {
-              borderColor: 'rgba(255, 255, 255, 0.4)',
-              backgroundColor: 'rgba(255, 255, 255, 0.08)'
-            });
-          }
-        };
-
-        const handleMouseLeave = () => {
-          if (document.activeElement !== input) {
-            Object.assign(input.style, {
-              borderColor: 'rgba(255, 255, 255, 0.25)',
-              backgroundColor: 'rgba(255, 255, 255, 0.05)'
-            });
-          }
-        };
-
-        // Удаляем старые обработчики если они есть
-        input.removeEventListener('focus', handleFocus);
-        input.removeEventListener('blur', handleBlur);
-        input.removeEventListener('mouseenter', handleHover);
-        input.removeEventListener('mouseleave', handleMouseLeave);
-
-        // Добавляем новые обработчики
-        input.addEventListener('focus', handleFocus, { passive: true });
-        input.addEventListener('blur', handleBlur, { passive: true });
-        input.addEventListener('mouseenter', handleHover, { passive: true });
-        input.addEventListener('mouseleave', handleMouseLeave, { passive: true });
         
         input.dataset.globalInputFixed = 'true';
       });
     };
 
-    // ===== ИНИЦИАЛИЗАЦИЯ И НАБЛЮДЕНИЕ =====
     const initialButtonTimer = setTimeout(fixAllButtons, 500);
     const initialInputTimer = setTimeout(fixAllInputs, 600);
     
@@ -335,7 +322,6 @@ function MainApp() {
       mutations.forEach((mutation) => {
         mutation.addedNodes.forEach((node) => {
           if (node.nodeType === 1) {
-            // Проверяем новые кнопки
             if (node.matches?.('button, [role="button"], .btn, .btn-universal, input[type="button"], input[type="submit"]')) {
               hasNewButtons = true;
             } else if (node.querySelectorAll) {
@@ -345,7 +331,6 @@ function MainApp() {
               }
             }
 
-            // Проверяем новые input поля
             if (node.matches?.('input[type="text"], input[type="email"], input[type="password"], input[type="search"], textarea, .autosuggest-input, .react-autosuggest__input')) {
               hasNewInputs = true;
             } else if (node.querySelectorAll) {
@@ -372,7 +357,6 @@ function MainApp() {
       subtree: true
     });
     
-    // Периодическое исправление
     const periodicButtonTimer = setInterval(fixAllButtons, 5000);
     const periodicInputTimer = setInterval(fixAllInputs, 5500);
     
@@ -414,6 +398,33 @@ function MainApp() {
       
       const nextIndex = (activeBackgroundIndex + 1) % availableBackgrounds.length;
       
+      // Обновляем анимацию для следующего фона
+      setBackgroundAnimations(prev => {
+        const newAnimations = [...prev];
+        // Получаем текущую анимацию активного фона, чтобы избежать повторения
+        const currentAnimation = prev[activeBackgroundIndex];
+        
+        // При завершении полного цикла фонов - перемешиваем все анимации
+        if (nextIndex === 0 && activeBackgroundIndex === availableBackgrounds.length - 1) {
+          // Создаем новый набор уникальных анимаций
+          const shuffledAnimations = [];
+          let lastAnimation = currentAnimation;
+          
+          for (let i = 0; i < availableBackgrounds.length; i++) {
+            const newAnim = getRandomAnimationType(lastAnimation);
+            shuffledAnimations.push(newAnim);
+            lastAnimation = newAnim;
+          }
+          
+          return shuffledAnimations;
+        }
+        
+        // Обычная смена анимации для следующего фона
+        newAnimations[nextIndex] = getRandomAnimationType(currentAnimation);
+        
+        return newAnimations;
+      });
+      
       setBackgroundOpacities(prev => 
         prev.map((opacity, index) => 
           index === nextIndex ? 1 : index === activeBackgroundIndex ? 0 : 0
@@ -430,6 +441,14 @@ function MainApp() {
     return () => clearTimeout(changeTimer);
   }, [imagesLoaded, activeBackgroundIndex]);
 
+  // ===== ФУНКЦИЯ ДЛЯ ПОЛУЧЕНИЯ CSS КЛАССОВ РАНДОМНОЙ АНИМАЦИИ =====
+  const getAnimationClass = (index) => {
+    const animationIndex = (index % 4) + 1; // Циклически от 1 до 4
+    const animationType = backgroundAnimations[index] || 'ken-burns'; // Fallback
+    
+    return `${animationType}-${animationIndex}`;
+  };
+
   // ===== СТИЛИ =====
   const mainContainerStyle = {
     position: 'relative',
@@ -444,25 +463,13 @@ function MainApp() {
     const opacity = backgroundOpacities[index] || 0;
     
     return {
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      width: '100vw',
-      height: '100vh',
       zIndex: -1,
       backgroundImage: backgroundSrc 
         ? `url(${backgroundSrc})` 
         : 'linear-gradient(135deg, rgb(180, 0, 55) 0%, rgb(153, 0, 55) 25%, rgb(152, 164, 174) 50%, rgb(118, 143, 146) 75%, rgb(0, 40, 130) 100%)',
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
-      backgroundRepeat: 'no-repeat',
-      backgroundAttachment: 'fixed',
       opacity: opacity,
       transition: isTransitioning ? 'opacity 2.0s ease-in-out' : 'none',
       willChange: isTransitioning ? 'opacity' : 'auto',
-      transform: 'translateZ(0)',
       pointerEvents: 'none'
     };
   };
@@ -477,15 +484,20 @@ function MainApp() {
   return (
     <ErrorBoundary>
       <div className="main-app-container" style={mainContainerStyle}>
-        {/* ===== ФОНОВЫЕ СЛОИ ===== */}
+        {/* ===== АНИМИРОВАННЫЕ ФОНОВЫЕ СЛОИ ===== */}
         {availableBackgrounds.map((backgroundSrc, index) => {
           const opacity = backgroundOpacities[index] || 0;
+          const animationClass = getAnimationClass(index);
+          
+          const fullClassName = `background-layer ${animationClass} ${isTransitioning ? 'transitioning' : ''} ${opacity > 0 ? 'active' : ''} ${!backgroundSrc ? 'gradient-fallback' : ''}`;
           
           return (
             <div
               key={`background-${index}`}
-              className={`background-layer ${isTransitioning ? 'transitioning' : ''} ${opacity > 0 ? 'active' : ''}`}
+              className={fullClassName}
               style={createBackgroundStyle(backgroundSrc, index)}
+              data-bg-index={index}
+              data-animation={animationClass}
             />
           );
         })}
@@ -514,6 +526,7 @@ function MainApp() {
 }
 
 export default MainApp;
+
 
 
 

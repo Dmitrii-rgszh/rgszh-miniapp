@@ -579,3 +579,53 @@
     font-size: 18px; /* Мобильные */
   }
 }
+
+/* Принудительное центрирование лейблов ФИО */
+.fio-label {
+  text-align: center !important;
+  display: block !important;
+  width: 100% !important;
+  margin: 0 auto !important;
+  color: #fff !important;
+  font-size: 16px !important;
+  font-weight: 500 !important;
+  font-family: 'Segoe UI', sans-serif !important;
+  margin-bottom: 8px !important;
+}
+
+/* Центрирование полей ввода */
+.fio-input {
+  text-align: center !important;
+  width: 100% !important;
+}
+
+/* Центрирование placeholder текста */
+.fio-input::placeholder {
+  text-align: center !important;
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+/* Центрирование заголовка формы */
+.fio-form-title {
+  text-align: center !important;
+  width: 100% !important;
+  margin-bottom: 20px !important;
+}
+
+/* Для всех лейблов в AssessmentPage */
+.assessment-page label {
+  text-align: center !important;
+  display: block !important;
+  width: 100% !important;
+}
+
+/* Медиа запросы для мобильных устройств */
+@media (max-width: 768px) {
+  .fio-label {
+    font-size: 16px !important;
+  }
+  
+  .fio-input {
+    font-size: 18px !important; /* Предотвращает zoom на iOS */
+  }
+}

@@ -4464,3 +4464,15 @@ AttributeError: '_io._WindowsConsoleIO' object has no attribute 'buffer'
 2025-07-25 13:40:58,636 - server - INFO - ✅ [CareFuture] Заявка от Тестов Тест отправлена
 2025-07-25 13:40:58,636 - server - INFO - 📤 POST /api/contact-manager -> 200
 2025-07-25 13:40:58,930 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-25 13:40:58] "POST /api/contact-manager HTTP/1.1" 200 402 3.938141
+2025-07-25 14:24:19,028 - server - INFO - 📨 OPTIONS /api/questionnaire/1 - 127.0.0.1
+2025-07-25 14:24:19,030 - server - INFO - 📤 OPTIONS /api/questionnaire/1 -> 200
+2025-07-25 14:24:19,032 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-25 14:24:19] "OPTIONS /api/questionnaire/1?include_questions=true HTTP/1.1" 200 405 0.007611
+2025-07-25 14:24:19,033 - server - INFO - 📨 OPTIONS /api/questionnaire/1 - 127.0.0.1
+2025-07-25 14:24:19,033 - server - INFO - 📤 OPTIONS /api/questionnaire/1 -> 200
+2025-07-25 14:24:19,033 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-25 14:24:19] "OPTIONS /api/questionnaire/1?include_questions=true HTTP/1.1" 200 405 0.000000
+2025-07-25 14:24:19,034 - server - INFO - 📨 GET /api/questionnaire/1 - 127.0.0.1
+2025-07-25 14:24:20,223 - server - INFO - 📤 GET /api/questionnaire/1 -> 200
+2025-07-25 14:24:20,518 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-25 14:24:20] "GET /api/questionnaire/1?include_questions=true HTTP/1.1" 200 8039 1.483538
+2025-07-25 14:24:20,519 - server - INFO - 📨 GET /api/questionnaire/1 - 127.0.0.1
+2025-07-25 14:24:21,399 - server - INFO - 📤 GET /api/questionnaire/1 -> 200
+2025-07-25 14:24:21,693 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-25 14:24:21] "GET /api/questionnaire/1?include_questions=true HTTP/1.1" 200 8039 1.175864
