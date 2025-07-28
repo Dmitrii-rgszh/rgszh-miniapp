@@ -1,54 +1,75 @@
-/* ============================================================================
-   cards.css - ИСПРАВЛЕННАЯ ВЕРСИЯ ДЛЯ ПОЛЕЙ ВВОДА В КАРТОЧКАХ
-   ----------------------------------------------------------------------------
-   ✅ Повышена специфичность CSS для переопределения глобальных стилей
-   ✅ Добавлены !important флаги для критических стилей
-   ✅ Исправлен конфликт с index.css
-   ============================================================================ */
+/* cards.css - УПРОЩЕННАЯ ВЕРСИЯ
+   ======================================
+   ✅ Убраны сложные вложенные z-index
+   ✅ Упрощены анимации
+   ✅ Исправлены проблемы с перекрытием кнопок
+   ====================================== */
 
 /* ======================================
-   БАЗОВАЯ КАРТОЧКА
+   ОСНОВНЫЕ СТИЛИ КАРТОЧЕК
    ====================================== */
 .card-container {
-  background: white;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border-radius: 20px;
-  padding: 30px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  padding: 24px;
   width: 100%;
-  max-width: 500px;
+  max-width: 400px;
   margin: 0 auto;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Анимированная карточка */
+.card-container.animated {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Выходящая карточка */
+.card-container.exiting {
+  opacity: 0;
+  transform: translateY(-20px);
+}
+
+/* Позиционированная карточка */
+.card-container.card-positioned {
   position: relative;
-  overflow: visible;
-  box-sizing: border-box;
+  margin-top: 180px;
 }
 
 /* ======================================
-   ПОЗИЦИОНИРОВАНИЕ КАРТОЧКИ
+   СТРУКТУРА КАРТОЧКИ
    ====================================== */
-.card-container.card-positioned {
-  position: absolute;
-  top: 200px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 90%;
-  max-width: 500px;
-  z-index: 10;
+.card-header {
+  text-align: center;
+  margin-bottom: 24px;
 }
 
-/* Карточка на всю высоту */
-.card-container.full-height {
-  height: calc(100vh - 200px);
+.card-content {
   display: flex;
   flex-direction: column;
+  gap: 16px;
 }
 
-/* Прокручиваемое содержимое */
+.card-footer {
+  margin-top: 24px;
+  display: flex;
+  justify-content: center;
+}
+
+/* ======================================
+   ПРОКРУЧИВАЕМАЯ КАРТОЧКА
+   ====================================== */
 .card-container.scrollable {
-  max-height: calc(100vh - 200px);
+  max-height: calc(100vh - 240px);
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
-/* Пользовательский скроллбар */
 .card-container.scrollable::-webkit-scrollbar {
   width: 6px;
 }
@@ -63,495 +84,215 @@
   border-radius: 3px;
 }
 
-.card-container.scrollable::-webkit-scrollbar-thumb:hover {
-  background: rgba(180, 0, 55, 0.5);
-}
-
 /* ======================================
-   ТЕКСТОВЫЕ СТИЛИ НА БЕЛОМ ФОНЕ
+   ФОРМЫ В КАРТОЧКАХ
    ====================================== */
-.card-container .text-h1,
-.card-container .text-h2,
-.card-container .text-h3 {
-  color: rgb(0, 40, 130);
+.form-group {
+  margin-bottom: 16px;
 }
 
-.card-container .text-body {
-  color: rgb(118, 143, 146);
-}
-
-.card-container .text-label {
-  color: rgb(152, 164, 174);
-  font-weight: 500;
-}
-
-/* ======================================
-   ЭЛЕМЕНТЫ ФОРМЫ НА БЕЛОМ ФОНЕ - ИСПРАВЛЕНО
-   ====================================== */
-.card-container .form-label {
-  color: #2d3748;
+.form-label {
   display: block;
   margin-bottom: 8px;
-  font-weight: 500;
-  text-align: center !important;
+  color: #333;
+  font-weight: 600;
 }
 
-/* 🎯 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Увеличиваем специфичность и добавляем !important */
-html body .card-container .form-input,
-html body .card-container input[type="email"],
-html body .card-container input[type="text"],
-html body .card-container input[type="password"] {
-  width: 100% !important;
-  padding: 14px 18px !important;
-  background: #f0f2f5 !important;  /* 🎯 ПРИНУДИТЕЛЬНО УСТАНАВЛИВАЕМ СЕРЫЙ ФОН */
-  border: 2px solid #e3e7ee !important;
-  border-radius: 12px !important;
-  color: #333 !important;
-  font-size: 16px !important;
-  transition: all 0.3s ease !important;
-  text-align: center !important;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
-  
-  /* ИСПРАВЛЕНИЕ: Усиленная кликабельность */
-  position: relative !important;
-  z-index: 15 !important;
-  user-select: auto !important;
-  -webkit-user-select: auto !important;
-  pointer-events: auto !important;
-  cursor: text !important;
-  touch-action: manipulation !important;
-  -webkit-touch-callout: auto !important;
-  -webkit-tap-highlight-color: rgba(180, 0, 55, 0.1) !important;
-  
-  /* Предотвращение zoom на iOS */
-  font-size: 16px !important;
-  transform: scale(1) !important;
-  
-  /* Обеспечиваем видимость */
-  opacity: 1 !important;
-  visibility: visible !important;
-}
-
-/* 🎯 СОСТОЯНИЕ ФОКУСА - ПЕРЕОПРЕДЕЛЯЕМ ГЛОБАЛЬНЫЕ СТИЛИ */
-html body .card-container .form-input:focus,
-html body .card-container input[type="email"]:focus,
-html body .card-container input[type="text"]:focus,
-html body .card-container input[type="password"]:focus {
-  outline: none !important;
-  background: white !important;  /* 🎯 БЕЛЫЙ ФОН ПРИ ФОКУСЕ */
-  border-color: rgb(180, 0, 55) !important;  /* 🎯 КРАСНАЯ ГРАНИЦА */
-  box-shadow: 0 0 0 3px rgba(180, 0, 55, 0.1) !important;  /* 🎯 КРАСНОЕ СВЕЧЕНИЕ */
-}
-
-/* 🎯 СОСТОЯНИЕ HOVER */
-html body .card-container .form-input:hover,
-html body .card-container input[type="email"]:hover,
-html body .card-container input[type="text"]:hover,
-html body .card-container input[type="password"]:hover {
-  background: #e8ecf2 !important;  /* 🎯 ЧУТЬ ТЕМНЕЕ ПРИ НАВЕДЕНИИ */
-  border-color: #d1d9e0 !important;
-}
-
-/* Placeholder текст более заметный */
-html body .card-container .form-input::placeholder,
-html body .card-container input[type="email"]::placeholder,
-html body .card-container input[type="text"]::placeholder,
-html body .card-container input[type="password"]::placeholder {
-  color: #999 !important;
-  text-align: center !important;
-  opacity: 1 !important;
-  font-size: 15px !important;
-}
-
-/* Ошибочное состояние */
-html body .card-container .form-input.error,
-html body .card-container input[type="email"].error,
-html body .card-container input[type="text"].error,
-html body .card-container input[type="password"].error {
-  border-color: rgb(180, 0, 55) !important;
-  background: rgba(180, 0, 55, 0.05) !important;
-}
-
-/* === Для всех браузеров === */
-html body .card-container .form-input::-webkit-input-placeholder,
-html body .card-container input[type="email"]::-webkit-input-placeholder,
-html body .card-container input[type="text"]::-webkit-input-placeholder,
-html body .card-container input[type="password"]::-webkit-input-placeholder {
-  color: #999 !important;
-  text-align: center !important;
-  opacity: 1 !important;
-}
-
-html body .card-container .form-input::-moz-placeholder,
-html body .card-container input[type="email"]::-moz-placeholder,
-html body .card-container input[type="text"]::-moz-placeholder,
-html body .card-container input[type="password"]::-moz-placeholder {
-  color: #999 !important;
-  text-align: center !important;
-  opacity: 1 !important;
-}
-
-html body .card-container .form-input:-ms-input-placeholder,
-html body .card-container input[type="email"]:-ms-input-placeholder,
-html body .card-container input[type="text"]:-ms-input-placeholder,
-html body .card-container input[type="password"]:-ms-input-placeholder {
-  color: #999 !important;
-  text-align: center !important;
-  opacity: 1 !important;
-}
-
-html body .card-container .form-input:-moz-placeholder,
-html body .card-container input[type="email"]:-moz-placeholder,
-html body .card-container input[type="text"]:-moz-placeholder,
-html body .card-container input[type="password"]:-moz-placeholder {
-  color: #999 !important;
-  text-align: center !important;
-  opacity: 1 !important;
-}
-
-/* ======================================
-   СПЕЦИАЛЬНЫЕ СЕКЦИИ
-   ====================================== */
-.card-header {
-  text-align: center;
-  margin-bottom: 30px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid #f0f0f0;
-}
-
-.card-content {
-  flex: 1;
-  overflow-y: auto;
-}
-
-.card-footer {
-  margin-top: auto;
-  padding-top: 20px;
-  border-top: 1px solid #f0f0f0;
-}
-
-/* ======================================
-   СТАТУСЫ И СООБЩЕНИЯ
-   ====================================== */
-.card-container .form-error {
-  display: block;
-  margin-top: 5px;
-  color: rgb(180, 0, 55);
-  font-size: 14px;
-}
-
-.card-container .form-error-block {
-  padding: 12px;
-  background: rgba(180, 0, 55, 0.05);
-  border: 1px solid rgba(180, 0, 55, 0.2);
+.form-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #e3e7ee;
   border-radius: 8px;
-  color: rgb(180, 0, 55);
-  margin-bottom: 20px;
+  font-size: 14px;
+  background: #f5f7fa;
+  transition: all 0.2s ease;
+  outline: none;
 }
 
-.card-container .success-icon {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  background: rgba(76, 175, 80, 0.1);
-  color: #4CAF50;
-  font-size: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 30px;
+.form-input:focus {
+  border-color: rgb(180, 0, 55);
+  background: white;
+  box-shadow: 0 0 0 3px rgba(180, 0, 55, 0.1);
 }
 
-/* ======================================
-   АНИМАЦИИ
-   ====================================== */
-.card-container {
-  opacity: 0;
-  transform: translateY(30px);
-  animation: cardFadeIn 0.6s ease-out forwards;
-  animation-delay: 0.3s;
+.form-input.error {
+  border-color: #ff4444;
 }
 
-.card-container.card-positioned {
-  animation: none;
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
+.form-error {
+  display: block;
+  color: #ff4444;
+  font-size: 12px;
+  margin-top: 4px;
 }
 
-.card-container.card-positioned.animated {
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
-  transition: all 0.6s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.card-container.card-positioned:not(.animated) {
-  opacity: 0;
-  transform: translateX(-50%) translateY(30px);
-}
-
-@keyframes cardFadeIn {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.card-container.exiting {
-  animation: cardFadeOut 0.5s ease-in forwards;
-}
-
-.card-container.card-positioned.exiting {
-  animation: none;
-  opacity: 0;
-  transform: translateX(-50%) translateY(30px);
-  transition: all 0.5s ease-in;
-}
-
-@keyframes cardFadeOut {
-  to {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-}
-
-/* ======================================
-   ГРУППЫ ФОРМ
-   ====================================== */
-.card-container .form-group {
-  margin-bottom: 20px;
-  position: relative !important;
-  z-index: 5 !important;
-  pointer-events: auto !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-  display: block !important;
-  width: 100% !important;
-  box-sizing: border-box !important;
-}
-
-/* ======================================
-   ОБРАБОТКА И ЗАГРУЗКА
-   ====================================== */
-.card-container .processing-container {
+.form-error-block {
+  background: rgba(255, 68, 68, 0.1);
+  border: 1px solid rgba(255, 68, 68, 0.3);
+  border-radius: 8px;
+  padding: 12px;
+  color: #cc0000;
+  font-size: 14px;
+  margin-top: 16px;
   text-align: center;
-  padding: 40px;
 }
 
-.card-container .progress-spinner {
-  width: 60px;
-  height: 60px;
-  border: 4px solid rgba(180, 0, 55, 0.2);
-  border-top: 4px solid rgb(180, 0, 55);
+/* ======================================
+   ОБРАБОТКА И УСПЕХ
+   ====================================== */
+.processing-container,
+.success-container {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.progress-spinner {
+  width: 48px;
+  height: 48px;
+  border: 3px solid rgba(180, 0, 55, 0.1);
+  border-top-color: rgb(180, 0, 55);
   border-radius: 50%;
   animation: spin 1s linear infinite;
-  margin: 0 auto 30px;
+  margin: 0 auto 24px;
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  to { transform: rotate(360deg); }
 }
 
-/* ======================================
-   SUCCESS / УСПЕХ
-   ====================================== */
-.card-container .success-container {
-  text-align: center;
-  padding: 20px;
-}
-
-/* ======================================
-   НОВЫЕ СТИЛИ КАРУСЕЛИ
-   ====================================== */
-
-/* Контейнер карусели */
-.carousel-container {
-  position: relative;
-  padding-bottom: 80px;
-  min-height: 300px;
-}
-
-/* Контейнер навигации внизу */
-.carousel-navigation-bottom {
-  position: absolute;
-  bottom: 20px;
-  left: 0;
-  right: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 50px;
-}
-
-/* Стрелки навигации */
-.carousel-arrow {
-  position: absolute;
-  width: 40px;
-  height: 40px;
+.success-icon {
+  width: 64px;
+  height: 64px;
+  background: linear-gradient(135deg, rgb(180, 0, 55), rgb(153, 0, 55));
+  color: white;
+  font-size: 32px;
+  font-weight: bold;
   border-radius: 50%;
-  border: 2px solid rgba(180, 0, 55, 0.3);
-  background: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  outline: none;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  color: rgb(180, 0, 55);
-  padding: 0;
-  font-size: 0;
-  line-height: 0;
-}
-
-.carousel-arrow:hover:not(.hidden) {
-  border-color: rgb(180, 0, 55);
-  transform: scale(1.1);
-  box-shadow: 0 4px 12px rgba(180, 0, 55, 0.2);
-}
-
-.carousel-arrow:active:not(.hidden) {
-  transform: scale(0.95);
-}
-
-.carousel-arrow.hidden {
-  opacity: 0;
-  pointer-events: none;
-  cursor: default;
-}
-
-/* Позиционирование стрелок */
-.carousel-arrow-left {
-  left: 20px;
-}
-
-.carousel-arrow-right {
-  right: 20px;
-}
-
-/* SVG внутри стрелок */
-.carousel-arrow svg {
-  width: 20px;
-  height: 20px;
-  stroke: currentColor;
-  fill: none;
-}
-
-/* Контейнер точек */
-.carousel-dots {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-}
-
-/* Точки индикаторы */
-.carousel-dots .carousel-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: rgba(180, 0, 55, 0.3);
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  padding: 0;
-  outline: none;
-  font-size: 0;
-  line-height: 0;
-}
-
-.carousel-dots .carousel-dot.active {
-  background: rgb(180, 0, 55);
-  transform: scale(1.3);
-}
-
-.carousel-dots .carousel-dot:hover:not(.active) {
-  background: rgba(180, 0, 55, 0.5);
-  transform: scale(1.1);
-}
-
-/* Отступ для кнопки внизу */
-.carousel-container + .card-footer {
-  margin-top: 20px;
+  margin: 0 auto 24px;
 }
 
 /* ======================================
-   СТИЛИ КОНТЕНТА КАРУСЕЛИ
+   РЕЗУЛЬТАТЫ
    ====================================== */
-
-/* Результаты расчета */
 .result-items {
-  margin: 0px 0;
-  padding: 0 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .result-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 0;
-  border-bottom: 1px solid #e3e7ee;
-}
-
-.result-item:last-child {
-  border-bottom: none;
-}
-
-.result-item.highlight {
-  background: rgba(180, 0, 55, 0.05);
-  margin: 0 -20px;
-  padding-left: 20px;
-  padding-right: 20px;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.02);
   border-radius: 8px;
 }
 
+.result-item.highlight {
+  background: linear-gradient(135deg, rgba(180, 0, 55, 0.1), rgba(0, 40, 130, 0.1));
+  border: 1px solid rgba(180, 0, 55, 0.2);
+}
+
 .result-label {
-  font-family: 'Segoe UI', sans-serif;
-  flex: 1;
-  padding-right: 8px;
-  font-size: 18px;
   color: #666;
+  font-size: 14px;
+  flex: 1;
 }
 
 .result-value {
-  font-family: 'Segoe UI', sans-serif;
-  font-weight: 600;
-  font-size: 18px;
   color: #333;
+  font-size: 16px;
+  font-weight: 600;
+  text-align: right;
 }
 
-.result-item.highlight .result-value {
-  color: rgb(180, 0, 55);
-  font-size: 18px;
+/* ======================================
+   КАРУСЕЛЬ
+   ====================================== */
+.carousel-container {
+  position: relative;
+  padding-bottom: 60px;
 }
 
-/* Список сервисов */
+.carousel-navigation-bottom {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 16px;
+}
+
+.carousel-arrow {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.carousel-arrow:hover {
+  background: rgba(180, 0, 55, 0.1);
+  border-color: rgba(180, 0, 55, 0.3);
+}
+
+.carousel-dots {
+  display: flex;
+  gap: 8px;
+}
+
+.carousel-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.2);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.carousel-dot.active {
+  background: rgb(180, 0, 55);
+  width: 24px;
+  border-radius: 4px;
+}
+
+/* ======================================
+   СЕРВИСЫ
+   ====================================== */
 .services-list {
-  margin: 20px 0;
-  padding: 0 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .service-item {
   display: flex;
-  align-items: flex-start;
   gap: 16px;
-  margin-bottom: 20px;
   padding: 16px;
-  background: #f5f7fa;
+  background: rgba(0, 0, 0, 0.02);
   border-radius: 12px;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
 }
 
 .service-item:hover {
-  background: #e8ecf2;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  background: rgba(180, 0, 55, 0.05);
 }
 
 .service-icon {
-  font-size: 28px;
-  line-height: 1;
+  font-size: 32px;
   flex-shrink: 0;
 }
 
@@ -560,183 +301,74 @@ html body .card-container input[type="password"]:-moz-placeholder {
 }
 
 .service-title {
-  font-family: 'Segoe UI', sans-serif;
-  font-weight: 600;
   font-size: 16px;
+  font-weight: 600;
   color: #333;
-  margin: 0 0 4px 0;
+  margin-bottom: 4px;
 }
 
 .service-description {
-  font-family: 'Segoe UI', sans-serif;
   font-size: 14px;
   color: #666;
-  margin: 0;
   line-height: 1.4;
 }
 
-/* Заголовок карусели */
-.carousel-container .text-h2 {
-  margin-bottom: 24px;
-}
-
 /* ======================================
-   АДАПТИВНОСТЬ
+   АДАПТИВНОСТЬ: ПЛАНШЕТЫ (375-768px)
    ====================================== */
-/* Планшеты (375-768px) */
 @media (max-width: 768px) and (min-width: 375px) {
   .card-container {
     padding: 20px;
-    border-radius: 16px;
+    max-width: calc(100% - 48px);
   }
   
   .card-container.card-positioned {
-    top: 170px;
-    width: calc(100% - 40px);
-    max-width: 450px;
-  }
-  
-  .card-container.full-height {
-    height: calc(100vh - 180px);
-  }
-  
-  .card-container.scrollable {
-    max-height: calc(100vh - 180px);
+    margin-top: 160px;
   }
   
   .card-header {
     margin-bottom: 20px;
-    padding-bottom: 15px;
   }
   
-  /* Карусель */
-  .carousel-navigation-bottom {
-    bottom: 15px;
-  }
-  
-  .carousel-arrow {
-    width: 36px;
-    height: 36px;
-  }
-  
-  .carousel-arrow svg {
-    width: 18px;
-    height: 18px;
+  .form-group {
+    margin-bottom: 12px;
   }
 }
 
-/* Мобильные (<375px) */
+/* ======================================
+   АДАПТИВНОСТЬ: МОБИЛЬНЫЕ (<375px)
+   ====================================== */
 @media (max-width: 374px) {
   .card-container {
     padding: 16px;
-    border-radius: 12px;
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+    max-width: calc(100% - 32px);
+    border-radius: 16px;
   }
   
   .card-container.card-positioned {
-    top: 170px;
-    width: calc(100% - 30px);
-    max-width: 100%;
-  }
-  
-  .card-container.full-height {
-    height: calc(100vh - 160px);
-  }
-  
-  .card-container.scrollable {
-    max-height: calc(100vh - 160px);
+    margin-top: 140px;
   }
   
   .card-header {
     margin-bottom: 16px;
-    padding-bottom: 12px;
   }
   
-  .card-container .text-h1 {
-    font-size: 24px;
+  .form-group {
+    margin-bottom: 12px;
   }
   
-  .card-container .text-h2 {
-    font-size: 20px;
-  }
-  
-  .card-container .text-body {
-    font-size: 14px;
-  }
-  
-  /* Карусель */
-  .carousel-navigation-bottom {
-    bottom: 10px;
-  }
-  
-  .carousel-arrow {
-    width: 32px;
-    height: 32px;
-  }
-  
-  .carousel-arrow-left {
-    left: 10px;
-  }
-  
-  .carousel-arrow-right {
-    right: 10px;
-  }
-  
-  .carousel-arrow svg {
-    width: 16px;
-    height: 16px;
-  }
-  
-  .carousel-dots .carousel-dot {
-    width: 10px;
-    height: 10px;
-  }
-  
-  .carousel-dots {
-    gap: 16px;
-  }
-  
-  /* Контент карусели */
-  .result-items,
-  .services-list {
-    padding: 0 16px;
-  }
-  
-  .result-item.highlight {
-    margin: 0 -16px;
-    padding-left: 16px;
-    padding-right: 16px;
-  }
-  
-  .result-label {
-    font-size: 14px;
-    flex: 1;
-    padding-right: 8px
+  .result-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
   }
   
   .result-value {
-    font-size: 15px;
-    text-align: right;
-  }
-  
-  .result-item.highlight .result-value {
-    font-size: 17px;
+    text-align: left;
   }
   
   .service-item {
-    padding: 12px;
-    gap: 12px;
-  }
-  
-  .service-icon {
-    font-size: 24px;
-  }
-  
-  .service-title {
-    font-size: 15px;
-  }
-  
-  .service-description {
-    font-size: 13px;
+    flex-direction: column;
+    text-align: center;
   }
 }

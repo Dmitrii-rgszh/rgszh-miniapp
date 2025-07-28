@@ -22,6 +22,7 @@
   z-index: 1;
 }
 
+
 /* ======================================
    КОНТЕЙНЕР ДЛЯ КНОПОК
    ====================================== */
@@ -256,48 +257,6 @@
     padding: 12px;
     gap: 10px;
   }
-}
-
-/* ======================================
-   СОСТОЯНИЯ АНИМАЦИИ КОНТЕЙНЕРОВ
-   ====================================== */
-
-/* Начальное состояние контейнера кнопок */
-.button-container {
-  opacity: 0;
-  transform: translateX(-50%) translateY(30px);
-}
-
-/* Анимация появления контейнера */
-.button-container.animated {
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
-  transition: all 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.3s;
-}
-
-.button-container.with-logo {
-  transform: translateX(-50%);
-}
-
-.button-container.with-logo.animated {
-  opacity: 1;
-  transform: translateX(-50%);
-}
-
-/* Анимация выхода */
-.main-container.exiting {
-  opacity: 0;
-  transition: opacity 0.8s ease-in-out;
-}
-
-.button-container.exiting {
-  opacity: 0;
-  transform: translateX(-50%) translateY(50px);
-  transition: all 0.6s ease-in-out;
-}
-
-.button-container.with-logo.exiting {
-  transform: translateX(-50%) translateY(50px);
 }
 
 /* ======================================
@@ -536,4 +495,20 @@
 
 .z-modal {
   z-index: 1000;
+}
+
+/* ======================================
+   ФИКС КЛИКАБЕЛЬНОСТИ ДЛЯ МОБИЛЬНЫХ
+   ====================================== */
+.card-container,
+.logo-wrapper,
+.next-btn,
+.back-btn,
+.home-btn,
+button,
+input,
+select,
+textarea,
+a {
+  pointer-events: auto !important;
 }

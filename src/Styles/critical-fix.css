@@ -1,0 +1,164 @@
+/* critical-fix.css - КРИТИЧЕСКИЙ ФИКС ДЛЯ КНОПОК
+   ================================================
+   Добавьте этот файл в src/Styles/
+   И подключите в index.js ПОСЛЕ всех остальных стилей:
+   import './Styles/critical-fix.css';
+   ================================================ */
+
+/* 1. ПРИНУДИТЕЛЬНО ОПУСКАЕМ ВСЕ ФОНЫ */
+.main-app-container > div[style*="position: fixed"],
+.main-app-container > div[style*="backgroundImage"],
+div[style*="position: fixed"][style*="backgroundImage"],
+.background-layer {
+  z-index: -100 !important;
+  pointer-events: none !important;
+  position: fixed !important;
+}
+
+/* 2. ГАРАНТИРУЕМ ЧТО КОНТЕНТ СВЕРХУ */
+.main-content-container {
+  position: relative !important;
+  z-index: 50 !important;
+  pointer-events: auto !important;
+}
+
+/* 3. ВСЕ ИНТЕРАКТИВНЫЕ ЭЛЕМЕНТЫ ДОЛЖНЫ БЫТЬ КЛИКАБЕЛЬНЫМИ */
+.next-btn,
+.back-btn,
+.btn-universal,
+.option-button,
+button,
+input,
+select,
+textarea,
+a,
+[role="button"] {
+  position: relative !important;
+  z-index: 100 !important;
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  -webkit-tap-highlight-color: transparent !important;
+  touch-action: manipulation !important;
+}
+
+/* 4. КАРТОЧКИ И ФОРМЫ ТОЖЕ ДОЛЖНЫ БЫТЬ СВЕРХУ */
+.card-container,
+.form-group,
+.form-input,
+.modal,
+.popup {
+  position: relative !important;
+  z-index: 60 !important;
+  pointer-events: auto !important;
+}
+
+/* 5. СПЕЦИАЛЬНЫЙ ФИКС ДЛЯ КНОПОК НАВИГАЦИИ */
+.next-btn,
+.back-btn {
+  /* Делаем их fixed для гарантии */
+  position: fixed !important;
+  z-index: 200 !important;
+  
+  /* Убираем все возможные блокировки */
+  pointer-events: auto !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: flex !important;
+  
+  /* Увеличиваем область клика */
+  padding: 0 !important;
+  margin: 0 !important;
+  
+  /* Отключаем все фильтры */
+  filter: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  
+  /* Принудительный курсор */
+  cursor: pointer !important;
+}
+
+/* 6. ФИКС ДЛЯ INPUT ПОЛЕЙ */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="tel"],
+input[type="search"],
+textarea,
+select {
+  position: relative !important;
+  z-index: 110 !important;
+  pointer-events: auto !important;
+  cursor: text !important;
+  -webkit-user-select: text !important;
+  user-select: text !important;
+}
+
+/* 7. ОТЛАДОЧНАЯ ПОДСВЕТКА (включается добавлением класса debug-mode к body) */
+body.debug-mode .next-btn,
+body.debug-mode .back-btn {
+  border: 3px solid lime !important;
+  box-shadow: 0 0 20px lime !important;
+}
+
+body.debug-mode button {
+  outline: 2px solid yellow !important;
+  outline-offset: 2px !important;
+}
+
+body.debug-mode input,
+body.debug-mode select {
+  outline: 2px solid cyan !important;
+  outline-offset: 2px !important;
+}
+
+/* 8. МОБИЛЬНЫЕ УСТРОЙСТВА - ДОПОЛНИТЕЛЬНЫЕ ФИКСЫ */
+@media (max-width: 768px) {
+  /* Убираем все transform которые могут ломать z-index */
+  .main-app-container,
+  .main-content-container,
+  .card-container {
+    transform: none !important;
+    -webkit-transform: none !important;
+  }
+  
+  /* Еще больше поднимаем кнопки на мобильных */
+  .next-btn,
+  .back-btn {
+    z-index: 9999 !important;
+  }
+}
+
+/* 9. УБИРАЕМ ВОЗМОЖНЫЕ ПЕРЕКРЫТИЯ ОТ :before и :after */
+*::before,
+*::after {
+  pointer-events: none !important;
+}
+
+button::before,
+button::after,
+.next-btn::before,
+.next-btn::after,
+.back-btn::before,
+.back-btn::after {
+  z-index: -1 !important;
+}
+
+/* 10. ФИНАЛЬНАЯ ГАРАНТИЯ - КОНТЕЙНЕР ПРИЛОЖЕНИЯ */
+#root {
+  position: relative !important;
+  z-index: 0 !important;
+}
+
+.main-app-container {
+  position: relative !important;
+  z-index: 0 !important;
+}
+
+/* ИНСТРУКЦИЯ ПО ОТЛАДКЕ:
+   1. Добавьте класс debug-mode к body для визуальной проверки
+   2. В консоли выполните: document.body.classList.add('debug-mode')
+   3. Все кликабельные элементы будут подсвечены
+   4. Проверьте что кнопки имеют зеленую рамку
+*/

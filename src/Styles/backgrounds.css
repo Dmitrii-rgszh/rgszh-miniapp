@@ -131,3 +131,75 @@ body::after {
   z-index: -1;
   content: url('../components/background/background1.webp');
 }
+
+/* ======================================
+   CSS АНИМАЦИЯ СМЕНЫ ФОНОВ
+   ====================================== */
+
+/* Основные стили контейнеров */
+.main-app-container {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  font-family: "Segoe UI", sans-serif;
+}
+
+.main-content-container {
+  position: relative;
+  z-index: 100;
+  width: 100%;
+  height: 100%;
+}
+
+
+/* Применяем анимацию к каждому фону с задержкой */
+.background-layer[data-bg="1"] {
+  animation: fadeBackground 60s infinite;
+  animation-delay: 0s;
+}
+
+.background-layer[data-bg="2"] {
+  animation: fadeBackground 60s infinite;
+  animation-delay: 15s;
+}
+
+.background-layer[data-bg="3"] {
+  animation: fadeBackground 60s infinite;
+  animation-delay: 30s;
+}
+
+.background-layer[data-bg="4"] {
+  animation: fadeBackground 60s infinite;
+  animation-delay: 45s;
+}
+
+/* Градиентный фон всегда видим как базовый слой */
+.background-layer.gradient-fallback {
+  opacity: 1 !important;
+  animation: none !important;
+  z-index: -10;
+}
+
+/* Отключаем анимации для производительности на мобильных */
+@media (max-width: 768px) {
+  .background-layer[data-bg] {
+    animation: none;
+    opacity: 0;
+  }
+  
+  .background-layer[data-bg="1"] {
+    opacity: 1;
+  }
+}
+
+/* Для пользователей с настройкой reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .background-layer[data-bg] {
+    animation: none;
+  }
+  
+  .background-layer[data-bg="1"] {
+    opacity: 1;
+  }
+}

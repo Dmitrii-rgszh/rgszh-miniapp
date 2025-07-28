@@ -4476,3 +4476,5 @@ AttributeError: '_io._WindowsConsoleIO' object has no attribute 'buffer'
 2025-07-25 14:24:20,519 - server - INFO - 📨 GET /api/questionnaire/1 - 127.0.0.1
 2025-07-25 14:24:21,399 - server - INFO - 📤 GET /api/questionnaire/1 -> 200
 2025-07-25 14:24:21,693 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-25 14:24:21] "GET /api/questionnaire/1?include_questions=true HTTP/1.1" 200 8039 1.175864
+2025-07-28 22:08:17,584 - server - INFO - Socket.IO: using Redis message queue redis://redis:6379/0
+2025-07-28 22:08:17,586 - db_saver - INFO - Использую базу данных: postgresql://postgres:secret@172.17.0.1:1112/postgres

@@ -27,7 +27,7 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     
     <!-- INLINE СТИЛИ ДЛЯ УСТРАНЕНИЯ БЕЛОЙ ПОЛОСЫ -->
-    <style>
+    <style> 
       /* УБИРАЕМ БЕЛУЮ ПОЛОСУ СВЕРХУ */
       html, body {
         margin: 0 !important;
@@ -104,6 +104,13 @@
         display: none !important;
         width: 0 !important;
         height: 0 !important;
+      }
+      .main-container {
+        pointer-events: none !important;
+      }
+  
+      .main-container > * {
+        pointer-events: auto !important;
       }
     </style>
   </head>

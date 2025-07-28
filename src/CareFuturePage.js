@@ -1,14 +1,14 @@
-// CareFuturePage.js - ИСПРАВЛЕННАЯ НАВИГАЦИЯ
-// ✅ Добавлено поле выбора дохода в год
-// ✅ Логика расчета налогового вычета по доходам
-// ✅ Новая страница карусели с покрытиями между существующими
-// ✅ ИСПРАВЛЕНА НАВИГАЦИЯ - БЕЗ ПРОСКАКИВАНИЯ СТРАНИЦ
+// CareFuturePage.js - УПРОЩЕННАЯ ВЕРСИЯ
+// ✅ Удалены конфликтующие стили и лишние анимации
+// ✅ Упрощена система z-index
+// ✅ Исправлены проблемы с кнопками на мобильных устройствах
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiCall } from './config';
 import logoImage from './components/logo.png';
 import DateWheelPicker from './DateWheelPicker';
+import useMobileFix from './hooks/useMobileFix';
 
 // Подключаем модульные CSS файлы
 import './Styles/containers.css';
@@ -23,10 +23,8 @@ import './Styles/cards.css';
 export default function CareFuturePage() {
   const navigate = useNavigate();
   const logoRef = useRef(null);
-  const nextRef = useRef(null);
-  const emailInputRef = useRef(null);
   
-  // ===== СОСТОЯНИЯ АНИМАЦИЙ =====
+  // ===== БАЗОВЫЕ СОСТОЯНИЯ =====
   const [logoAnimated, setLogoAnimated] = useState(false);
   const [contentAnimated, setContentAnimated] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
@@ -48,8 +46,6 @@ export default function CareFuturePage() {
   const [calcType, setCalcType] = useState(null);
   const [amountRaw, setAmountRaw] = useState('');
   const [amountDisplay, setAmountDisplay] = useState('');
-  
-  // Состояние для дохода в год
   const [yearlyIncome, setYearlyIncome] = useState('');
   
   // Результаты
@@ -58,69 +54,37 @@ export default function CareFuturePage() {
   const [calculationId, setCalculationId] = useState(null);
   const [validationErrors, setValidationErrors] = useState({});
   
-  // Состояние для предотвращения быстрых кликов по карусели
-  const [carouselNavigating, setCarouselNavigating] = useState(false);
-  
   // Данные менеджера
   const [mgrSurname, setMgrSurname] = useState('');
   const [mgrName, setMgrName] = useState('');
   const [mgrCity, setMgrCity] = useState('');
   const [mgrError, setMgrError] = useState('');
   const [isSendingMgr, setIsSendingMgr] = useState(false);
-  const [hasCalculated, setHasCalculated] = useState(false);
 
-  // ===== НОВЫЕ СОСТОЯНИЯ ДЛЯ ЗАЩИТЫ НАВИГАЦИИ =====
-  const [isNavigating, setIsNavigating] = useState(false);
-  const [stageHistory, setStageHistory] = useState(['email']);
-
-  // ===== ЗАЩИЩЕННАЯ ФУНКЦИЯ ИЗМЕНЕНИЯ STAGE =====
-  const setStageProtected = (newStage, source = 'unknown') => {
-    console.log(`🔄 Stage change: ${stage} → ${newStage} (source: ${source})`);
-    
-    // Предотвращаем быстрые переключения
-    if (isNavigating) {
-      console.warn('⚠️ Navigation blocked - already navigating');
-      return;
-    }
-    
-    setIsNavigating(true);
-    setStage(newStage);
-    
-    // Обновляем историю переходов
-    setStageHistory(prev => [...prev, newStage].slice(-5));
-    
-    // Разблокируем навигацию через 300ms
-    setTimeout(() => {
-      setIsNavigating(false);
-    }, 300);
-  };
-
-  // ===== СБРОС СОСТОЯНИЯ ПРИ МОНТИРОВАНИИ =====
+  // ===== ВЫЗОВ ХУКА ДЛЯ ИСПРАВЛЕНИЯ МОБИЛЬНЫХ ПРОБЛЕМ =====
+  // Важно: вызывается после всех useState, но перед useEffect
+  useMobileFix();
   useEffect(() => {
-    setIsExiting(false);
-    setCarouselNavigating(false);
-    setIsNavigating(false);
+    // Конвертер touch в click для мобильных
+    const handleTouchToClick = (e) => {
+      if (e.target.closest('.next-btn, .back-btn, .btn-universal, button')) {
+        e.preventDefault();
+        const clickEvent = new MouseEvent('click', {
+          bubbles: true,
+          cancelable: true,
+          view: window
+        });
+        e.target.dispatchEvent(clickEvent);
+      }
+    };
+  
+    document.addEventListener('touchend', handleTouchToClick, true);
+  
+    return () => {
+      document.removeEventListener('touchend', handleTouchToClick, true);
+    };
   }, []);
 
-  // ===== СБРОС НАВИГАЦИИ КАРУСЕЛИ ПРИ СМЕНЕ STAGE =====
-  useEffect(() => {
-    if (stage !== 'result') {
-      setCarouselNavigating(false);
-      setCarouselIndex(0);
-    }
-  }, [stage]);
-
-  // ===== ОТЛАДОЧНЫЙ useEffect ДЛЯ МОНИТОРИНГА ИЗМЕНЕНИЙ STAGE =====
-  useEffect(() => {
-    console.log(`🎯 Stage changed to: ${stage}`);
-    console.log('Navigation state:', { isNavigating, isExiting, hasCalculated });
-    console.log('Data state:', { 
-      hasResultData: !!resultData, 
-      hasEmail: !!email, 
-      hasBirthDate: !!birthDate,
-      hasGender: !!gender
-    });
-  }, [stage, isNavigating, isExiting, hasCalculated, resultData, email, birthDate, gender]);
 
   // ===== АНИМАЦИЯ ВХОДА =====
   useEffect(() => {
@@ -172,7 +136,7 @@ export default function CareFuturePage() {
     } else {
       setBirthDate(null);
     }
-  }, [birthParts]);
+  }, [birthParts, validationErrors.birthDate]);
 
   // ===== ФОРМАТИРОВАНИЕ СУММЫ =====
   const formatAmount = (value) => {
@@ -193,117 +157,82 @@ export default function CareFuturePage() {
     }
   };
 
-  // ===== НАВИГАЦИЯ ПО КАРУСЕЛИ =====
-  const navigateCarousel = (direction) => {
-    if (carouselNavigating) return;
-
-    setCarouselNavigating(true);
+  // ===== НАВИГАЦИЯ =====
+  const handleBack = () => {
+    if (isExiting) return;
     
-    const carouselData = getCarouselData();
-    const currentIndex = carouselIndex;
-    
-    let newIndex;
-    if (direction === 'next') {
-      newIndex = Math.min(carouselData.length - 1, currentIndex + 1);
-    } else {
-      newIndex = Math.max(0, currentIndex - 1);
-    }
-    
-    if (newIndex !== currentIndex) {
-      setCarouselIndex(newIndex);
-    }
-    
-    setTimeout(() => {
-      setCarouselNavigating(false);
-    }, 500);
-  };
-
-  const goToCarouselSlide = (index) => {
-    if (carouselNavigating) return;
-
-    const carouselData = getCarouselData();
-    const safeIndex = Math.max(0, Math.min(carouselData.length - 1, index));
-    
-    if (safeIndex !== carouselIndex) {
-      setCarouselNavigating(true);
-      setCarouselIndex(safeIndex);
-      
-      setTimeout(() => {
-        setCarouselNavigating(false);
-      }, 500);
+    switch (stage) {
+      case 'email':
+        setIsExiting(true);
+        if (logoRef.current) {
+          logoRef.current.classList.add('animate-logo-exit');
+        }
+        setTimeout(() => navigate('/employee'), 800);
+        break;
+        
+      case 'form':
+        setStage('email');
+        break;
+        
+      case 'result':
+        setStage('form');
+        setCarouselIndex(0);
+        break;
+        
+      case 'manager':
+        setStage('result');
+        setMgrError('');
+        break;
+        
+      case 'manager-sent':
+        setStage('result');
+        break;
+        
+      default:
+        navigate('/employee');
     }
   };
 
-  // ===== РАСЧЕТ НАЛОГОВОГО ВЫЧЕТА =====
-  const calculateTaxDeduction = (premiumAmount, contractTerm, incomeLevel) => {
-    if (!incomeLevel || !premiumAmount || !contractTerm) return 0;
-
-    const incomeConfig = {
-      'up_to_2_4': { rate: 0.13, maxPerYear: 19500 },
-      'over_2_4': { rate: 0.15, maxPerYear: 22500 },
-      'over_5': { rate: 0.18, maxPerYear: 27000 },
-      'over_20': { rate: 0.20, maxPerYear: 30000 },
-      'over_50': { rate: 0.22, maxPerYear: 33000 }
-    };
-
-    const config = incomeConfig[incomeLevel];
-    if (!config) return 0;
-
-    const annualDeduction = Math.min(
-      premiumAmount * config.rate,
-      config.maxPerYear
-    );
-
-    return Math.round(annualDeduction * contractTerm);
+  const handleHome = () => {
+    if (isExiting) return;
+    
+    setIsExiting(true);
+    if (logoRef.current) {
+      logoRef.current.classList.add('animate-logo-exit');
+    }
+    setTimeout(() => navigate('/main-menu'), 800);
   };
 
   // ===== ВАЛИДАЦИЯ EMAIL =====
   const validateEmail = (email) => {
-    // Базовая проверка формата email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-
-  // ===== СТРОГАЯ ПРОВЕРКА КОРПОРАТИВНОЙ ПОЧТЫ (используется в handleEmailSubmit) =====
-  const validateCorporateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return false;
     }
     
     const lowerEmail = email.toLowerCase();
-    const isVtbEmail = lowerEmail.endsWith('@vtb.ru');
-    const isRgslEmail = lowerEmail.endsWith('@rgsl.ru');
-    
-    return isVtbEmail || isRgslEmail;
+    return lowerEmail.endsWith('@vtb.ru') || lowerEmail.endsWith('@rgsl.ru');
   };
 
-  // ===== ОБНОВЛЕННЫЙ ОБРАБОТЧИК EMAIL =====
-    const handleEmailSubmit = (e) => {
-      e.preventDefault();
+  const handleEmailSubmit = () => {
+    if (!email) {
+      setEmailError('Введите email');
+      return;
+    }
     
-      console.log('📧 Email submit clicked');
-    
-      if (isNavigating) {
-        console.log('⚠️ Email submit blocked - already navigating');
-        return;
+    if (!validateEmail(email)) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        setEmailError('Введите корректный email');
+      } else {
+        setEmailError('Используйте корпоративную почту (@vtb.ru или @rgsl.ru)');
       }
+      return;
+    }
     
-      // Используем строгую проверку здесь
-      if (!validateCorporateEmail(email)) {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
-          setEmailError('Введите корректный email');
-        } else {
-          setEmailError('Используйте корпоративную почту (@vtb.ru или @rgsl.ru)');
-        }
-        return;
-      }
-    
-      setEmailError('');
-      console.log('📧 Email → Form');
-      setStageProtected('form', 'handleEmailSubmit');
-    };
+    setEmailError('');
+    setStage('form');
+  };
 
   // ===== ВАЛИДАЦИЯ ФОРМЫ =====
   const validateForm = () => {
@@ -352,121 +281,18 @@ export default function CareFuturePage() {
   // ===== ПРОВЕРКА ГОТОВНОСТИ КНОПКИ =====
   const isNextButtonReady = () => {
     if (stage === 'email') {
-      return email && email.length >= 3; // Упрощенная проверка
+      return email && email.length >= 3;
     } else if (stage === 'form') {
       return birthDate && gender && calcType && amountRaw && parseInt(amountRaw) > 0 && yearlyIncome;
     }
     return false;
   };
 
-  // ===== ПРОСТАЯ И НАДЕЖНАЯ ФУНКЦИЯ handleBack =====
-  const handleBack = () => {
-    console.log('🔙 handleBack clicked, current stage:', stage);
-    
-    if (isExiting || isNavigating) {
-      console.log('⚠️ Navigation blocked');
-      return;
-    }
-    
-    // ✅ ПРОСТАЯ ЛОГИКА БЕЗ УСЛОВИЙ
-    switch (stage) {
-      case 'email':
-        console.log('📧 Email → Employee page');
-        setIsExiting(true);
-        if (logoRef.current) {
-          logoRef.current.classList.add('animate-logo-exit');
-        }
-        setTimeout(() => navigate('/employee'), 800);
-        break;
-        
-      case 'form':
-        console.log('📝 Form → Email');
-        setStageProtected('email', 'handleBack-form');
-        break;
-        
-      case 'result':
-        console.log('📊 Result → Form');
-        setStageProtected('form', 'handleBack-result');
-        setCarouselIndex(0);
-        setCarouselNavigating(false);
-        break;
-        
-      case 'manager':
-        console.log('👤 Manager → Result');
-        setStageProtected('result', 'handleBack-manager');
-        setMgrError('');
-        break;
-        
-      case 'manager-sent':
-        console.log('✅ Manager-sent → Result');
-        setStageProtected('result', 'handleBack-manager-sent');
-        break;
-        
-      default:
-        console.log('❓ Unknown stage → Employee page');
-        setIsExiting(true);
-        if (logoRef.current) {
-          logoRef.current.classList.add('animate-logo-exit');
-        }
-        setTimeout(() => navigate('/employee'), 800);
-    }
-  };
-
-  // ===== ОБРАБОТКА КНОПКИ "ДОМОЙ" =====
-  const handleHome = () => {
-    if (isExiting) return;
-    
-    setIsExiting(true);
-    if (logoRef.current) {
-      logoRef.current.classList.add('animate-logo-exit');
-    }
-    setTimeout(() => navigate('/main-menu'), 800);
-  };
-
-  // ===== ОБРАБОТКА EMAIL =====
-  const handleEmailSubmit = (e) => {
-    e.preventDefault();
-    
-    console.log('📧 Email submit clicked');
-    
-    if (isNavigating) {
-      console.log('⚠️ Email submit blocked - already navigating');
-      return;
-    }
-    
-    if (!validateEmail(email)) {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) {
-        setEmailError('Введите корректный email');
-      } else {
-        setEmailError('Используйте корпоративную почту (@vtb.ru или @rgsl.ru)');
-      }
-      return;
-    }
-    
-    setEmailError('');
-    console.log('📧 Email → Form');
-    setStageProtected('form', 'handleEmailSubmit');
-  };
-
   // ===== РАСЧЕТ =====
   const handleCalculate = async () => {
-    console.log('🧮 Calculate clicked');
-    
-    if (isNavigating) {
-      console.log('⚠️ Calculate blocked - already navigating');
-      return;
-    }
-    
-    if (!birthDate) {
-      console.error('birthDate is null!');
-      setValidationErrors({ birthDate: 'Укажите дату рождения' });
-      return;
-    }
-    
     if (!validateForm()) return;
 
-    setStageProtected('processing', 'handleCalculate-start');
+    setStage('processing');
 
     try {
       const formattedDate = birthDate instanceof Date 
@@ -483,23 +309,13 @@ export default function CareFuturePage() {
         yearlyIncome: yearlyIncome
       };
 
-      console.log('🧮 Отправляем данные на сервер для расчета НСЖ:', requestData);
-
       const data = await apiCall('/api/care-future/calculate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(requestData)
       });
 
-      console.log('✅ Ответ сервера получен:', data);
-
       if (data.success) {
-        const customTaxDeduction = calculateTaxDeduction(
-          data.results.premiumAmount,
-          data.inputParameters.contractTerm,
-          yearlyIncome
-        );
-
         const processedResultData = {
           insurance_amount_formatted: data.results.insuranceSum.toLocaleString('ru-RU') + ' ₽',
           single_premium_formatted: data.results.premiumAmount.toLocaleString('ru-RU') + ' ₽',
@@ -507,43 +323,53 @@ export default function CareFuturePage() {
           age: data.inputParameters.ageAtStart,
           accumulated_capital: data.results.accumulatedCapital,
           program_income: data.results.programIncome,
-          tax_deduction: customTaxDeduction,
+          tax_deduction: calculateTaxDeduction(
+            data.results.premiumAmount,
+            data.inputParameters.contractTerm,
+            yearlyIncome
+          ),
           premium_amount: data.results.premiumAmount,
           insurance_sum: data.results.insuranceSum
         };
 
         setResultData(processedResultData);
         setCalculationId(data.calculationId);
-        setHasCalculated(true); // ✅ ВАЖНО!
-        
-        setCarouselIndex(0);
-        setCarouselNavigating(false);
-        
-        console.log('✅ Данные результата обработаны и сохранены:', processedResultData);
-        console.log('✅ Флаг hasCalculated установлен в true');
         
         setTimeout(() => {
-          console.log('🧮 Processing → Result');
-          setStageProtected('result', 'handleCalculate-success');
+          setStage('result');
         }, 2000);
         
       } else {
         throw new Error(data.error || 'Ошибка расчета');
       }
     } catch (error) {
-      console.error('❌ Ошибка расчета НСЖ:', error);
-      
-      if (error.message.includes('400')) {
-        setValidationErrors({ general: 'Минимальный взнос ниже допустимого' });
-      } else if (error.message.includes('500')) {
-        setValidationErrors({ general: 'Ошибка сервера. Попробуйте позже.' });
-      } else {
-        setValidationErrors({ general: error.message || 'Ошибка при выполнении расчета' });
-      }
-      
-      console.log('❌ Processing → Form (error)');
-      setStageProtected('form', 'handleCalculate-error');
+      console.error('Ошибка расчета:', error);
+      setValidationErrors({ general: error.message || 'Ошибка при выполнении расчета' });
+      setStage('form');
     }
+  };
+
+  // ===== РАСЧЕТ НАЛОГОВОГО ВЫЧЕТА =====
+  const calculateTaxDeduction = (premiumAmount, contractTerm, incomeLevel) => {
+    if (!incomeLevel || !premiumAmount || !contractTerm) return 0;
+
+    const incomeConfig = {
+      'up_to_2_4': { rate: 0.13, maxPerYear: 19500 },
+      'over_2_4': { rate: 0.15, maxPerYear: 22500 },
+      'over_5': { rate: 0.18, maxPerYear: 27000 },
+      'over_20': { rate: 0.20, maxPerYear: 30000 },
+      'over_50': { rate: 0.22, maxPerYear: 33000 }
+    };
+
+    const config = incomeConfig[incomeLevel];
+    if (!config) return 0;
+
+    const annualDeduction = Math.min(
+      premiumAmount * config.rate,
+      config.maxPerYear
+    );
+
+    return Math.round(annualDeduction * contractTerm);
   };
 
   // ===== ОТПРАВКА ЗАЯВКИ МЕНЕДЖЕРУ =====
@@ -572,26 +398,37 @@ export default function CareFuturePage() {
         })
       });
 
-      console.log('Ответ сервера:', data);
-
       if (data && data.success) {
-        setStageProtected('manager-sent', 'handleManagerSubmit-success');
+        setStage('manager-sent');
       } else {
         throw new Error(data?.message || 'Ошибка отправки');
       }
     } catch (error) {
       console.error('Ошибка отправки заявки:', error);
-      
-      if (error.message && error.message.includes('json is not a function')) {
-        console.warn('Ошибка обработки ответа. Заявка была отправлена.');
-        setStageProtected('manager-sent', 'handleManagerSubmit-json-error');
-        return;
-      }
-      
       setMgrError('Не удалось отправить заявку. Попробуйте позже.');
     } finally {
       setIsSendingMgr(false);
     }
+  };
+
+  // ===== RIPPLE ЭФФЕКТ =====
+  const createRipple = (event) => {
+    const button = event.currentTarget;
+    const circle = document.createElement('span');
+    const diameter = Math.max(button.clientWidth, button.clientHeight);
+    const radius = diameter / 2;
+    
+    circle.style.width = circle.style.height = `${diameter}px`;
+    circle.style.left = `${event.clientX - button.offsetLeft - radius}px`;
+    circle.style.top = `${event.clientY - button.offsetTop - radius}px`;
+    circle.classList.add('ripple');
+    
+    const ripple = button.getElementsByClassName('ripple')[0];
+    if (ripple) {
+      ripple.remove();
+    }
+    
+    button.appendChild(circle);
   };
 
   // ===== ПОДГОТОВКА ДАННЫХ ДЛЯ КАРУСЕЛИ =====
@@ -670,26 +507,6 @@ export default function CareFuturePage() {
     ];
   };
 
-  // ===== RIPPLE ЭФФЕКТ =====
-  const createRipple = (event) => {
-    const button = event.currentTarget;
-    const circle = document.createElement('span');
-    const diameter = Math.max(button.clientWidth, button.clientHeight);
-    const radius = diameter / 2;
-    
-    circle.style.width = circle.style.height = `${diameter}px`;
-    circle.style.left = `${event.clientX - button.offsetLeft - radius}px`;
-    circle.style.top = `${event.clientY - button.offsetTop - radius}px`;
-    circle.classList.add('ripple');
-    
-    const ripple = button.getElementsByClassName('ripple')[0];
-    if (ripple) {
-      ripple.remove();
-    }
-    
-    button.appendChild(circle);
-  };
-
   // ===== КЛАССЫ ДЛЯ ЭЛЕМЕНТОВ =====
   const getContainerClasses = () => [
     'main-container',
@@ -726,25 +543,10 @@ export default function CareFuturePage() {
     ].filter(Boolean).join(' ');
   };
 
-  const getShakerClasses = () => {
-    const isReady = isNextButtonReady();
-    
-    return [
-      'shaker',
-      isReady ? 'shake-btn' : ''
-    ].filter(Boolean).join(' ');
-  };
-
-  // ===== УПРОЩЕННЫЕ СТИЛИ ДЛЯ INPUT =====
-  const getInputStyle = (isEmail = false) => ({
-    position: 'relative',
-    zIndex: '10', // УМЕНЬШЕНО с 99999!
-    pointerEvents: 'auto',
-    cursor: 'text',
-    display: 'block',
+  // ===== УПРОЩЕННЫЙ СТИЛЬ INPUT =====
+  const inputStyle = {
     width: '100%',
-    height: '32px',
-    minHeight: '32px',
+    height: '36px',
     fontSize: '14px',
     background: '#f0f2f5',
     border: '1px solid #e3e7ee',
@@ -755,22 +557,10 @@ export default function CareFuturePage() {
     fontFamily: '"Segoe UI", sans-serif',
     boxSizing: 'border-box',
     outline: 'none'
-  });
-
-  const getSelectStyle = () => ({
-    ...getInputStyle(),
-    cursor: 'pointer',
-    backgroundImage: 'url("data:image/svg+xml;utf8,<svg fill=\'%23333\' height=\'20\' viewBox=\'0 0 24 24\' width=\'20\' xmlns=\'http://www.w3.org/2000/svg\'><path d=\'M7 10l5 5 5-5z\'/></svg>")',
-    backgroundRepeat: 'no-repeat',
-    backgroundPosition: 'right 6px center',
-    backgroundSize: '14px',
-    paddingRight: '28px'
-  });
+  };
 
   // ===== РЕНДЕР КОНТЕНТА =====
   const renderContent = () => {
-    console.log(`🎨 Rendering content for stage: ${stage}`);
-    
     switch (stage) {
       case 'email':
         return (
@@ -785,34 +575,12 @@ export default function CareFuturePage() {
             <div className="form-group">
               <label className="form-label text-label">Введите ваш email</label>
               <input
-                ref={emailInputRef}
                 type="email"
                 className={`form-input ${emailError ? 'error' : ''}`}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="example@mail.ru"
-                style={getInputStyle(true)}
-                onFocus={(e) => {
-                  Object.assign(e.target.style, {
-                    borderColor: 'rgb(180, 0, 55)',
-                    boxShadow: '0 0 0 3px rgba(180, 0, 55, 0.1)',
-                    background: 'white'
-                  });
-                }}
-                onBlur={(e) => {
-                  Object.assign(e.target.style, {
-                    borderColor: '#e3e7ee',
-                    boxShadow: 'none',
-                    background: '#f0f2f5'
-                  });
-                }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  e.target.focus();
-                }}
-                onTouchStart={(e) => {
-                  e.stopPropagation();
-                }}
+                style={inputStyle}
               />
               {emailError && <span className="form-error">{emailError}</span>}
             </div>
@@ -828,10 +596,8 @@ export default function CareFuturePage() {
             
             <div className="card-content">
               {/* Дата рождения */}
-              <div className="form-group" style={{ marginBottom: '8px' }}>
-                <label className="form-label text-label" style={{ marginBottom: '4px' }}>
-                  Дата рождения
-                </label>
+              <div className="form-group">
+                <label className="form-label text-label">Дата рождения</label>
                 <DateWheelPicker 
                   value={birthParts}
                   onChange={setBirthParts}
@@ -842,51 +608,19 @@ export default function CareFuturePage() {
               </div>
 
               {/* Пол */}
-              <div className="form-group" style={{ marginBottom: '8px' }}>
+              <div className="form-group">
                 <label className="form-label text-label">Пол</label>
-                <div style={{
-                  display: 'flex',
-                  gap: '12px',
-                  justifyContent: 'center',
-                  width: '100%',
-                  marginTop: '2px'
-                }}>
+                <div className="option-buttons">
                   <button
                     type="button"
-                    style={{
-                      padding: '8px 16px',
-                      minHeight: '36px',
-                      border: gender === 'male' ? '2px solid rgb(180, 0, 55)' : '2px solid rgb(152, 164, 174)',
-                      borderRadius: '8px',
-                      background: gender === 'male' ? 'rgb(180, 0, 55)' : 'white',
-                      color: gender === 'male' ? 'white' : 'rgb(152, 164, 174)',
-                      fontFamily: 'Segoe UI, sans-serif',
-                      fontSize: '15px',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      flex: '1',
-                      outline: 'none'
-                    }}
+                    className={`option-button ${gender === 'male' ? 'selected' : ''}`}
                     onClick={() => setGender('male')}
                   >
                     Мужской
                   </button>
                   <button
                     type="button"
-                    style={{
-                      padding: '8px 16px',
-                      minHeight: '36px',
-                      border: gender === 'female' ? '2px solid rgb(180, 0, 55)' : '2px solid rgb(152, 164, 174)',
-                      borderRadius: '8px',
-                      background: gender === 'female' ? 'rgb(180, 0, 55)' : 'white',
-                      color: gender === 'female' ? 'white' : 'rgb(152, 164, 174)',
-                      fontFamily: 'Segoe UI, sans-serif',
-                      fontSize: '15px',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      flex: '1',
-                      outline: 'none'
-                    }}
+                    className={`option-button ${gender === 'female' ? 'selected' : ''}`}
                     onClick={() => setGender('female')}
                   >
                     Женский
@@ -898,57 +632,32 @@ export default function CareFuturePage() {
               </div>
 
               {/* Срок программы */}
-              <div className="form-group" style={{ marginBottom: '8px' }}>
+              <div className="form-group">
                 <label className="form-label text-label">Срок программы (лет)</label>
                 <div style={{
                   display: 'flex',
-                  flexDirection: 'row',
                   alignItems: 'center',
                   gap: '12px',
-                  width: '100%',
-                  marginTop: '4px',
-                  padding: '4px 0'
+                  width: '100%'
                 }}>
-                  <div style={{
-                    position: 'relative',
-                    flex: '1',
-                    height: '20px',
-                    display: 'flex',
-                    alignItems: 'center'
-                  }}>
-                    <input
-                      type="range"
-                      min="5"
-                      max="30"
-                      step="1"
-                      value={programTerm}
-                      onChange={(e) => {
-                        console.log('Slider changed to:', e.target.value);
-                        setProgramTerm(parseInt(e.target.value));
-                      }}
-                      onTouchStart={(e) => {
-                        e.stopPropagation();
-                      }}
-                      onTouchMove={(e) => {
-                        e.stopPropagation();
-                      }}
-                      style={{
-                        width: '100%',
-                        height: '8px',
-                        borderRadius: '4px',
-                        background: `linear-gradient(to right, rgb(180, 0, 55) 0%, rgb(180, 0, 55) ${((programTerm - 5) / 25) * 100}%, #e5e5e5 ${((programTerm - 5) / 25) * 100}%, #e5e5e5 100%)`,
-                        outline: 'none',
-                        cursor: 'pointer',
-                        WebkitAppearance: 'none',
-                        appearance: 'none',
-                        position: 'relative',
-                        zIndex: '1000',
-                        touchAction: 'none',
-                        userSelect: 'none',
-                        WebkitUserSelect: 'none'
-                      }}
-                    />
-                  </div>
+                  <input
+                    type="range"
+                    min="5"
+                    max="30"
+                    step="1"
+                    value={programTerm}
+                    onChange={(e) => setProgramTerm(parseInt(e.target.value))}
+                    style={{
+                      flex: '1',
+                      height: '8px',
+                      borderRadius: '4px',
+                      background: `linear-gradient(to right, rgb(180, 0, 55) 0%, rgb(180, 0, 55) ${((programTerm - 5) / 25) * 100}%, #e5e5e5 ${((programTerm - 5) / 25) * 100}%, #e5e5e5 100%)`,
+                      outline: 'none',
+                      cursor: 'pointer',
+                      WebkitAppearance: 'none',
+                      appearance: 'none'
+                    }}
+                  />
                   <div style={{
                     padding: '6px 12px',
                     background: 'rgb(180, 0, 55)',
@@ -958,8 +667,7 @@ export default function CareFuturePage() {
                     fontWeight: '600',
                     fontFamily: 'Segoe UI, sans-serif',
                     minWidth: '40px',
-                    textAlign: 'center',
-                    flexShrink: 0
+                    textAlign: 'center'
                   }}>
                     {programTerm}
                   </div>
@@ -967,62 +675,19 @@ export default function CareFuturePage() {
               </div>
 
               {/* Тип расчёта */}
-              <div className="form-group" style={{ marginBottom: '4px' }}>
-                <label className="form-label text-label" style={{ marginBottom: '4px' }}>Тип расчёта</label>
-                <div style={{
-                  display: 'flex',
-                  flexDirection: 'row',
-                  flexWrap: 'wrap',
-                  gap: '8px',
-                  width: '100%',
-                  marginTop: '2px'
-                }}>
+              <div className="form-group">
+                <label className="form-label text-label">Тип расчёта</label>
+                <div className="option-buttons vertical">
                   <button
                     type="button"
-                    style={{
-                      padding: '8px 12px',
-                      minHeight: '44px',
-                      border: calcType === 'from_premium' ? '2px solid rgb(180, 0, 55)' : '2px solid rgb(152, 164, 174)',
-                      borderRadius: '8px',
-                      background: calcType === 'from_premium' ? 'rgb(180, 0, 55)' : 'white',
-                      color: calcType === 'from_premium' ? 'white' : 'rgb(152, 164, 174)',
-                      fontFamily: 'Segoe UI, sans-serif',
-                      fontSize: '13px',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      outline: 'none',
-                      textAlign: 'center',
-                      flex: '1',
-                      minWidth: '140px',
-                      whiteSpace: 'normal',
-                      wordWrap: 'break-word',
-                      lineHeight: '1.2'
-                    }}
+                    className={`option-button ${calcType === 'from_premium' ? 'selected' : ''}`}
                     onClick={() => setCalcType('from_premium')}
                   >
                     Рассчитать по размеру взноса
                   </button>
                   <button
                     type="button"
-                    style={{
-                      padding: '8px 12px',
-                      minHeight: '44px',
-                      border: calcType === 'from_sum' ? '2px solid rgb(180, 0, 55)' : '2px solid rgb(152, 164, 174)',
-                      borderRadius: '8px',
-                      background: calcType === 'from_sum' ? 'rgb(180, 0, 55)' : 'white',
-                      color: calcType === 'from_sum' ? 'white' : 'rgb(152, 164, 174)',
-                      fontFamily: 'Segoe UI, sans-serif',
-                      fontSize: '13px',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      outline: 'none',
-                      textAlign: 'center',
-                      flex: '1',
-                      minWidth: '140px',
-                      whiteSpace: 'normal',
-                      wordWrap: 'break-word',
-                      lineHeight: '1.2'
-                    }}
+                    className={`option-button ${calcType === 'from_sum' ? 'selected' : ''}`}
                     onClick={() => setCalcType('from_sum')}
                   >
                     Рассчитать по страховой сумме
@@ -1034,8 +699,8 @@ export default function CareFuturePage() {
               </div>
 
               {/* Сумма */}
-              <div className="form-group" style={{ marginBottom: '8px' }}>
-                <label className="form-label text-label" style={{ marginBottom: '4px' }}>
+              <div className="form-group">
+                <label className="form-label text-label">
                   {calcType === 'from_premium' ? 'Размер взноса' : 'Страховая сумма'} (₽)
                 </label>
                 <input
@@ -1043,17 +708,8 @@ export default function CareFuturePage() {
                   className={`form-input ${validationErrors.amount ? 'error' : ''}`}
                   value={amountDisplay}
                   onChange={handleAmountChange}
-                  placeholder={
-                    calcType === 'from_premium' 
-                      ? 'от 100 000 рублей' 
-                      : calcType === 'from_sum' 
-                        ? 'Введите сумму'
-                        : '1 000 000'
-                  }
-                  style={{
-                    ...getInputStyle(),
-                    marginTop: '4px'
-                  }}
+                  placeholder={calcType === 'from_premium' ? 'от 100 000 рублей' : 'Введите сумму'}
+                  style={inputStyle}
                 />
                 {validationErrors.amount && (
                   <span className="form-error">{validationErrors.amount}</span>
@@ -1061,31 +717,20 @@ export default function CareFuturePage() {
               </div>
 
               {/* Доход в год */}
-              <div className="form-group" style={{ marginBottom: '8px' }}>
-                <label className="form-label text-label" style={{ marginBottom: '4px' }}>
-                  Мой доход в год:
-                </label>
+              <div className="form-group">
+                <label className="form-label text-label">Мой доход в год:</label>
                 <select
                   className={`form-input ${validationErrors.yearlyIncome ? 'error' : ''}`}
                   value={yearlyIncome}
                   onChange={(e) => setYearlyIncome(e.target.value)}
                   style={{
-                    ...getSelectStyle(),
-                    marginTop: '4px'
-                  }}
-                  onFocus={(e) => {
-                    Object.assign(e.target.style, {
-                      borderColor: 'rgb(180, 0, 55)',
-                      boxShadow: '0 0 0 3px rgba(180, 0, 55, 0.1)',
-                      background: 'white'
-                    });
-                  }}
-                  onBlur={(e) => {
-                    Object.assign(e.target.style, {
-                      borderColor: '#e3e7ee',
-                      boxShadow: 'none',
-                      background: '#f0f2f5'
-                    });
+                    ...inputStyle,
+                    cursor: 'pointer',
+                    backgroundImage: 'url("data:image/svg+xml;utf8,<svg fill=\'%23333\' height=\'20\' viewBox=\'0 0 24 24\' width=\'20\' xmlns=\'http://www.w3.org/2000/svg\'><path d=\'M7 10l5 5 5-5z\'/></svg>")',
+                    backgroundRepeat: 'no-repeat',
+                    backgroundPosition: 'right 6px center',
+                    backgroundSize: '14px',
+                    paddingRight: '28px'
                   }}
                 >
                   <option value="">Выберите уровень дохода</option>
@@ -1120,29 +765,7 @@ export default function CareFuturePage() {
 
       case 'result':
         const carouselData = getCarouselData();
-        
-        if (!carouselData || carouselData.length === 0) {
-          return (
-            <div className={getCardClasses()}>
-              <div className="processing-container">
-                <h2 className="text-h2">Загрузка результатов...</h2>
-              </div>
-            </div>
-          );
-        }
-        
-        const safeCarouselIndex = Math.min(carouselIndex, carouselData.length - 1);
-        const currentSlide = carouselData[safeCarouselIndex];
-        
-        if (!currentSlide) {
-          return (
-            <div className={getCardClasses()}>
-              <div className="processing-container">
-                <h2 className="text-h2">Ошибка загрузки данных</h2>
-              </div>
-            </div>
-          );
-        }
+        const currentSlide = carouselData[carouselIndex] || carouselData[0];
         
         return (
           <div className={getCardClasses()}>
@@ -1176,13 +799,11 @@ export default function CareFuturePage() {
 
               {/* Навигация карусели */}
               <div className="carousel-navigation-bottom">
-                {safeCarouselIndex > 0 && (
+                {carouselIndex > 0 && (
                   <button 
                     type="button"
-                    className={`carousel-arrow carousel-arrow-left ${carouselNavigating ? 'disabled' : ''}`}
-                    onClick={() => navigateCarousel('prev')}
-                    disabled={carouselNavigating}
-                    aria-label="Предыдущий слайд"
+                    className="carousel-arrow carousel-arrow-left"
+                    onClick={() => setCarouselIndex(prev => Math.max(0, prev - 1))}
                   >
                     <svg viewBox="0 0 24 24" width="20" height="20">
                       <path 
@@ -1202,21 +823,17 @@ export default function CareFuturePage() {
                     <button
                       key={idx}
                       type="button"
-                      className={`carousel-dot ${idx === safeCarouselIndex ? 'active' : ''} ${carouselNavigating ? 'disabled' : ''}`}
-                      onClick={() => goToCarouselSlide(idx)}
-                      disabled={carouselNavigating}
-                      aria-label={`Слайд ${idx + 1}`}
+                      className={`carousel-dot ${idx === carouselIndex ? 'active' : ''}`}
+                      onClick={() => setCarouselIndex(idx)}
                     />
                   ))}
                 </div>
                 
-                {safeCarouselIndex < carouselData.length - 1 && (
+                {carouselIndex < carouselData.length - 1 && (
                   <button 
                     type="button"
-                    className={`carousel-arrow carousel-arrow-right ${carouselNavigating ? 'disabled' : ''}`}
-                    onClick={() => navigateCarousel('next')}
-                    disabled={carouselNavigating}
-                    aria-label="Следующий слайд"
+                    className="carousel-arrow carousel-arrow-right"
+                    onClick={() => setCarouselIndex(prev => Math.min(carouselData.length - 1, prev + 1))}
                   >
                     <svg viewBox="0 0 24 24" width="20" height="20">
                       <path 
@@ -1239,7 +856,7 @@ export default function CareFuturePage() {
                 className="btn-universal btn-primary btn-large btn-fullwidth"
                 onClick={(e) => {
                   createRipple(e);
-                  setStageProtected('manager', 'contact-manager-button');
+                  setStage('manager');
                 }}
               >
                 Связаться с менеджером
@@ -1267,7 +884,7 @@ export default function CareFuturePage() {
                   value={mgrSurname}
                   onChange={(e) => setMgrSurname(e.target.value)}
                   placeholder="Иванов"
-                  style={getInputStyle()}
+                  style={inputStyle}
                 />
               </div>
 
@@ -1279,7 +896,7 @@ export default function CareFuturePage() {
                   value={mgrName}
                   onChange={(e) => setMgrName(e.target.value)}
                   placeholder="Иван"
-                  style={getInputStyle()}
+                  style={inputStyle}
                 />
               </div>
 
@@ -1291,7 +908,7 @@ export default function CareFuturePage() {
                   value={mgrCity}
                   onChange={(e) => setMgrCity(e.target.value)}
                   placeholder="Москва"
-                  style={getInputStyle()}
+                  style={inputStyle}
                 />
               </div>
 
@@ -1368,18 +985,16 @@ export default function CareFuturePage() {
       {/* Кнопка "Далее" */}
       {(stage === 'email' || stage === 'form') && (
         <button
-          ref={nextRef}
           className={getNextButtonClasses()}
           onClick={() => {
             if (stage === 'email') {
-              handleEmailSubmit({ preventDefault: () => {} });
+              handleEmailSubmit();
             } else if (stage === 'form') {
               handleCalculate();
             }
           }}
-          disabled={!isNextButtonReady()}
         >
-          <div className={getShakerClasses()}>
+          <div className="shaker">
             <svg viewBox="0 0 24 24">
               <path 
                 d="M9 18l6-6-6-6" 

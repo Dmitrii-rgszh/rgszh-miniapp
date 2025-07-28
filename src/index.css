@@ -1,14 +1,9 @@
 /* ============================================================================
-   index.css - ИСПРАВЛЕННАЯ ВЕРСИЯ БЕЗ КОНФЛИКТА С ФОРМАМИ
-   ----------------------------------------------------------------------------
-   ✅ Убран конфликт с контейнерами форм
-   ✅ Добавлен только безопасный автоскролл
-   ✅ Сохранена совместимость с модульной архитектурой
-   ✅ Кликабельность всех элементов работает
+   index.css - МИНИМАЛЬНАЯ ВЕРСИЯ БЕЗ КОНФЛИКТОВ
    ============================================================================ */
 
 /* ======================================
-   ГЛОБАЛЬНЫЕ СТИЛИ ДЛЯ BODY И HTML
+   ГЛОБАЛЬНЫЙ RESET
    ====================================== */
 * {
   margin: 0;
@@ -16,293 +11,96 @@
   box-sizing: border-box;
 }
 
+/* ======================================
+   БАЗОВЫЕ СТИЛИ
+   ====================================== */
 html, body {
   height: 100%;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: linear-gradient(
-    135deg,
-    rgb(180, 0, 55) 0%,
-    rgb(153, 0, 55) 25%,
-    rgb(0, 40, 130) 75%,
-    rgb(0, 32, 104) 100%
-  );
-  background-attachment: fixed;
   overflow-x: hidden;
   color: white;
-  
-  /* КРИТИЧНО: Базовая кликабельность для всего приложения */
-  -webkit-user-select: auto;
-  -moz-user-select: auto;
-  -ms-user-select: auto;
-  user-select: auto;
-  
-  -webkit-touch-callout: auto;
-  pointer-events: auto;
-  cursor: default;
-  
-  /* Touch события */
   touch-action: manipulation;
-  
-  /* CSS переменная для работы с высотой viewport */
-  --vh: 1vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* ======================================
-   БЕЗОПАСНЫЙ АВТОСКРОЛЛ (без конфликтов)
+   КОРНЕВОЙ ЭЛЕМЕНТ
+   ====================================== */
+#root {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+/* ======================================
+   ПЛАВНЫЙ СКРОЛЛ
    ====================================== */
 html {
-  /* Плавная прокрутка для всего приложения */
   scroll-behavior: smooth;
-  
-  /* Отступы при автоскролле */
   scroll-padding-top: 80px;
-  scroll-padding-bottom: 20vh; /* Место для клавиатуры */
-}
-
-/* Специфично для мобильных устройств */
-@media (max-width: 768px) {
-  html {
-    scroll-padding-top: 60px;
-    scroll-padding-bottom: 40vh; /* Больше места для клавиатуры на мобильных */
-  }
-}
-
-/* Фикс для iOS Safari */
-@supports (-webkit-touch-callout: none) {
-  /* iOS specific */
-  html {
-    /* Предотвращаем баунс-эффект */
-    overscroll-behavior: none;
-  }
+  scroll-padding-bottom: 20vh;
 }
 
 /* ======================================
-   ГЛОБАЛЬНЫЕ СТИЛИ ДЛЯ КНОПОК - ИСПРАВЛЕНИЕ КЛИКАБЕЛЬНОСТИ
+   КНОПКИ - БАЗОВЫЕ СТИЛИ
    ====================================== */
-
-/* ВСЕ кнопки должны быть кликабельными */
 button,
 [role="button"],
 .btn,
 .btn-universal,
 .btn-primary,
 .btn-secondary,
-.button,
-input[type="button"],
-input[type="submit"],
 a {
-  /* КРИТИЧНО: разрешаем все интерактивные события */
-  -webkit-user-select: auto !important;
-  -moz-user-select: auto !important;
-  -ms-user-select: auto !important;
-  user-select: auto !important;
-  
-  /* КРИТИЧНО: разрешаем touch события */
-  -webkit-touch-callout: auto !important;
-  pointer-events: auto !important;
-  cursor: pointer !important;
-  
-  /* Подсветка при тапе на мобильных */
-  -webkit-tap-highlight-color: rgba(255, 255, 255, 0.2) !important;
-  
-  /* Touch действия */
-  touch-action: manipulation !important;
-  
-  /* Убираем outline только после клика, но оставляем возможность фокуса */
-  outline: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: rgba(255, 255, 255, 0.2);
+  touch-action: manipulation;
+  user-select: none;
+}
+
+/* Убираем outline при клике, но оставляем для клавиатурной навигации */
+button:focus-visible,
+[role="button"]:focus-visible,
+a:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.5);
+  outline-offset: 2px;
 }
 
 /* ======================================
-   ГЛОБАЛЬНЫЕ СТИЛИ ДЛЯ INPUT ПОЛЕЙ (БЕЗОПАСНЫЕ)
+   УТИЛИТАРНЫЕ КЛАССЫ
    ====================================== */
-
-/* 🎯 БЕЗОПАСНЫЕ стили только для input элементов БЕЗ специальных классов */
-input[type="text"]:not([class*="form-"]):not([class*="card-"]),
-input[type="email"]:not([class*="form-"]):not([class*="card-"]),
-input[type="password"]:not([class*="form-"]):not([class*="card-"]),
-input[type="search"]:not([class*="form-"]):not([class*="card-"]),
-textarea:not([class*="form-"]):not([class*="card-"]) {
-  /* КРИТИЧНО: разрешаем все события ввода */
-  -webkit-user-select: auto !important;
-  -moz-user-select: auto !important;
-  -ms-user-select: auto !important;
-  user-select: auto !important;
-  
-  /* КРИТИЧНО: курсор ввода текста */
-  cursor: text !important;
-  
-  /* КРИТИЧНО: разрешаем touch события */
-  -webkit-touch-callout: auto !important;
-  pointer-events: auto !important;
-  
-  /* Подсветка при тапе на мобильных */
-  -webkit-tap-highlight-color: rgba(255, 255, 255, 0.1) !important;
-  
-  /* Touch действия для input */
-  touch-action: manipulation !important;
-  
-  /* Outline для доступности */
-  outline: none;
-  
-  /* Базовые стили (только если нет других стилей) */
-  font-family: "Segoe UI", sans-serif;
-  font-size: 16px; /* Предотвращаем zoom на iOS */
-  
-  /* Принудительно делаем интерактивным */
-  z-index: 10 !important;
-  position: relative !important;
-}
-
-/* SELECT элементы */
-select:not([class*="form-"]):not([class*="card-"]) {
-  font-family: "Segoe UI", sans-serif;
-  font-size: 16px !important; /* Предотвращаем zoom на iOS */
-  position: relative !important;
-  z-index: 10 !important;
-  cursor: pointer !important;
-  pointer-events: auto !important;
-  touch-action: manipulation !important;
-}
-
-/* ======================================
-   ОСТАЛЬНЫЕ ИНТЕРАКТИВНЫЕ ЭЛЕМЕНТЫ
-   ====================================== */
-
-/* Autosuggest suggestions */
-.react-autosuggest__suggestions-container,
-.react-autosuggest__suggestions-list,
-.react-autosuggest__suggestion,
-.autosuggest-suggestion {
-  pointer-events: auto !important;
-  cursor: pointer !important;
-  touch-action: manipulation !important;
-  -webkit-user-select: auto !important;
-  user-select: auto !important;
-}
-
-/* Labels для input полей */
-label,
-.form-label {
-  pointer-events: auto !important;
-  cursor: pointer !important;
-  touch-action: manipulation !important;
-  -webkit-user-select: auto !important;
-  user-select: auto !important;
-}
-
-/* Hover эффекты для кнопок */
-button:hover,
-[role="button"]:hover,
-.btn:hover {
-  opacity: 0.9 !important;
-}
-
-/* Active состояние */
-button:active,
-[role="button"]:active,
-.btn:active {
-  transform: scale(0.98) !important;
-}
-
-/* ======================================
-   СКРОЛЛБАРЫ (для элементов с overflow)
-   ====================================== */
-::-webkit-scrollbar {
-  width: 4px;
-}
-
-::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.3);
-  border-radius: 2px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.5);
-}
-
-/* Firefox */
-* {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.3) rgba(255, 255, 255, 0.1);
-}
-
-/* ======================================
-   ROOT ЭЛЕМЕНТ ДЛЯ REACT
-   ====================================== */
-#root {
-  height: 100vh;
-  width: 100vw;
-  display: flex;
-  flex-direction: column;
-}
-
-/* ======================================
-   УНИВЕРСАЛЬНЫЕ УТИЛИТЫ
-   ====================================== */
-.full-height {
-  height: 100vh;
-}
-
-.full-width {
-  width: 100vw;
-}
-
-.flex-center {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
 .text-center {
   text-align: center;
 }
 
+.hidden {
+  display: none !important;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 /* ======================================
-   МЕДИА-ЗАПРОСЫ ДЛЯ АДАПТИВНОСТИ
+   МЕДИА-ЗАПРОСЫ
    ====================================== */
-
-/* Планшеты */
-@media (max-width: 768px) and (min-width: 375px) {
-  html, body {
-    font-size: 16px;
-  }
-}
-
-/* Мобильные */
-@media (max-width: 374px) {
-  html, body {
-    font-size: 14px;
-  }
-  
-  /* Более компактные поля для маленьких экранов */
-  input[type="text"]:not([class*="form-"]):not([class*="card-"]),
-  input[type="email"]:not([class*="form-"]):not([class*="card-"]),
-  input[type="password"]:not([class*="form-"]):not([class*="card-"]),
-  input[type="search"]:not([class*="form-"]):not([class*="card-"]),
-  textarea:not([class*="form-"]):not([class*="card-"]) {
-    font-size: 16px; /* Предотвращаем zoom на iOS */
+@media (max-width: 768px) {
+  html {
+    scroll-padding-top: 60px;
+    scroll-padding-bottom: 40vh;
   }
 }
 
 /* ======================================
-   РЕЖИМ ВЫСОКОЙ КОНТРАСТНОСТИ
-   ====================================== */
-@media (prefers-contrast: high) {
-  input[type="text"]:not([class*="form-"]):not([class*="card-"]),
-  input[type="email"]:not([class*="form-"]):not([class*="card-"]),
-  input[type="password"]:not([class*="form-"]):not([class*="card-"]),
-  input[type="search"]:not([class*="form-"]):not([class*="card-"]),
-  textarea:not([class*="form-"]):not([class*="card-"]) {
-    border: 2px solid rgba(255, 255, 255, 0.8) !important;
-  }
-}
-
-/* ======================================
-   РЕЖИМ УМЕНЬШЕННОЙ АНИМАЦИИ
+   ДОСТУПНОСТЬ
    ====================================== */
 @media (prefers-reduced-motion: reduce) {
   * {
@@ -311,25 +109,115 @@ button:active,
     transition-duration: 0.01ms !important;
   }
   
-  /* Отключаем плавный скролл для пользователей с особыми потребностями */
   html {
-    scroll-behavior: auto !important;
+    scroll-behavior: auto;
   }
 }
 
 /* ======================================
-   ПОМОЩНИК ДЛЯ АВТОСКРОЛЛА (без конфликтов)
+   iOS СПЕЦИФИЧНЫЕ ИСПРАВЛЕНИЯ
    ====================================== */
-
-/* Утилитный класс для элементов, которым нужен автоскролл */
-.enable-autoscroll {
-  /* Добавляем отступ снизу только при необходимости */
-  padding-bottom: 150px !important;
+@supports (-webkit-touch-callout: none) {
+  html {
+    overscroll-behavior: none;
+  }
+  
+  body {
+    -webkit-text-size-adjust: 100%;
+  }
 }
 
-.enable-autoscroll-mobile {
-  /* Только для мобильных */
-  @media (max-width: 768px) {
-    padding-bottom: 200px !important;
+/* ======================================
+   ФИКС КОНТЕЙНЕРОВ ДЛЯ КЛИКАБЕЛЬНОСТИ
+   ====================================== */
+
+/* Главный контейнер приложения */
+.main-app-container {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Контейнер фонов - не должен блокировать клики */
+.backgrounds-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: -1; /* Фоны всегда сзади */
+}
+
+/* Контейнер контента */
+.main-content-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  z-index: 1; /* Контент выше фонов */
+}
+
+/* Главный контейнер страниц */
+.main-container {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  z-index: 1;
+}
+
+.next-btn:not(.disabled),
+.back-btn:not(.disabled),
+.home-btn:not(.disabled),
+.btn-universal:not(.disabled),
+button:not(:disabled) {
+  position: relative;
+  z-index: 10;
+}
+
+/* Карточки не должны перекрывать кнопки навигации */
+.card-container {
+  position: relative;
+  z-index: 2; /* Ниже кнопок навигации */
+}
+
+/* Логотип не должен блокировать кнопки */
+.logo-wrapper {
+}
+
+.logo-wrapper img {
+}
+
+/* Отладочный режим - добавьте этот класс к body для визуализации */
+body.debug-clicks .next-btn {
+  outline: 3px solid red !important;
+  background: rgba(255, 0, 0, 0.3) !important;
+}
+
+body.debug-clicks .main-content-container {
+  outline: 2px solid blue !important;
+}
+
+body.debug-clicks .card-container {
+  outline: 2px solid green !important;
+}
+
+/* Фикс для мобильных touch событий */
+.next-btn,
+.back-btn,
+.btn-universal,
+button {
+  touch-action: manipulation !important; /* Убирает задержку 300ms */
+  -webkit-touch-callout: none !important;
+  cursor: pointer !important;
+}
+
+/* Специальный фикс для iOS */
+@supports (-webkit-touch-callout: none) {
+  .next-btn,
+  .back-btn,
+  .btn-universal,
+  button {
+    cursor: pointer !important;
+    -webkit-tap-highlight-color: transparent !important;
   }
 }
