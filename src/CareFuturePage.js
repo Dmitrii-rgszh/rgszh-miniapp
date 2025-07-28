@@ -122,143 +122,6 @@ export default function CareFuturePage() {
     });
   }, [stage, isNavigating, isExiting, hasCalculated, resultData, email, birthDate, gender]);
 
-  // ===== АГРЕССИВНОЕ ИСПРАВЛЕНИЕ INPUT ПОЛЕЙ =====
-  useEffect(() => {
-    const aggressiveInputFix = () => {
-      const cardInputs = document.querySelectorAll('.card-container input[type="email"], .card-container input[type="text"], .card-container input[type="password"], .card-container select');
-      
-      cardInputs.forEach((input) => {
-        Object.assign(input.style, {
-          position: 'relative',
-          zIndex: '9999',
-          pointerEvents: 'auto',
-          cursor: input.tagName === 'SELECT' ? 'pointer' : 'text',
-          userSelect: 'auto',
-          WebkitUserSelect: 'auto',
-          touchAction: 'manipulation',
-          WebkitTouchCallout: 'auto',
-          display: 'block',
-          width: '100%',
-          height: 'auto',
-          minHeight: '32px',
-          opacity: '1',
-          visibility: 'visible',
-          fontSize: '14px',
-          transform: 'scale(1)',
-          transformOrigin: 'center',
-          background: '#f0f2f5',
-          border: '1px solid #e3e7ee',
-          borderRadius: '8px',
-          padding: '6px 10px',
-          color: '#333',
-          textAlign: 'center',
-          fontFamily: '"Segoe UI", sans-serif',
-          lineHeight: '1.4',
-          boxSizing: 'border-box',
-          outline: 'none',
-          WebkitAppearance: 'none',
-          appearance: 'none'
-        });
-        
-        const forceClickHandler = (e) => {
-          e.stopPropagation();
-          input.focus();
-        };
-        
-        const forceFocusHandler = (e) => {
-          Object.assign(input.style, {
-            borderColor: 'rgb(180, 0, 55)',
-            boxShadow: '0 0 0 3px rgba(180, 0, 55, 0.1)',
-            background: 'white'
-          });
-        };
-        
-        const forceBlurHandler = (e) => {
-          Object.assign(input.style, {
-            borderColor: '#e3e7ee',
-            boxShadow: 'none',
-            background: '#f5f7fa'
-          });
-        };
-        
-        input.removeEventListener('click', forceClickHandler);
-        input.removeEventListener('focus', forceFocusHandler);
-        input.removeEventListener('blur', forceBlurHandler);
-        
-        input.addEventListener('click', forceClickHandler, { passive: false });
-        input.addEventListener('focus', forceFocusHandler, { passive: false });
-        input.addEventListener('blur', forceBlurHandler, { passive: false });
-        input.addEventListener('touchstart', forceClickHandler, { passive: false });
-        input.addEventListener('pointerdown', forceClickHandler, { passive: false });
-      });
-    };
-    
-    const timer1 = setTimeout(aggressiveInputFix, 100);
-    const timer2 = setTimeout(aggressiveInputFix, 500);
-    const timer3 = setTimeout(aggressiveInputFix, 1000);
-    
-    const observer = new MutationObserver(() => {
-      setTimeout(aggressiveInputFix, 50);
-    });
-    
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true
-    });
-    
-    return () => {
-      clearTimeout(timer1);
-      clearTimeout(timer2);
-      clearTimeout(timer3);
-      observer.disconnect();
-    };
-  }, [stage]);
-
-  // ===== ДОПОЛНИТЕЛЬНОЕ ИСПРАВЛЕНИЕ ДЛЯ EMAIL ПОЛЯ =====
-  useEffect(() => {
-    if (stage === 'email' && emailInputRef.current) {
-      const emailInput = emailInputRef.current;
-      
-      const forceEmailClickability = () => {
-        Object.assign(emailInput.style, {
-          position: 'relative',
-          zIndex: '99999',
-          pointerEvents: 'auto',
-          cursor: 'text',
-          userSelect: 'auto',
-          WebkitUserSelect: 'auto',
-          touchAction: 'manipulation',
-          display: 'block',
-          width: '100%',
-          height: '32px',
-          fontSize: '14px',
-          transform: 'scale(1)',
-          opacity: '1',
-          visibility: 'visible'
-        });
-      };
-      
-      forceEmailClickability();
-      
-      const handleEmailClick = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        emailInput.focus();
-        emailInput.click();
-      };
-      
-      emailInput.addEventListener('touchstart', handleEmailClick, { passive: false });
-      emailInput.addEventListener('mousedown', handleEmailClick, { passive: false });
-      emailInput.addEventListener('pointerdown', handleEmailClick, { passive: false });
-      
-      return () => {
-        emailInput.removeEventListener('touchstart', handleEmailClick);
-        emailInput.removeEventListener('mousedown', handleEmailClick);
-        emailInput.removeEventListener('pointerdown', handleEmailClick);
-      };
-    }
-  }, [stage]);
-
   // ===== АНИМАЦИЯ ВХОДА =====
   useEffect(() => {
     const timer1 = setTimeout(() => {
@@ -396,6 +259,13 @@ export default function CareFuturePage() {
 
   // ===== ВАЛИДАЦИЯ EMAIL =====
   const validateEmail = (email) => {
+    // Базовая проверка формата email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  // ===== СТРОГАЯ ПРОВЕРКА КОРПОРАТИВНОЙ ПОЧТЫ (используется в handleEmailSubmit) =====
+  const validateCorporateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return false;
@@ -407,6 +277,33 @@ export default function CareFuturePage() {
     
     return isVtbEmail || isRgslEmail;
   };
+
+  // ===== ОБНОВЛЕННЫЙ ОБРАБОТЧИК EMAIL =====
+    const handleEmailSubmit = (e) => {
+      e.preventDefault();
+    
+      console.log('📧 Email submit clicked');
+    
+      if (isNavigating) {
+        console.log('⚠️ Email submit blocked - already navigating');
+        return;
+      }
+    
+      // Используем строгую проверку здесь
+      if (!validateCorporateEmail(email)) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+          setEmailError('Введите корректный email');
+        } else {
+          setEmailError('Используйте корпоративную почту (@vtb.ru или @rgsl.ru)');
+        }
+        return;
+      }
+    
+      setEmailError('');
+      console.log('📧 Email → Form');
+      setStageProtected('form', 'handleEmailSubmit');
+    };
 
   // ===== ВАЛИДАЦИЯ ФОРМЫ =====
   const validateForm = () => {
@@ -455,7 +352,7 @@ export default function CareFuturePage() {
   // ===== ПРОВЕРКА ГОТОВНОСТИ КНОПКИ =====
   const isNextButtonReady = () => {
     if (stage === 'email') {
-      return validateEmail(email);
+      return email && email.length >= 3; // Упрощенная проверка
     } else if (stage === 'form') {
       return birthDate && gender && calcType && amountRaw && parseInt(amountRaw) > 0 && yearlyIncome;
     }
@@ -819,13 +716,13 @@ export default function CareFuturePage() {
   ].filter(Boolean).join(' ');
 
   const getNextButtonClasses = () => {
-    const canProceed = isNextButtonReady();
+    const isReady = isNextButtonReady();
     
     return [
       'next-btn',
-      canProceed && contentAnimated ? 'animate-next' : '',
+      contentAnimated ? 'animate-next' : '',
       isExiting ? 'animate-next-exit' : '',
-      !canProceed ? 'disabled' : ''
+      !isReady ? 'disabled' : ''
     ].filter(Boolean).join(' ');
   };
 
@@ -834,30 +731,21 @@ export default function CareFuturePage() {
     
     return [
       'shaker',
-      isReady && contentAnimated ? 'shake-btn' : ''
+      isReady ? 'shake-btn' : ''
     ].filter(Boolean).join(' ');
   };
 
-  // ===== СТИЛИ ДЛЯ INPUT =====
+  // ===== УПРОЩЕННЫЕ СТИЛИ ДЛЯ INPUT =====
   const getInputStyle = (isEmail = false) => ({
     position: 'relative',
-    zIndex: isEmail ? '99999' : '9999',
+    zIndex: '10', // УМЕНЬШЕНО с 99999!
     pointerEvents: 'auto',
     cursor: 'text',
-    userSelect: 'auto',
-    WebkitUserSelect: 'auto',
-    touchAction: 'manipulation',
-    WebkitTouchCallout: 'auto',
-    WebkitTapHighlightColor: 'rgba(180, 0, 55, 0.2)',
     display: 'block',
     width: '100%',
     height: '32px',
     minHeight: '32px',
-    opacity: '1',
-    visibility: 'visible',
     fontSize: '14px',
-    transform: 'scale(1)',
-    transformOrigin: 'center',
     background: '#f0f2f5',
     border: '1px solid #e3e7ee',
     borderRadius: '8px',
@@ -865,12 +753,8 @@ export default function CareFuturePage() {
     color: '#333',
     textAlign: 'center',
     fontFamily: '"Segoe UI", sans-serif',
-    lineHeight: '1.4',
     boxSizing: 'border-box',
-    outline: 'none',
-    WebkitAppearance: 'none',
-    appearance: 'none',
-    transition: 'all 0.3s ease'
+    outline: 'none'
   });
 
   const getSelectStyle = () => ({
