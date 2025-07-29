@@ -8,7 +8,6 @@ import { useNavigate } from 'react-router-dom';
 import { apiCall } from './config';
 import logoImage from './components/logo.png';
 import DateWheelPicker from './DateWheelPicker';
-import useMobileFix from './hooks/useMobileFix';
 
 // Подключаем модульные CSS файлы
 import './Styles/containers.css';
@@ -61,36 +60,109 @@ export default function CareFuturePage() {
   const [mgrError, setMgrError] = useState('');
   const [isSendingMgr, setIsSendingMgr] = useState(false);
 
-  // ===== ВЫЗОВ ХУКА ДЛЯ ИСПРАВЛЕНИЯ МОБИЛЬНЫХ ПРОБЛЕМ =====
-  // Важно: вызывается после всех useState, но перед useEffect
-  useMobileFix();
-
   useEffect(() => {
-    // Безопасный обработчик только для кнопок
+    // ❌ УБИРАЕМ ПРОБЛЕМНЫЙ КОД С ГЛОБАЛЬНЫМИ ОБРАБОТЧИКАМИ
+    // Удаляем все конфликтующие обработчики, которые блокируют кнопки
+    const removeProblematicHandlers = () => {
+      // Ищем и удаляем проблемные обработчики
+      const emailInput = document.querySelector('input[type="email"]');
+      if (emailInput) {
+        // Клонируем элемент чтобы удалить ВСЕ обработчики
+        const newEmailInput = emailInput.cloneNode(true);
+        emailInput.parentNode.replaceChild(newEmailInput, emailInput);
+        
+        // Восстанавливаем только нужные React обработчики
+        newEmailInput.addEventListener('input', (e) => {
+          setEmail(e.target.value);
+          if (emailError) setEmailError('');
+        });
+        
+        newEmailInput.addEventListener('change', (e) => {
+          setEmail(e.target.value);
+        });
+        
+        console.log('✅ Removed problematic touch handlers');
+      }
+    };
+
+    // ✅ ДОБАВЛЯЕМ БЕЗОПАСНЫЕ ОБРАБОТЧИКИ ТОЛЬКО ДЛЯ EMAIL INPUT
+    const safeEmailFix = () => {
+      const emailInput = document.querySelector('input[type="email"]');
+      if (emailInput) {
+        // Улучшаем стили для лучшего взаимодействия
+        Object.assign(emailInput.style, {
+          fontSize: '16px', // Предотвращает зум на iOS
+          touchAction: 'manipulation',
+          WebkitTapHighlightColor: 'rgba(180, 0, 55, 0.2)',
+          WebkitTouchCallout: 'none',
+          WebkitUserSelect: 'text',
+          userSelect: 'text'
+        });
+        
+        // Добавляем ТОЛЬКО точечные обработчики БЕЗ stopPropagation
+        const focusHandler = (e) => {
+          // НЕ ИСПОЛЬЗУЕМ stopPropagation чтобы не блокировать кнопки!
+          setTimeout(() => emailInput.focus(), 50);
+        };
+        
+        emailInput.addEventListener('touchstart', focusHandler, { passive: true });
+        
+        console.log('✅ Safe email input fix applied');
+      }
+    };
+
+    // ✅ УЛУЧШАЕМ КЛИКИ ПО КНОПКАМ (БЕЗ КОНФЛИКТОВ)
     const improveButtonClicks = (e) => {
-      // Проверяем, что это НЕ input/textarea/select
+      // НЕ трогаем поля ввода
       if (e.target.matches('input, textarea, select, [contenteditable]')) {
-        return; // Ничего не делаем для полей ввода
+        return;
       }
     
-      // Только для кнопок добавляем улучшение
+      // Улучшаем только кнопки
       const button = e.target.closest('.next-btn, .back-btn, button');
       if (button && !button.disabled) {
-        // Добавляем визуальный фидбек
+        // Визуальный фидбек
         button.style.opacity = '0.8';
         setTimeout(() => {
           button.style.opacity = '';
         }, 100);
       }
     };
-  
-    // Используем passive: true чтобы не блокировать скролл
+
+    // Применяем исправления
+    removeProblematicHandlers();
+    setTimeout(safeEmailFix, 100);
+    
+    // Добавляем безопасные обработчики для кнопок
     document.addEventListener('touchstart', improveButtonClicks, { passive: true });
-  
+
     return () => {
       document.removeEventListener('touchstart', improveButtonClicks);
     };
   }, []);
+
+  // ===== ДОПОЛНИТЕЛЬНЫЙ ФИКС ДЛЯ КНОПОК =====
+  useEffect(() => {
+    // Принудительно активируем кнопки если они заблокированы
+    const reactivateButtons = () => {
+      const buttons = document.querySelectorAll('.next-btn, .back-btn');
+      buttons.forEach(button => {
+        if (button) {
+          button.style.pointerEvents = 'auto';
+          button.style.touchAction = 'manipulation';
+          button.style.userSelect = 'none';
+          button.style.WebkitUserSelect = 'none';
+          button.style.WebkitTouchCallout = 'none';
+          button.style.cursor = 'pointer';
+          
+          console.log('✅ Button reactivated:', button.className);
+        }
+      });
+    };
+
+    const timer = setTimeout(reactivateButtons, 200);
+    return () => clearTimeout(timer);
+  }, [stage]); // Перезапускаем при смене этапа
   
   // ===== АНИМАЦИЯ ВХОДА =====
   useEffect(() => {

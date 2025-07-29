@@ -1,6 +1,6 @@
-// MainApp.js - МИНИМАЛЬНАЯ ВЕРСИЯ С CSS ФОНАМИ
+// MainApp.js - ИСПРАВЛЕННАЯ ВЕРСИЯ С HASHROUTER
 import React, { useEffect } from 'react';
-import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+import { HashRouter, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 
 // Импорты компонентов
 import WelcomePage     from './WelcomePage';
@@ -77,18 +77,42 @@ function AutoNavigator({ children }) {
   const location = useLocation();
   
   useEffect(() => {
-    const isRootPath = location.pathname === '/' && (!location.hash || location.hash === '#/' || location.hash === '');
+    // ✅ ИСПРАВЛЕНО: правильная проверка для HashRouter
+    const isRootPath = location.pathname === '/' || location.pathname === '';
     
     if (isRootPath) {
       const timer = setTimeout(() => {
-        navigate('/main-menu');
+        navigate('/main-menu'); // HashRouter автоматически добавит #
       }, 3000);
       
       return () => clearTimeout(timer);
     }
-  }, [location.pathname, location.hash, navigate]);
+  }, [location.pathname, navigate]);
   
   return children;
+}
+
+// ===== ВНУТРЕННИЙ КОМПОНЕНТ С РОУТАМИ =====
+function AppRoutes() {
+  return (
+    <AutoNavigator>
+      <div className="main-content-container">
+        <Routes>
+          <Route path="/" element={<WelcomePage />} />
+          <Route path="/main-menu" element={<MainMenu />} />
+          <Route path="/polls" element={<PollsPage />} />
+          <Route path="/employee" element={<EmployeePage />} />
+          <Route path="/snp" element={<SNPPage />} />
+          <Route path="/assessment" element={<AssessmentPage />} />
+          <Route path="/feedback" element={<FeedbackPage />} />
+          <Route path="/justincase" element={<JustincasePage />} />
+          <Route path="/care-future" element={<CareFuturePage />} />
+          <Route path="/marza-poll" element={<MarzaPollPage />} />
+          <Route path="*" element={<WelcomePage />} />
+        </Routes>
+      </div>
+    </AutoNavigator>
+  );
 }
 
 // ===== ГЛАВНЫЙ КОМПОНЕНТ =====
@@ -100,6 +124,11 @@ function MainApp() {
       tg.expand();
       tg.setHeaderColor('#B40037');
       tg.ready();
+      
+      // ✅ ДОБАВЛЯЕМ: отключаем back button Telegram
+      tg.BackButton.hide();
+      
+      console.log('📱 Telegram WebApp initialized with HashRouter');
     }
   }, []);
 
@@ -112,6 +141,7 @@ function MainApp() {
       style.textContent = `
         input, textarea, select { font-size: 16px !important; }
         button { touch-action: manipulation; }
+        * { -webkit-tap-highlight-color: transparent; }
       `;
       document.head.appendChild(style);
       
@@ -123,37 +153,40 @@ function MainApp() {
     }
   }, []);
 
+  // ===== HASHROUTER FIX =====
+  useEffect(() => {
+    // Убираем конфликтующие обработчики navigation
+    const originalPushState = history.pushState;
+    const originalReplaceState = history.replaceState;
+    
+    // Логируем все изменения роутинга для отладки
+    window.addEventListener('hashchange', (e) => {
+      console.log('🔄 Hash changed:', window.location.hash);
+    });
+    
+    return () => {
+      history.pushState = originalPushState;
+      history.replaceState = originalReplaceState;
+    };
+  }, []);
+
   return (
     <ErrorBoundary>
-      <div className="main-app-container">
-        {/* ===== ФОНОВЫЕ СЛОИ ЧЕРЕЗ CSS ===== */}
-        <div className="backgrounds-container">
-          <div className="background-layer active gradient-fallback" />
-          <div className="background-layer" data-bg="1" />
-          <div className="background-layer" data-bg="2" />
-          <div className="background-layer" data-bg="3" />
-          <div className="background-layer" data-bg="4" />
-        </div>
-        
-        {/* ===== ОСНОВНОЙ КОНТЕНТ ===== */}
-        <AutoNavigator>
-          <div className="main-content-container">
-            <Routes>
-              <Route path="/" element={<WelcomePage />} />
-              <Route path="/main-menu" element={<MainMenu />} />
-              <Route path="/polls" element={<PollsPage />} />
-              <Route path="/employee" element={<EmployeePage />} />
-              <Route path="/snp" element={<SNPPage />} />
-              <Route path="/assessment" element={<AssessmentPage />} />
-              <Route path="/feedback" element={<FeedbackPage />} />
-              <Route path="/justincase" element={<JustincasePage />} />
-              <Route path="/care-future" element={<CareFuturePage />} />
-              <Route path="/marza-poll" element={<MarzaPollPage />} />
-              <Route path="*" element={<WelcomePage />} />
-            </Routes>
+      <HashRouter>
+        <div className="main-app-container">
+          {/* ===== ФОНОВЫЕ СЛОИ ЧЕРЕЗ CSS ===== */}
+          <div className="backgrounds-container">
+            <div className="background-layer active gradient-fallback" />
+            <div className="background-layer" data-bg="1" />
+            <div className="background-layer" data-bg="2" />
+            <div className="background-layer" data-bg="3" />
+            <div className="background-layer" data-bg="4" />
           </div>
-        </AutoNavigator>
-      </div>
+          
+          {/* ===== ОСНОВНОЙ КОНТЕНТ ===== */}
+          <AppRoutes />
+        </div>
+      </HashRouter>
     </ErrorBoundary>
   );
 }
