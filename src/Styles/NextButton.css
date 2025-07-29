@@ -141,16 +141,16 @@
    ====================================== */
 @media (max-width: 374px) {
   .next-btn {
-    width: 48px;
-    height: 48px;
-    top: 76px;
-    right: 16px;
+    width: 60px;
+    height: 60px;
+    top: 102px;
+    right: 20px;
     border-radius: 12px;
   }
   
   .next-btn svg {
-    width: 22px;
-    height: 22px;
+    width: 30px;
+    height: 30px;
   }
 }
 
@@ -166,7 +166,7 @@
   
   @media (max-width: 374px) {
     .next-btn {
-      right: max(16px, env(safe-area-inset-right, 16px));
+      right: max(60px, env(safe-area-inset-right, 60px));
     }
   }
 }

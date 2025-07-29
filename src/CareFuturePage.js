@@ -776,7 +776,7 @@ export default function CareFuturePage() {
   return (
     <div className="main-container">
       {/* Логотип */}
-      <div ref={logoRef} className="logo-wrapper">
+      <div ref={logoRef} className="logo-wrapper animated">
         <img
           src={logoImage}
           alt="Логотип РГС Жизнь"
