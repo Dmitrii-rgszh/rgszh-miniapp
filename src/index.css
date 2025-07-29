@@ -165,6 +165,7 @@ a:focus-visible {
   z-index: 1;
 }
 
+/* Z-индексы для элементов */
 .next-btn:not(.disabled),
 .back-btn:not(.disabled),
 .home-btn:not(.disabled),
@@ -180,44 +181,13 @@ button:not(:disabled) {
   z-index: 2; /* Ниже кнопок навигации */
 }
 
-/* Логотип не должен блокировать кнопки */
-.logo-wrapper {
-}
-
-.logo-wrapper img {
-}
-
-/* Отладочный режим - добавьте этот класс к body для визуализации */
-body.debug-clicks .next-btn {
-  outline: 3px solid red !important;
-  background: rgba(255, 0, 0, 0.3) !important;
-}
-
-body.debug-clicks .main-content-container {
-  outline: 2px solid blue !important;
-}
-
-body.debug-clicks .card-container {
-  outline: 2px solid green !important;
-}
-
-/* Фикс для мобильных touch событий */
-.next-btn,
-.back-btn,
-.btn-universal,
-button {
-  touch-action: manipulation !important; /* Убирает задержку 300ms */
-  -webkit-touch-callout: none !important;
-  cursor: pointer !important;
-}
-
 /* Специальный фикс для iOS */
 @supports (-webkit-touch-callout: none) {
   .next-btn,
   .back-btn,
   .btn-universal,
   button {
-    cursor: pointer !important;
-    -webkit-tap-highlight-color: transparent !important;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
   }
 }

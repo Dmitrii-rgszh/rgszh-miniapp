@@ -1,8 +1,8 @@
 /* ============================================================================
-   backgrounds.css - ЧИСТАЯ ВЕРСИЯ БЕЗ АНИМАЦИЙ ДВИЖЕНИЯ
+   backgrounds.css - ВЕРСИЯ С PNG ФОНОМ
    ----------------------------------------------------------------------------
-   ✅ ТОЛЬКО WebP файлы
-   ✅ ТОЛЬКО плавная смена opacity
+   ✅ Заменен background2.webp на background2.png
+   ✅ Плавная смена opacity
    ✅ Оптимизировано для быстрой загрузки
    ============================================================================ */
 
@@ -32,31 +32,10 @@
 /* Активный фон */
 .background-layer.active {
   opacity: 1;
-  /* z-index остается -1, как и у всех фонов */
-}
-
-/* Переходящий фон */
-.background-layer.transitioning {
-  /* z-index остается -1, как и у всех фонов */
-}
-
-/* ======================================
-   ТОЛЬКО WEBP ВЕРСИИ
-   ====================================== */
-.background-layer[data-bg="1"] {
-  background-image: url('../components/background/background1.webp');
 }
 
 .background-layer[data-bg="2"] {
-  background-image: url('../components/background/background2.webp');
-}
-
-.background-layer[data-bg="3"] {
-  background-image: url('../components/background/background3.webp');
-}
-
-.background-layer[data-bg="4"] {
-  background-image: url('../components/background/background4.webp');
+  background-image: url('../components/background/background2.png'); /* ← ЗАМЕНЕНО НА PNG */
 }
 
 /* ======================================
@@ -70,32 +49,6 @@
     rgb(118, 143, 146) 75%, 
     rgb(0, 40, 130) 100%
   ) !important;
-}
-
-/* ======================================
-   SKELETON LOADER С ГРАДИЕНТОМ
-   ====================================== */
-.backgrounds-skeleton {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, 
-    rgb(180, 0, 55) 0%, 
-    rgb(153, 0, 55) 25%, 
-    rgb(152, 164, 174) 50%, 
-    rgb(118, 143, 146) 75%, 
-    rgb(0, 40, 130) 100%
-  );
-  z-index: -20; /* ИСПРАВЛЕНО: самый низкий z-index */
-  transition: opacity 0.5s ease-out;
-  pointer-events: none;
-}
-
-.backgrounds-skeleton.loaded {
-  opacity: 0;
-  pointer-events: none;
 }
 
 /* ======================================
@@ -135,6 +88,10 @@ body::after {
 /* ======================================
    CSS АНИМАЦИЯ СМЕНЫ ФОНОВ
    ====================================== */
+@keyframes fadeBackground {
+  0%, 20%, 100% { opacity: 0; }
+  5%, 15% { opacity: 1; }
+}
 
 /* Основные стили контейнеров */
 .main-app-container {
@@ -147,11 +104,10 @@ body::after {
 
 .main-content-container {
   position: relative;
-  z-index: 100;
+  z-index: 1; /* ИСПРАВЛЕНО: нормальный z-index вместо 100 */
   width: 100%;
   height: 100%;
 }
-
 
 /* Применяем анимацию к каждому фону с задержкой */
 .background-layer[data-bg="1"] {

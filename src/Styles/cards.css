@@ -37,8 +37,15 @@
 
 /* Позиционированная карточка */
 .card-container.card-positioned {
-  position: relative;
-  margin-top: 180px;
+  position: absolute;  /* ← ИЗМЕНЕНО С relative НА absolute */
+  top: 80px;          /* ← ИЗМЕНЕНО С margin-top НА top */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 320px;
+  margin: 0;           /* ← УБИРАЕМ margin */
+  pointer-events: auto; /* ← ЯВНО РАЗРЕШАЕМ КЛИКИ НА КАРТОЧКЕ */
+  z-index: 1;          /* ← НИЖЕ КНОПОК (у кнопок z-index: 10 и 5) */
 }
 
 /* ======================================

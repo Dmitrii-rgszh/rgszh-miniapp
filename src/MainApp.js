@@ -1,4 +1,4 @@
-// MainApp.js - ИСПРАВЛЕННАЯ ВЕРСИЯ С HASHROUTER
+// MainApp.js - ИСПРАВЛЕННАЯ ВЕРСИЯ
 import React, { useEffect } from 'react';
 import { HashRouter, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 
@@ -77,12 +77,11 @@ function AutoNavigator({ children }) {
   const location = useLocation();
   
   useEffect(() => {
-    // ✅ ИСПРАВЛЕНО: правильная проверка для HashRouter
     const isRootPath = location.pathname === '/' || location.pathname === '';
     
     if (isRootPath) {
       const timer = setTimeout(() => {
-        navigate('/main-menu'); // HashRouter автоматически добавит #
+        navigate('/main-menu');
       }, 3000);
       
       return () => clearTimeout(timer);
@@ -124,24 +123,30 @@ function MainApp() {
       tg.expand();
       tg.setHeaderColor('#B40037');
       tg.ready();
-      
-      // ✅ ДОБАВЛЯЕМ: отключаем back button Telegram
       tg.BackButton.hide();
       
-      console.log('📱 Telegram WebApp initialized with HashRouter');
+      console.log('📱 Telegram WebApp initialized');
     }
   }, []);
 
-  // ===== iOS FIX =====
+  // ===== iOS/MOBILE FIX =====
   useEffect(() => {
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     
     if (isIOS) {
       const style = document.createElement('style');
       style.textContent = `
-        input, textarea, select { font-size: 16px !important; }
-        button { touch-action: manipulation; }
-        * { -webkit-tap-highlight-color: transparent; }
+        input, textarea, select { 
+          font-size: 16px !important; 
+          touch-action: manipulation !important;
+        }
+        button { 
+          touch-action: manipulation !important;
+          cursor: pointer !important;
+        }
+        * { 
+          -webkit-tap-highlight-color: transparent !important; 
+        }
       `;
       document.head.appendChild(style);
       
@@ -153,22 +158,7 @@ function MainApp() {
     }
   }, []);
 
-  // ===== HASHROUTER FIX =====
-  useEffect(() => {
-    // Убираем конфликтующие обработчики navigation
-    const originalPushState = history.pushState;
-    const originalReplaceState = history.replaceState;
-    
-    // Логируем все изменения роутинга для отладки
-    window.addEventListener('hashchange', (e) => {
-      console.log('🔄 Hash changed:', window.location.hash);
-    });
-    
-    return () => {
-      history.pushState = originalPushState;
-      history.replaceState = originalReplaceState;
-    };
-  }, []);
+  // УДАЛЕНО: BUTTON FIX вызывал проблемы с z-index
 
   return (
     <ErrorBoundary>

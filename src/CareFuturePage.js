@@ -1,7 +1,7 @@
-// CareFuturePage.js - УПРОЩЕННАЯ ВЕРСИЯ
-// ✅ Удалены конфликтующие стили и лишние анимации
-// ✅ Упрощена система z-index
-// ✅ Исправлены проблемы с кнопками на мобильных устройствах
+// CareFuturePage.js - РАДИКАЛЬНО УПРОЩЕННАЯ ВЕРСИЯ
+// ✅ УДАЛЕНЫ ВСЕ ПРОБЛЕМНЫЕ useEffect С ОБРАБОТЧИКАМИ
+// ✅ УДАЛЕНЫ ПОПЫТКИ "ИСПРАВИТЬ" КНОПКИ
+// ✅ ОСТАВЛЕН ТОЛЬКО МИНИМАЛЬНЫЙ КОД
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -59,112 +59,8 @@ export default function CareFuturePage() {
   const [mgrCity, setMgrCity] = useState('');
   const [mgrError, setMgrError] = useState('');
   const [isSendingMgr, setIsSendingMgr] = useState(false);
-
-  useEffect(() => {
-    // ❌ УБИРАЕМ ПРОБЛЕМНЫЙ КОД С ГЛОБАЛЬНЫМИ ОБРАБОТЧИКАМИ
-    // Удаляем все конфликтующие обработчики, которые блокируют кнопки
-    const removeProblematicHandlers = () => {
-      // Ищем и удаляем проблемные обработчики
-      const emailInput = document.querySelector('input[type="email"]');
-      if (emailInput) {
-        // Клонируем элемент чтобы удалить ВСЕ обработчики
-        const newEmailInput = emailInput.cloneNode(true);
-        emailInput.parentNode.replaceChild(newEmailInput, emailInput);
-        
-        // Восстанавливаем только нужные React обработчики
-        newEmailInput.addEventListener('input', (e) => {
-          setEmail(e.target.value);
-          if (emailError) setEmailError('');
-        });
-        
-        newEmailInput.addEventListener('change', (e) => {
-          setEmail(e.target.value);
-        });
-        
-        console.log('✅ Removed problematic touch handlers');
-      }
-    };
-
-    // ✅ ДОБАВЛЯЕМ БЕЗОПАСНЫЕ ОБРАБОТЧИКИ ТОЛЬКО ДЛЯ EMAIL INPUT
-    const safeEmailFix = () => {
-      const emailInput = document.querySelector('input[type="email"]');
-      if (emailInput) {
-        // Улучшаем стили для лучшего взаимодействия
-        Object.assign(emailInput.style, {
-          fontSize: '16px', // Предотвращает зум на iOS
-          touchAction: 'manipulation',
-          WebkitTapHighlightColor: 'rgba(180, 0, 55, 0.2)',
-          WebkitTouchCallout: 'none',
-          WebkitUserSelect: 'text',
-          userSelect: 'text'
-        });
-        
-        // Добавляем ТОЛЬКО точечные обработчики БЕЗ stopPropagation
-        const focusHandler = (e) => {
-          // НЕ ИСПОЛЬЗУЕМ stopPropagation чтобы не блокировать кнопки!
-          setTimeout(() => emailInput.focus(), 50);
-        };
-        
-        emailInput.addEventListener('touchstart', focusHandler, { passive: true });
-        
-        console.log('✅ Safe email input fix applied');
-      }
-    };
-
-    // ✅ УЛУЧШАЕМ КЛИКИ ПО КНОПКАМ (БЕЗ КОНФЛИКТОВ)
-    const improveButtonClicks = (e) => {
-      // НЕ трогаем поля ввода
-      if (e.target.matches('input, textarea, select, [contenteditable]')) {
-        return;
-      }
-    
-      // Улучшаем только кнопки
-      const button = e.target.closest('.next-btn, .back-btn, button');
-      if (button && !button.disabled) {
-        // Визуальный фидбек
-        button.style.opacity = '0.8';
-        setTimeout(() => {
-          button.style.opacity = '';
-        }, 100);
-      }
-    };
-
-    // Применяем исправления
-    removeProblematicHandlers();
-    setTimeout(safeEmailFix, 100);
-    
-    // Добавляем безопасные обработчики для кнопок
-    document.addEventListener('touchstart', improveButtonClicks, { passive: true });
-
-    return () => {
-      document.removeEventListener('touchstart', improveButtonClicks);
-    };
-  }, []);
-
-  // ===== ДОПОЛНИТЕЛЬНЫЙ ФИКС ДЛЯ КНОПОК =====
-  useEffect(() => {
-    // Принудительно активируем кнопки если они заблокированы
-    const reactivateButtons = () => {
-      const buttons = document.querySelectorAll('.next-btn, .back-btn');
-      buttons.forEach(button => {
-        if (button) {
-          button.style.pointerEvents = 'auto';
-          button.style.touchAction = 'manipulation';
-          button.style.userSelect = 'none';
-          button.style.WebkitUserSelect = 'none';
-          button.style.WebkitTouchCallout = 'none';
-          button.style.cursor = 'pointer';
-          
-          console.log('✅ Button reactivated:', button.className);
-        }
-      });
-    };
-
-    const timer = setTimeout(reactivateButtons, 200);
-    return () => clearTimeout(timer);
-  }, [stage]); // Перезапускаем при смене этапа
   
-  // ===== АНИМАЦИЯ ВХОДА =====
+  // ===== АНИМАЦИЯ ВХОДА (ТОЛЬКО ЭТО!) =====
   useEffect(() => {
     const timer1 = setTimeout(() => {
       setLogoAnimated(true);
@@ -489,26 +385,6 @@ export default function CareFuturePage() {
     }
   };
 
-  // ===== RIPPLE ЭФФЕКТ =====
-  const createRipple = (event) => {
-    const button = event.currentTarget;
-    const circle = document.createElement('span');
-    const diameter = Math.max(button.clientWidth, button.clientHeight);
-    const radius = diameter / 2;
-    
-    circle.style.width = circle.style.height = `${diameter}px`;
-    circle.style.left = `${event.clientX - button.offsetLeft - radius}px`;
-    circle.style.top = `${event.clientY - button.offsetTop - radius}px`;
-    circle.classList.add('ripple');
-    
-    const ripple = button.getElementsByClassName('ripple')[0];
-    if (ripple) {
-      ripple.remove();
-    }
-    
-    button.appendChild(circle);
-  };
-
   // ===== ПОДГОТОВКА ДАННЫХ ДЛЯ КАРУСЕЛИ =====
   const getCarouselData = () => {
     if (!resultData) return [];
@@ -625,7 +501,7 @@ export default function CareFuturePage() {
   const inputStyle = {
     width: '100%',
     height: '36px',
-    fontSize: '14px',
+    fontSize: '16px', // Важно для iOS!
     background: '#f0f2f5',
     border: '1px solid #e3e7ee',
     borderRadius: '8px',
@@ -656,7 +532,10 @@ export default function CareFuturePage() {
                 type="email"
                 className={`form-input ${emailError ? 'error' : ''}`}
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (emailError) setEmailError('');
+                }}
                 placeholder="example@mail.ru"
                 style={inputStyle}
               />
@@ -932,10 +811,7 @@ export default function CareFuturePage() {
               <button
                 type="button"
                 className="btn-universal btn-primary btn-large btn-fullwidth"
-                onClick={(e) => {
-                  createRipple(e);
-                  setStage('manager');
-                }}
+                onClick={() => setStage('manager')}
               >
                 Связаться с менеджером
               </button>
@@ -996,7 +872,6 @@ export default function CareFuturePage() {
                 type="submit"
                 className={`btn-universal btn-primary btn-large btn-fullwidth ${isSendingMgr ? 'btn-loading' : ''}`}
                 disabled={isSendingMgr}
-                onClick={createRipple}
               >
                 {isSendingMgr ? '' : 'Отправить заявку'}
               </button>
@@ -1015,10 +890,7 @@ export default function CareFuturePage() {
               </p>
               <button
                 className="btn-universal btn-primary btn-large btn-fullwidth"
-                onClick={(e) => {
-                  createRipple(e);
-                  handleHome();
-                }}
+                onClick={handleHome}
               >
                 На главную
               </button>
@@ -1072,7 +944,7 @@ export default function CareFuturePage() {
             }
           }}
         >
-          <div className="shaker">
+          <div className={isNextButtonReady() ? 'shaker shake-btn' : 'shaker'}>
             <svg viewBox="0 0 24 24">
               <path 
                 d="M9 18l6-6-6-6" 

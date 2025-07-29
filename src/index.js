@@ -1,7 +1,6 @@
-// index.js - ОКОНЧАТЕЛЬНОЕ ИСПРАВЛЕНИЕ
+// index.js - ИСПРАВЛЕННАЯ ВЕРСИЯ БЕЗ ДУБЛИРОВАНИЯ HASHROUTER
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { HashRouter } from 'react-router-dom'; // ← ИСПОЛЬЗУЕМ HashRouter для надежности
 import './index.css';
 import MainApp from './MainApp';
 
@@ -9,9 +8,7 @@ const root = ReactDOM.createRoot(document.getElementById('root'));
 
 root.render(
   <React.StrictMode>
-    <HashRouter>
-      <MainApp />
-    </HashRouter>
+    <MainApp />
   </React.StrictMode>
 );
 

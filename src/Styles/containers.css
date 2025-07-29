@@ -496,19 +496,3 @@
 .z-modal {
   z-index: 1000;
 }
-
-/* ======================================
-   ФИКС КЛИКАБЕЛЬНОСТИ ДЛЯ МОБИЛЬНЫХ
-   ====================================== */
-.card-container,
-.logo-wrapper,
-.next-btn,
-.back-btn,
-.home-btn,
-button,
-input,
-select,
-textarea,
-a {
-  pointer-events: auto !important;
-}

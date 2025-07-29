@@ -145,19 +145,19 @@
   }
   
   .logo-wrapper.animated {
-    top: 60px;
+    top: 80px;
   }
   
   @keyframes slideDown {
     to {
-      top: 60px;
+      top: 80px;
       opacity: 1;
     }
   }
   
   @keyframes slideUp {
     from {
-      top: 60px;
+      top: 80px;
       opacity: 1;
     }
   }
