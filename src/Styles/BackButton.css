@@ -1,5 +1,5 @@
 .back-btn {
-  position: absolute;
+  position: fixed !important;
   width: 64px;
   height: 64px;
   min-width: 64px;
@@ -9,7 +9,7 @@
   flex-shrink: 0;
   flex-grow: 0;
   top: 87px;
-  left: calc(50% - 128px - 50px);
+  right: calc(50% - 128px - 50px);
   
   /* Стили */
   background: rgba(255, 255, 255, 0.1);
@@ -44,8 +44,8 @@
    ИКОНКА ВНУТРИ КНОПКИ
    ====================================== */
 .back-btn svg {
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   stroke: white;
   fill: none;
   stroke-width: 2;
@@ -249,53 +249,3 @@
   border-color: rgba(180, 0, 55, 0.5);
 }
 
-/* ======================================
-   АДАПТИВНОСТЬ ДЛЯ БОЛЬШИХ ЭКРАНОВ
-   ====================================== */
-/* Очень большие экраны (>1400px) */
-@media (min-width: 1400px) {
-  .back-btn {
-    /* Максимальное расстояние от центра */
-    left: calc(50% - 200px);
-  }
-}
-
-/* Широкие экраны (1200-1400px) */
-@media (min-width: 1200px) and (max-width: 1399px) {
-  .back-btn {
-    left: calc(50% - 180px);
-  }
-}
-
-/* Средние экраны (992-1199px) */
-@media (min-width: 992px) and (max-width: 1199px) {
-  .back-btn {
-    left: calc(50% - 160px);
-  }
-}
-
-/* ======================================
-   ПОЗИЦИОНИРОВАНИЕ ДЛЯ РАЗНЫХ СТРАНИЦ
-   ====================================== */
-
-/* Для страниц с логотипом наверху */
-.with-top-logo .back-btn {
-  /* Desktop позиции уже установлены выше */
-}
-
-/* Для страниц без логотипа */
-.no-logo .back-btn {
-  top: 30px;
-}
-
-@media (max-width: 768px) and (min-width: 375px) {
-  .no-logo .back-btn {
-    top: 24px;
-  }
-}
-
-@media (max-width: 374px) {
-  .no-logo .back-btn {
-    top: 20px;
-  }
-}

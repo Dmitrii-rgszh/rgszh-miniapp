@@ -9,7 +9,7 @@
    ОСНОВНЫЕ СТИЛИ КНОПКИ
    ====================================== */
 .next-btn {
-  position: absolute;
+  position: fixed !important;
   width: 64px;
   height: 64px;
   top: 87px;

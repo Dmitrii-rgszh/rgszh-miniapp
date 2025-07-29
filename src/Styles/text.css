@@ -202,7 +202,7 @@ label {
 @media (max-width: 374px) {
   :root {
   --font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, 'Roboto', 'Helvetica Neue', Arial, sans-serif;
-  --h1-size: 30px;
+  --h1-size: 24px;
   --h2-size: 24px;
   --h3-size: 20px;
   --h4-size: 18px;

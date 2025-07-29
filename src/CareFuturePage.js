@@ -9,6 +9,10 @@ import { apiCall } from './config';
 import logoImage from './components/logo.png';
 import DateWheelPicker from './DateWheelPicker';
 
+import './Styles/containers.css';
+import './Styles/cards.css';
+import './Styles/text.css';
+import './Styles/buttons.css';
 import './Styles/logo.css';
 import './Styles/BackButton.css';
 import './Styles/NextButton.css';
@@ -422,7 +426,7 @@ export default function CareFuturePage() {
     switch (stage) {
       case 'email':
         return (
-          <div className="card-container card-positioned">
+          <div className="card-container card-positioned animated">
             <div className="card-header">
               <h1 className="text-h1 text-center">Забота о будущем</h1>
               <p className="text-body text-center">
@@ -449,7 +453,7 @@ export default function CareFuturePage() {
 
       case 'form':
         return (
-          <div className="card-container card-positioned scrollable">
+          <div className="card-container card-positioned scrollable animated">
             <div className="card-header">
               <h2 className="text-h2 text-center">Параметры расчёта</h2>
             </div>
@@ -580,7 +584,7 @@ export default function CareFuturePage() {
 
       case 'processing':
         return (
-          <div className="card-container card-positioned">
+          <div className="card-container card-positioned animated">
             <div className="processing-container">
               <div className="progress-spinner"></div>
               <h2 className="text-h2">Выполняем расчёт...</h2>
@@ -594,7 +598,7 @@ export default function CareFuturePage() {
         const currentSlide = carouselData[carouselIndex] || carouselData[0];
         
         return (
-          <div className="card-container card-positioned">
+          <div className="card-container card-positioned animated">
             <div className="carousel-container">
               <h2 className="text-h2 text-center">{currentSlide.title}</h2>
               
@@ -690,7 +694,7 @@ export default function CareFuturePage() {
 
       case 'manager':
         return (
-          <div className="card-container card-positioned">
+          <div className="card-container card-positioned animated">
             <div className="card-header">
               <h2 className="text-h2 text-center">Оставить заявку</h2>
               <p className="text-body text-center">
@@ -747,7 +751,7 @@ export default function CareFuturePage() {
 
       case 'manager-sent':
         return (
-          <div className="card-container card-positioned">
+          <div className="card-container card-positioned animated">
             <div className="success-container">
               <div className="success-icon">✓</div>
               <h2 className="text-h2 text-center">Заявка отправлена!</h2>
@@ -782,7 +786,7 @@ export default function CareFuturePage() {
 
       {/* Кнопка "Назад" */}
       <button 
-        className="back-btn"
+        className="back-btn animate-home"
         onClick={handleBack}
         aria-label="Назад"
       >
@@ -825,8 +829,8 @@ export default function CareFuturePage() {
         </button>
       )}
 
-      {/* Контент */}
-      {renderContent()}
-    </div>
-  );
+    {/* Контент */}
+    {renderContent()}
+  </div>
+);
 }
