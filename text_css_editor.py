@@ -438,24 +438,24 @@ HTML_TEMPLATE = r"""
     
     <!-- Основной контент -->
     <div class="container">
-        <!-- Селектор размеров экранов -->
-        <div class="screen-selector">
-            <button class="screen-btn active" onclick="switchScreen('desktop')" data-screen="desktop">
-                <div class="screen-icon">🖥️</div>
-                <div>Большой</div>
-                <div class="screen-label">&gt;768px</div>
-            </button>
-            <button class="screen-btn" onclick="switchScreen('tablet')" data-screen="tablet">
-                <div class="screen-icon">📱</div>
-                <div>Средний</div>
-                <div class="screen-label">375-768px</div>
-            </button>
-            <button class="screen-btn" onclick="switchScreen('mobile')" data-screen="mobile">
-                <div class="screen-icon">📱</div>
-                <div>Маленький</div>
-                <div class="screen-label">&lt;375px</div>
-            </button>
-        </div>
+      <!-- Селектор размеров экранов -->
+      <div class="screen-selector" style="display: flex; justify-content: center; gap: 15px; margin: 20px 0; padding: 15px; background: rgba(0,0,0,0.2); border-radius: 12px;">
+          <button class="screen-btn active" onclick="switchScreen('desktop')" data-screen="desktop" style="background: #b40037; color: white; padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; min-width: 120px;">
+              <div style="font-size: 20px;">🖥️</div>
+              <div>Большой</div>
+              <div style="font-size: 12px; opacity: 0.8;">&gt;768px</div>
+          </button>
+          <button class="screen-btn" onclick="switchScreen('tablet')" data-screen="tablet" style="background: rgba(255,255,255,0.1); color: #ccc; padding: 12px 20px; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; cursor: pointer; font-size: 14px; min-width: 120px;">
+              <div style="font-size: 20px;">📱</div>
+              <div>Средний</div>
+              <div style="font-size: 12px; opacity: 0.8;">375-768px</div>
+          </button>
+          <button class="screen-btn" onclick="switchScreen('mobile')" data-screen="mobile" style="background: rgba(255,255,255,0.1); color: #ccc; padding: 12px 20px; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; cursor: pointer; font-size: 14px; min-width: 120px;">
+              <div style="font-size: 20px;">📱</div>
+              <div>Маленький</div>
+              <div style="font-size: 12px; opacity: 0.8;">&lt;375px</div>
+          </button>
+      </div>
         
         <div class="editor-layout">
             <!-- Редактор переменных -->
@@ -1031,9 +1031,19 @@ class CSSWebEditor:
             return False
             
         try:
-            # Создаем бэкап
+            # Создаем папку backup_text если её нет
+            css_dir = os.path.dirname(self.css_file_path)
+            backup_dir = os.path.join(css_dir, 'backup_text')
+            
+            if not os.path.exists(backup_dir):
+                os.makedirs(backup_dir)
+                safe_print(f"Создана папка для backup: {backup_dir}")
+            
+            # Создаем бэкап в папке backup_text
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            backup_path = f"{self.css_file_path}.backup_{timestamp}"
+            backup_filename = f"text.css.backup_{timestamp}"
+            backup_path = os.path.join(backup_dir, backup_filename)
+            
             shutil.copy2(self.css_file_path, backup_path)
             safe_print(f"Создан бэкап: {backup_path}")
             
