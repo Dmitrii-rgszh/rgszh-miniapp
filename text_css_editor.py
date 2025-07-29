@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-CSS Web Editor - Улучшенный веб-редактор для text.css с поддержкой адаптивных экранов
-Позволяет редактировать CSS переменные для разных размеров экранов
+CSS Web Editor - ИСПРАВЛЕННАЯ версия с селектором экранов
+Полный рабочий редактор CSS переменных для разных размеров экранов
 """
 
 from flask import Flask, render_template_string, request, jsonify
@@ -24,9 +24,8 @@ def safe_print(message):
         clean_message = message.encode('ascii', 'ignore').decode('ascii')
         print(clean_message)
 
-# HTML шаблон с поддержкой выбора экранов
-HTML_TEMPLATE = r"""
-<!DOCTYPE html>
+# HTML шаблон с ОБЯЗАТЕЛЬНЫМ селектором экранов
+HTML_TEMPLATE = r"""<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -84,23 +83,24 @@ HTML_TEMPLATE = r"""
             margin-top: 15px;
         }
         
-        /* Селектор экранов */
+        /* КРИТИЧЕСКИ ВАЖНО: Стили для селектора экранов */
         .screen-selector {
-            display: flex;
+            display: flex !important;
             justify-content: center;
-            gap: 5px;
-            margin: 20px 0;
-            padding: 15px;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 12px;
+            gap: 15px;
+            margin: 30px 0;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
         }
         
         .screen-btn {
             background: rgba(255, 255, 255, 0.1);
             color: var(--text-secondary);
-            padding: 12px 20px;
+            padding: 15px 25px;
             border: 1px solid var(--panel-border);
-            border-radius: 8px;
+            border-radius: 10px;
             cursor: pointer;
             font-size: 14px;
             font-weight: 600;
@@ -108,29 +108,32 @@ HTML_TEMPLATE = r"""
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 4px;
-            min-width: 120px;
+            gap: 6px;
+            min-width: 130px;
+            text-align: center;
         }
         
         .screen-btn.active {
-            background: var(--active-screen);
-            color: white;
+            background: var(--active-screen) !important;
+            color: white !important;
             border-color: var(--active-screen);
-            transform: translateY(-2px);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(180, 0, 55, 0.4);
         }
         
         .screen-btn:hover:not(.active) {
-            background: rgba(255, 255, 255, 0.15);
-            transform: translateY(-1px);
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
         }
         
         .screen-icon {
-            font-size: 20px;
+            font-size: 24px;
         }
         
         .screen-label {
             font-size: 12px;
             opacity: 0.8;
+            font-weight: normal;
         }
         
         .btn {
@@ -210,10 +213,12 @@ HTML_TEMPLATE = r"""
         
         .current-screen-info {
             background: rgba(180, 0, 55, 0.2);
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 25px;
             border: 1px solid rgba(180, 0, 55, 0.3);
+            font-size: 16px;
+            text-align: center;
         }
         
         .variable-group {
@@ -374,12 +379,13 @@ HTML_TEMPLATE = r"""
             }
             
             .screen-selector {
-                gap: 8px;
+                gap: 10px;
+                padding: 15px;
             }
             
             .screen-btn {
-                min-width: 90px;
-                padding: 10px 15px;
+                min-width: 100px;
+                padding: 12px 18px;
             }
             
             .variable-row {
@@ -438,24 +444,24 @@ HTML_TEMPLATE = r"""
     
     <!-- Основной контент -->
     <div class="container">
-      <!-- Селектор размеров экранов -->
-      <div class="screen-selector" style="display: flex; justify-content: center; gap: 15px; margin: 20px 0; padding: 15px; background: rgba(0,0,0,0.2); border-radius: 12px;">
-          <button class="screen-btn active" onclick="switchScreen('desktop')" data-screen="desktop" style="background: #b40037; color: white; padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; min-width: 120px;">
-              <div style="font-size: 20px;">🖥️</div>
-              <div>Большой</div>
-              <div style="font-size: 12px; opacity: 0.8;">&gt;768px</div>
-          </button>
-          <button class="screen-btn" onclick="switchScreen('tablet')" data-screen="tablet" style="background: rgba(255,255,255,0.1); color: #ccc; padding: 12px 20px; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; cursor: pointer; font-size: 14px; min-width: 120px;">
-              <div style="font-size: 20px;">📱</div>
-              <div>Средний</div>
-              <div style="font-size: 12px; opacity: 0.8;">375-768px</div>
-          </button>
-          <button class="screen-btn" onclick="switchScreen('mobile')" data-screen="mobile" style="background: rgba(255,255,255,0.1); color: #ccc; padding: 12px 20px; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; cursor: pointer; font-size: 14px; min-width: 120px;">
-              <div style="font-size: 20px;">📱</div>
-              <div>Маленький</div>
-              <div style="font-size: 12px; opacity: 0.8;">&lt;375px</div>
-          </button>
-      </div>
+        <!-- КРИТИЧЕСКИ ВАЖНО: Селектор размеров экранов -->
+        <div class="screen-selector">
+            <button class="screen-btn active" onclick="switchScreen('desktop')" data-screen="desktop">
+                <div class="screen-icon">🖥️</div>
+                <div><strong>Большой</strong></div>
+                <div class="screen-label">&gt;768px</div>
+            </button>
+            <button class="screen-btn" onclick="switchScreen('tablet')" data-screen="tablet">
+                <div class="screen-icon">📱</div>
+                <div><strong>Средний</strong></div>
+                <div class="screen-label">375-768px</div>
+            </button>
+            <button class="screen-btn" onclick="switchScreen('mobile')" data-screen="mobile">
+                <div class="screen-icon">📱</div>
+                <div><strong>Маленький</strong></div>
+                <div class="screen-label">&lt;375px</div>
+            </button>
+        </div>
         
         <div class="editor-layout">
             <!-- Редактор переменных -->
@@ -550,41 +556,52 @@ HTML_TEMPLATE = r"""
             }
         };
         
-        // Группировка переменных
+        // Группировка переменных - ИСПРАВЛЕНО под ваш CSS
         const variableGroups = {
             '🔤 Шрифты': {
                 icon: '🔤',
-                variables: ['text-font-family', 'font-family']
+                variables: ['font-family', 'text-font-family']
             },
-            '📏 Размеры текста': {
+            '📏 Размеры заголовков': {
                 icon: '📏',
-                variables: ['text-size-h1', 'text-size-h2', 'text-size-h3', 'text-size-body', 'text-size-small', 'text-size-tiny']
+                variables: ['h1-size', 'h2-size', 'h3-size', 'h4-size', 'h5-size', 'h6-size']
             },
-            '🎨 Цвета текста': {
+            '📝 Размеры текста': {
+                icon: '📝', 
+                variables: ['text-size', 'text-small', 'text-tiny']
+            },
+            '🎨 Цвета и эффекты': {
                 icon: '🎨',
-                variables: ['text-color-primary', 'text-color-secondary', 'text-color-muted', 'text-color-white']
+                variables: ['text-white', 'text-shadow', 'text-shadow-strong']
             }
         };
         
         // Загрузка CSS при старте
         window.addEventListener('DOMContentLoaded', () => {
+            console.log('🚀 Приложение загружено, запуск loadCSS...');
             loadCSS();
         });
         
-        // Переключение экранов
+        // КРИТИЧЕСКИ ВАЖНО: Функция переключения экранов
         function switchScreen(screenType) {
+            console.log('📱 Переключение на экран:', screenType);
             currentScreen = screenType;
             
             // Обновляем активную кнопку
             document.querySelectorAll('.screen-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
-            document.querySelector(`[data-screen="${screenType}"]`).classList.add('active');
+            const targetBtn = document.querySelector(`[data-screen="${screenType}"]`);
+            if (targetBtn) {
+                targetBtn.classList.add('active');
+            }
             
             // Обновляем информацию о текущем экране
             const config = screenConfig[screenType];
-            document.getElementById('currentScreenInfo').innerHTML = 
-                `<strong>${config.icon} Редактируется:</strong> ${config.info}`;
+            const infoElement = document.getElementById('currentScreenInfo');
+            if (infoElement && config) {
+                infoElement.innerHTML = `<strong>${config.icon} Редактируется:</strong> ${config.info}`;
+            }
             
             // Перезагружаем редакторы переменных
             createVariableEditors();
@@ -602,6 +619,7 @@ HTML_TEMPLATE = r"""
             loadIcon.innerHTML = '<span class="loading"></span>';
             
             try {
+                console.log('📡 Загрузка CSS...');
                 const response = await fetch('/load-css');
                 const data = await response.json();
                 
@@ -612,11 +630,14 @@ HTML_TEMPLATE = r"""
                     updatePreview();
                     updateStats(data.filename, getTotalVariablesCount(), data.size);
                     showToast('CSS файл загружен успешно!', 'success');
+                    console.log('✅ CSS загружен:', data);
                 } else {
                     showToast('Ошибка загрузки: ' + data.error, 'error');
+                    console.error('❌ Ошибка загрузки:', data.error);
                 }
             } catch (error) {
                 showToast('Ошибка сети: ' + error.message, 'error');
+                console.error('❌ Ошибка сети:', error);
             } finally {
                 isLoading = false;
                 loadIcon.innerHTML = '📁';
@@ -638,11 +659,13 @@ HTML_TEMPLATE = r"""
             container.innerHTML = '';
             
             const currentVariables = allScreenVariables[currentScreen] || {};
+            console.log('🔧 Создание редакторов для экрана:', currentScreen, currentVariables);
             
             if (Object.keys(currentVariables).length === 0) {
                 container.innerHTML = `
                     <div style="text-align: center; padding: 40px; color: var(--text-secondary);">
-                        <p>Переменные для ${screenConfig[currentScreen].name} не найдены</p>
+                        <p>📝 Переменные для ${screenConfig[currentScreen].name} не найдены</p>
+                        <p style="font-size: 12px; margin-top: 10px;">Возможно, в CSS файле нет медиа-запросов для этого разрешения</p>
                     </div>
                 `;
                 return;
@@ -764,7 +787,7 @@ HTML_TEMPLATE = r"""
             updatePreview();
         }
         
-        // Обновление превью
+        // Обновление превью - ИСПРАВЛЕНО под ваши переменные
         function updatePreview() {
             const currentVariables = allScreenVariables[currentScreen] || {};
             
@@ -780,10 +803,26 @@ HTML_TEMPLATE = r"""
             const style = document.createElement('style');
             style.id = 'previewStyle';
             style.textContent = cssText + `
-                #previewH1 { font-size: var(--text-size-h1, 32px); color: var(--text-color-primary, white); font-family: var(--text-font-family, 'Segoe UI'); }
-                #previewH2 { font-size: var(--text-size-h2, 24px); color: var(--text-color-primary, white); font-family: var(--text-font-family, 'Segoe UI'); }
-                #previewBody { font-size: var(--text-size-body, 16px); color: var(--text-color-secondary, white); font-family: var(--text-font-family, 'Segoe UI'); }
-                #previewSmall { font-size: var(--text-size-small, 14px); color: var(--text-color-muted, white); font-family: var(--text-font-family, 'Segoe UI'); }
+                #previewH1 { 
+                    font-size: var(--h1-size, var(--text-size-h1, 32px)); 
+                    color: var(--text-white, white); 
+                    font-family: var(--font-family, var(--text-font-family, 'Segoe UI')); 
+                }
+                #previewH2 { 
+                    font-size: var(--h2-size, var(--text-size-h2, 24px)); 
+                    color: var(--text-white, white); 
+                    font-family: var(--font-family, var(--text-font-family, 'Segoe UI')); 
+                }
+                #previewBody { 
+                    font-size: var(--text-size, var(--text-size-body, 16px)); 
+                    color: var(--text-white, white); 
+                    font-family: var(--font-family, var(--text-font-family, 'Segoe UI')); 
+                }
+                #previewSmall { 
+                    font-size: var(--text-small, var(--text-size-small, 14px)); 
+                    color: var(--text-white, white); 
+                    font-family: var(--font-family, var(--text-font-family, 'Segoe UI')); 
+                }
             `;
             document.head.appendChild(style);
         }
@@ -844,9 +883,9 @@ HTML_TEMPLATE = r"""
                     <style>
                         ${allCssVars}
                         body {
-                            font-family: var(--text-font-family, 'Segoe UI');
+                            font-family: var(--font-family, var(--text-font-family, 'Segoe UI'));
                             background: linear-gradient(135deg, #b40037, #002682);
-                            color: var(--text-color-primary, white);
+                            color: var(--text-white, var(--text-color-primary, white));
                             padding: 40px;
                             line-height: 1.6;
                         }
@@ -857,11 +896,35 @@ HTML_TEMPLATE = r"""
                             padding: 40px;
                             border-radius: 15px;
                         }
-                        h1 { font-size: var(--text-size-h1, 32px); color: var(--text-color-primary); margin-bottom: 20px; }
-                        h2 { font-size: var(--text-size-h2, 24px); color: var(--text-color-primary); margin-bottom: 16px; }
-                        h3 { font-size: var(--text-size-h3, 20px); color: var(--text-color-primary); margin-bottom: 12px; }
-                        p { font-size: var(--text-size-body, 16px); color: var(--text-color-secondary); margin-bottom: 16px; }
-                        small { font-size: var(--text-size-small, 14px); color: var(--text-color-muted); }
+                        h1 { 
+                            font-size: var(--h1-size, var(--text-size-h1, 32px)); 
+                            color: var(--text-white, var(--text-color-primary, white)); 
+                            margin-bottom: 20px; 
+                            font-family: var(--font-family, var(--text-font-family, 'Segoe UI'));
+                        }
+                        h2 { 
+                            font-size: var(--h2-size, var(--text-size-h2, 24px)); 
+                            color: var(--text-white, var(--text-color-primary, white)); 
+                            margin-bottom: 16px; 
+                            font-family: var(--font-family, var(--text-font-family, 'Segoe UI'));
+                        }
+                        h3 { 
+                            font-size: var(--h3-size, var(--text-size-h3, 20px)); 
+                            color: var(--text-white, var(--text-color-primary, white)); 
+                            margin-bottom: 12px; 
+                            font-family: var(--font-family, var(--text-font-family, 'Segoe UI'));
+                        }
+                        p { 
+                            font-size: var(--text-size, var(--text-size-body, 16px)); 
+                            color: var(--text-white, var(--text-color-secondary, white)); 
+                            margin-bottom: 16px; 
+                            font-family: var(--font-family, var(--text-font-family, 'Segoe UI'));
+                        }
+                        small { 
+                            font-size: var(--text-small, var(--text-size-small, 14px)); 
+                            color: var(--text-white, var(--text-color-muted, white)); 
+                            font-family: var(--font-family, var(--text-font-family, 'Segoe UI'));
+                        }
                         .screen-indicator {
                             position: fixed;
                             top: 20px;
@@ -944,10 +1007,25 @@ HTML_TEMPLATE = r"""
                 toast.classList.remove('show');
             }, 4000);
         }
+        
+        // Диагностические функции
+        window.debugScreenSelector = function() {
+            console.log('🔍 Диагностика селектора экранов:');
+            console.log('Элемент селектора:', document.querySelector('.screen-selector'));
+            console.log('Кнопки экранов:', document.querySelectorAll('.screen-btn'));
+            console.log('Текущий экран:', currentScreen);
+            console.log('Переменные по экранам:', allScreenVariables);
+        };
+        
+        // Глобальные функции для отладки
+        window.loadCSS = loadCSS;
+        window.saveCSS = saveCSS;
+        window.switchScreen = switchScreen;
+        window.previewChanges = previewChanges;
+        window.resetChanges = resetChanges;
     </script>
 </body>
-</html>
-"""
+</html>"""
 
 class CSSWebEditor:
     def __init__(self):
@@ -971,59 +1049,76 @@ class CSSWebEditor:
         
         for path in possible_paths:
             if os.path.exists(path):
-                safe_print(f"Найден CSS файл: {path}")
+                safe_print(f"✅ Найден CSS файл: {path}")
                 return path
                 
-        safe_print("CSS файл не найден в стандартных местах")
+        safe_print("❌ CSS файл не найден в стандартных местах")
         return None
     
     def parse_css_variables(self):
-        """Парсинг CSS переменных для всех размеров экранов"""
+        """Парсинг CSS переменных для всех размеров экранов - ИСПРАВЛЕННАЯ ВЕРСИЯ"""
         if not self.css_file_path:
-            return {}
+            return {'desktop': {}, 'tablet': {}, 'mobile': {}}
             
         try:
             with open(self.css_file_path, 'r', encoding='utf-8') as file:
                 content = file.read()
                 self.original_content = content
             
-            # Парсим основной блок :root (desktop)
+            # Парсим основной блок :root (desktop) - БОЛЕЕ НАДЕЖНЫЙ ПАТТЕРН
             root_pattern = r':root\s*\{([^}]+)\}'
-            root_match = re.search(root_pattern, content, re.DOTALL)
+            root_matches = re.findall(root_pattern, content, re.DOTALL)
             
-            if root_match:
-                root_content = root_match.group(1)
+            if root_matches:
+                # Берем первый найденный блок :root (основной)
+                root_content = root_matches[0]
                 var_pattern = r'--([^:]+):\s*([^;]+);'
                 variables = re.findall(var_pattern, root_content)
-                self.screen_variables['desktop'] = {k.strip(): v.strip() for k, v in variables}
-                safe_print(f"Найдено переменных для больших экранов: {len(self.screen_variables['desktop'])}")
+                self.screen_variables['desktop'] = {k.strip(): v.strip().replace('"', '') for k, v in variables}
+                safe_print(f"📊 Найдено переменных для больших экранов: {len(self.screen_variables['desktop'])}")
+                safe_print(f"🔍 Переменные desktop: {list(self.screen_variables['desktop'].keys())}")
             
-            # Парсим медиа-запрос для средних экранов (tablet)
-            tablet_pattern = r'@media\s*\([^{]*max-width:\s*768px[^{]*min-width:\s*375px[^{]*\)[^{]*\{[^{]*:root\s*\{([^}]+)\}'
-            tablet_match = re.search(tablet_pattern, content, re.DOTALL)
+            # Парсим медиа-запросы - УПРОЩЕННЫЕ И НАДЕЖНЫЕ ПАТТЕРНЫ
+            # Для средних экранов (tablet) - ищем любые медиа с 768px и 375px
+            tablet_patterns = [
+                r'@media[^{]*max-width:\s*768px[^{]*min-width:\s*375px[^{]*\{[^{]*:root\s*\{([^}]+)\}',
+                r'@media[^{]*min-width:\s*375px[^{]*max-width:\s*768px[^{]*\{[^{]*:root\s*\{([^}]+)\}'
+            ]
             
-            if tablet_match:
-                tablet_content = tablet_match.group(1)
-                var_pattern = r'--([^:]+):\s*([^;]+);'
-                variables = re.findall(var_pattern, tablet_content)
-                self.screen_variables['tablet'] = {k.strip(): v.strip() for k, v in variables}
-                safe_print(f"Найдено переменных для средних экранов: {len(self.screen_variables['tablet'])}")
+            for pattern in tablet_patterns:
+                tablet_matches = re.findall(pattern, content, re.DOTALL)
+                if tablet_matches:
+                    tablet_content = tablet_matches[0]
+                    var_pattern = r'--([^:]+):\s*([^;]+);'
+                    variables = re.findall(var_pattern, tablet_content)
+                    self.screen_variables['tablet'] = {k.strip(): v.strip().replace('"', '') for k, v in variables}
+                    safe_print(f"📊 Найдено переменных для средних экранов: {len(self.screen_variables['tablet'])}")
+                    safe_print(f"🔍 Переменные tablet: {list(self.screen_variables['tablet'].keys())}")
+                    break
             
-            # Парсим медиа-запрос для маленьких экранов (mobile)
-            mobile_pattern = r'@media\s*\([^{]*max-width:\s*374px[^{]*\)[^{]*\{[^{]*:root\s*\{([^}]+)\}'
-            mobile_match = re.search(mobile_pattern, content, re.DOTALL)
+            # Для маленьких экранов (mobile) - ищем 374px или 375px
+            mobile_patterns = [
+                r'@media[^{]*max-width:\s*374px[^{]*\{[^{]*:root\s*\{([^}]+)\}',
+                r'@media[^{]*max-width:\s*375px[^{]*\{[^{]*:root\s*\{([^}]+)\}'
+            ]
             
-            if mobile_match:
-                mobile_content = mobile_match.group(1)
-                var_pattern = r'--([^:]+):\s*([^;]+);'
-                variables = re.findall(var_pattern, mobile_content)
-                self.screen_variables['mobile'] = {k.strip(): v.strip() for k, v in variables}
-                safe_print(f"Найдено переменных для маленьких экранов: {len(self.screen_variables['mobile'])}")
+            for pattern in mobile_patterns:
+                mobile_matches = re.findall(pattern, content, re.DOTALL)
+                if mobile_matches:
+                    mobile_content = mobile_matches[0]
+                    var_pattern = r'--([^:]+):\s*([^;]+);'
+                    variables = re.findall(var_pattern, mobile_content)
+                    self.screen_variables['mobile'] = {k.strip(): v.strip().replace('"', '') for k, v in variables}
+                    safe_print(f"📊 Найдено переменных для маленьких экранов: {len(self.screen_variables['mobile'])}")
+                    safe_print(f"🔍 Переменные mobile: {list(self.screen_variables['mobile'].keys())}")
+                    break
                 
             return self.screen_variables
+            
         except Exception as e:
-            safe_print(f"Ошибка парсинга CSS: {e}")
-            return {}
+            safe_print(f"❌ Ошибка парсинга CSS: {e}")
+            # Возвращаем пустую структуру, но не ломаем приложение
+            return {'desktop': {}, 'tablet': {}, 'mobile': {}}
     
     def save_css_variables(self, screen_variables):
         """Сохранение CSS переменных для всех размеров экранов"""
@@ -1037,7 +1132,7 @@ class CSSWebEditor:
             
             if not os.path.exists(backup_dir):
                 os.makedirs(backup_dir)
-                safe_print(f"Создана папка для backup: {backup_dir}")
+                safe_print(f"📁 Создана папка для backup: {backup_dir}")
             
             # Создаем бэкап в папке backup_text
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -1045,7 +1140,7 @@ class CSSWebEditor:
             backup_path = os.path.join(backup_dir, backup_filename)
             
             shutil.copy2(self.css_file_path, backup_path)
-            safe_print(f"Создан бэкап: {backup_path}")
+            safe_print(f"💾 Создан бэкап: {backup_path}")
             
             content = self.original_content
             
@@ -1104,11 +1199,11 @@ class CSSWebEditor:
                 file.write(content)
                 
             self.original_content = content
-            safe_print(f"CSS файл сохранен: {self.css_file_path}")
+            safe_print(f"✅ CSS файл сохранен: {self.css_file_path}")
             return True
             
         except Exception as e:
-            safe_print(f"Ошибка сохранения: {e}")
+            safe_print(f"❌ Ошибка сохранения: {e}")
             return False
 
 def open_browser_delayed():
@@ -1116,9 +1211,9 @@ def open_browser_delayed():
     time.sleep(2)
     try:
         webbrowser.open('http://localhost:5000')
-        safe_print("Браузер открыт: http://localhost:5000")
+        safe_print("🌐 Браузер открыт: http://localhost:5000")
     except Exception as e:
-        safe_print(f"Не удалось открыть браузер: {e}")
+        safe_print(f"❌ Не удалось открыть браузер: {e}")
 
 # Создаем экземпляр редактора
 editor = CSSWebEditor()
@@ -1130,10 +1225,13 @@ def index():
 
 @app.route('/load-css')
 def load_css():
-    """Загрузка CSS файла"""
+    """Загрузка CSS файла - ИСПРАВЛЕННАЯ ВЕРСИЯ"""
     screen_variables = editor.parse_css_variables()
     
-    if any(screen_variables.values()):
+    # Проверяем, есть ли хоть какие-то переменные
+    has_variables = any(len(variables) > 0 for variables in screen_variables.values())
+    
+    if has_variables:
         file_size = os.path.getsize(editor.css_file_path) if editor.css_file_path else 0
         return jsonify({
             'success': True,
@@ -1145,7 +1243,7 @@ def load_css():
     else:
         return jsonify({
             'success': False,
-            'error': 'CSS файл не найден или не содержит переменных'
+            'error': f'CSS файл найден ({editor.css_file_path}), но не содержит переменных в блоках :root. Проверьте структуру файла.'
         })
 
 @app.route('/save-css', methods=['POST'])
@@ -1168,25 +1266,26 @@ def save_css():
         })
 
 if __name__ == '__main__':
-    safe_print("Запуск улучшенного CSS Text Editor...")
-    safe_print("Поиск text.css файла...")
+    safe_print("🚀 Запуск ИСПРАВЛЕННОГО CSS Text Editor...")
+    safe_print("🔍 Поиск text.css файла...")
     
     if editor.css_file_path:
-        safe_print(f"Файл найден: {editor.css_file_path}")
+        safe_print(f"✅ Файл найден: {editor.css_file_path}")
     else:
-        safe_print("Файл не найден, но редактор все равно запустится")
+        safe_print("⚠️  Файл не найден, но редактор все равно запустится")
     
     safe_print("")
-    safe_print("Веб-редактор доступен по адресу:")
+    safe_print("🌐 Веб-редактор доступен по адресу:")
     safe_print("   http://localhost:5000")
     safe_print("")
-    safe_print("Новые возможности:")
-    safe_print("   📱 Выбор размера экрана для редактирования")
-    safe_print("   🔄 Адаптивное превью")
-    safe_print("   💾 Сохранение для всех размеров экранов")
+    safe_print("✨ ОБЯЗАТЕЛЬНЫЕ возможности:")
+    safe_print("   📱 Селектор размеров экранов (ВИДЕН В ВЕРХНЕЙ ЧАСТИ)")
+    safe_print("   🔄 Адаптивное превью для всех экранов")
+    safe_print("   💾 Сохранение в папку backup_text")
     safe_print("")
-    safe_print("Для остановки нажмите Ctrl+C")
-    safe_print("-" * 50)
+    safe_print("🔧 Для диагностики в консоли браузера: window.debugScreenSelector()")
+    safe_print("💡 Для остановки нажмите Ctrl+C")
+    safe_print("-" * 60)
     
     # Запускаем браузер в отдельном потоке
     browser_thread = threading.Thread(target=open_browser_delayed, daemon=True)
