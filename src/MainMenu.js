@@ -1,16 +1,14 @@
-// MainMenu.js - ФИНАЛЬНАЯ ВЕРСИЯ БЕЗ ОТЛАДКИ
-// ✅ Исправлено состояние isExiting
-// ✅ Добавлены touch события
-// ✅ Убраны все логи и отладочные элементы
+// MainMenu.js - БЕЗ ИНЛАЙН СТИЛЕЙ
+// ✅ Все стили перенесены в CSS файлы
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logoImage from './components/logo.png';
 
 // Подключаем CSS файлы
-import './Styles/containers.css'; // Универсальные контейнеры
-import './Styles/buttons.css';    // Универсальные кнопки (включая анимации)
-import './Styles/logo.css';       // Логотип
+import './Styles/containers.css';
+import './Styles/buttons.css';
+import './Styles/logo.css';
 
 export default function MainMenu() {
   const navigate = useNavigate();
@@ -126,7 +124,7 @@ export default function MainMenu() {
 
   return (
     <div className={getContainerClasses()}>
-      {/* ===== ЛОГОТИП ===== */}
+      {/* Логотип */}
       <div 
         ref={logoRef} 
         className={getLogoClasses()}
@@ -138,7 +136,7 @@ export default function MainMenu() {
         />
       </div>
 
-      {/* ===== КНОПКИ ===== */}
+      {/* Кнопки */}
       <div className={getButtonContainerClasses()}>
         {buttons.map((btn, index) => (
           <button
@@ -153,13 +151,6 @@ export default function MainMenu() {
             onTouchEnd={(e) => {
               e.preventDefault();
               handleTouchEnd(e, btn.to);
-            }}
-            style={{
-              userSelect: 'auto',
-              WebkitUserSelect: 'auto',
-              pointerEvents: 'auto',
-              cursor: 'pointer',
-              touchAction: 'manipulation'
             }}
           >
             {btn.label}
