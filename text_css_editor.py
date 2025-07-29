@@ -1,8 +1,7 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-CSS Web Editor - Улучшенный веб-редактор для text.css
-Простой и функциональный веб-интерфейс для редактирования CSS переменных
+CSS Web Editor - Улучшенный веб-редактор для text.css с поддержкой адаптивных экранов
+Позволяет редактировать CSS переменные для разных размеров экранов
 """
 
 from flask import Flask, render_template_string, request, jsonify
@@ -10,12 +9,23 @@ import re
 import os
 import json
 import shutil
+import webbrowser
+import threading
+import time
 from datetime import datetime
 
 app = Flask(__name__)
 
-# HTML шаблон с улучшенным дизайном
-HTML_TEMPLATE = """
+def safe_print(message):
+    """Безопасный вывод с обработкой кодировки"""
+    try:
+        print(message)
+    except UnicodeEncodeError:
+        clean_message = message.encode('ascii', 'ignore').decode('ascii')
+        print(clean_message)
+
+# HTML шаблон с поддержкой выбора экранов
+HTML_TEMPLATE = r"""
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -33,6 +43,7 @@ HTML_TEMPLATE = """
             --success-color: #28a745;
             --error-color: #dc3545;
             --warning-color: #ffc107;
+            --active-screen: #b40037;
         }
 
         * { 
@@ -71,6 +82,55 @@ HTML_TEMPLATE = """
             gap: 10px;
             flex-wrap: wrap;
             margin-top: 15px;
+        }
+        
+        /* Селектор экранов */
+        .screen-selector {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+        }
+        
+        .screen-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-secondary);
+            padding: 12px 20px;
+            border: 1px solid var(--panel-border);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            min-width: 120px;
+        }
+        
+        .screen-btn.active {
+            background: var(--active-screen);
+            color: white;
+            border-color: var(--active-screen);
+            transform: translateY(-2px);
+        }
+        
+        .screen-btn:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-1px);
+        }
+        
+        .screen-icon {
+            font-size: 20px;
+        }
+        
+        .screen-label {
+            font-size: 12px;
+            opacity: 0.8;
         }
         
         .btn {
@@ -146,6 +206,14 @@ HTML_TEMPLATE = """
             display: flex;
             align-items: center;
             gap: 8px;
+        }
+        
+        .current-screen-info {
+            background: rgba(180, 0, 55, 0.2);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(180, 0, 55, 0.3);
         }
         
         .variable-group {
@@ -305,6 +373,15 @@ HTML_TEMPLATE = """
                 grid-template-columns: 1fr;
             }
             
+            .screen-selector {
+                gap: 8px;
+            }
+            
+            .screen-btn {
+                min-width: 90px;
+                padding: 10px 15px;
+            }
+            
             .variable-row {
                 grid-template-columns: 1fr;
                 gap: 8px;
@@ -312,33 +389,6 @@ HTML_TEMPLATE = """
             
             .variable-label {
                 font-size: 11px;
-            }
-            
-            .header-buttons {
-                gap: 8px;
-            }
-            
-            .btn {
-                padding: 10px 16px;
-                font-size: 13px;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .container {
-                padding: 10px;
-            }
-            
-            .variables-section, .preview-section, .info-section {
-                padding: 15px;
-            }
-            
-            .header {
-                padding: 15px 10px;
-            }
-            
-            .header h1 {
-                font-size: 24px;
             }
         }
         
@@ -369,7 +419,7 @@ HTML_TEMPLATE = """
     <!-- Заголовок -->
     <div class="header">
         <h1>🎨 CSS Text Editor</h1>
-        <p>Редактор переменных для Telegram MiniApp</p>
+        <p>Редактор переменных для разных размеров экранов</p>
         <div class="header-buttons">
             <button class="btn" onclick="loadCSS()">
                 <span id="loadIcon">📁</span> Загрузить CSS
@@ -383,17 +433,36 @@ HTML_TEMPLATE = """
             <button class="btn btn-secondary" onclick="resetChanges()">
                 🔄 Сброс
             </button>
-            <button class="btn btn-secondary" onclick="exportSettings()">
-                📤 Экспорт
-            </button>
         </div>
     </div>
     
     <!-- Основной контент -->
     <div class="container">
+        <!-- Селектор размеров экранов -->
+        <div class="screen-selector">
+            <button class="screen-btn active" onclick="switchScreen('desktop')" data-screen="desktop">
+                <div class="screen-icon">🖥️</div>
+                <div>Большой</div>
+                <div class="screen-label">&gt;768px</div>
+            </button>
+            <button class="screen-btn" onclick="switchScreen('tablet')" data-screen="tablet">
+                <div class="screen-icon">📱</div>
+                <div>Средний</div>
+                <div class="screen-label">375-768px</div>
+            </button>
+            <button class="screen-btn" onclick="switchScreen('mobile')" data-screen="mobile">
+                <div class="screen-icon">📱</div>
+                <div>Маленький</div>
+                <div class="screen-label">&lt;375px</div>
+            </button>
+        </div>
+        
         <div class="editor-layout">
             <!-- Редактор переменных -->
             <div class="variables-section">
+                <div class="current-screen-info" id="currentScreenInfo">
+                    <strong>📺 Редактируется:</strong> Большие экраны (>768px)
+                </div>
                 <div class="section-title">
                     ⚙️ Настройка переменных
                 </div>
@@ -443,9 +512,6 @@ HTML_TEMPLATE = """
                         <div class="preview-item">
                             <small id="previewSmall">Мелкий текст</small>
                         </div>
-                        <div class="preview-item">
-                            <button class="btn" id="previewBtn" style="font-size: 14px;">Кнопка</button>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -453,9 +519,36 @@ HTML_TEMPLATE = """
     </div>
 
     <script>
-        let cssVariables = {};
+        let allScreenVariables = {
+            desktop: {},
+            tablet: {},
+            mobile: {}
+        };
+        let currentScreen = 'desktop';
         let originalCSS = '';
         let isLoading = false;
+        
+        // Конфигурация экранов
+        const screenConfig = {
+            desktop: {
+                icon: '🖥️',
+                name: 'Большие экраны',
+                range: '>768px',
+                info: 'Большие экраны (>768px)'
+            },
+            tablet: {
+                icon: '📱',
+                name: 'Средние экраны', 
+                range: '375-768px',
+                info: 'Средние экраны (375-768px)'
+            },
+            mobile: {
+                icon: '📱',
+                name: 'Маленькие экраны',
+                range: '<375px', 
+                info: 'Маленькие экраны (<375px)'
+            }
+        };
         
         // Группировка переменных
         const variableGroups = {
@@ -478,6 +571,28 @@ HTML_TEMPLATE = """
             loadCSS();
         });
         
+        // Переключение экранов
+        function switchScreen(screenType) {
+            currentScreen = screenType;
+            
+            // Обновляем активную кнопку
+            document.querySelectorAll('.screen-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-screen="${screenType}"]`).classList.add('active');
+            
+            // Обновляем информацию о текущем экране
+            const config = screenConfig[screenType];
+            document.getElementById('currentScreenInfo').innerHTML = 
+                `<strong>${config.icon} Редактируется:</strong> ${config.info}`;
+            
+            // Перезагружаем редакторы переменных
+            createVariableEditors();
+            updatePreview();
+            
+            showToast(`Переключено на: ${config.name}`, 'success');
+        }
+        
         // Загрузка CSS файла
         async function loadCSS() {
             if (isLoading) return;
@@ -491,27 +606,47 @@ HTML_TEMPLATE = """
                 const data = await response.json();
                 
                 if (data.success) {
-                    cssVariables = data.variables;
+                    allScreenVariables = data.screenVariables;
                     originalCSS = data.content;
                     createVariableEditors();
                     updatePreview();
-                    updateStats(data.filename, Object.keys(data.variables).length, data.size);
-                    showToast('CSS файл загружен успешно! 🎉', 'success');
+                    updateStats(data.filename, getTotalVariablesCount(), data.size);
+                    showToast('CSS файл загружен успешно!', 'success');
                 } else {
-                    showToast('❌ Ошибка загрузки: ' + data.error, 'error');
+                    showToast('Ошибка загрузки: ' + data.error, 'error');
                 }
             } catch (error) {
-                showToast('❌ Ошибка сети: ' + error.message, 'error');
+                showToast('Ошибка сети: ' + error.message, 'error');
             } finally {
                 isLoading = false;
                 loadIcon.innerHTML = '📁';
             }
         }
         
-        // Создание редакторов переменных
+        // Подсчет общего количества переменных
+        function getTotalVariablesCount() {
+            let total = 0;
+            for (const screen in allScreenVariables) {
+                total += Object.keys(allScreenVariables[screen]).length;
+            }
+            return total;
+        }
+        
+        // Создание редакторов переменных для текущего экрана
         function createVariableEditors() {
             const container = document.getElementById('variablesContainer');
             container.innerHTML = '';
+            
+            const currentVariables = allScreenVariables[currentScreen] || {};
+            
+            if (Object.keys(currentVariables).length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: var(--text-secondary);">
+                        <p>Переменные для ${screenConfig[currentScreen].name} не найдены</p>
+                    </div>
+                `;
+                return;
+            }
             
             // Создаем группы
             for (const [groupName, groupData] of Object.entries(variableGroups)) {
@@ -528,8 +663,8 @@ HTML_TEMPLATE = """
                 let hasVariables = false;
                 
                 groupData.variables.forEach(varName => {
-                    if (cssVariables[varName]) {
-                        const row = createVariableRow(varName, cssVariables[varName]);
+                    if (currentVariables[varName]) {
+                        const row = createVariableRow(varName, currentVariables[varName]);
                         groupContent.appendChild(row);
                         hasVariables = true;
                     }
@@ -544,7 +679,7 @@ HTML_TEMPLATE = """
             
             // Остальные переменные
             const usedVars = Object.values(variableGroups).flatMap(g => g.variables);
-            const otherVars = Object.keys(cssVariables).filter(key => !usedVars.includes(key));
+            const otherVars = Object.keys(currentVariables).filter(key => !usedVars.includes(key));
             
             if (otherVars.length > 0) {
                 const groupDiv = document.createElement('div');
@@ -558,7 +693,7 @@ HTML_TEMPLATE = """
                 groupContent.className = 'group-content';
                 
                 otherVars.forEach(varName => {
-                    const row = createVariableRow(varName, cssVariables[varName]);
+                    const row = createVariableRow(varName, currentVariables[varName]);
                     groupContent.appendChild(row);
                 });
                 
@@ -599,7 +734,7 @@ HTML_TEMPLATE = """
                 });
                 row.appendChild(colorPicker);
             } else {
-                row.appendChild(document.createElement('div')); // Пустой элемент для выравнивания
+                row.appendChild(document.createElement('div'));
             }
             
             return row;
@@ -610,7 +745,6 @@ HTML_TEMPLATE = """
             const rgbaMatch = color.match(/rgba?\(([^)]+)\)/);
             if (rgbaMatch) {
                 const values = rgbaMatch[1].split(',').map(v => Math.round(parseFloat(v.trim())));
-                // Если значения нормализованные (0-1), умножаем на 255
                 if (values[0] <= 1) {
                     values[0] = Math.round(values[0] * 255);
                     values[1] = Math.round(values[1] * 255);
@@ -623,23 +757,26 @@ HTML_TEMPLATE = """
         
         // Обновление переменной
         function updateVariable(varName, value) {
-            cssVariables[varName] = value;
+            if (!allScreenVariables[currentScreen]) {
+                allScreenVariables[currentScreen] = {};
+            }
+            allScreenVariables[currentScreen][varName] = value;
             updatePreview();
         }
         
         // Обновление превью
         function updatePreview() {
+            const currentVariables = allScreenVariables[currentScreen] || {};
+            
             let cssText = ':root {';
-            for (const [key, value] of Object.entries(cssVariables)) {
+            for (const [key, value] of Object.entries(currentVariables)) {
                 cssText += `--${key}: ${value}; `;
             }
             cssText += '}';
             
-            // Удаляем старый стиль
             const oldStyle = document.getElementById('previewStyle');
             if (oldStyle) oldStyle.remove();
             
-            // Добавляем новый стиль
             const style = document.createElement('style');
             style.id = 'previewStyle';
             style.textContent = cssText + `
@@ -647,7 +784,6 @@ HTML_TEMPLATE = """
                 #previewH2 { font-size: var(--text-size-h2, 24px); color: var(--text-color-primary, white); font-family: var(--text-font-family, 'Segoe UI'); }
                 #previewBody { font-size: var(--text-size-body, 16px); color: var(--text-color-secondary, white); font-family: var(--text-font-family, 'Segoe UI'); }
                 #previewSmall { font-size: var(--text-size-small, 14px); color: var(--text-color-muted, white); font-family: var(--text-font-family, 'Segoe UI'); }
-                #previewBtn { font-size: var(--text-size-body, 16px); color: var(--text-color-primary, white); font-family: var(--text-font-family, 'Segoe UI'); }
             `;
             document.head.appendChild(style);
         }
@@ -661,18 +797,18 @@ HTML_TEMPLATE = """
                 const response = await fetch('/save-css', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({variables: cssVariables})
+                    body: JSON.stringify({screenVariables: allScreenVariables})
                 });
                 
                 const data = await response.json();
                 
                 if (data.success) {
-                    showToast('✅ Файл сохранен успешно!', 'success');
+                    showToast('Файл сохранен успешно!', 'success');
                 } else {
-                    showToast('❌ Ошибка сохранения: ' + data.error, 'error');
+                    showToast('Ошибка сохранения: ' + data.error, 'error');
                 }
             } catch (error) {
-                showToast('❌ Ошибка сети: ' + error.message, 'error');
+                showToast('Ошибка сети: ' + error.message, 'error');
             } finally {
                 saveIcon.innerHTML = '💾';
             }
@@ -680,17 +816,33 @@ HTML_TEMPLATE = """
         
         // Превью в новом окне
         function previewChanges() {
-            const cssVars = Object.entries(cssVariables).map(([k,v]) => `--${k}: ${v};`).join(' ');
+            let allCssVars = '';
+            
+            // Генерируем CSS для всех экранов
+            const desktopVars = Object.entries(allScreenVariables.desktop || {}).map(([k,v]) => `--${k}: ${v};`).join(' ');
+            if (desktopVars) {
+                allCssVars += `:root { ${desktopVars} }\n`;
+            }
+            
+            const tabletVars = Object.entries(allScreenVariables.tablet || {}).map(([k,v]) => `--${k}: ${v};`).join(' ');
+            if (tabletVars) {
+                allCssVars += `@media (max-width: 768px) and (min-width: 375px) { :root { ${tabletVars} } }\n`;
+            }
+            
+            const mobileVars = Object.entries(allScreenVariables.mobile || {}).map(([k,v]) => `--${k}: ${v};`).join(' ');
+            if (mobileVars) {
+                allCssVars += `@media (max-width: 374px) { :root { ${mobileVars} } }\n`;
+            }
             
             const previewHTML = `
                 <!DOCTYPE html>
                 <html lang="ru">
                 <head>
-                    <title>Превью CSS переменных</title>
+                    <title>Превью CSS переменных - Все экраны</title>
                     <meta charset="UTF-8">
                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
                     <style>
-                        :root { ${cssVars} }
+                        ${allCssVars}
                         body {
                             font-family: var(--text-font-family, 'Segoe UI');
                             background: linear-gradient(135deg, #b40037, #002682);
@@ -710,43 +862,45 @@ HTML_TEMPLATE = """
                         h3 { font-size: var(--text-size-h3, 20px); color: var(--text-color-primary); margin-bottom: 12px; }
                         p { font-size: var(--text-size-body, 16px); color: var(--text-color-secondary); margin-bottom: 16px; }
                         small { font-size: var(--text-size-small, 14px); color: var(--text-color-muted); }
-                        .btn {
-                            background: linear-gradient(135deg, rgb(180, 0, 55), rgb(0, 40, 130));
-                            color: var(--text-color-primary);
-                            padding: 16px 32px;
-                            border: none;
-                            border-radius: 12px;
-                            font-size: var(--text-size-body);
-                            cursor: pointer;
-                            margin: 10px 5px;
-                            display: inline-block;
-                        }
-                        .variables-list {
-                            background: rgba(0, 0, 0, 0.2);
-                            padding: 20px;
+                        .screen-indicator {
+                            position: fixed;
+                            top: 20px;
+                            right: 20px;
+                            background: rgba(0, 0, 0, 0.8);
+                            color: white;
+                            padding: 10px 15px;
                             border-radius: 8px;
-                            font-family: 'Consolas', monospace;
-                            font-size: 12px;
-                            margin-top: 30px;
+                            font-size: 14px;
                         }
                     </style>
                 </head>
                 <body>
+                    <div class="screen-indicator" id="screenIndicator">🖥️ Desktop</div>
                     <div class="container">
-                        <h1>🎨 Превью стилей text.css</h1>
+                        <h1>🎨 Превью адаптивных стилей</h1>
                         <h2>Заголовок второго уровня</h2>
                         <h3>Заголовок третьего уровня</h3>
-                        <p>Это основной текст параграфа. Здесь можно увидеть, как выглядит текст с текущими настройками CSS переменных. Текст должен быть читаемым и красивым.</p>
-                        <p><small>Это мелкий текст для дополнительной информации, подписей и примечаний.</small></p>
-                        
-                        <button class="btn">Главная кнопка</button>
-                        <button class="btn">Вторая кнопка</button>
-                        
-                        <h3>📋 Используемые переменные:</h3>
-                        <div class="variables-list">
-${Object.entries(cssVariables).map(([k,v]) => `--${k}: ${v};`).join('<br>')}
-                        </div>
+                        <p>Этот текст адаптируется под размер экрана. Измените размер окна браузера, чтобы увидеть, как изменяются размеры шрифтов для разных устройств.</p>
+                        <p><small>Мелкий текст также адаптируется под размер экрана.</small></p>
                     </div>
+                    
+                    <script>
+                        function updateScreenIndicator() {
+                            const indicator = document.getElementById('screenIndicator');
+                            const width = window.innerWidth;
+                            
+                            if (width > 768) {
+                                indicator.textContent = '🖥️ Desktop (>768px)';
+                            } else if (width >= 375) {
+                                indicator.textContent = '📱 Tablet (375-768px)';
+                            } else {
+                                indicator.textContent = '📱 Mobile (<375px)';
+                            }
+                        }
+                        
+                        updateScreenIndicator();
+                        window.addEventListener('resize', updateScreenIndicator);
+                    </script>
                 </body>
                 </html>
             `;
@@ -755,28 +909,15 @@ ${Object.entries(cssVariables).map(([k,v]) => `--${k}: ${v};`).join('<br>')}
             newWindow.document.write(previewHTML);
             newWindow.document.close();
             
-            showToast('🚀 Превью открыто в новом окне', 'success');
+            showToast('Превью открыто в новом окне', 'success');
         }
         
         // Сброс изменений
         function resetChanges() {
-            if (confirm('🔄 Сбросить все изменения к исходному состоянию?')) {
+            if (confirm('Сбросить все изменения к исходному состоянию?')) {
                 loadCSS();
-                showToast('🔄 Изменения сброшены', 'warning');
+                showToast('Изменения сброшены', 'warning');
             }
-        }
-        
-        // Экспорт настроек
-        function exportSettings() {
-            const dataStr = JSON.stringify(cssVariables, null, 2);
-            const dataBlob = new Blob([dataStr], {type: 'application/json'});
-            
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(dataBlob);
-            link.download = 'css-variables-' + new Date().toISOString().slice(0,10) + '.json';
-            link.click();
-            
-            showToast('📤 Настройки экспортированы', 'success');
         }
         
         // Обновление статистики
@@ -811,7 +952,11 @@ ${Object.entries(cssVariables).map(([k,v]) => `--${k}: ${v};`).join('<br>')}
 class CSSWebEditor:
     def __init__(self):
         self.css_file_path = self.find_css_file()
-        self.css_variables = {}
+        self.screen_variables = {
+            'desktop': {},
+            'tablet': {},
+            'mobile': {}
+        }
         self.original_content = ""
         
     def find_css_file(self):
@@ -826,14 +971,14 @@ class CSSWebEditor:
         
         for path in possible_paths:
             if os.path.exists(path):
-                print(f"✅ Найден CSS файл: {path}")
+                safe_print(f"Найден CSS файл: {path}")
                 return path
                 
-        print("❌ CSS файл не найден в стандартных местах")
+        safe_print("CSS файл не найден в стандартных местах")
         return None
     
     def parse_css_variables(self):
-        """Парсинг CSS переменных"""
+        """Парсинг CSS переменных для всех размеров экранов"""
         if not self.css_file_path:
             return {}
             
@@ -841,67 +986,129 @@ class CSSWebEditor:
             with open(self.css_file_path, 'r', encoding='utf-8') as file:
                 content = file.read()
                 self.original_content = content
-                
-            # Находим блок :root
+            
+            # Парсим основной блок :root (desktop)
             root_pattern = r':root\s*\{([^}]+)\}'
             root_match = re.search(root_pattern, content, re.DOTALL)
             
             if root_match:
                 root_content = root_match.group(1)
-                
-                # Находим все переменные
                 var_pattern = r'--([^:]+):\s*([^;]+);'
                 variables = re.findall(var_pattern, root_content)
+                self.screen_variables['desktop'] = {k.strip(): v.strip() for k, v in variables}
+                safe_print(f"Найдено переменных для больших экранов: {len(self.screen_variables['desktop'])}")
+            
+            # Парсим медиа-запрос для средних экранов (tablet)
+            tablet_pattern = r'@media\s*\([^{]*max-width:\s*768px[^{]*min-width:\s*375px[^{]*\)[^{]*\{[^{]*:root\s*\{([^}]+)\}'
+            tablet_match = re.search(tablet_pattern, content, re.DOTALL)
+            
+            if tablet_match:
+                tablet_content = tablet_match.group(1)
+                var_pattern = r'--([^:]+):\s*([^;]+);'
+                variables = re.findall(var_pattern, tablet_content)
+                self.screen_variables['tablet'] = {k.strip(): v.strip() for k, v in variables}
+                safe_print(f"Найдено переменных для средних экранов: {len(self.screen_variables['tablet'])}")
+            
+            # Парсим медиа-запрос для маленьких экранов (mobile)
+            mobile_pattern = r'@media\s*\([^{]*max-width:\s*374px[^{]*\)[^{]*\{[^{]*:root\s*\{([^}]+)\}'
+            mobile_match = re.search(mobile_pattern, content, re.DOTALL)
+            
+            if mobile_match:
+                mobile_content = mobile_match.group(1)
+                var_pattern = r'--([^:]+):\s*([^;]+);'
+                variables = re.findall(var_pattern, mobile_content)
+                self.screen_variables['mobile'] = {k.strip(): v.strip() for k, v in variables}
+                safe_print(f"Найдено переменных для маленьких экранов: {len(self.screen_variables['mobile'])}")
                 
-                self.css_variables = {k.strip(): v.strip() for k, v in variables}
-                print(f"📊 Найдено переменных: {len(self.css_variables)}")
-                
-            return self.css_variables
+            return self.screen_variables
         except Exception as e:
-            print(f"❌ Ошибка парсинга CSS: {e}")
+            safe_print(f"Ошибка парсинга CSS: {e}")
             return {}
     
-    def save_css_variables(self, variables):
-        """Сохранение CSS переменных"""
+    def save_css_variables(self, screen_variables):
+        """Сохранение CSS переменных для всех размеров экранов"""
         if not self.css_file_path:
             return False
             
         try:
-            # Создаем бэкап с временной меткой
+            # Создаем бэкап
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             backup_path = f"{self.css_file_path}.backup_{timestamp}"
             shutil.copy2(self.css_file_path, backup_path)
-            print(f"📄 Создан бэкап: {backup_path}")
+            safe_print(f"Создан бэкап: {backup_path}")
             
-            # Обновляем CSS содержимое
             content = self.original_content
-            root_pattern = r'(:root\s*\{)([^}]+)(\})'
             
-            def replace_root(match):
-                start = match.group(1)
-                end = match.group(3)
+            # Обновляем основной блок :root (desktop)
+            if 'desktop' in screen_variables:
+                def replace_desktop_root(match):
+                    start = match.group(0).split('{')[0] + '{'
+                    end = '}'
+                    
+                    new_vars = []
+                    for var_name, var_value in screen_variables['desktop'].items():
+                        new_vars.append(f"  --{var_name}: {var_value};")
+                    
+                    new_content = "\n" + "\n".join(new_vars) + "\n"
+                    return start + new_content + end
                 
-                # Создаем новый блок переменных
-                new_vars = []
-                for var_name, var_value in variables.items():
-                    new_vars.append(f"  --{var_name}: {var_value};")
-                
-                new_content = "\n" + "\n".join(new_vars) + "\n"
-                return start + new_content + end
+                root_pattern = r':root\s*\{[^}]+\}'
+                content = re.sub(root_pattern, replace_desktop_root, content, flags=re.DOTALL)
             
-            updated_content = re.sub(root_pattern, replace_root, content, flags=re.DOTALL)
+            # Обновляем медиа-запрос для средних экранов
+            if 'tablet' in screen_variables:
+                def replace_tablet_root(match):
+                    # Сохраняем медиа-запрос и начало
+                    media_part = match.group(0).split(':root')[0] + ':root {'
+                    end = '}\n}'
+                    
+                    new_vars = []
+                    for var_name, var_value in screen_variables['tablet'].items():
+                        new_vars.append(f"  --{var_name}: {var_value};")
+                    
+                    new_content = "\n" + "\n".join(new_vars) + "\n"
+                    return media_part + new_content + end
+                
+                tablet_pattern = r'@media\s*\([^{]*max-width:\s*768px[^{]*min-width:\s*375px[^{]*\)[^{]*\{[^{]*:root\s*\{[^}]+\}\s*\}'
+                content = re.sub(tablet_pattern, replace_tablet_root, content, flags=re.DOTALL)
+            
+            # Обновляем медиа-запрос для маленьких экранов
+            if 'mobile' in screen_variables:
+                def replace_mobile_root(match):
+                    # Сохраняем медиа-запрос и начало
+                    media_part = match.group(0).split(':root')[0] + ':root {'
+                    end = '}\n}'
+                    
+                    new_vars = []
+                    for var_name, var_value in screen_variables['mobile'].items():
+                        new_vars.append(f"  --{var_name}: {var_value};")
+                    
+                    new_content = "\n" + "\n".join(new_vars) + "\n"
+                    return media_part + new_content + end
+                
+                mobile_pattern = r'@media\s*\([^{]*max-width:\s*374px[^{]*\)[^{]*\{[^{]*:root\s*\{[^}]+\}\s*\}'
+                content = re.sub(mobile_pattern, replace_mobile_root, content, flags=re.DOTALL)
             
             # Сохраняем обновленный файл
             with open(self.css_file_path, 'w', encoding='utf-8') as file:
-                file.write(updated_content)
+                file.write(content)
                 
-            self.original_content = updated_content
-            print(f"✅ CSS файл сохранен: {self.css_file_path}")
+            self.original_content = content
+            safe_print(f"CSS файл сохранен: {self.css_file_path}")
             return True
             
         except Exception as e:
-            print(f"❌ Ошибка сохранения: {e}")
+            safe_print(f"Ошибка сохранения: {e}")
             return False
+
+def open_browser_delayed():
+    """Открыть браузер с задержкой"""
+    time.sleep(2)
+    try:
+        webbrowser.open('http://localhost:5000')
+        safe_print("Браузер открыт: http://localhost:5000")
+    except Exception as e:
+        safe_print(f"Не удалось открыть браузер: {e}")
 
 # Создаем экземпляр редактора
 editor = CSSWebEditor()
@@ -914,13 +1121,13 @@ def index():
 @app.route('/load-css')
 def load_css():
     """Загрузка CSS файла"""
-    variables = editor.parse_css_variables()
+    screen_variables = editor.parse_css_variables()
     
-    if variables:
+    if any(screen_variables.values()):
         file_size = os.path.getsize(editor.css_file_path) if editor.css_file_path else 0
         return jsonify({
             'success': True,
-            'variables': variables,
+            'screenVariables': screen_variables,
             'content': editor.original_content,
             'filename': os.path.basename(editor.css_file_path) if editor.css_file_path else 'text.css',
             'size': file_size
@@ -928,7 +1135,7 @@ def load_css():
     else:
         return jsonify({
             'success': False,
-            'error': 'CSS файл не найден или не содержит переменных в блоке :root'
+            'error': 'CSS файл не найден или не содержит переменных'
         })
 
 @app.route('/save-css', methods=['POST'])
@@ -936,9 +1143,9 @@ def save_css():
     """Сохранение CSS файла"""
     try:
         data = request.get_json()
-        variables = data.get('variables', {})
+        screen_variables = data.get('screenVariables', {})
         
-        success = editor.save_css_variables(variables)
+        success = editor.save_css_variables(screen_variables)
         
         return jsonify({
             'success': success,
@@ -951,17 +1158,28 @@ def save_css():
         })
 
 if __name__ == '__main__':
-    print("🚀 Запуск CSS Text Editor...")
-    print("📁 Поиск text.css файла...")
+    safe_print("Запуск улучшенного CSS Text Editor...")
+    safe_print("Поиск text.css файла...")
     
     if editor.css_file_path:
-        print(f"✅ Файл найден: {editor.css_file_path}")
+        safe_print(f"Файл найден: {editor.css_file_path}")
     else:
-        print("⚠️  Файл не найден, но редактор все равно запустится")
+        safe_print("Файл не найден, но редактор все равно запустится")
     
-    print("\n🌐 Веб-редактор доступен по адресу:")
-    print("   http://localhost:5000")
-    print("\n💡 Для остановки нажмите Ctrl+C")
-    print("-" * 50)
+    safe_print("")
+    safe_print("Веб-редактор доступен по адресу:")
+    safe_print("   http://localhost:5000")
+    safe_print("")
+    safe_print("Новые возможности:")
+    safe_print("   📱 Выбор размера экрана для редактирования")
+    safe_print("   🔄 Адаптивное превью")
+    safe_print("   💾 Сохранение для всех размеров экранов")
+    safe_print("")
+    safe_print("Для остановки нажмите Ctrl+C")
+    safe_print("-" * 50)
     
-    app.run(debug=True, port=5000, host='0.0.0.0')
+    # Запускаем браузер в отдельном потоке
+    browser_thread = threading.Thread(target=open_browser_delayed, daemon=True)
+    browser_thread.start()
+    
+    app.run(debug=False, port=5000, host='0.0.0.0')

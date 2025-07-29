@@ -11,8 +11,6 @@ const JustincasePage = () => {
   // Состояние анимаций
   const [logoAnimated, setLogoAnimated] = useState(false);
   const [buttonsAnimated, setButtonsAnimated] = useState(false);
-  const [moveDuration] = useState('70s');
-  const [rotateDuration] = useState('6s');
   const [isExiting, setIsExiting] = useState(false);
 
   // Состояния формы

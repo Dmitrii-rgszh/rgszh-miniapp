@@ -15,7 +15,7 @@ import SNPPage         from './SNPPage';
 import EmployeePage    from './EmployeePage';
 import AssessmentPage  from './AssessmentPage';
 import FeedbackPage    from './FeedbackPage';
-import JustincasePage  from './JustincasePage';
+// import JustincasePage  from './JustincasePage';
 import CareFuturePage  from './CareFuturePage';
 import MarzaPollPage   from './MarzaPollPage';
 
@@ -53,7 +53,7 @@ function MainApp() {
             <Route path="/snp" element={<SNPPage />} />
             <Route path="/assessment" element={<AssessmentPage />} />
             <Route path="/feedback" element={<FeedbackPage />} />
-            <Route path="/justincase" element={<JustincasePage />} />
+            { /* <Route path="/justincase" element={<JustincasePage />} /> */}
             <Route path="/care-future" element={<CareFuturePage />} />
             <Route path="/marza-poll" element={<MarzaPollPage />} />
             <Route path="*" element={<MainMenu />} />

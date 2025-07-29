@@ -20,7 +20,7 @@
   --h6-size: 10px;
   --text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
   --text-shadow-strong: 0 2px 8px rgba(0, 0, 0, 0.4);
-  --text-size: 16px;
+  --text-size: 160px;
   --text-small: 14px;
   --text-tiny: 12px;
   --text-white: #ffffff;
@@ -186,7 +186,7 @@ label {
   --h6-size: 10px;
   --text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
   --text-shadow-strong: 0 2px 8px rgba(0, 0, 0, 0.4);
-  --text-size: 16px;
+  --text-size: 160px;
   --text-small: 14px;
   --text-tiny: 12px;
   --text-white: #ffffff;
@@ -210,7 +210,7 @@ label {
   --h6-size: 10px;
   --text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
   --text-shadow-strong: 0 2px 8px rgba(0, 0, 0, 0.4);
-  --text-size: 16px;
+  --text-size: 160px;
   --text-small: 14px;
   --text-tiny: 12px;
   --text-white: #ffffff;

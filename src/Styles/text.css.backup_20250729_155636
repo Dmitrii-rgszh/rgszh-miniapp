@@ -12,12 +12,12 @@
    ====================================== */
 :root {
   --font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, 'Roboto', 'Helvetica Neue', Arial, sans-serif;
-  --h1-size: 30px;
+  --h1-size: 32px;
   --h2-size: 24px;
   --h3-size: 20px;
   --h4-size: 18px;
   --h5-size: 16px;
-  --h6-size: 10px;
+  --h6-size: 14px;
   --text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
   --text-shadow-strong: 0 2px 8px rgba(0, 0, 0, 0.4);
   --text-size: 16px;
@@ -178,12 +178,12 @@ label {
 @media (max-width: 768px) and (min-width: 375px) {
   :root {
   --font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, 'Roboto', 'Helvetica Neue', Arial, sans-serif;
-  --h1-size: 30px;
+  --h1-size: 32px;
   --h2-size: 24px;
   --h3-size: 20px;
   --h4-size: 18px;
   --h5-size: 16px;
-  --h6-size: 10px;
+  --h6-size: 14px;
   --text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
   --text-shadow-strong: 0 2px 8px rgba(0, 0, 0, 0.4);
   --text-size: 16px;
@@ -202,12 +202,12 @@ label {
 @media (max-width: 374px) {
   :root {
   --font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, 'Roboto', 'Helvetica Neue', Arial, sans-serif;
-  --h1-size: 30px;
+  --h1-size: 32px;
   --h2-size: 24px;
   --h3-size: 20px;
   --h4-size: 18px;
   --h5-size: 16px;
-  --h6-size: 10px;
+  --h6-size: 14px;
   --text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
   --text-shadow-strong: 0 2px 8px rgba(0, 0, 0, 0.4);
   --text-size: 16px;
@@ -244,4 +244,32 @@ label {
 .card-light span {
   color: #333;
   text-shadow: none;
+}
+
+/* ======================================
+   УТИЛИТАРНЫЕ КЛАССЫ
+   ====================================== */
+.text-center { 
+  text-align: center; 
+}
+
+.text-left { 
+  text-align: left; 
+}
+
+.text-right { 
+  text-align: right; 
+}
+
+.text-white { 
+  color: var(--text-color-primary);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.text-bold { 
+  font-weight: 700; 
+}
+
+.text-normal { 
+  font-weight: 400; 
 }
