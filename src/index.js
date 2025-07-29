@@ -1,7 +1,6 @@
 // index.js - ИСПРАВЛЕННАЯ ВЕРСИЯ БЕЗ ДУБЛИРОВАНИЯ HASHROUTER
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import './index.css';
 import MainApp from './MainApp';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));

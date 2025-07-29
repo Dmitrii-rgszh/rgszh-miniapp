@@ -49,7 +49,7 @@
   border: none;
   outline: none;
   pointer-events: auto;
-  z-index: 1;
+  z-index: 5;
   
   /* Переходы */
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
