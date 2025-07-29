@@ -3,25 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import logoImage from './components/logo.png';
 import DateWheelPicker from './DateWheelPicker';
 
-// Функция определения мобильного браузера
-const isMobile = () => {
-  return /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-};
-
-// Функция определения Safari
-const isSafari = () => {
-  return /^((?!chrome|android).)*safari/i.test(navigator.userAgent) ||
-         /iPad|iPhone|iPod/.test(navigator.userAgent);
-};
-
-// Функция получения высоты viewport
-const getViewportHeight = () => {
-  if (isSafari()) {
-    return window.innerHeight;
-  }
-  return '100vh';
-};
-
 const JustincasePage = () => {
   const navigate = useNavigate();
   const [userName, setUserName] = useState('');

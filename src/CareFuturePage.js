@@ -9,15 +9,10 @@ import { apiCall } from './config';
 import logoImage from './components/logo.png';
 import DateWheelPicker from './DateWheelPicker';
 
-// Подключаем модульные CSS файлы
-import './Styles/containers.css';
-import './Styles/buttons.css';
 import './Styles/logo.css';
-import './Styles/text.css';
 import './Styles/BackButton.css';
 import './Styles/NextButton.css';
 import './Styles/ProgressIndicator.css';
-import './Styles/cards.css';
 
 export default function CareFuturePage() {
   const navigate = useNavigate();

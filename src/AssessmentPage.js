@@ -10,14 +10,11 @@ import { apiCall } from './config';
 import logoImage from './components/logo.png';
 
 // Подключаем модульные CSS файлы
-import './Styles/containers.css';
-import './Styles/buttons.css';
 import './Styles/logo.css';
 import './Styles/NextButton.css';
 import './Styles/BackButton.css';
 import './Styles/HomeButton.css';
 import './Styles/ProgressIndicator.css';
-import './Styles/text.css';
 
 export default function AssessmentPage() {
   const navigate = useNavigate();

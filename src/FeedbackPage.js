@@ -5,10 +5,7 @@ import Autosuggest          from 'react-autosuggest';
 import { useNavigate }      from 'react-router-dom';
 
 import './Styles/logo.css';         // стили и анимации логотипа
-import './Styles/buttons.css';      // базовые стили кнопок
- // правки специфичные для FeedbackPage (контент, next-btn и т.д.)
 import './Styles/BackButton.css';
-import './Styles/OptionButton.css';
 import './Styles/NextButton.css';
 import logoImage       from './components/logo.png';
 

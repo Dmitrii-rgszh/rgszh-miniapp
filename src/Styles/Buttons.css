@@ -7,6 +7,7 @@
    ✅ Адаптивность для 3 разрешений: >768px, 375-768px, <375px
    ✅ Фиксированная ширина кнопок
    ✅ Убраны дубли и ненужный код
+   ✅ Цвета текста из text.css переменных
    ============================================================================ */
 
 /* ======================================
@@ -20,9 +21,6 @@
   --btn-gray-secondary: rgb(118, 143, 146);
   --btn-blue-primary: rgb(0, 40, 130);
   --btn-blue-secondary: rgb(0, 32, 104);
-  
-  /* Корпоративные шрифты */
-  --btn-font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 /* ======================================
@@ -35,10 +33,6 @@
   justify-content: center;
   position: relative;
   overflow: hidden;
-  
-  /* Типографика */
-  font-family: var(--btn-font-family);
-  font-weight: 600;
   text-align: center;
   text-decoration: none;
   white-space: nowrap;
@@ -73,7 +67,7 @@
     var(--btn-blue-primary) 100%
   );
   
-  color: white;
+  color: var(--text-color-primary);
   border-radius: 12px;
   box-shadow: 
     0 4px 15px rgba(0, 0, 0, 0.2),
@@ -119,7 +113,7 @@
     var(--btn-gray-primary) 0%, 
     var(--btn-gray-secondary) 100%
   );
-  color: white;
+  color: var(--text-color-primary);
   border-radius: 12px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
 }
@@ -141,7 +135,7 @@
     var(--btn-blue-primary) 0%, 
     var(--btn-blue-secondary) 100%
   );
-  color: white;
+  color: var(--text-color-primary);
   border-radius: 12px;
   box-shadow: 0 4px 15px rgba(0, 40, 130, 0.3);
 }
@@ -290,7 +284,7 @@
   height: 16px;
   margin: auto;
   border: 2px solid transparent;
-  border-top: 2px solid white;
+  border-top: 2px solid var(--text-color-primary);
   border-radius: 50%;
   animation: button-loading-spinner 1s ease infinite;
   inset: 0;
@@ -308,7 +302,7 @@
   position: absolute;
   border-radius: 50%;
   transform: scale(0);
-  background: rgba(255, 255, 255, 0.7);
+  background: var(--text-color-secondary);
   animation: ripple-effect 600ms linear;
   pointer-events: none;
 }
@@ -581,7 +575,7 @@
   );
   
   border-color: var(--btn-red-primary);
-  color: white;
+  color: var(--text-color-primary);
   box-shadow: 
     0 4px 15px rgba(0, 0, 0, 0.2),
     0 2px 8px rgba(180, 0, 55, 0.3);

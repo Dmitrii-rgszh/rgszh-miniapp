@@ -1,9 +1,12 @@
-// MainApp.js - УПРОЩЕННАЯ ВЕРСИЯ - только роутинг и градиент
+// MainApp.js - С ФОНОМ
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
-// Импорт CSS для градиентного фона
+// Импорт CSS
 import './Styles/containers.css';
+
+// Импорт фонового изображения
+import backgroundImage from './components/background/background2.png';
 
 // Импорты компонентов
 import MainMenu        from './MainMenu';
@@ -16,13 +19,29 @@ import JustincasePage  from './JustincasePage';
 import CareFuturePage  from './CareFuturePage';
 import MarzaPollPage   from './MarzaPollPage';
 
-// ===== ГЛАВНЫЙ КОМПОНЕНТ =====
 function MainApp() {
   return (
     <BrowserRouter>
       <div className="main-app-container">
-        {/* Градиентный фон */}
-        <div className="gradient-background" />
+        {/* Фоновое изображение */}
+        <div 
+          className="app-background"
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            width: '100vw',
+            height: '100vh',
+            backgroundImage: `url(${backgroundImage})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            zIndex: -1,
+            pointerEvents: 'none'
+          }}
+        />
         
         {/* Основной контент */}
         <div className="main-content-container">

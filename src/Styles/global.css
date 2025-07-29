@@ -1,26 +1,24 @@
 /* =============================================================================
    src/Styles/global.css
-
-   Здесь подключаем шрифт Montserrat и задаём его как базовый для всего документа.
+   Базовые глобальные стили (текстовые стили перенесены в text.css)
    ============================================================================= */
 
-/* 1) Подключаем Montserrat из Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap');
-
-/* 2) Сброс типов и box-sizing (если ещё не делали) */
+/* Сброс стилей и базовая структура */
 html, body, #root {
   margin: 0;
   padding: 0;
   width: 100%;
   height: 100%;
 }
+
 * {
   box-sizing: border-box;
 }
 
-/* 3) Устанавливаем Montserrat как шрифт для всего документа */
-html, body {
-  font-family: 'Montserrat', sans-serif;
-  color: #ffffff; /* если хотите, можете задать цвет текста по-умолчанию (опционально) */
+/* Базовые стили body (шрифты определены в text.css) */
+body {
+  margin: 0;
+  overflow: hidden;
+  width: 100%;
+  height: 100vh;
 }
-

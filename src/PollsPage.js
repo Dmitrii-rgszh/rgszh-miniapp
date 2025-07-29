@@ -1,19 +1,14 @@
-// PollsPage.js - УПРОЩЕННАЯ ВЕРСИЯ
-// ✅ Удалены все useState и useEffect
-// ✅ Удалены все инлайн стили
-// ✅ Простая функциональность
-
+// PollsPage.js - С QR КНОПКАМИ И ПРАВИЛЬНЫМИ СТИЛЯМИ
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import logoImage from './components/logo.png';
 
-// Подключаем CSS файлы
+// Импорт ВСЕХ необходимых CSS файлов
 import './Styles/containers.css';
 import './Styles/buttons.css';
 import './Styles/logo.css';
-import './Styles/QRStyles.css';
-import './Styles/ModalWindow.css';
 import './Styles/HomeButton.css';
+import './Styles/QRStyles.css'; // Важно для стилей QR кнопок
 
 export default function PollsPage() {
   const navigate = useNavigate();
@@ -56,7 +51,7 @@ export default function PollsPage() {
       {/* Кнопка домой */}
       <button
         onClick={handleHomeClick}
-        className="home-button with-top-logo animate-home"
+        className="home-button with-top-logo"
         title="Назад в главное меню"
       >
         <svg viewBox="0 0 24 24">
@@ -64,13 +59,13 @@ export default function PollsPage() {
         </svg>
       </button>
 
-      {/* Кнопки опросов */}
+      {/* Кнопки опросов с QR */}
       <div className="button-container with-logo">
-        {polls.map((poll) => (
+        {polls.map((poll, index) => (
           <div key={poll.path} className="poll-row animated">
             {/* Основная кнопка опроса */}
             <button
-              className="btn-universal btn-primary btn-large btn-shadow btn-fullwidth"
+              className="btn-universal btn-primary btn-large btn-shadow"
               onClick={() => handleClick(poll.path)}
             >
               {poll.label}
