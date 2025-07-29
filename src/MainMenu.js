@@ -1,7 +1,9 @@
-// MainMenu.js - БЕЗ ИНЛАЙН СТИЛЕЙ
-// ✅ Все стили перенесены в CSS файлы
+// MainMenu.js - УПРОЩЕННАЯ ВЕРСИЯ
+// ✅ Удалены все useState и useEffect
+// ✅ Удалены все инлайн стили
+// ✅ Вся логика через CSS классы
 
-import React, { useState, useEffect, useRef } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import logoImage from './components/logo.png';
 
@@ -12,12 +14,6 @@ import './Styles/logo.css';
 
 export default function MainMenu() {
   const navigate = useNavigate();
-  
-  // ===== СОСТОЯНИЯ =====
-  const [logoAnimated, setLogoAnimated] = useState(false);
-  const [buttonsAnimated, setButtonsAnimated] = useState(false);
-  const [isExiting, setIsExiting] = useState(false);
-  const logoRef = useRef(null);
 
   // ===== ДАННЫЕ КНОПОК =====
   const buttons = [
@@ -25,110 +21,15 @@ export default function MainMenu() {
     { label: 'Сотрудники', to: '/employee', type: 'primary' },
   ];
 
-  // ===== СБРОС СОСТОЯНИЯ ПРИ МОНТИРОВАНИИ =====
-  useEffect(() => {
-    setIsExiting(false);
-  }, []);
-
-  // ===== АНИМАЦИЯ ВХОДА =====
-  useEffect(() => {
-    const timer1 = setTimeout(() => {
-      setLogoAnimated(true);
-      if (logoRef.current) {
-        logoRef.current.classList.add('animate-logo');
-      }
-    }, 100);
-    
-    const timer2 = setTimeout(() => {
-      setButtonsAnimated(true);
-    }, 600);
-    
-    return () => {
-      clearTimeout(timer1);
-      clearTimeout(timer2);
-    };
-  }, []);
-
-  // ===== ОБРАБОТКА КЛИКА ПО КНОПКЕ =====
+  // ===== ОБРАБОТКА КЛИКА =====
   const handleClick = (path) => {
-    if (isExiting) return;
-    
-    setIsExiting(true);
-    
-    if (logoRef.current) {
-      logoRef.current.classList.add('animate-logo-exit');
-    }
-    
-    setTimeout(() => {
-      navigate(path);
-    }, 800);
+    navigate(path);
   };
-
-  // ===== TOUCH ОБРАБОТЧИКИ =====
-  const handleTouchStart = (e) => {
-    // Touch start handler
-  };
-
-  const handleTouchEnd = (e, path) => {
-    e.preventDefault();
-    handleClick(path);
-  };
-
-  // ===== RIPPLE ЭФФЕКТ =====
-  const createRipple = (event) => {
-    const button = event.currentTarget;
-    const circle = document.createElement('span');
-    const diameter = Math.max(button.clientWidth, button.clientHeight);
-    const radius = diameter / 2;
-    
-    circle.style.width = circle.style.height = `${diameter}px`;
-    circle.style.left = `${event.clientX - button.offsetLeft - radius}px`;
-    circle.style.top = `${event.clientY - button.offsetTop - radius}px`;
-    circle.classList.add('ripple');
-    
-    const ripple = button.getElementsByClassName('ripple')[0];
-    if (ripple) {
-      ripple.remove();
-    }
-    
-    button.appendChild(circle);
-  };
-
-  // ===== КЛАССЫ ДЛЯ ЭЛЕМЕНТОВ =====
-  const getContainerClasses = () => [
-    'main-container',
-    isExiting ? 'exiting' : ''
-  ].filter(Boolean).join(' ');
-
-  const getLogoClasses = () => [
-    'logo-wrapper',
-    logoAnimated ? 'animated' : '',
-    isExiting ? 'exiting' : ''
-  ].filter(Boolean).join(' ');
-
-  const getButtonContainerClasses = () => [
-    'button-container',
-    'with-logo',
-    buttonsAnimated ? 'animated' : '',
-    isExiting ? 'exiting' : ''
-  ].filter(Boolean).join(' ');
-
-  const getButtonClasses = (btn, index) => [
-    'btn-universal',
-    `btn-${btn.type}`,
-    'btn-large',
-    'btn-shadow',
-    buttonsAnimated ? 'button-animated' : 'button-hidden',
-    (buttonsAnimated && isExiting) ? 'button-exiting' : ''
-  ].filter(Boolean).join(' ');
 
   return (
-    <div className={getContainerClasses()}>
+    <div className="main-container">
       {/* Логотип */}
-      <div 
-        ref={logoRef} 
-        className={getLogoClasses()}
-      >
+      <div className="logo-wrapper animate-logo">
         <img
           src={logoImage}
           alt="Логотип РГС Жизнь"
@@ -137,21 +38,12 @@ export default function MainMenu() {
       </div>
 
       {/* Кнопки */}
-      <div className={getButtonContainerClasses()}>
+      <div className="button-container with-logo">
         {buttons.map((btn, index) => (
           <button
             key={btn.to}
-            className={getButtonClasses(btn, index)}
-            data-index={index}
-            onClick={(e) => {
-              createRipple(e);
-              handleClick(btn.to);
-            }}
-            onTouchStart={handleTouchStart}
-            onTouchEnd={(e) => {
-              e.preventDefault();
-              handleTouchEnd(e, btn.to);
-            }}
+            className={`btn-universal btn-${btn.type} btn-large btn-shadow button-animated`}
+            onClick={() => handleClick(btn.to)}
           >
             {btn.label}
           </button>

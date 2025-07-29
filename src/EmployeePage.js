@@ -1,9 +1,9 @@
-// EmployeePage.js - МАКСИМАЛЬНО УПРОЩЕННАЯ ВЕРСИЯ
-// ✅ УДАЛЕНЫ ВСЕ СОСТОЯНИЯ И useEffect
-// ✅ УДАЛЕНЫ ВСЕ ИНЛАЙН СТИЛИ
-// ✅ ТОЛЬКО БАЗОВАЯ ФУНКЦИОНАЛЬНОСТЬ
+// EmployeePage.js - УПРОЩЕННАЯ ВЕРСИЯ
+// ✅ Удалены все useState и useEffect
+// ✅ Удалены все инлайн стили
+// ✅ Только базовая функциональность
 
-import React, { useRef } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import logoImage from './components/logo.png';
 
@@ -16,12 +16,11 @@ import './Styles/BackButton.css';
 
 const EmployeePage = () => {
   const navigate = useNavigate();
-  const logoRef = useRef(null);
 
   // ===== ДАННЫЕ ПРОДУКТОВ =====
   const products = [
     { to: '/justincase', label: 'На всякий случай', type: 'primary' },
-    { to: '/snp', label: 'Стратегия на пять. Гарант', type: 'primary' },
+    { to: '/snp', label: 'Стратегия на пять.Гарант', type: 'primary' },
     { to: '/care-future', label: 'Забота о будущем', type: 'primary' }
   ];
 
@@ -35,30 +34,10 @@ const EmployeePage = () => {
     navigate('/main-menu');
   };
 
-  // ===== RIPPLE ЭФФЕКТ =====
-  const createRipple = (event) => {
-    const button = event.currentTarget;
-    const circle = document.createElement('span');
-    const diameter = Math.max(button.clientWidth, button.clientHeight);
-    const radius = diameter / 2;
-    
-    circle.style.width = circle.style.height = `${diameter}px`;
-    circle.style.left = `${event.clientX - button.offsetLeft - radius}px`;
-    circle.style.top = `${event.clientY - button.offsetTop - radius}px`;
-    circle.classList.add('ripple');
-    
-    const ripple = button.getElementsByClassName('ripple')[0];
-    if (ripple) {
-      ripple.remove();
-    }
-    
-    button.appendChild(circle);
-  };
-
   return (
     <div className="main-container">
       {/* Логотип */}
-      <div ref={logoRef} className="logo-wrapper">
+      <div className="logo-wrapper animate-logo">
         <img
           src={logoImage}
           alt="Логотип РГС Жизнь"
@@ -68,7 +47,7 @@ const EmployeePage = () => {
 
       {/* Кнопка "Назад" */}
       <button 
-        className="back-btn"
+        className="back-btn animate-home"
         onClick={handleBack}
         aria-label="Назад"
       >
@@ -88,14 +67,11 @@ const EmployeePage = () => {
       <div className="button-container with-logo">
         <h1 className="text-h1 text-center text-white">Страница сотрудника</h1>
         
-        {products.map((product, index) => (
+        {products.map((product) => (
           <button
             key={product.to}
-            className={`btn-universal btn-${product.type} btn-large btn-shadow`}
-            onClick={(e) => {
-              createRipple(e);
-              handleClick(product.to);
-            }}
+            className={`btn-universal btn-${product.type} btn-large btn-shadow button-animated`}
+            onClick={() => handleClick(product.to)}
           >
             {product.label}
           </button>
