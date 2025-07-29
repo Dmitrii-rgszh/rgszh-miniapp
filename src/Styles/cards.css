@@ -1,8 +1,8 @@
-/* cards.css - УПРОЩЕННАЯ ВЕРСИЯ
+/* cards.css - ИСПРАВЛЕННАЯ ВЕРСИЯ
    ======================================
-   ✅ Убраны сложные вложенные z-index
-   ✅ Упрощены анимации
-   ✅ Исправлены проблемы с перекрытием кнопок
+   ✅ Исправлена проблема с кликабельностью
+   ✅ Упрощены transform анимации
+   ✅ Правильные z-index
    ====================================== */
 
 /* ======================================
@@ -35,17 +35,9 @@
   transform: translateY(-20px);
 }
 
-/* Позиционированная карточка */
+/* Позиционированная карточка - МАКСИМАЛЬНО УПРОЩЕНО */
 .card-container.card-positioned {
-  position: absolute;  /* ← ИЗМЕНЕНО С relative НА absolute */
-  top: 80px;          /* ← ИЗМЕНЕНО С margin-top НА top */
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100%;
-  max-width: 320px;
-  margin: 0;           /* ← УБИРАЕМ margin */
-  pointer-events: auto; /* ← ЯВНО РАЗРЕШАЕМ КЛИКИ НА КАРТОЧКЕ */
-  z-index: 1;          /* ← НИЖЕ КНОПОК (у кнопок z-index: 10 и 5) */
+  margin-top: 180px;
 }
 
 /* ======================================
@@ -77,25 +69,12 @@
   overflow-x: hidden;
 }
 
-.card-container.scrollable::-webkit-scrollbar {
-  width: 6px;
-}
-
-.card-container.scrollable::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.05);
-  border-radius: 3px;
-}
-
-.card-container.scrollable::-webkit-scrollbar-thumb {
-  background: rgba(180, 0, 55, 0.3);
-  border-radius: 3px;
-}
-
 /* ======================================
    ФОРМЫ В КАРТОЧКАХ
    ====================================== */
 .form-group {
   margin-bottom: 16px;
+  position: relative; /* Для правильного позиционирования */
 }
 
 .form-label {
@@ -103,6 +82,7 @@
   margin-bottom: 8px;
   color: #333;
   font-weight: 600;
+  font-size: 14px;
 }
 
 .form-input {
@@ -110,16 +90,21 @@
   padding: 10px 12px;
   border: 1px solid #e3e7ee;
   border-radius: 8px;
-  font-size: 14px;
+  font-size: 16px;    /* Важно для iOS */
   background: #f5f7fa;
   transition: all 0.2s ease;
   outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+  position: relative;
+  z-index: 3;         /* Выше карточки */
 }
 
 .form-input:focus {
   border-color: rgb(180, 0, 55);
   background: white;
   box-shadow: 0 0 0 3px rgba(180, 0, 55, 0.1);
+  z-index: 4;         /* Еще выше при фокусе */
 }
 
 .form-input.error {
@@ -142,6 +127,45 @@
   font-size: 14px;
   margin-top: 16px;
   text-align: center;
+}
+
+/* ======================================
+   КНОПКИ ОПЦИЙ
+   ====================================== */
+.option-buttons {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+}
+
+.option-buttons.vertical {
+  flex-direction: column;
+}
+
+.option-button {
+  flex: 1;
+  padding: 12px 16px;
+  border: 1px solid #e3e7ee;
+  border-radius: 8px;
+  background: #f5f7fa;
+  color: #333;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  outline: none;
+  text-align: center;
+}
+
+.option-button:hover {
+  background: #e8ebef;
+  border-color: #d0d5dd;
+}
+
+.option-button.selected {
+  background: rgb(180, 0, 55);
+  color: white;
+  border-color: rgb(180, 0, 55);
 }
 
 /* ======================================
@@ -170,7 +194,7 @@
 .success-icon {
   width: 64px;
   height: 64px;
-  background: linear-gradient(135deg, rgb(180, 0, 55), rgb(153, 0, 55));
+  background: linear-gradient(135deg, rgb(180, 0, 55), rgb(0, 40, 130));
   color: white;
   font-size: 32px;
   font-weight: bold;
@@ -202,19 +226,6 @@
 .result-item.highlight {
   background: linear-gradient(135deg, rgba(180, 0, 55, 0.1), rgba(0, 40, 130, 0.1));
   border: 1px solid rgba(180, 0, 55, 0.2);
-}
-
-.result-label {
-  color: #666;
-  font-size: 14px;
-  flex: 1;
-}
-
-.result-value {
-  color: #333;
-  font-size: 16px;
-  font-weight: 600;
-  text-align: right;
 }
 
 /* ======================================
@@ -255,27 +266,6 @@
   border-color: rgba(180, 0, 55, 0.3);
 }
 
-.carousel-dots {
-  display: flex;
-  gap: 8px;
-}
-
-.carousel-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: rgba(0, 0, 0, 0.2);
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.carousel-dot.active {
-  background: rgb(180, 0, 55);
-  width: 24px;
-  border-radius: 4px;
-}
-
 /* ======================================
    СЕРВИСЫ
    ====================================== */
@@ -294,12 +284,212 @@
   transition: all 0.2s ease;
 }
 
-.service-item:hover {
-  background: rgba(180, 0, 55, 0.05);
+/* ======================================
+   АДАПТИВНОСТЬ
+   ====================================== */
+@media (max-width: 768px) and (min-width: 375px) {
+  .card-container {
+    padding: 20px;
+  }
+  
+  .card-container.card-positioned {
+    top: 160px;
+    width: calc(100% - 32px);
+  }
+}
+
+@media (max-width: 374px) {
+  .card-container {
+    padding: 16px;
+    border-radius: 16px;
+  }
+  
+  .card-container.card-positioned {
+    top: 140px;
+    width: calc(100% - 24px);
+  }
+}
+
+/* Добавить в src/Styles/cards.css */
+
+/* Стили форм */
+.form-input {
+  width: 100%;
+  height: 36px;
+  font-size: 16px; /* Важно для iOS! */
+  background: #f0f2f5;
+  border: 1px solid #e3e7ee;
+  border-radius: 8px;
+  padding: 6px 10px;
+  color: #333;
+  text-align: center;
+  font-family: "Segoe UI", sans-serif;
+  box-sizing: border-box;
+  outline: none;
+}
+
+.form-input:focus {
+  border-color: rgb(180, 0, 55);
+  background: #fff;
+}
+
+.form-input.error {
+  border-color: #e74c3c;
+  background: #fdf2f2;
+}
+
+/* Стили для select */
+.form-input[type="select"],
+select.form-input {
+  cursor: pointer;
+  background-image: url("data:image/svg+xml;utf8,<svg fill='%23333' height='20' viewBox='0 0 24 24' width='20' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 6px center;
+  background-size: 14px;
+  padding-right: 28px;
+}
+
+/* Стили range input */
+.range-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.range-input {
+  flex: 1;
+  height: 8px;
+  border-radius: 4px;
+  background: linear-gradient(to right, rgb(180, 0, 55) 0%, rgb(180, 0, 55) var(--range-progress, 0%), #e5e5e5 var(--range-progress, 0%), #e5e5e5 100%);
+  outline: none;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.range-input::-webkit-slider-thumb {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgb(180, 0, 55);
+  cursor: pointer;
+}
+
+.range-input::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgb(180, 0, 55);
+  cursor: pointer;
+  border: none;
+}
+
+.range-value {
+  padding: 6px 12px;
+  background: rgb(180, 0, 55);
+  color: white;
+  border-radius: 16px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: "Segoe UI", sans-serif;
+  min-width: 40px;
+  text-align: center;
+}
+
+/* Опции кнопки */
+.option-buttons {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+
+.option-buttons.vertical {
+  flex-direction: column;
+}
+
+.option-button {
+  flex: 1;
+  padding: 12px 16px;
+  background: #f0f2f5;
+  border: 1px solid #e3e7ee;
+  border-radius: 8px;
+  color: #333;
+  font-family: "Segoe UI", sans-serif;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.option-button:hover {
+  background: #e8eaed;
+}
+
+.option-button.selected {
+  background: rgb(180, 0, 55);
+  color: white;
+  border-color: rgb(180, 0, 55);
+}
+
+/* Результаты расчета */
+.result-items {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 20px 0;
+}
+
+.result-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.result-item.highlight {
+  background: rgba(180, 0, 55, 0.2);
+  border-color: rgba(180, 0, 55, 0.4);
+}
+
+.result-label {
+  font-family: "Segoe UI", sans-serif;
+  font-weight: normal;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+}
+
+.result-value {
+  font-family: "Segoe UI", sans-serif;
+  font-weight: bold;
+  color: white;
+  font-size: 16px;
+  text-align: right;
+}
+
+/* Сервисы */
+.services-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 20px 0;
+}
+
+.service-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .service-icon {
-  font-size: 32px;
+  font-size: 24px;
   flex-shrink: 0;
 }
 
@@ -308,60 +498,134 @@
 }
 
 .service-title {
+  font-family: "Segoe UI", sans-serif;
+  font-weight: bold;
+  color: white;
   font-size: 16px;
-  font-weight: 600;
-  color: #333;
-  margin-bottom: 4px;
+  margin: 0 0 4px 0;
 }
 
 .service-description {
+  font-family: "Segoe UI", sans-serif;
+  font-weight: normal;
+  color: rgba(255, 255, 255, 0.8);
   font-size: 14px;
-  color: #666;
-  line-height: 1.4;
+  margin: 0;
 }
 
-/* ======================================
-   АДАПТИВНОСТЬ: ПЛАНШЕТЫ (375-768px)
-   ====================================== */
-@media (max-width: 768px) and (min-width: 375px) {
-  .card-container {
-    padding: 20px;
-    max-width: calc(100% - 48px);
+/* Карусель */
+.carousel-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.carousel-navigation-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto;
+  padding: 20px 0;
+}
+
+.carousel-arrow {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.carousel-arrow:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.carousel-dots {
+  display: flex;
+  gap: 8px;
+}
+
+.carousel-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.4);
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.carousel-dot.active {
+  background: white;
+  transform: scale(1.2);
+}
+
+/* Успешная отправка */
+.success-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.success-icon {
+  width: 60px;
+  height: 60px;
+  background: rgba(46, 204, 113, 0.2);
+  border: 2px solid #2ecc71;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #2ecc71;
+  font-size: 30px;
+  font-weight: bold;
+}
+
+/* Индикатор загрузки */
+.processing-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .range-container {
+    gap: 8px;
   }
   
-  .card-container.card-positioned {
-    margin-top: 160px;
+  .range-value {
+    font-size: 12px;
+    padding: 4px 8px;
+    min-width: 32px;
   }
   
-  .card-header {
-    margin-bottom: 20px;
+  .service-item {
+    padding: 12px;
   }
   
-  .form-group {
-    margin-bottom: 12px;
+  .carousel-arrow {
+    width: 36px;
+    height: 36px;
   }
 }
 
-/* ======================================
-   АДАПТИВНОСТЬ: МОБИЛЬНЫЕ (<375px)
-   ====================================== */
-@media (max-width: 374px) {
-  .card-container {
-    padding: 16px;
-    max-width: calc(100% - 32px);
-    border-radius: 16px;
-  }
-  
-  .card-container.card-positioned {
-    margin-top: 140px;
-  }
-  
-  .card-header {
-    margin-bottom: 16px;
-  }
-  
-  .form-group {
-    margin-bottom: 12px;
+@media (max-width: 375px) {
+  .option-buttons:not(.vertical) {
+    flex-direction: column;
   }
   
   .result-item {
@@ -372,10 +636,5 @@
   
   .result-value {
     text-align: left;
-  }
-  
-  .service-item {
-    flex-direction: column;
-    text-align: center;
   }
 }

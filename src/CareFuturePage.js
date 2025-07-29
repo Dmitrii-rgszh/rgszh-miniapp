@@ -1,9 +1,9 @@
-// CareFuturePage.js - РАДИКАЛЬНО УПРОЩЕННАЯ ВЕРСИЯ
-// ✅ УДАЛЕНЫ ВСЕ ПРОБЛЕМНЫЕ useEffect С ОБРАБОТЧИКАМИ
-// ✅ УДАЛЕНЫ ПОПЫТКИ "ИСПРАВИТЬ" КНОПКИ
-// ✅ ОСТАВЛЕН ТОЛЬКО МИНИМАЛЬНЫЙ КОД
+// CareFuturePage.js - МАКСИМАЛЬНО УПРОЩЕННАЯ ВЕРСИЯ
+// ✅ УДАЛЕНЫ ВСЕ ИНЛАЙН СТИЛИ
+// ✅ УДАЛЕНЫ ВСЕ useEffect
+// ✅ ТОЛЬКО БАЗОВЫЕ СОСТОЯНИЯ И ЛОГИКА
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiCall } from './config';
 import logoImage from './components/logo.png';
@@ -23,11 +23,6 @@ export default function CareFuturePage() {
   const navigate = useNavigate();
   const logoRef = useRef(null);
   
-  // ===== БАЗОВЫЕ СОСТОЯНИЯ =====
-  const [logoAnimated, setLogoAnimated] = useState(false);
-  const [contentAnimated, setContentAnimated] = useState(false);
-  const [isExiting, setIsExiting] = useState(false);
-
   // ===== СОСТОЯНИЯ ФОРМЫ =====
   const [stage, setStage] = useState('email');
   const [email, setEmail] = useState('');
@@ -59,28 +54,28 @@ export default function CareFuturePage() {
   const [mgrCity, setMgrCity] = useState('');
   const [mgrError, setMgrError] = useState('');
   const [isSendingMgr, setIsSendingMgr] = useState(false);
-  
-  // ===== АНИМАЦИЯ ВХОДА (ТОЛЬКО ЭТО!) =====
-  useEffect(() => {
-    const timer1 = setTimeout(() => {
-      setLogoAnimated(true);
-      if (logoRef.current) {
-        logoRef.current.classList.add('animate-logo');
-      }
-    }, 100);
-    
-    const timer2 = setTimeout(() => {
-      setContentAnimated(true);
-    }, 600);
 
-    return () => {
-      clearTimeout(timer1);
-      clearTimeout(timer2);
-    };
-  }, []);
+  // ===== ФОРМАТИРОВАНИЕ СУММЫ =====
+  const formatAmount = (value) => {
+    const cleanValue = value.replace(/\s/g, '');
+    if (!cleanValue) return '';
+    
+    const numValue = parseInt(cleanValue, 10);
+    if (isNaN(numValue)) return '';
+    
+    return numValue.toLocaleString('ru-RU');
+  };
+
+  const handleAmountChange = (e) => {
+    const rawValue = e.target.value.replace(/\s/g, '');
+    if (rawValue === '' || /^\d+$/.test(rawValue)) {
+      setAmountRaw(rawValue);
+      setAmountDisplay(formatAmount(rawValue));
+    }
+  };
 
   // ===== ОБНОВЛЕНИЕ ДАТЫ РОЖДЕНИЯ =====
-  useEffect(() => {
+  const updateBirthDate = () => {
     const { day, month, year } = birthParts;
     
     if (day && month && year) {
@@ -110,71 +105,35 @@ export default function CareFuturePage() {
     } else {
       setBirthDate(null);
     }
-  }, [birthParts, validationErrors.birthDate]);
-
-  // ===== ФОРМАТИРОВАНИЕ СУММЫ =====
-  const formatAmount = (value) => {
-    const cleanValue = value.replace(/\s/g, '');
-    if (!cleanValue) return '';
-    
-    const numValue = parseInt(cleanValue, 10);
-    if (isNaN(numValue)) return '';
-    
-    return numValue.toLocaleString('ru-RU');
-  };
-
-  const handleAmountChange = (e) => {
-    const rawValue = e.target.value.replace(/\s/g, '');
-    if (rawValue === '' || /^\d+$/.test(rawValue)) {
-      setAmountRaw(rawValue);
-      setAmountDisplay(formatAmount(rawValue));
-    }
   };
 
   // ===== НАВИГАЦИЯ =====
   const handleBack = () => {
-    if (isExiting) return;
-    
     switch (stage) {
       case 'email':
-        setIsExiting(true);
-        if (logoRef.current) {
-          logoRef.current.classList.add('animate-logo-exit');
-        }
-        setTimeout(() => navigate('/employee'), 800);
+        navigate('/employee');
         break;
-        
       case 'form':
         setStage('email');
         break;
-        
       case 'result':
         setStage('form');
         setCarouselIndex(0);
         break;
-        
       case 'manager':
         setStage('result');
         setMgrError('');
         break;
-        
       case 'manager-sent':
         setStage('result');
         break;
-        
       default:
         navigate('/employee');
     }
   };
 
   const handleHome = () => {
-    if (isExiting) return;
-    
-    setIsExiting(true);
-    if (logoRef.current) {
-      logoRef.current.classList.add('animate-logo-exit');
-    }
-    setTimeout(() => navigate('/main-menu'), 800);
+    navigate('/main-menu');
   };
 
   // ===== ВАЛИДАЦИЯ EMAIL =====
@@ -210,6 +169,8 @@ export default function CareFuturePage() {
 
   // ===== ВАЛИДАЦИЯ ФОРМЫ =====
   const validateForm = () => {
+    updateBirthDate(); // Обновляем дату перед валидацией
+    
     const errors = {};
 
     if (!birthDate) {
@@ -461,64 +422,12 @@ export default function CareFuturePage() {
     ];
   };
 
-  // ===== КЛАССЫ ДЛЯ ЭЛЕМЕНТОВ =====
-  const getContainerClasses = () => [
-    'main-container',
-    isExiting ? 'exiting' : ''
-  ].filter(Boolean).join(' ');
-
-  const getLogoClasses = () => [
-    'logo-wrapper',
-    logoAnimated ? 'animated' : '',
-    isExiting ? 'exiting' : ''
-  ].filter(Boolean).join(' ');
-
-  const getBackButtonClasses = () => [
-    'back-btn',
-    contentAnimated ? 'animate-home' : '',
-    isExiting ? 'animate-home-exit' : ''
-  ].filter(Boolean).join(' ');
-
-  const getCardClasses = () => [
-    'card-container',
-    'card-positioned',
-    contentAnimated ? 'animated' : '',
-    isExiting ? 'exiting' : ''
-  ].filter(Boolean).join(' ');
-
-  const getNextButtonClasses = () => {
-    const isReady = isNextButtonReady();
-    
-    return [
-      'next-btn',
-      contentAnimated ? 'animate-next' : '',
-      isExiting ? 'animate-next-exit' : '',
-      !isReady ? 'disabled' : ''
-    ].filter(Boolean).join(' ');
-  };
-
-  // ===== УПРОЩЕННЫЙ СТИЛЬ INPUT =====
-  const inputStyle = {
-    width: '100%',
-    height: '36px',
-    fontSize: '16px', // Важно для iOS!
-    background: '#f0f2f5',
-    border: '1px solid #e3e7ee',
-    borderRadius: '8px',
-    padding: '6px 10px',
-    color: '#333',
-    textAlign: 'center',
-    fontFamily: '"Segoe UI", sans-serif',
-    boxSizing: 'border-box',
-    outline: 'none'
-  };
-
   // ===== РЕНДЕР КОНТЕНТА =====
   const renderContent = () => {
     switch (stage) {
       case 'email':
         return (
-          <div className={getCardClasses()}>
+          <div className="card-container card-positioned">
             <div className="card-header">
               <h1 className="text-h1 text-center">Забота о будущем</h1>
               <p className="text-body text-center">
@@ -537,7 +446,6 @@ export default function CareFuturePage() {
                   if (emailError) setEmailError('');
                 }}
                 placeholder="example@mail.ru"
-                style={inputStyle}
               />
               {emailError && <span className="form-error">{emailError}</span>}
             </div>
@@ -546,7 +454,7 @@ export default function CareFuturePage() {
 
       case 'form':
         return (
-          <div className={`${getCardClasses()} scrollable`}>
+          <div className="card-container card-positioned scrollable">
             <div className="card-header">
               <h2 className="text-h2 text-center">Параметры расчёта</h2>
             </div>
@@ -591,41 +499,17 @@ export default function CareFuturePage() {
               {/* Срок программы */}
               <div className="form-group">
                 <label className="form-label text-label">Срок программы (лет)</label>
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  width: '100%'
-                }}>
+                <div className="range-container">
                   <input
                     type="range"
+                    className="range-input"
                     min="5"
                     max="30"
                     step="1"
                     value={programTerm}
                     onChange={(e) => setProgramTerm(parseInt(e.target.value))}
-                    style={{
-                      flex: '1',
-                      height: '8px',
-                      borderRadius: '4px',
-                      background: `linear-gradient(to right, rgb(180, 0, 55) 0%, rgb(180, 0, 55) ${((programTerm - 5) / 25) * 100}%, #e5e5e5 ${((programTerm - 5) / 25) * 100}%, #e5e5e5 100%)`,
-                      outline: 'none',
-                      cursor: 'pointer',
-                      WebkitAppearance: 'none',
-                      appearance: 'none'
-                    }}
                   />
-                  <div style={{
-                    padding: '6px 12px',
-                    background: 'rgb(180, 0, 55)',
-                    color: 'white',
-                    borderRadius: '16px',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    fontFamily: 'Segoe UI, sans-serif',
-                    minWidth: '40px',
-                    textAlign: 'center'
-                  }}>
+                  <div className="range-value">
                     {programTerm}
                   </div>
                 </div>
@@ -666,7 +550,6 @@ export default function CareFuturePage() {
                   value={amountDisplay}
                   onChange={handleAmountChange}
                   placeholder={calcType === 'from_premium' ? 'от 100 000 рублей' : 'Введите сумму'}
-                  style={inputStyle}
                 />
                 {validationErrors.amount && (
                   <span className="form-error">{validationErrors.amount}</span>
@@ -680,15 +563,6 @@ export default function CareFuturePage() {
                   className={`form-input ${validationErrors.yearlyIncome ? 'error' : ''}`}
                   value={yearlyIncome}
                   onChange={(e) => setYearlyIncome(e.target.value)}
-                  style={{
-                    ...inputStyle,
-                    cursor: 'pointer',
-                    backgroundImage: 'url("data:image/svg+xml;utf8,<svg fill=\'%23333\' height=\'20\' viewBox=\'0 0 24 24\' width=\'20\' xmlns=\'http://www.w3.org/2000/svg\'><path d=\'M7 10l5 5 5-5z\'/></svg>")',
-                    backgroundRepeat: 'no-repeat',
-                    backgroundPosition: 'right 6px center',
-                    backgroundSize: '14px',
-                    paddingRight: '28px'
-                  }}
                 >
                   <option value="">Выберите уровень дохода</option>
                   <option value="up_to_2_4">До 2,4 млн</option>
@@ -711,7 +585,7 @@ export default function CareFuturePage() {
 
       case 'processing':
         return (
-          <div className={getCardClasses()}>
+          <div className="card-container card-positioned">
             <div className="processing-container">
               <div className="progress-spinner"></div>
               <h2 className="text-h2">Выполняем расчёт...</h2>
@@ -725,7 +599,7 @@ export default function CareFuturePage() {
         const currentSlide = carouselData[carouselIndex] || carouselData[0];
         
         return (
-          <div className={getCardClasses()}>
+          <div className="card-container card-positioned">
             <div className="carousel-container">
               <h2 className="text-h2 text-center">{currentSlide.title}</h2>
               
@@ -821,7 +695,7 @@ export default function CareFuturePage() {
 
       case 'manager':
         return (
-          <div className={getCardClasses()}>
+          <div className="card-container card-positioned">
             <div className="card-header">
               <h2 className="text-h2 text-center">Оставить заявку</h2>
               <p className="text-body text-center">
@@ -838,7 +712,6 @@ export default function CareFuturePage() {
                   value={mgrSurname}
                   onChange={(e) => setMgrSurname(e.target.value)}
                   placeholder="Иванов"
-                  style={inputStyle}
                 />
               </div>
 
@@ -850,7 +723,6 @@ export default function CareFuturePage() {
                   value={mgrName}
                   onChange={(e) => setMgrName(e.target.value)}
                   placeholder="Иван"
-                  style={inputStyle}
                 />
               </div>
 
@@ -862,7 +734,6 @@ export default function CareFuturePage() {
                   value={mgrCity}
                   onChange={(e) => setMgrCity(e.target.value)}
                   placeholder="Москва"
-                  style={inputStyle}
                 />
               </div>
 
@@ -881,7 +752,7 @@ export default function CareFuturePage() {
 
       case 'manager-sent':
         return (
-          <div className={getCardClasses()}>
+          <div className="card-container card-positioned">
             <div className="success-container">
               <div className="success-icon">✓</div>
               <h2 className="text-h2 text-center">Заявка отправлена!</h2>
@@ -904,9 +775,9 @@ export default function CareFuturePage() {
   };
 
   return (
-    <div className={getContainerClasses()}>
+    <div className="main-container">
       {/* Логотип */}
-      <div ref={logoRef} className={getLogoClasses()}>
+      <div ref={logoRef} className="logo-wrapper">
         <img
           src={logoImage}
           alt="Логотип РГС Жизнь"
@@ -916,7 +787,7 @@ export default function CareFuturePage() {
 
       {/* Кнопка "Назад" */}
       <button 
-        className={getBackButtonClasses()}
+        className="back-btn"
         onClick={handleBack}
         aria-label="Назад"
       >
@@ -935,7 +806,7 @@ export default function CareFuturePage() {
       {/* Кнопка "Далее" */}
       {(stage === 'email' || stage === 'form') && (
         <button
-          className={getNextButtonClasses()}
+          className={`next-btn ${!isNextButtonReady() ? 'disabled' : ''}`}
           onClick={() => {
             if (stage === 'email') {
               handleEmailSubmit();

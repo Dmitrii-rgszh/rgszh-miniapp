@@ -1,31 +1,24 @@
-// PollsPage.js - ФИНАЛЬНАЯ ВЕРСИЯ БЕЗ ОТЛАДКИ
-// ✅ Исправлена логика кнопок
-// ✅ Добавлены touch обработчики
-// ✅ Убраны все логи и отладочные элементы
+// PollsPage.js - МАКСИМАЛЬНО УПРОЩЕННАЯ ВЕРСИЯ
+// ✅ УДАЛЕНЫ ВСЕ СОСТОЯНИЯ И useEffect
+// ✅ УДАЛЕНЫ ВСЕ ИНЛАЙН СТИЛИ
+// ✅ ТОЛЬКО БАЗОВАЯ ФУНКЦИОНАЛЬНОСТЬ
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logoImage from './components/logo.png';
 
 // Подключаем CSS файлы
-import './Styles/containers.css';    // Универсальные контейнеры
-import './Styles/buttons.css';       // Универсальные кнопки
-import './Styles/logo.css';          // Логотип
-import './Styles/QRStyles.css';      // QR функциональность
-import './Styles/ModalWindow.css';   // Модальные окна
-import './Styles/HomeButton.css';    // Кнопка домой
+import './Styles/containers.css';
+import './Styles/buttons.css';
+import './Styles/logo.css';
+import './Styles/QRStyles.css';
+import './Styles/ModalWindow.css';
+import './Styles/HomeButton.css';
 
 export default function PollsPage() {
   const navigate = useNavigate();
   const logoRef = useRef(null);
   const homeRef = useRef(null);
-
-  // ===== СОСТОЯНИЯ =====
-  const [logoAnimated, setLogoAnimated] = useState(false);
-  const [buttonsAnimated, setButtonsAnimated] = useState(false);
-  const [homeAnimated, setHomeAnimated] = useState(false);
-  const [isExiting, setIsExiting] = useState(false);
-  const [qrData, setQrData] = useState({ open: false, path: '', label: '' });
 
   // ===== ДАННЫЕ ОПРОСОВ =====
   const polls = [
@@ -34,80 +27,50 @@ export default function PollsPage() {
     { path: '/marza-poll', label: 'Маржа продаж' },
   ];
 
-  // ===== СБРОС СОСТОЯНИЯ ПРИ МОНТИРОВАНИИ =====
-  useEffect(() => {
-    setIsExiting(false);
-  }, []);
-
-  // ===== АНИМАЦИЯ ВХОДА =====
-  useEffect(() => {
-    const timer1 = setTimeout(() => {
-      setLogoAnimated(true);
-      setHomeAnimated(true);
-      if (logoRef.current) {
-        logoRef.current.classList.add('animate-logo');
-      }
-    }, 100);
-    
-    const timer2 = setTimeout(() => {
-      setButtonsAnimated(true);
-    }, 600);
-    
-    return () => {
-      clearTimeout(timer1);
-      clearTimeout(timer2);
-    };
-  }, []);
-
   // ===== ОБРАБОТКА КЛИКА ПО ОПРОСУ =====
   const handleClick = (path) => {
-    if (isExiting) return;
-    
-    setIsExiting(true);
-    
-    if (logoRef.current) {
-      logoRef.current.classList.add('animate-logo-exit');
-    }
-    
     navigate(path);
   };
 
   // ===== ОБРАБОТКА КЛИКА ПО КНОПКЕ ДОМОЙ =====
   const handleHomeClick = () => {
-    if (isExiting) return;
-    
-    setIsExiting(true);
-    
-    if (logoRef.current) {
-      logoRef.current.classList.add('animate-logo-exit');
-    }
-    
-    setTimeout(() => navigate('/main-menu'), 800);
-  };
-
-  // ===== TOUCH ОБРАБОТЧИКИ =====
-  const handleTouchStart = (e) => {
-    // Touch start handler
-  };
-
-  const handleTouchEnd = (e, path) => {
-    e.preventDefault();
-    handleClick(path);
-  };
-
-  const handleHomeTouchEnd = (e) => {
-    e.preventDefault();
-    handleHomeClick();
+    navigate('/main-menu');
   };
 
   // ===== QR ОБРАБОТЧИКИ =====
   const handleQrClick = (e, poll) => {
     e.stopPropagation();
-    setQrData({ open: true, path: poll.path, label: poll.label });
-  };
-
-  const closeQr = () => {
-    setQrData({ open: false, path: '', label: '' });
+    const qrUrl = `${window.location.origin}${poll.path}`;
+    
+    // Простое модальное окно
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.innerHTML = `
+      <div class="modal-content card-container">
+        <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">×</button>
+        <div class="modal-header">
+          <h3 class="modal-title">QR-код для опроса</h3>
+          <p class="modal-subtitle">«${poll.label}»</p>
+        </div>
+        <div class="modal-qr-container">
+          <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrUrl)}" 
+               alt="QR Code" class="modal-qr-image" />
+        </div>
+        <div class="modal-url">${qrUrl}</div>
+        <button class="btn-universal btn-primary btn-medium" onclick="
+          navigator.clipboard.writeText('${qrUrl}').then(() => {
+            this.textContent = '✓ Скопировано!';
+            setTimeout(() => this.textContent = 'Скопировать ссылку', 2000);
+          })
+        ">Скопировать ссылку</button>
+      </div>
+    `;
+    
+    modal.onclick = (e) => {
+      if (e.target === modal) modal.remove();
+    };
+    
+    document.body.appendChild(modal);
   };
 
   // ===== RIPPLE ЭФФЕКТ =====
@@ -130,56 +93,10 @@ export default function PollsPage() {
     button.appendChild(circle);
   };
 
-  // ===== КЛАССЫ ДЛЯ ЭЛЕМЕНТОВ =====
-  const getContainerClasses = () => [
-    'main-container',
-    isExiting ? 'exiting' : ''
-  ].filter(Boolean).join(' ');
-
-  const getLogoClasses = () => [
-    'logo-wrapper',
-    logoAnimated ? 'animated' : '',
-    isExiting ? 'exiting' : ''
-  ].filter(Boolean).join(' ');
-
-  const getButtonContainerClasses = () => [
-    'button-container',
-    'with-logo',
-    buttonsAnimated ? 'animated' : '',
-    isExiting ? 'exiting' : ''
-  ].filter(Boolean).join(' ');
-
-  const getHomeButtonClasses = () => [
-    'home-button',
-    'with-top-logo',
-    homeAnimated ? 'animate-in' : '',
-    isExiting ? 'animate-out' : ''
-  ].filter(Boolean).join(' ');
-
-  const getPollButtonClasses = (index) => [
-    'btn-universal',
-    'btn-primary',
-    'btn-large',
-    'btn-shadow',
-    'btn-fullwidth',
-    buttonsAnimated ? 'button-animated' : 'button-hidden',
-    (buttonsAnimated && isExiting) ? 'button-exiting' : ''
-  ].filter(Boolean).join(' ');
-
-  const getQrButtonClasses = () => [
-    'qr-button'
-  ].filter(Boolean).join(' ');
-
-  // QR URL
-  const qrUrl = qrData.path ? `${window.location.origin}${qrData.path}` : '';
-
   return (
-    <div className={getContainerClasses()}>
-      {/* ===== ЛОГОТИП ===== */}
-      <div 
-        ref={logoRef} 
-        className={getLogoClasses()}
-      >
+    <div className="main-container">
+      {/* Логотип */}
+      <div ref={logoRef} className="logo-wrapper">
         <img
           src={logoImage}
           alt="Логотип РГС Жизнь"
@@ -187,50 +104,28 @@ export default function PollsPage() {
         />
       </div>
 
-      {/* ===== КНОПКА ДОМОЙ ===== */}
+      {/* Кнопка домой */}
       <button
         ref={homeRef}
         onClick={handleHomeClick}
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleHomeTouchEnd}
-        className={getHomeButtonClasses()}
+        className="home-button with-top-logo"
         title="Назад в главное меню"
-        style={{
-          userSelect: 'auto',
-          WebkitUserSelect: 'auto',
-          pointerEvents: 'auto',
-          cursor: 'pointer',
-          touchAction: 'manipulation'
-        }}
       >
         <svg viewBox="0 0 24 24">
           <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
         </svg>
       </button>
 
-      {/* ===== КНОПКИ ОПРОСОВ ===== */}
-      <div className={getButtonContainerClasses()}>
+      {/* Кнопки опросов */}
+      <div className="button-container with-logo">
         {polls.map((poll, index) => (
-          <div key={poll.path} className={`poll-row ${buttonsAnimated ? 'animated' : ''}`}>
+          <div key={poll.path} className="poll-row">
             {/* Основная кнопка опроса */}
             <button
-              className={getPollButtonClasses(index)}
-              data-index={index}
+              className="btn-universal btn-primary btn-large btn-shadow btn-fullwidth"
               onClick={(e) => {
                 createRipple(e);
                 handleClick(poll.path);
-              }}
-              onTouchStart={handleTouchStart}
-              onTouchEnd={(e) => {
-                e.preventDefault();
-                handleTouchEnd(e, poll.path);
-              }}
-              style={{
-                userSelect: 'auto',
-                WebkitUserSelect: 'auto',
-                pointerEvents: 'auto',
-                cursor: 'pointer',
-                touchAction: 'manipulation'
               }}
             >
               {poll.label}
@@ -239,15 +134,8 @@ export default function PollsPage() {
             {/* QR кнопка */}
             <button
               onClick={(e) => handleQrClick(e, poll)}
-              className={getQrButtonClasses()}
+              className="qr-button"
               title={`QR-код для ${poll.label}`}
-              style={{
-                userSelect: 'auto',
-                WebkitUserSelect: 'auto',
-                pointerEvents: 'auto',
-                cursor: 'pointer',
-                touchAction: 'manipulation'
-              }}
             >
               <svg 
                 xmlns="http://www.w3.org/2000/svg" 
@@ -271,77 +159,6 @@ export default function PollsPage() {
           </div>
         ))}
       </div>
-
-      {/* ===== QR МОДАЛЬНОЕ ОКНО ===== */}
-      {qrData.open && (
-        <div className="modal-overlay" onClick={closeQr}>
-          <div className="modal-content card-container" onClick={e => e.stopPropagation()}>
-            {/* Кнопка закрытия */}
-            <button
-              onClick={closeQr}
-              className="modal-close"
-              aria-label="Закрыть"
-              style={{
-                userSelect: 'auto',
-                WebkitUserSelect: 'auto',
-                pointerEvents: 'auto',
-                cursor: 'pointer',
-                touchAction: 'manipulation'
-              }}
-            >
-              ×
-            </button>
-            
-            {/* Заголовок */}
-            <div className="modal-header">
-              <h3 className="modal-title">QR-код для опроса</h3>
-              <p className="modal-subtitle">«{qrData.label}»</p>
-            </div>
-            
-            {/* QR код */}
-            <div className="modal-qr-container">
-              <img
-                src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrUrl)}`}
-                alt="QR Code"
-                className="modal-qr-image"
-                loading="lazy"
-              />
-            </div>
-            
-            {/* URL */}
-            <div className="modal-url">
-              {qrUrl}
-            </div>
-            
-            {/* Кнопка копирования */}
-            <button
-              onClick={(e) => {
-                navigator.clipboard.writeText(qrUrl).then(() => {
-                  const btn = e.target;
-                  const originalText = btn.textContent;
-                  const originalClass = btn.className;
-                  btn.textContent = '✓ Скопировано!';
-                  btn.className = originalClass + ' btn-success';
-                  setTimeout(() => {
-                    btn.textContent = originalText;
-                    btn.className = originalClass;
-                  }, 2000);
-                });
-              }}
-              className="btn-universal btn-primary btn-medium"
-              style={{
-                userSelect: 'auto',
-                WebkitUserSelect: 'auto',
-                pointerEvents: 'auto',
-                cursor: 'pointer',
-                touchAction: 'manipulation'
-              }}
-            >
-              Скопировать ссылку
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

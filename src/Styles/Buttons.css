@@ -5,7 +5,8 @@
        R:152 G:164 B:174 + R:118 G:143 B:146 (серый), R:0 G:40 B:130 + R:0 G:32 B:104 (синий)
    ✅ Шрифты: Segoe UI Bold для заголовков, Segoe UI Regular для текста
    ✅ Адаптивность для 3 разрешений: >768px, 375-768px, <375px
-   ✅ Включает анимации появления/скрытия для MainMenu
+   ✅ Фиксированная ширина кнопок
+   ✅ Убраны дубли и ненужный код
    ============================================================================ */
 
 /* ======================================
@@ -47,6 +48,8 @@
   user-select: none;
   border: none;
   outline: none;
+  pointer-events: auto;
+  z-index: 1;
   
   /* Переходы */
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -154,8 +157,22 @@
 }
 
 /* ======================================
-   РАЗМЕРЫ КНОПОК
+   РАЗМЕРЫ КНОПОК С ФИКСИРОВАННОЙ ШИРИНОЙ
    ====================================== */
+
+/* Все кнопки имеют одинаковую фиксированную ширину */
+.btn-universal.btn-small,
+.btn-universal.btn-medium,
+.btn-universal.btn-large,
+.btn-universal.btn-xlarge {
+  width: 280px;
+  min-width: 280px;
+  max-width: 280px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
 
 /* Маленькая кнопка */
 .btn-universal.btn-small {
@@ -192,6 +209,8 @@
 /* Полная ширина */
 .btn-universal.btn-fullwidth {
   width: 100%;
+  min-width: 100%;
+  max-width: 100%;
 }
 
 /* ======================================
@@ -307,76 +326,37 @@
 
 /* 1. Экраны свыше 768px (DESKTOP) */
 @media (min-width: 769px) {
-  .btn-universal.btn-responsive {
-    padding: 18px 36px;
-    font-size: 20px;
-    border-radius: 12px;
-    min-width: 280px;
-    min-height: 56px;
-  }
-  
-  .btn-universal.btn-responsive.btn-small {
-    padding: 12px 24px;
-    font-size: 16px;
-    min-width: 200px;
-    min-height: 44px;
-  }
-  
-  .btn-universal.btn-responsive.btn-large {
-    padding: 22px 44px;
-    font-size: 24px;
+  .btn-universal.btn-small,
+  .btn-universal.btn-medium,
+  .btn-universal.btn-large,
+  .btn-universal.btn-xlarge {
+    width: 320px;
     min-width: 320px;
-    min-height: 64px;
+    max-width: 320px;
   }
 }
 
 /* 2. Экраны от 375px до 768px (TABLET) */
 @media (min-width: 375px) and (max-width: 768px) {
-  .btn-universal.btn-responsive {
-    padding: 16px 32px;
-    font-size: 18px;
-    border-radius: 10px;
-    min-width: 260px;
-    min-height: 50px;
-  }
-  
-  .btn-universal.btn-responsive.btn-small {
-    padding: 10px 20px;
-    font-size: 14px;
-    min-width: 180px;
-    min-height: 40px;
-  }
-  
-  .btn-universal.btn-responsive.btn-large {
-    padding: 20px 40px;
-    font-size: 22px;
-    min-width: 300px;
-    min-height: 58px;
+  .btn-universal.btn-small,
+  .btn-universal.btn-medium,
+  .btn-universal.btn-large,
+  .btn-universal.btn-xlarge {
+    width: 280px;
+    min-width: 280px;
+    max-width: 280px;
   }
 }
 
 /* 3. Экраны менее 375px (MOBILE) */
 @media (max-width: 374px) {
-  .btn-universal.btn-responsive {
-    padding: 14px 28px;
-    font-size: 16px;
-    border-radius: 8px;
+  .btn-universal.btn-small,
+  .btn-universal.btn-medium,
+  .btn-universal.btn-large,
+  .btn-universal.btn-xlarge {
+    width: 300px;
     min-width: 300px;
-    min-height: 46px;
-  }
-  
-  .btn-universal.btn-responsive.btn-small {
-    padding: 8px 16px;
-    font-size: 12px;
-    min-width: 300px;
-    min-height: 36px;
-  }
-  
-  .btn-universal.btn-responsive.btn-large {
-    padding: 18px 36px;
-    font-size: 20px;
-    min-width: 300px;
-    min-height: 54px;
+    max-width: 300px;
   }
 }
 
@@ -394,6 +374,7 @@
 .btn-universal.btn-icon-only {
   padding: 12px;
   min-width: auto;
+  width: auto;
   aspect-ratio: 1;
 }
 
@@ -402,6 +383,7 @@
   border-radius: 50%;
   padding: 12px;
   min-width: auto;
+  width: auto;
   aspect-ratio: 1;
 }
 
@@ -431,6 +413,70 @@
 
 .btn-group.btn-group-vertical {
   flex-direction: column;
+}
+
+/* Группы кнопок выбора (для форм) */
+.option-buttons {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: stretch;
+  justify-content: center;
+}
+
+.option-buttons.vertical {
+  flex-direction: column;
+}
+
+.option-buttons .option-button {
+  flex: 1;
+  min-width: 0;
+}
+
+.option-buttons.vertical .option-button {
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.option-buttons.vertical .option-button:last-child {
+  margin-bottom: 0;
+}
+
+/* ======================================
+   АДАПТИВНОСТЬ ДЛЯ ГРУПП КНОПОК
+   ====================================== */
+
+/* Desktop: группы кнопок горизонтально */
+@media (min-width: 769px) {
+  .option-buttons:not(.vertical) {
+    flex-direction: row;
+  }
+  
+  .option-buttons:not(.vertical) .option-button {
+    max-width: 200px;
+  }
+}
+
+/* Tablet: группы кнопок остаются гибкими */
+@media (min-width: 375px) and (max-width: 768px) {
+  .option-buttons:not(.vertical) {
+    flex-direction: row;
+  }
+  
+  .option-buttons:not(.vertical) .option-button {
+    max-width: 180px;
+  }
+}
+
+/* Mobile: все группы становятся вертикальными при малой ширине */
+@media (max-width: 374px) {
+  .option-buttons:not(.vertical) {
+    flex-direction: column;
+  }
+  
+  .option-buttons .option-button {
+    width: 100%;
+  }
 }
 
 /* ======================================
@@ -467,96 +513,11 @@
 }
 
 /* ======================================
-   ГРУППЫ КНОПОК - РАСШИРЕННЫЕ СТИЛИ
-   ====================================== */
-.btn-group {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-}
-
-.btn-group.btn-group-vertical {
-  flex-direction: column;
-}
-
-/* Группы кнопок выбора (для форм) */
-.option-buttons {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  align-items: stretch;
-  justify-content: center;
-}
-
-.option-buttons.vertical {
-  flex-direction: column;
-}
-
-/* ИСПРАВЛЕНО: Кнопки option-button в группах выбора должны быть одинакового размера */
-.option-buttons .option-button {
-  flex: 1;
-  min-width: 0; /* Позволяет кнопкам сжиматься */
-}
-
-/* ИСПРАВЛЕНО: Специальные стили для вертикальных групп */
-.option-buttons.vertical .option-button {
-  width: 100%;
-  margin-bottom: 8px;
-}
-
-.option-buttons.vertical .option-button:last-child {
-  margin-bottom: 0;
-}
-
-/* ======================================
-   АДАПТИВНОСТЬ ДЛЯ ГРУПП КНОПОК
-   ====================================== */
-
-/* Desktop: группы кнопок горизонтально */
-@media (min-width: 769px) {
-  .option-buttons:not(.vertical) {
-    flex-direction: row;
-  }
-  
-  /* ИСПРАВЛЕНО: option-button вместо btn-universal */
-  .option-buttons:not(.vertical) .option-button {
-    max-width: 200px;
-  }
-}
-
-/* Tablet: группы кнопок остаются гибкими */
-@media (min-width: 375px) and (max-width: 768px) {
-  .option-buttons:not(.vertical) {
-    flex-direction: row;
-  }
-  
-  /* ИСПРАВЛЕНО: option-button вместо btn-universal */
-  .option-buttons:not(.vertical) .option-button {
-    max-width: 180px;
-  }
-}
-
-/* Mobile: все группы становятся вертикальными при малой ширине */
-@media (max-width: 374px) {
-  .option-buttons:not(.vertical) {
-    flex-direction: column;
-  }
-  
-  /* ИСПРАВЛЕНО: option-button вместо btn-universal */
-  .option-buttons .option-button {
-    width: 100%;
-  }
-}
-
-/* ======================================
    КНОПКИ ВЫБОРА (OPTION BUTTONS)
    ====================================== */
 
 /* Базовый стиль кнопки выбора */
 .option-button {
-  /* Базовые стили */
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -581,6 +542,7 @@
   user-select: none;
   border: 2px solid var(--btn-gray-primary);
   outline: none;
+  pointer-events: auto;
   
   /* Цвета по умолчанию (неактивная кнопка) */
   background: transparent;
@@ -611,7 +573,6 @@
 
 /* ВЫБРАННОЕ СОСТОЯНИЕ */
 .option-button.selected {
-  /* Корпоративный градиент красный -> синий */
   background: linear-gradient(
     135deg, 
     var(--btn-red-primary) 0%, 
@@ -633,7 +594,6 @@
     0 6px 20px rgba(0, 0, 0, 0.3),
     0 4px 12px rgba(180, 0, 55, 0.4);
   
-  /* Более яркий градиент при hover */
   background: linear-gradient(
     135deg, 
     rgba(180, 0, 55, 1) 0%, 
@@ -697,7 +657,6 @@
     flex: 1;
   }
   
-  /* Для мобильных устройств в вертикальной группе */
   .option-buttons.vertical .option-button {
     margin-bottom: 8px;
   }

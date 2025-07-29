@@ -1,10 +1,51 @@
 /* ============================================================================
-   containers.css - УНИФИЦИРОВАННЫЕ КОНТЕЙНЕРЫ
+   containers.css - ИСПРАВЛЕННАЯ ВЕРСИЯ ДЛЯ КЛИКАБЕЛЬНЫХ КНОПОК
    ----------------------------------------------------------------------------
-   ✅ Корпоративные цвета: R:180 G:0 B:055 (красный), R:152 G:164 B:174 (серый), R:0 G:40 B:130 (синий)
-   ✅ Адаптивность для 3 разрешений: >768px, 375-768px, <375px
-   ✅ Центрирование и правильные отступы для всех элементов
+   ✅ Исправлены pointer-events
+   ✅ Правильные z-index
+   ✅ Корпоративные цвета
    ============================================================================ */
+
+/* ======================================
+   ОСНОВНОЙ КОНТЕЙНЕР ПРИЛОЖЕНИЯ
+   ====================================== */
+.main-app-container {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  font-family: "Segoe UI", sans-serif;
+  pointer-events: auto;
+}
+
+/* ======================================
+   ГРАДИЕНТНЫЙ ФОН
+   ====================================== */
+.gradient-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, 
+    rgb(180, 0, 55) 0%, 
+    rgb(153, 0, 55) 40%, 
+    rgb(0, 40, 130) 70%, 
+    rgb(0, 32, 104) 100%
+  );
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* ======================================
+   КОНТЕЙНЕР КОНТЕНТА
+   ====================================== */
+.main-content-container {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  height: 100%;
+  pointer-events: auto;
+}
 
 /* ======================================
    ОСНОВНОЙ КОНТЕЙНЕР СТРАНИЦЫ
@@ -20,8 +61,8 @@
   padding: 0;
   margin: 0;
   z-index: 1;
+  pointer-events: auto;
 }
-
 
 /* ======================================
    КОНТЕЙНЕР ДЛЯ КНОПОК
@@ -38,45 +79,18 @@
   max-width: 420px;
   padding: 0 20px;
   box-sizing: border-box;
-  
-  /* Позиционирование по умолчанию */
   top: 50%;
   transform: translate(-50%, -50%);
+  z-index: 100;
+  pointer-events: auto;
 }
 
 /* Контейнер кнопок с логотипом */
 .button-container.with-logo {
-  top: 220px;  /* Было 280px, теперь выше */
+  top: 220px;
   transform: translateX(-50%);
-}
-
-/* Все кнопки внутри контейнера занимают полную ширину */
-.button-container .btn-universal {
-  width: 100%;
-  min-height: 56px;
-}
-
-/* ======================================
-   СЕТКА ДЛЯ НЕСКОЛЬКИХ КНОПОК
-   ====================================== */
-.button-grid {
-  display: grid;
-  gap: 16px;
-  width: 100%;
-  max-width: 600px;
-  padding: 0 20px;
-  box-sizing: border-box;
-  margin: 0 auto;
-}
-
-/* 2 колонки */
-.button-grid.cols-2 {
-  grid-template-columns: repeat(2, 1fr);
-}
-
-/* 3 колонки */
-.button-grid.cols-3 {
-  grid-template-columns: repeat(3, 1fr);
+  z-index: 100;
+  pointer-events: auto;
 }
 
 /* ======================================
@@ -91,13 +105,7 @@
   flex-grow: 1;
   display: flex;
   flex-direction: column;
-}
-
-/* Центрированный контент */
-.content-container.centered {
-  justify-content: center;
-  align-items: center;
-  text-align: center;
+  pointer-events: auto;
 }
 
 /* ======================================
@@ -112,233 +120,12 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+  pointer-events: auto;
 }
 
 /* ======================================
-   НАВИГАЦИОННЫЙ КОНТЕЙНЕР
+   WELCOME КОНТЕЙНЕР
    ====================================== */
-.nav-container {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px;
-  gap: 16px;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  z-index: 100;
-}
-
-/* ======================================
-   КОНТЕЙНЕР ЗАГОЛОВКА
-   ====================================== */
-.header-container {
-  position: relative;
-  width: 100%;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  text-align: center;
-}
-
-/* ======================================
-   АДАПТИВНОСТЬ: ПЛАНШЕТЫ (375-768px)
-   ====================================== */
-@media (max-width: 768px) and (min-width: 375px) {
-  /* Основной контейнер */
-  .main-container {
-    padding: 0 16px;
-  }
-  
-  /* Кнопки */
-  .button-container {
-    max-width: 320px;
-    gap: 10px;
-    padding: 0 16px;
-  }
-  
-  .button-container.with-logo {
-    top: 200px;  /* Было 240px */
-  }
-  
-  /* Сетка кнопок */
-  .button-grid {
-    gap: 12px;
-    padding: 0 16px;
-  }
-  
-  .button-grid.cols-3 {
-    grid-template-columns: 1fr;
-  }
-  
-  /* Контент */
-  .content-container {
-    padding: 16px;
-    max-width: 100%;
-  }
-  
-  /* Формы */
-  .form-container {
-    padding: 16px;
-    gap: 12px;
-  }
-  
-  /* Навигация */
-  .nav-container {
-    padding: 16px;
-    gap: 12px;
-  }
-  
-  /* Заголовок */
-  .header-container {
-    padding: 16px;
-    gap: 12px;
-  }
-}
-
-/* ======================================
-   АДАПТИВНОСТЬ: МОБИЛЬНЫЕ (<375px)
-   ====================================== */
-@media (max-width: 374px) {
-  /* Основной контейнер */
-  .main-container {
-    padding: 0 12px;
-  }
-  
-  /* Кнопки */
-  .button-container {
-    max-width: 320px;
-    gap: 10px;
-    padding: 0 12px;
-  }
-  
-  .button-container.with-logo {
-    top: 180px;  /* Было 200px */
-  }
-  
-  /* Сетка кнопок */
-  .button-grid {
-    gap: 10px;
-    padding: 0 12px;
-  }
-  
-  .button-grid.cols-2,
-  .button-grid.cols-3 {
-    grid-template-columns: 1fr;
-  }
-  
-  /* Контент */
-  .content-container {
-    padding: 12px;
-    max-width: 100%;
-  }
-  
-  /* Формы */
-  .form-container {
-    padding: 12px;
-    gap: 10px;
-    max-width: 100%;
-  }
-  
-  /* Навигация */
-  .nav-container {
-    padding: 12px;
-    gap: 10px;
-    flex-wrap: wrap;
-  }
-  
-  /* Заголовок */
-  .header-container {
-    padding: 12px;
-    gap: 10px;
-  }
-}
-
-/* ======================================
-   МОДИФИКАТОРЫ ПОЗИЦИОНИРОВАНИЯ
-   ====================================== */
-
-/* Поднять контейнер выше */
-.button-container.position-higher {
-  top: 180px !important;
-}
-
-/* Центрировать по вертикали с небольшим смещением вверх */
-.button-container.position-center-up {
-  top: 40% !important;
-  transform: translate(-50%, -50%);
-}
-
-/* Кастомная позиция */
-.button-container.position-custom {
-  /* Можно переопределить в инлайн стилях */
-}
-
-/* Большие отступы */
-.container-padding-lg {
-  padding: 40px !important;
-}
-
-/* Средние отступы */
-.container-padding-md {
-  padding: 24px !important;
-}
-
-/* Малые отступы */
-.container-padding-sm {
-  padding: 16px !important;
-}
-
-/* Без отступов */
-.container-padding-none {
-  padding: 0 !important;
-}
-
-/* ======================================
-   УТИЛИТЫ ДЛЯ ВЫРАВНИВАНИЯ
-   ====================================== */
-
-/* Выравнивание по верху */
-.align-top {
-  justify-content: flex-start !important;
-}
-
-/* Выравнивание по центру */
-.align-center {
-  justify-content: center !important;
-}
-
-/* Выравнивание по низу */
-.align-bottom {
-  justify-content: flex-end !important;
-}
-
-/* Горизонтальное выравнивание */
-.align-left {
-  align-items: flex-start !important;
-}
-
-.align-middle {
-  align-items: center !important;
-}
-
-.align-right {
-  align-items: flex-end !important;
-}
-
-/* ======================================
-   СПЕЦИАЛЬНЫЕ КОНТЕЙНЕРЫ
-   ====================================== */
-
-/* ======================================
-   ПРОКРУЧИВАЕМЫЙ КОНТЕЙНЕР ДЛЯ ВОПРОСОВ
-   ====================================== */
-/* Контейнер текста на приветственной странице с прокруткой */
 .welcome-text-container {
   position: absolute;
   top: 280px;
@@ -352,44 +139,15 @@
   max-width: 400px;
   padding: 0 20px;
   box-sizing: border-box;
-  
-  /* ПРОКРУТКА - основные параметры */
-  max-height: calc(100vh - 200px); /* <-- ИЗМЕНИТЕ ЗНАЧЕНИЕ ЕСЛИ НУЖНО */
+  max-height: calc(100vh - 300px);
   overflow-y: auto;
   overflow-x: hidden;
-  padding-right: 10px;
-  -webkit-overflow-scrolling: touch; /* Плавная прокрутка на iOS */
-  
-  /* Начальное состояние анимации */
+  -webkit-overflow-scrolling: touch;
   opacity: 0;
   transform: translateX(-50%) translateY(50px);
   transition: all 0.8s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-/* Кастомный скроллбар для Chrome/Edge */
-.welcome-text-container::-webkit-scrollbar {
-  width: 6px;
-}
-
-.welcome-text-container::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 3px;
-}
-
-.welcome-text-container::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.3);
-  border-radius: 3px;
-  transition: background 0.2s ease;
-}
-
-.welcome-text-container::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.5);
-}
-
-/* Для Firefox */
-.welcome-text-container {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.3) rgba(255, 255, 255, 0.05);
+  z-index: 10;
+  pointer-events: auto;
 }
 
 .welcome-text-container.animated {
@@ -397,102 +155,48 @@
   transform: translateX(-50%) translateY(0);
 }
 
-.welcome-text-container.exiting {
-  opacity: 0;
-  transform: translateX(-50%) translateY(-30px);
-  transition: all 0.6s ease-out;
-}
-
-/* Адаптивность для welcome-text-container */
-@media (min-width: 375px) and (max-width: 768px) {
+/* ======================================
+   АДАПТИВНОСТЬ: ПЛАНШЕТЫ (375-768px)
+   ====================================== */
+@media (max-width: 768px) and (min-width: 375px) {
+  .button-container {
+    max-width: 320px;
+    gap: 10px;
+    padding: 0 16px;
+  }
+  
+  .button-container.with-logo {
+    top: 200px;
+  }
+  
   .welcome-text-container {
     top: 180px;
     gap: 16px;
     padding: 0 16px;
     max-width: 320px;
-    max-height: calc(100vh - 180px); /* <-- ИЗМЕНИТЕ ДЛЯ ПЛАНШЕТОВ */
-    padding-right: 5px;
+    max-height: calc(100vh - 200px);
   }
 }
 
+/* ======================================
+   АДАПТИВНОСТЬ: МОБИЛЬНЫЕ (<375px)
+   ====================================== */
 @media (max-width: 374px) {
+  .button-container {
+    max-width: 320px;
+    gap: 10px;
+    padding: 0 12px;
+  }
+  
+  .button-container.with-logo {
+    top: 180px;
+  }
+  
   .welcome-text-container {
     top: 180px;
     gap: 12px;
     padding: 0 12px;
     max-width: 320px;
-    max-height: calc(100vh - 180px); /* <-- ИЗМЕНИТЕ ДЛЯ МОБИЛЬНЫХ */
+    max-height: calc(100vh - 180px);
   }
-  
-  .welcome-text-container::-webkit-scrollbar {
-    width: 4px;
-  }
-}
-
-
-/* Контейнер с градиентной рамкой */
-.gradient-border-container {
-  position: relative;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 16px;
-  padding: 20px;
-  
-  /* Градиентная рамка */
-  &::before {
-    content: '';
-    position: absolute;
-    inset: -2px;
-    border-radius: inherit;
-    padding: 2px;
-    background: linear-gradient(135deg, 
-      rgb(180, 0, 55), 
-      rgb(152, 164, 174), 
-      rgb(0, 40, 130)
-    );
-    -webkit-mask: 
-      linear-gradient(#fff 0 0) content-box, 
-      linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-  }
-}
-
-/* ======================================
-   ВСПОМОГАТЕЛЬНЫЕ КЛАССЫ
-   ====================================== */
-
-/* Полная ширина */
-.full-width {
-  width: 100% !important;
-  max-width: none !important;
-}
-
-/* Ограничение ширины */
-.max-width-sm {
-  max-width: 400px !important;
-}
-
-.max-width-md {
-  max-width: 600px !important;
-}
-
-.max-width-lg {
-  max-width: 800px !important;
-}
-
-/* Z-index уровни */
-.z-back {
-  z-index: 1;
-}
-
-.z-base {
-  z-index: 10;
-}
-
-.z-front {
-  z-index: 100;
-}
-
-.z-modal {
-  z-index: 1000;
 }

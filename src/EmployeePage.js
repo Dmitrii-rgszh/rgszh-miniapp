@@ -1,10 +1,9 @@
-// EmployeePage.js - С ЛОГИКОЙ СТИЛЕЙ ИЗ MAINMENU
-// ✅ Используются только модульные CSS стили
-// ✅ Красные кнопки как в MainMenu
-// ✅ Добавлена кнопка "Далее"
-// ✅ Убраны все инлайн стили и фиолетовый фон
+// EmployeePage.js - МАКСИМАЛЬНО УПРОЩЕННАЯ ВЕРСИЯ
+// ✅ УДАЛЕНЫ ВСЕ СОСТОЯНИЯ И useEffect
+// ✅ УДАЛЕНЫ ВСЕ ИНЛАЙН СТИЛИ
+// ✅ ТОЛЬКО БАЗОВАЯ ФУНКЦИОНАЛЬНОСТЬ
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logoImage from './components/logo.png';
 
@@ -18,11 +17,6 @@ import './Styles/BackButton.css';
 const EmployeePage = () => {
   const navigate = useNavigate();
   const logoRef = useRef(null);
-  
-  // ===== СОСТОЯНИЯ =====
-  const [logoAnimated, setLogoAnimated] = useState(false);
-  const [buttonsAnimated, setButtonsAnimated] = useState(false);
-  const [isExiting, setIsExiting] = useState(false);
 
   // ===== ДАННЫЕ ПРОДУКТОВ =====
   const products = [
@@ -31,68 +25,14 @@ const EmployeePage = () => {
     { to: '/care-future', label: 'Забота о будущем', type: 'primary' }
   ];
 
-  // ===== СБРОС СОСТОЯНИЯ ПРИ МОНТИРОВАНИИ =====
-  useEffect(() => {
-    setIsExiting(false);
-  }, []);
-
-  // ===== АНИМАЦИЯ ВХОДА =====
-  useEffect(() => {
-    const timer1 = setTimeout(() => {
-      setLogoAnimated(true);
-      if (logoRef.current) {
-        logoRef.current.classList.add('animate-logo');
-      }
-    }, 100);
-    
-    const timer2 = setTimeout(() => {
-      setButtonsAnimated(true);
-    }, 600);
-
-    return () => {
-      clearTimeout(timer1);
-      clearTimeout(timer2);
-    };
-  }, []);
-
   // ===== ОБРАБОТКА КЛИКА ПО КНОПКЕ =====
   const handleClick = (path) => {
-    if (isExiting) return;
-    
-    setIsExiting(true);
-    
-    if (logoRef.current) {
-      logoRef.current.classList.add('animate-logo-exit');
-    }
-    
-    setTimeout(() => {
-      navigate(path);
-    }, 800);
+    navigate(path);
   };
 
   // ===== ОБРАБОТКА КНОПКИ "НАЗАД" =====
   const handleBack = () => {
-    if (isExiting) return;
-    
-    setIsExiting(true);
-    
-    if (logoRef.current) {
-      logoRef.current.classList.add('animate-logo-exit');
-    }
-    
-    setTimeout(() => {
-      navigate('/main-menu');
-    }, 800);
-  };
-
-  // ===== TOUCH ОБРАБОТЧИКИ =====
-  const handleTouchStart = (e) => {
-    // Touch start handler
-  };
-
-  const handleTouchEnd = (e, path) => {
-    e.preventDefault();
-    handleClick(path);
+    navigate('/main-menu');
   };
 
   // ===== RIPPLE ЭФФЕКТ =====
@@ -115,47 +55,10 @@ const EmployeePage = () => {
     button.appendChild(circle);
   };
 
-  // ===== КЛАССЫ ДЛЯ ЭЛЕМЕНТОВ =====
-  const getContainerClasses = () => [
-    'main-container',
-    isExiting ? 'exiting' : ''
-  ].filter(Boolean).join(' ');
-
-  const getLogoClasses = () => [
-    'logo-wrapper',
-    logoAnimated ? 'animated' : '',
-    isExiting ? 'exiting' : ''
-  ].filter(Boolean).join(' ');
-
-  const getButtonContainerClasses = () => [
-    'button-container',
-    'with-logo',
-    buttonsAnimated ? 'animated' : '',
-    isExiting ? 'exiting' : ''
-  ].filter(Boolean).join(' ');
-
-  const getButtonClasses = (product, index) => [
-    'btn-universal',
-    `btn-${product.type}`,
-    'btn-large',
-    'btn-shadow',
-    buttonsAnimated ? 'button-animated' : 'button-hidden',
-    (buttonsAnimated && isExiting) ? 'button-exiting' : ''
-  ].filter(Boolean).join(' ');
-
-  const getBackButtonClasses = () => [
-    'back-btn',
-    buttonsAnimated ? 'animate-home' : '',
-    isExiting ? 'animate-home-exit' : ''
-  ].filter(Boolean).join(' ');
-
   return (
-    <div className={getContainerClasses()}>
-      {/* ===== ЛОГОТИП ===== */}
-      <div 
-        ref={logoRef}
-        className={getLogoClasses()}
-      >
+    <div className="main-container">
+      {/* Логотип */}
+      <div ref={logoRef} className="logo-wrapper">
         <img
           src={logoImage}
           alt="Логотип РГС Жизнь"
@@ -163,9 +66,9 @@ const EmployeePage = () => {
         />
       </div>
 
-      {/* ===== КНОПКА "НАЗАД" ===== */}
+      {/* Кнопка "Назад" */}
       <button 
-        className={getBackButtonClasses()}
+        className="back-btn"
         onClick={handleBack}
         aria-label="Назад"
       >
@@ -181,35 +84,23 @@ const EmployeePage = () => {
         </svg>
       </button>
 
-      {/* ===== ЗАГОЛОВОК И КНОПКИ ===== */}
-      <div className={getButtonContainerClasses()}>
+      {/* Заголовок и кнопки */}
+      <div className="button-container with-logo">
         <h1 className="text-h1 text-center text-white">Страница сотрудника</h1>
         
         {products.map((product, index) => (
           <button
             key={product.to}
-            className={getButtonClasses(product, index)}
-            data-index={index}
+            className={`btn-universal btn-${product.type} btn-large btn-shadow`}
             onClick={(e) => {
               createRipple(e);
               handleClick(product.to);
             }}
-            onTouchStart={handleTouchStart}
-            onTouchEnd={(e) => handleTouchEnd(e, product.to)}
           >
             {product.label}
           </button>
         ))}
       </div>
-
-      {/* ===== СТИЛЬ ДЛЯ БЕЛОГО ТЕКСТА ===== */}
-      <style>
-        {`
-          .text-white {
-            color: white;
-          }
-        `}
-      </style>
     </div>
   );
 };
