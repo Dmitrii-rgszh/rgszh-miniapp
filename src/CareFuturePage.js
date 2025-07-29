@@ -64,28 +64,34 @@ export default function CareFuturePage() {
   // ===== ВЫЗОВ ХУКА ДЛЯ ИСПРАВЛЕНИЯ МОБИЛЬНЫХ ПРОБЛЕМ =====
   // Важно: вызывается после всех useState, но перед useEffect
   useMobileFix();
+
   useEffect(() => {
-    // Конвертер touch в click для мобильных
-    const handleTouchToClick = (e) => {
-      if (e.target.closest('.next-btn, .back-btn, .btn-universal, button')) {
-        e.preventDefault();
-        const clickEvent = new MouseEvent('click', {
-          bubbles: true,
-          cancelable: true,
-          view: window
-        });
-        e.target.dispatchEvent(clickEvent);
+    // Безопасный обработчик только для кнопок
+    const improveButtonClicks = (e) => {
+      // Проверяем, что это НЕ input/textarea/select
+      if (e.target.matches('input, textarea, select, [contenteditable]')) {
+        return; // Ничего не делаем для полей ввода
+      }
+    
+      // Только для кнопок добавляем улучшение
+      const button = e.target.closest('.next-btn, .back-btn, button');
+      if (button && !button.disabled) {
+        // Добавляем визуальный фидбек
+        button.style.opacity = '0.8';
+        setTimeout(() => {
+          button.style.opacity = '';
+        }, 100);
       }
     };
   
-    document.addEventListener('touchend', handleTouchToClick, true);
+    // Используем passive: true чтобы не блокировать скролл
+    document.addEventListener('touchstart', improveButtonClicks, { passive: true });
   
     return () => {
-      document.removeEventListener('touchend', handleTouchToClick, true);
+      document.removeEventListener('touchstart', improveButtonClicks);
     };
   }, []);
-
-
+  
   // ===== АНИМАЦИЯ ВХОДА =====
   useEffect(() => {
     const timer1 = setTimeout(() => {
