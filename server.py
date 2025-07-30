@@ -22,11 +22,6 @@ from db_saver import init_db, save_feedback_to_db
 from polls_ws import register_poll_ws
 from polls_routes import register_poll_routes
 from assessment_routes import register_assessment_routes  # Новый импорт
-try:
-    from care_future_models import NSJCalculations
-except ImportError:
-    NSJCalculations = None
-    logger.warning("⚠️ Модуль care_future_models не найден")
 
 # ===== ИМПОРТЫ ДЛЯ КАЛЬКУЛЯТОРА НСЖ =====
 CARE_FUTURE_AVAILABLE = False
@@ -867,7 +862,14 @@ def care_future_proxy():
         # Выполняем расчет
         calculator = NSJCalculator()
         result = calculator.calculate(calculation_input)
-        
+
+        # ✅ ДОБАВЬТЕ сохранение в БД (как в основной функции)
+        try:
+            calculator.save_calculation_to_db(calculation_input, result)
+            logger.info(f"💾 Расчет {result.calculation_uuid} сохранен в БД")
+        except Exception as save_error:
+            logger.warning(f"⚠️ Не удалось сохранить расчет: {save_error}")
+
         # Формируем ответ
         response_data = {
             'success': True,
@@ -1084,15 +1086,28 @@ def contact_manager():
         calculation_data = None
         if data.get('calculationId'):
             try:
-                from care_future_models import NSJCalculations
-                calculation = NSJCalculations.find_by_uuid(data['calculationId'])
+                calc_id = data['calculationId']
+                logger.info(f"🔍 Ищем расчет с ID: {calc_id}")
+                
+                # Используем прямой запрос через query вместо метода класса
+                calculation = NSJCalculations.query.filter_by(
+                    calculation_uuid=calc_id
+                ).first()
+                
                 if calculation:
                     calculation_data = calculation.to_dict()
-                    logger.info(f"✅ Найден расчет: {data['calculationId']}")
+                    logger.info(f"✅ Найден расчет: {calc_id}")
+                    logger.info(f"   Данные: возраст {calculation_data.get('age_at_start')}, срок {calculation_data.get('contract_term')}")
                 else:
-                    logger.warning(f"⚠️ Расчет не найден: {data['calculationId']}")
+                    logger.warning(f"⚠️ Расчет не найден в БД: {calc_id}")
+                    # Проверяем, есть ли вообще расчеты в БД
+                    total_count = NSJCalculations.query.count()
+                    logger.info(f"   Всего расчетов в БД: {total_count}")
             except Exception as e:
-                logger.error(f"❌ Ошибка получения расчета: {e}")
+                logger.error(f"❌ Ошибка получения расчета из БД: {e}")
+                logger.error(f"   Тип ошибки: {type(e).__name__}")
+                import traceback
+                logger.error(f"   Traceback: {traceback.format_exc()}")
         
         # Формируем email
         page = data.get('page', 'unknown')
@@ -1120,22 +1135,22 @@ def contact_manager():
 - Город: {city}
 - Email: {user_email}
 """
-if calculation_data:
-    gender_ru = 'Мужской' if calculation_data['gender'] == 'male' else 'Женский'
-    birth_date_str = calculation_data.get('birth_date', '').split('T')[0] if calculation_data.get('birth_date') else 'Не указана'
+        if calculation_data:
+            gender_ru = 'Мужской' if calculation_data['gender'] == 'male' else 'Женский'
+            birth_date_str = calculation_data.get('birth_date', '').split('T')[0] if calculation_data.get('birth_date') else 'Не указана'
     
-    # Карта уровней дохода
-    income_map = {
-        'up_to_2_4': 'До 2,4 млн ₽',
-        'over_2_4': 'Свыше 2,4 млн ₽', 
-        'over_5': 'Свыше 5 млн ₽',
-        'over_20': 'Свыше 20 млн ₽',
-        'over_50': 'Свыше 50 млн ₽'
-    }
+            # Карта уровней дохода
+            income_map = {
+                'up_to_2_4': 'До 2,4 млн ₽',
+                'over_2_4': 'Свыше 2,4 млн ₽', 
+                'over_5': 'Свыше 5 млн ₽',
+                'over_20': 'Свыше 20 млн ₽',
+                'over_50': 'Свыше 50 млн ₽'
+            }
     
-    yearly_income_text = income_map.get(calculation_data.get('yearly_income', ''), 'Не указан')
+            yearly_income_text = income_map.get(calculation_data.get('yearly_income', ''), 'Не указан')
     
-    body += f"""
+            body += f"""
 
 ПАРАМЕТРЫ СТРАХОВАНИЯ:
 - Дата рождения: {birth_date_str}
