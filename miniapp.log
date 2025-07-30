@@ -4482,3 +4482,13 @@ AttributeError: '_io._WindowsConsoleIO' object has no attribute 'buffer'
 2025-07-29 09:27:46,318 - db_saver - INFO - Использую базу данных: postgresql://postgres:secret@172.17.0.1:1112/postgres
 2025-07-30 14:34:52,017 - server - INFO - Socket.IO: using Redis message queue redis://redis:6379/0
 2025-07-30 14:34:52,019 - db_saver - INFO - Использую базу данных: postgresql://postgres:secret@172.17.0.1:1112/postgres
+2025-07-30 14:53:29,925 - server - INFO - Socket.IO: using Redis message queue redis://redis:6379/0
+2025-07-30 14:53:29,927 - db_saver - INFO - Использую базу данных: postgresql://postgres:secret@localhost:1112/postgres
+2025-07-30 14:54:04,717 - server - INFO - Socket.IO: using Redis message queue redis://redis:6379/0
+2025-07-30 14:54:04,720 - db_saver - INFO - Использую базу данных: postgresql://postgres:secret@localhost:1112/postgres
+2025-07-30 14:54:24,627 - server - INFO - Socket.IO: using Redis message queue redis://redis:6379/0
+2025-07-30 14:54:24,628 - db_saver - INFO - Использую базу данных: postgresql://postgres:secret@localhost:1112/postgres
+2025-07-30 14:54:37,672 - server - INFO - Socket.IO: using Redis message queue redis://redis:6379/0
+2025-07-30 14:54:37,674 - db_saver - INFO - Использую базу данных: postgresql://postgres:secret@localhost:1112/postgres
+2025-07-30 14:54:57,038 - server - INFO - Socket.IO: using Redis message queue redis://redis:6379/0
+2025-07-30 14:54:57,040 - db_saver - INFO - Использую базу данных: postgresql://postgres:secret@localhost:1112/postgres
