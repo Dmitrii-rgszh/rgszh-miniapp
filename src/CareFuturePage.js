@@ -428,8 +428,8 @@ export default function CareFuturePage() {
         return (
           <div className="card-container card-positioned animated">
             <div className="card-header">
-              <h1 className="text-h1 text-center">Забота о будущем</h1>
-              <p className="text-body text-center">
+              <h1 className="text-h1-dark text-center">Забота о будущем</h1>
+              <p className="text-body-dark text-center">
                 Накопительное страхование жизни с дополнительными сервисами
               </p>
             </div>
@@ -455,7 +455,7 @@ export default function CareFuturePage() {
         return (
           <div className="card-container card-positioned scrollable animated">
             <div className="card-header">
-              <h2 className="text-h2 text-center">Параметры расчёта</h2>
+              <h2 className="text-h2-dark text-center">Параметры расчёта</h2>
             </div>
             
             <div className="card-content">

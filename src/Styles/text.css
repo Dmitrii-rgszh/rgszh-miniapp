@@ -245,3 +245,53 @@ label {
   color: #333;
   text-shadow: none;
 }
+
+/* ======================================
+   ТЕКСТ ДЛЯ РЕЗУЛЬТАТОВ И КАРТОЧЕК
+   ====================================== */
+
+/* Лейбл результата */
+.result-label {
+  font-family: var(--text-font-family);
+  font-weight: 400;
+  font-size: 14px;
+  color: #666;
+  flex: 1;
+}
+
+/* Значение результата */
+.result-value {
+  font-family: var(--text-font-family);
+  font-weight: 600;
+  font-size: 16px;
+  color: #333;
+  text-align: right;
+}
+
+/* Заголовок сервиса */
+.service-title {
+  font-family: var(--text-font-family);
+  font-weight: 600;
+  font-size: 16px;
+  color: #333;
+  margin: 0 0 4px 0;
+}
+
+/* Описание сервиса */
+.service-description {
+  font-family: var(--text-font-family);
+  font-weight: 400;
+  font-size: 14px;
+  color: #666;
+  margin: 0;
+}
+
+/* Иконка сервиса */
+.service-icon {
+  font-size: 32px;
+  line-height: 1;
+}
+
+/* ======================================
+   ТОЧКИ КАРУСЕЛИ
+   ====================================== */

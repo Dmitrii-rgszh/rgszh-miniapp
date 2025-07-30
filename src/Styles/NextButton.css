@@ -144,29 +144,12 @@
     width: 60px;
     height: 60px;
     top: 102px;
-    right: 20px;
+    right: 60px;
     border-radius: 12px;
   }
   
   .next-btn svg {
     width: 30px;
     height: 30px;
-  }
-}
-
-/* ======================================
-   БЕЗОПАСНЫЕ ОТСТУПЫ
-   ====================================== */
-@supports (padding: max(0px)) {
-  @media (max-width: 768px) and (min-width: 375px) {
-    .next-btn {
-      right: max(24px, env(safe-area-inset-right, 24px));
-    }
-  }
-  
-  @media (max-width: 374px) {
-    .next-btn {
-      right: max(60px, env(safe-area-inset-right, 60px));
-    }
   }
 }
