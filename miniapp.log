@@ -4480,3 +4480,5 @@ AttributeError: '_io._WindowsConsoleIO' object has no attribute 'buffer'
 2025-07-28 22:08:17,586 - db_saver - INFO - Использую базу данных: postgresql://postgres:secret@172.17.0.1:1112/postgres
 2025-07-29 09:27:46,316 - server - INFO - Socket.IO: using Redis message queue redis://redis:6379/0
 2025-07-29 09:27:46,318 - db_saver - INFO - Использую базу данных: postgresql://postgres:secret@172.17.0.1:1112/postgres
+2025-07-30 14:34:52,017 - server - INFO - Socket.IO: using Redis message queue redis://redis:6379/0
+2025-07-30 14:34:52,019 - db_saver - INFO - Использую базу данных: postgresql://postgres:secret@172.17.0.1:1112/postgres

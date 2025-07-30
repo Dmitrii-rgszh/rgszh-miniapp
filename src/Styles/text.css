@@ -127,7 +127,7 @@ input, textarea, select {
   font-family: var(--font-family);
   font-weight: 400;
   font-size: var(--text-size);
-  color: #333; /* Темный текст для полей ввода */
+  color: rgb(0, 40, 130); /* Темный текст для полей ввода */
 }
 
 input::placeholder,
@@ -179,7 +179,7 @@ label {
   :root {
   --font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, 'Roboto', 'Helvetica Neue', Arial, sans-serif;
   --h1-size: 30px;
-  --h2-size: 24px;
+  --h2-size: 20px;
   --h3-size: 20px;
   --h4-size: 18px;
   --h5-size: 16px;
@@ -203,7 +203,7 @@ label {
   :root {
   --font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, 'Roboto', 'Helvetica Neue', Arial, sans-serif;
   --h1-size: 24px;
-  --h2-size: 24px;
+  --h2-size: 20px;
   --h3-size: 20px;
   --h4-size: 18px;
   --h5-size: 16px;
@@ -232,7 +232,7 @@ label {
 .modal-content h2,
 .modal-content h3,
 .modal-content p {
-  color: #333;
+  color: rgb(0, 40, 130);
   text-shadow: none;
 }
 
@@ -242,7 +242,67 @@ label {
 .card-light h3,
 .card-light p,
 .card-light span {
-  color: #333;
+  color: rgb(0, 40, 130);
+  text-shadow: none;
+}
+
+/* ======================================
+   КЛАССЫ ДЛЯ ТЕМНОГО ТЕКСТА В КАРТОЧКАХ
+   ====================================== */
+
+/* Темные заголовки */
+.text-h1-dark {
+  color: rgb(0, 40, 130);
+  text-shadow: none;
+  font-weight: 700;
+  font-size: var(--h1-size);
+}
+
+.text-h2-dark {
+  color: rgb(0, 40, 130);
+  text-shadow: none;
+  font-weight: 700;
+  font-size: var(--h2-size);
+}
+
+.text-h3-dark {
+  color: rgb(0, 40, 130);
+  text-shadow: none;
+  font-weight: 700;
+  font-size: var(--h3-size);
+}
+
+/* Темный основной текст */
+.text-body-dark {
+  color: #666;
+  text-shadow: none;
+  font-weight: 400;
+  font-size: var(--text-size);
+}
+
+/* Темные лейблы */
+.text-label {
+  color: rgb(0, 40, 130);
+  font-weight: 600;
+  text-shadow: none;
+  font-size: var(--text-small);
+}
+
+/* Автоматические стили для всех элементов в карточках */
+.card-container h1,
+.card-container h2,
+.card-container h3,
+.card-container h4,
+.card-container h5,
+.card-container h6 {
+  color: rgb(0, 40, 130);
+  text-shadow: none;
+}
+
+.card-container p,
+.card-container span,
+.card-container label {
+  color: #666;
   text-shadow: none;
 }
 
@@ -252,7 +312,7 @@ label {
 
 /* Лейбл результата */
 .result-label {
-  font-family: var(--text-font-family);
+  font-family: var(--font-family);
   font-weight: 400;
   font-size: 14px;
   color: #666;
@@ -261,25 +321,25 @@ label {
 
 /* Значение результата */
 .result-value {
-  font-family: var(--text-font-family);
+  font-family: var(--font-family);
   font-weight: 600;
   font-size: 16px;
-  color: #333;
+  color: rgb(0, 40, 130);
   text-align: right;
 }
 
 /* Заголовок сервиса */
 .service-title {
-  font-family: var(--text-font-family);
+  font-family: var(--font-family);
   font-weight: 600;
   font-size: 16px;
-  color: #333;
+  color: rgb(0, 40, 130);
   margin: 0 0 4px 0;
 }
 
 /* Описание сервиса */
 .service-description {
-  font-family: var(--text-font-family);
+  font-family: var(--font-family);
   font-weight: 400;
   font-size: 14px;
   color: #666;
@@ -292,6 +352,29 @@ label {
   line-height: 1;
 }
 
+.text-label-large {
+  color: #333;
+  font-weight: 600;
+  text-shadow: none;
+  font-size: 20px !important;
+  text-align: center;
+  display: block;
+  margin-bottom: 12px;
+}
+
 /* ======================================
-   ТОЧКИ КАРУСЕЛИ
+   ЭЛЕМЕНТЫ НАВИГАЦИИ КАРУСЕЛИ
    ====================================== */
+
+/* Стрелки карусели */
+.carousel-arrow {
+  color: #333;
+}
+
+.carousel-arrow:hover {
+  color: rgb(180, 0, 55);
+}
+
+.carousel-arrow svg {
+  stroke: currentColor;
+}

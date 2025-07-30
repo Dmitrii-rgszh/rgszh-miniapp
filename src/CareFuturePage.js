@@ -435,7 +435,7 @@ export default function CareFuturePage() {
             </div>
             
             <div className="form-group">
-              <label className="form-label text-label">Введите ваш email</label>
+              <label className="form-label text-label-large">Введите ваш email</label>
               <input
                 type="email"
                 className={`form-input ${emailError ? 'error' : ''}`}
@@ -464,7 +464,23 @@ export default function CareFuturePage() {
                 <label className="form-label text-label">Дата рождения</label>
                 <DateWheelPicker 
                   value={birthParts}
-                  onChange={setBirthParts}
+                  onChange={(newParts) => {
+                    setBirthParts(newParts);
+                    // Сразу обновляем birthDate
+                    const { day, month, year } = newParts;
+                    if (day && month && year) {
+                      const d = Number(day);
+                      const m = Number(month);
+                      const y = Number(year);
+                      const dt = new Date(y, m - 1, d);
+                      if (!isNaN(dt.getTime()) && 
+                          dt.getDate() === d && 
+                          dt.getMonth() + 1 === m && 
+                          dt.getFullYear() === y) {
+                        setBirthDate(dt);
+                      }
+                    }
+                  }}
                 />
                 {validationErrors.birthDate && (
                   <span className="form-error">{validationErrors.birthDate}</span>
@@ -474,7 +490,7 @@ export default function CareFuturePage() {
               {/* Пол */}
               <div className="form-group">
                 <label className="form-label text-label">Пол</label>
-                <div className="option-buttons">
+                <div className="option-buttons horizontal-always">
                   <button
                     type="button"
                     className={`option-button ${gender === 'male' ? 'selected' : ''}`}
@@ -517,7 +533,7 @@ export default function CareFuturePage() {
               {/* Тип расчёта */}
               <div className="form-group">
                 <label className="form-label text-label">Тип расчёта</label>
-                <div className="option-buttons vertical">
+                <div className="option-buttons horizontal-always">
                   <button
                     type="button"
                     className={`option-button ${calcType === 'from_premium' ? 'selected' : ''}`}
@@ -545,7 +561,7 @@ export default function CareFuturePage() {
                 </label>
                 <input
                   type="text"
-                  className={`form-input ${validationErrors.amount ? 'error' : ''}`}
+                  className={`form-input form-input-narrow ${validationErrors.amount ? 'error' : ''}`}
                   value={amountDisplay}
                   onChange={handleAmountChange}
                   placeholder={calcType === 'from_premium' ? 'от 100 000 рублей' : 'Введите сумму'}
@@ -559,7 +575,7 @@ export default function CareFuturePage() {
               <div className="form-group">
                 <label className="form-label text-label">Мой доход в год:</label>
                 <select
-                  className={`form-input ${validationErrors.yearlyIncome ? 'error' : ''}`}
+                  className={`form-input form-input-narrow ${validationErrors.yearlyIncome ? 'error' : ''}`}
                   value={yearlyIncome}
                   onChange={(e) => setYearlyIncome(e.target.value)}
                 >
@@ -805,7 +821,7 @@ export default function CareFuturePage() {
       {/* Кнопка "Далее" */}
       {(stage === 'email' || stage === 'form') && (
         <button
-          className={`next-btn ${!isNextButtonReady() ? 'disabled' : ''}`}
+          className={`next-btn animate-next ${!isNextButtonReady() ? 'disabled' : ''}`}
           onClick={() => {
             if (stage === 'email') {
               handleEmailSubmit();

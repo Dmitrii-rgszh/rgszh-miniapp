@@ -39,7 +39,7 @@
   box-sizing: border-box;
   
   /* Начальное состояние */
-  opacity: 0;
+  opacity: 1;
 }
 
 /* ======================================
@@ -76,7 +76,13 @@
    СОСТОЯНИЯ КНОПКИ
    ====================================== */
 .next-btn.disabled {
-  opacity: 0.4;
+  background: rgba(255, 255, 255, 0.05); /* Более прозрачный белый фон */
+  border-color: rgba(255, 255, 255, 0.1);
+  cursor: not-allowed;
+}
+
+.next-btn.disabled svg {
+  opacity: 0.4; /* Прозрачность только для иконки */
 }
 
 .next-btn:hover:not(.disabled) {
