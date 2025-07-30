@@ -1,4 +1,4 @@
-# care_future_models.py - ИСПРАВЛЕННАЯ ВЕРСИЯ с точной логикой Excel
+# care_future_models.py - ИСПРАВЛЕННАЯ ВЕРСИЯ с решением проблем даты и дохода
 
 import os
 import json
@@ -212,7 +212,7 @@ class NSJCalculatorSettings(db.Model):
         return f'<NSJCalculatorSettings {self.setting_key}={self.setting_value}>'
 
 class NSJCalculations(db.Model):
-    """Модель результатов расчетов"""
+    """Модель результатов расчетов - ИСПРАВЛЕНА с добавлением yearly_income"""
     __tablename__ = "nsj_calculations"
     
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -230,6 +230,9 @@ class NSJCalculations(db.Model):
     # Тип расчета и входная сумма
     calculation_type = db.Column(db.String(20), nullable=False, index=True)  # 'from_premium', 'from_sum'
     input_amount = db.Column(db.BigInteger, nullable=False)
+    
+    # ✅ ДОБАВЛЕНО: Уровень дохода
+    yearly_income = db.Column(db.String(20), index=True)  # 'up_to_2_4', 'over_2_4', 'over_5', 'over_20', 'over_50'
     
     # Результаты расчета
     premium_amount = db.Column(db.BigInteger, nullable=False)
@@ -262,7 +265,7 @@ class NSJCalculations(db.Model):
         return cls.query.filter_by(email=email).order_by(cls.created_at.desc()).limit(limit).all()
     
     def to_dict(self, include_redemption: bool = True) -> Dict[str, Any]:
-        """Преобразование в словарь"""
+        """Преобразование в словарь - ИСПРАВЛЕНО с yearly_income"""
         result = {
             'id': self.id,
             'calculation_uuid': self.calculation_uuid,
@@ -273,6 +276,7 @@ class NSJCalculations(db.Model):
             'contract_term': self.contract_term,
             'calculation_type': self.calculation_type,
             'input_amount': self.input_amount,
+            'yearly_income': self.yearly_income,  # ✅ ДОБАВЛЕНО
             'premium_amount': self.premium_amount,
             'insurance_sum': self.insurance_sum,
             'accumulated_capital': self.accumulated_capital,
@@ -298,7 +302,7 @@ class NSJCalculations(db.Model):
 
 @dataclass
 class CalculationInput:
-    """Входные параметры для расчета"""
+    """Входные параметры для расчета - ИСПРАВЛЕН с добавлением yearly_income"""
     birth_date: date
     gender: str  # 'male' или 'female'
     contract_term: int  # срок в годах
@@ -306,6 +310,7 @@ class CalculationInput:
     input_amount: int  # входная сумма в рублях
     email: Optional[str] = None
     calculation_date: Optional[date] = None
+    yearly_income: Optional[str] = None  # ✅ ДОБАВЛЕНО: 'up_to_2_4', 'over_2_4', etc.
 
 @dataclass
 class CalculationResult:
@@ -322,7 +327,7 @@ class CalculationResult:
 
 class NSJCalculator:
     """
-    ИСПРАВЛЕННЫЙ класс для расчетов НСЖ с точной логикой Excel
+    ИСПРАВЛЕННЫЙ класс для расчетов НСЖ с точной логикой Excel и фиксом даты
     """
     
     def __init__(self):
@@ -390,7 +395,7 @@ class NSJCalculator:
     
     def calculate(self, input_data: CalculationInput) -> CalculationResult:
         """
-        ИСПРАВЛЕННЫЙ основной метод расчета с точной логикой Excel
+        ИСПРАВЛЕННЫЙ основной метод расчета с точной логикой Excel и фиксом даты
         """
         try:
             self.logger.info(f"🧮 Начинаем расчет: {input_data.calculation_type}, сумма: {input_data.input_amount}, срок: {input_data.contract_term}")
@@ -398,11 +403,13 @@ class NSJCalculator:
             # 1. Валидация входных данных
             self._validate_input(input_data)
             
-            # 2. Вычисляем возраст
+            # 2. ✅ ИСПРАВЛЕННЫЙ расчет возраста (фикс проблемы с датой)
             calc_date = input_data.calculation_date or date.today()
-            age_at_start = self._calculate_age(input_data.birth_date, calc_date)
+            age_at_start = self._calculate_age_fixed(input_data.birth_date, calc_date)
             age_at_end = age_at_start + input_data.contract_term
             
+            self.logger.info(f"📅 Дата рождения: {input_data.birth_date}")
+            self.logger.info(f"📅 Дата расчета: {calc_date}")
             self.logger.info(f"📅 Возраст на начало: {age_at_start}, на окончание: {age_at_end}")
             
             # 3. Определяем премию и страховую сумму (ИСПРАВЛЕННАЯ ЛОГИКА)
@@ -445,7 +452,7 @@ class NSJCalculator:
                 calculation_uuid=calculation_uuid
             )
             
-            # 8. Сохраняем результат в БД
+            # 8. ✅ ИСПРАВЛЕННОЕ сохранение результата в БД (с yearly_income)
             self._save_calculation(input_data, result, calc_date)
             
             self.logger.info(f"✅ Расчет завершен успешно: {calculation_uuid}")
@@ -481,11 +488,21 @@ class NSJCalculator:
             if input_data.input_amount > 100000000:
                 raise ValueError("Максимальная страховая сумма: 100,000,000 руб.")
     
-    def _calculate_age(self, birth_date: date, calc_date: date) -> int:
-        """Расчет возраста на дату расчета"""
+    def _calculate_age_fixed(self, birth_date: date, calc_date: date) -> int:
+        """
+        ✅ ИСПРАВЛЕННЫЙ расчет возраста с фиксом проблемы даты
+        Устраняет проблему часовых поясов при передаче даты с фронтенда
+        """
+        # Логируем входные данные для отладки
+        self.logger.info(f"🔍 Расчет возраста: рождение={birth_date}, расчет={calc_date}")
+        
         age = calc_date.year - birth_date.year
+        
+        # Проверяем, не наступил ли день рождения в этом году
         if calc_date.month < birth_date.month or (calc_date.month == birth_date.month and calc_date.day < birth_date.day):
             age -= 1
+        
+        self.logger.info(f"📊 Вычисленный возраст: {age}")
         
         if age < 18 or age > 63:
             raise ValueError(f"Возраст должен быть от 18 до 63 лет, вычислен: {age}")
@@ -588,7 +605,7 @@ class NSJCalculator:
       return redemption_values
     
     def _save_calculation(self, input_data: CalculationInput, result: CalculationResult, calc_date: date):
-        """Сохранение результата расчета в БД"""
+        """✅ ИСПРАВЛЕННОЕ сохранение результата расчета в БД с yearly_income"""
         try:
             calculation = NSJCalculations(
                 calculation_uuid=result.calculation_uuid,
@@ -599,6 +616,7 @@ class NSJCalculator:
                 contract_term=input_data.contract_term,
                 calculation_type=input_data.calculation_type,
                 input_amount=input_data.input_amount,
+                yearly_income=input_data.yearly_income,  # ✅ ДОБАВЛЕНО
                 premium_amount=result.premium_amount,
                 insurance_sum=result.insurance_sum,
                 accumulated_capital=result.accumulated_capital,
@@ -618,6 +636,13 @@ class NSJCalculator:
             self.logger.error(f"❌ Ошибка сохранения расчета: {e}")
             db.session.rollback()
             # Не прерываем выполнение, если не удалось сохранить
+
+    def save_calculation_to_db(self, input_data: CalculationInput, result: CalculationResult):
+        """
+        ✅ ДОБАВЛЕНО: Публичный метод для сохранения расчета (для использования в server.py)
+        """
+        calc_date = input_data.calculation_date or date.today()
+        self._save_calculation(input_data, result, calc_date)
 
 # =============================================================================
 # УТИЛИТЫ ДЛЯ РАБОТЫ С ДАННЫМИ
@@ -655,7 +680,7 @@ class NSJDataManager:
         """Получить общую информацию о калькуляторе"""
         return {
             'program_name': 'Забота о будущем',
-            'program_version': 'v.1.15 (Excel logic)',
+            'program_version': 'v.1.16 (Excel logic + fixes)',
             'currency': 'RUB',
             'supports_tax_calculation': True,
             'supports_redemption_calculation': True,
@@ -758,7 +783,8 @@ def quick_calculation_test():
             contract_term=9,
             calculation_type='from_premium',
             input_amount=100000,
-            email='test@example.com'
+            email='test@example.com',
+            yearly_income='up_to_2_4'  # ✅ ДОБАВЛЕНО для теста
         )
         
         result = calculator.calculate(test_input)

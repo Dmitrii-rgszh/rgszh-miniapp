@@ -4492,3 +4492,279 @@ AttributeError: '_io._WindowsConsoleIO' object has no attribute 'buffer'
 2025-07-30 14:54:37,674 - db_saver - INFO - Использую базу данных: postgresql://postgres:secret@localhost:1112/postgres
 2025-07-30 14:54:57,038 - server - INFO - Socket.IO: using Redis message queue redis://redis:6379/0
 2025-07-30 14:54:57,040 - db_saver - INFO - Использую базу данных: postgresql://postgres:secret@localhost:1112/postgres
+2025-07-30 15:01:08,209 - server - INFO - Socket.IO: using Redis message queue redis://redis:6379/0
+2025-07-30 15:01:08,211 - db_saver - INFO - Используемая БД: postgresql://postgres:***@176.109.110.217:1112/postgres
+2025-07-30 15:01:14,932 - db_saver - INFO - Таблицы созданы (или уже существуют)
+2025-07-30 15:01:17,806 - care_future_models - INFO - БД калькулятора НСЖ инициализирована: {'survival_coefficients_count': 16, 'risk_tariffs_count': 16, 'redemption_terms_count': 16, 'available_terms': [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20], 'calculations_count': 233}
+2025-07-30 15:01:18,131 - care_future_routes_updated - INFO - ✅ Care Future routes с исправленной логикой зарегистрированы успешно
+2025-07-30 15:01:18,132 - NSJCalculator - INFO - 🧮 Начинаем расчет: from_premium, сумма: 960000, срок: 5
+2025-07-30 15:01:18,132 - NSJCalculator - INFO - 📅 Возраст на начало: 35, на окончание: 40
+2025-07-30 15:01:18,133 - NSJCalculator - INFO - 📊 Расчет страховой суммы:
+2025-07-30 15:01:18,133 - NSJCalculator - INFO -    Премия: 960,000 руб.
+2025-07-30 15:01:18,133 - NSJCalculator - INFO -    Срок: 5 лет
+2025-07-30 15:01:18,134 - NSJCalculator - INFO -    Коэффициент дожития: 1.34
+2025-07-30 15:01:18,134 - NSJCalculator - INFO -    Результат: 960000 * 5 * 1.34 = 6,432,000 руб.
+2025-07-30 15:01:18,134 - NSJCalculator - INFO - 💰 Премия: 960000, Страховая сумма: 6432000
+2025-07-30 15:01:18,135 - NSJCalculator - INFO - 📊 Кэшбэк для срока 5 лет: 0.3400
+2025-07-30 15:01:18,135 - NSJCalculator - INFO - 💰 Налоговый вычет: 19500/год × 5 лет = 97500
+2025-07-30 15:01:19,101 - NSJCalculator - INFO - 💾 Расчет сохранен в БД: 7c382396-7dde-4871-bef8-9e6984a85ec6
+2025-07-30 15:01:19,101 - NSJCalculator - INFO - ✅ Расчет завершен успешно: 7c382396-7dde-4871-bef8-9e6984a85ec6
+2025-07-30 15:01:19,102 - care_future_routes_updated - INFO - ✅ Исправленный калькулятор НСЖ готов к работе: 7c382396-7dde-4871-bef8-9e6984a85ec6
+2025-07-30 15:01:19,102 - care_future_routes_updated - INFO - 📍 Доступные endpoints:
+2025-07-30 15:01:19,102 - care_future_routes_updated - INFO -   - POST /api/care-future/calculate (исправленная логика)
+2025-07-30 15:01:19,102 - care_future_routes_updated - INFO -   - GET  /api/care-future/test-excel-logic
+2025-07-30 15:01:19,103 - care_future_routes_updated - INFO -   - GET  /api/care-future/admin/status
+2025-07-30 15:01:19,112 - justincase_routes - INFO - ✅ Маршруты полного калькулятора 'На всякий случай' зарегистрированы
+2025-07-30 15:01:19,113 - justincase_calculator - INFO - 🚀 Инициализация МОДУЛЬНОГО калькулятора 'На всякий случай'
+2025-07-30 15:01:19,116 - justincase_calculator - INFO - 🚀 МОДУЛЬНЫЙ расчет с правильными коэффициентами через отдельные модули
+2025-07-30 15:01:19,116 - justincase_calculator - INFO - 💰 МОДУЛЬНАЯ базовая премия:
+2025-07-30 15:01:19,117 - justincase_calculator - INFO -    Возраст: 35, пол: male, срок: 5 лет
+2025-07-30 15:01:19,117 - justincase_calculator - INFO -    Тариф жизни: 4.868
+2025-07-30 15:01:19,117 - justincase_calculator - INFO -    Премия жизни: 4868.00 руб
+2025-07-30 15:01:19,118 - justincase_calculator - INFO -    Премия инвалидности: 973.60 руб
+2025-07-30 15:01:19,118 - justincase_calculator - INFO -    Годовая база: 5841.60 руб
+2025-07-30 15:01:19,119 - justincase_calculator - INFO -    Коэфф. частоты (Ежегодно): 1.0
+2025-07-30 15:01:19,119 - justincase_calculator - INFO -    ИТОГО базовая: 5841.60 руб
+2025-07-30 15:01:19,120 - justincase_calculator - INFO - 🎯 ФИНАЛЬНЫЙ МОДУЛЬНЫЙ РЕЗУЛЬТАТ:
+2025-07-30 15:01:19,120 - justincase_calculator - INFO -    Базовая: 5,841.60 руб
+2025-07-30 15:01:19,120 - justincase_calculator - INFO -    НС: 0.00 руб
+2025-07-30 15:01:19,121 - justincase_calculator - INFO -    КЗ: 0.00 руб
+2025-07-30 15:01:19,121 - justincase_calculator - INFO -    ИТОГО: 5,841.60 руб
+2025-07-30 15:01:19,123 - justincase_calculator - INFO -    Коэффициент частоты (Ежегодно): 1.0
+2025-07-30 15:01:19,123 - justincase_routes - INFO - ✅ Полный калькулятор готов: тест-премия 5,841.6 руб.
+2025-07-30 15:01:19,124 - justincase_routes - INFO - 📍 Доступные endpoints:
+2025-07-30 15:01:19,124 - justincase_routes - INFO -   - POST /api/proxy/calculator/save (основной, для фронтенда)
+2025-07-30 15:01:19,125 - justincase_routes - INFO -   - POST /api/justincase/calculate (расширенный)
+2025-07-30 15:01:19,125 - justincase_routes - INFO -   - POST /api/justincase/validate (валидация)
+2025-07-30 15:01:19,126 - justincase_routes - INFO -   - POST /api/justincase/validate-sum (валидация суммы)
+2025-07-30 15:01:19,126 - justincase_routes - INFO -   - POST /api/justincase/recommend-sum (рекомендуемая сумма)
+2025-07-30 15:01:19,126 - justincase_routes - INFO -   - GET  /api/justincase/config (конфигурация)
+2025-07-30 15:01:19,126 - justincase_routes - INFO -   - GET  /api/justincase/test (тестирование)
+2025-07-30 15:01:19,127 - justincase_routes - INFO -   - GET  /api/justincase/status (статус)
+2025-07-30 15:01:19,138 - server - INFO - 🚀 Starting MiniApp Server...
+2025-07-30 15:01:19,139 - server - INFO - ✅ Build folder found with 6 items
+2025-07-30 15:01:19,139 - server - INFO - 📧 Email configured: rgszh-miniapp@yandex.ru -> zerotlt@mail.ru, Polina.Iureva@rgsl.ru, Polina.Iureva@rgsl.ru
+2025-07-30 15:01:19,139 - server - INFO - 📧 Additional recipient configured: Polina.Iureva@rgsl.ru
+2025-07-30 15:01:19,139 - server - INFO - 🧮 Care Future калькулятор НСЖ: ДОСТУПЕН
+2025-07-30 15:01:19,139 - server - INFO - 📍 Endpoints: /api/care-future/* и /care-future/calculate
+2025-07-30 15:01:19,139 - server - INFO - 📍 Server will run on port 4000
+2025-07-30 15:01:19,140 - server - INFO - 📍 Open http://localhost:4000/ in your browser
+2025-07-30 15:01:24,350 - server - INFO - 📨 OPTIONS /api/care-future/calculate - 127.0.0.1
+2025-07-30 15:01:24,351 - care_future_routes_updated - INFO - 🌐 ➜ OPTIONS /api/care-future/calculate
+2025-07-30 15:01:24,351 - server - INFO - 📤 OPTIONS /api/care-future/calculate -> 200
+2025-07-30 15:01:24,351 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-30 15:01:24] "OPTIONS /api/care-future/calculate HTTP/1.1" 200 345 0.001011
+2025-07-30 15:01:24,353 - server - INFO - 📨 POST /api/care-future/calculate - 127.0.0.1
+2025-07-30 15:01:24,380 - server - INFO -    📋 JSON keys: ['birthDate', 'gender', 'contractTerm', 'calculationType', 'inputAmount', 'email', 'yearlyIncome']
+2025-07-30 15:01:24,380 - care_future_routes_updated - INFO - 🌐 ➜ POST /api/care-future/calculate
+2025-07-30 15:01:24,380 - care_future_routes_updated - INFO - 📋 Content-Type: application/json
+2025-07-30 15:01:24,380 - care_future_routes_updated - INFO - 📥 JSON успешно распарсен: ['birthDate', 'gender', 'contractTerm', 'calculationType', 'inputAmount', 'email', 'yearlyIncome']
+2025-07-30 15:01:24,380 - care_future_routes_updated - INFO - 📊 Получены данные для расчета: {'birthDate': '1990-06-13', 'gender': 'male', 'contractTerm': 7, 'calculationType': 'from_premium', 'inputAmount': 100000, 'email': 'vtb@vtb.ru', 'yearlyIncome': 'up_to_2_4'}
+2025-07-30 15:01:24,380 - care_future_routes_updated - INFO - 🧮 Начинаем расчет с исправленным калькулятором...
+2025-07-30 15:01:24,381 - NSJCalculator - INFO - 🧮 Начинаем расчет: from_premium, сумма: 100000, срок: 7
+2025-07-30 15:01:24,381 - NSJCalculator - INFO - 📅 Возраст на начало: 35, на окончание: 42
+2025-07-30 15:01:24,381 - NSJCalculator - INFO - 📊 Расчет страховой суммы:
+2025-07-30 15:01:24,381 - NSJCalculator - INFO -    Премия: 100,000 руб.
+2025-07-30 15:01:24,381 - NSJCalculator - INFO -    Срок: 7 лет
+2025-07-30 15:01:24,381 - NSJCalculator - INFO -    Коэффициент дожития: 1.46
+2025-07-30 15:01:24,381 - NSJCalculator - INFO -    Результат: 100000 * 7 * 1.46 = 1,022,000 руб.
+2025-07-30 15:01:24,381 - NSJCalculator - INFO - 💰 Премия: 100000, Страховая сумма: 1022000
+2025-07-30 15:01:24,381 - NSJCalculator - INFO - 📊 Кэшбэк для срока 7 лет: 0.4600
+2025-07-30 15:01:24,381 - NSJCalculator - INFO - 💰 Налоговый вычет: 13000.0/год × 7 лет = 91000
+2025-07-30 15:01:25,332 - NSJCalculator - INFO - 💾 Расчет сохранен в БД: 46c55388-e941-445e-b68e-bb117498eaea
+2025-07-30 15:01:25,332 - NSJCalculator - INFO - ✅ Расчет завершен успешно: 46c55388-e941-445e-b68e-bb117498eaea
+2025-07-30 15:01:25,332 - care_future_routes_updated - INFO - ✅ Расчет выполнен успешно: 46c55388-e941-445e-b68e-bb117498eaea
+2025-07-30 15:01:25,333 - care_future_routes_updated - INFO - 📊 Результат: премия=100,000, сумма=1,022,000, доход=322,000
+2025-07-30 15:01:25,333 - server - INFO - 📤 POST /api/care-future/calculate -> 200
+2025-07-30 15:01:25,333 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-30 15:01:25] "POST /api/care-future/calculate HTTP/1.1" 200 664 0.979699
+2025-07-30 15:32:44,639 - server - INFO - 📨 OPTIONS /api/care-future/calculate - 127.0.0.1
+2025-07-30 15:32:44,639 - care_future_routes_updated - INFO - 🌐 ➜ OPTIONS /api/care-future/calculate
+2025-07-30 15:32:44,639 - server - INFO - 📤 OPTIONS /api/care-future/calculate -> 200
+2025-07-30 15:32:44,640 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-30 15:32:44] "OPTIONS /api/care-future/calculate HTTP/1.1" 200 345 0.002032
+2025-07-30 15:32:44,641 - server - INFO - 📨 POST /api/care-future/calculate - 127.0.0.1
+2025-07-30 15:32:44,659 - server - INFO -    📋 JSON keys: ['birthDate', 'gender', 'contractTerm', 'calculationType', 'inputAmount', 'email', 'yearlyIncome']
+2025-07-30 15:32:44,659 - care_future_routes_updated - INFO - 🌐 ➜ POST /api/care-future/calculate
+2025-07-30 15:32:44,659 - care_future_routes_updated - INFO - 📋 Content-Type: application/json
+2025-07-30 15:32:44,660 - care_future_routes_updated - INFO - 📥 JSON успешно распарсен: ['birthDate', 'gender', 'contractTerm', 'calculationType', 'inputAmount', 'email', 'yearlyIncome']
+2025-07-30 15:32:44,660 - care_future_routes_updated - INFO - 📊 Получены данные для расчета: {'birthDate': '1990-06-13', 'gender': 'male', 'contractTerm': 10, 'calculationType': 'from_premium', 'inputAmount': 150000, 'email': 'vtb@vtb.ru', 'yearlyIncome': 'up_to_2_4'}
+2025-07-30 15:32:44,660 - care_future_routes_updated - INFO - 🧮 Начинаем расчет с исправленным калькулятором...
+2025-07-30 15:32:44,660 - NSJCalculator - INFO - 🧮 Начинаем расчет: from_premium, сумма: 150000, срок: 10
+2025-07-30 15:32:44,661 - NSJCalculator - INFO - 📅 Возраст на начало: 35, на окончание: 45
+2025-07-30 15:32:44,661 - NSJCalculator - INFO - 📊 Расчет страховой суммы:
+2025-07-30 15:32:44,661 - NSJCalculator - INFO -    Премия: 150,000 руб.
+2025-07-30 15:32:44,661 - NSJCalculator - INFO -    Срок: 10 лет
+2025-07-30 15:32:44,661 - NSJCalculator - INFO -    Коэффициент дожития: 1.73
+2025-07-30 15:32:44,661 - NSJCalculator - INFO -    Результат: 150000 * 10 * 1.73 = 2,595,000 руб.
+2025-07-30 15:32:44,661 - NSJCalculator - INFO - 💰 Премия: 150000, Страховая сумма: 2595000
+2025-07-30 15:32:44,661 - NSJCalculator - INFO - 📊 Кэшбэк для срока 10 лет: 0.7300
+2025-07-30 15:32:44,662 - NSJCalculator - INFO - 💰 Налоговый вычет: 19500.0/год × 10 лет = 195000
+2025-07-30 15:32:44,663 - NSJCalculator - ERROR - ❌ Ошибка сохранения расчета: (psycopg2.OperationalError) server closed the connection unexpectedly
+	This probably means the server terminated abnormally
+	before or while processing the request.
+
+[SQL: INSERT INTO nsj_calculations (calculation_uuid, email, birth_date, gender, calculation_date, contract_term, calculation_type, input_amount, premium_amount, insurance_sum, accumulated_capital, program_income, tax_deduction, age_at_start, age_at_end, payment_frequency, redemption_values, created_at, user_agent, ip_address) VALUES (%(calculation_uuid)s, %(email)s, %(birth_date)s, %(gender)s, %(calculation_date)s, %(contract_term)s, %(calculation_type)s, %(input_amount)s, %(premium_amount)s, %(insurance_sum)s, %(accumulated_capital)s, %(program_income)s, %(tax_deduction)s, %(age_at_start)s, %(age_at_end)s, %(payment_frequency)s, %(redemption_values)s::JSON, %(created_at)s, %(user_agent)s, %(ip_address)s) RETURNING nsj_calculations.id]
+[parameters: {'calculation_uuid': '6d6d681f-433d-4991-b740-8468ffed953e', 'email': 'vtb@vtb.ru', 'birth_date': datetime.date(1990, 6, 13), 'gender': 'male', 'calculation_date': datetime.date(2025, 7, 30), 'contract_term': 10, 'calculation_type': 'from_premium', 'input_amount': 150000, 'premium_amount': 150000, 'insurance_sum': 2595000, 'accumulated_capital': 1500000, 'program_income': 1095000, 'tax_deduction': 195000, 'age_at_start': 35, 'age_at_end': 45, 'payment_frequency': 'annual', 'redemption_values': '[{"year": 1, "amount": 0, "percentage": 0}, {"year": 2, "amount": 0, "percentage": 0}, {"year": 3, "amount": 900000, "percentage": 0.2}, {"year": 4,  ... (198 characters truncated) ... ": 8, "amount": 8400000, "percentage": 0.7}, {"year": 9, "amount": 10800000, "percentage": 0.8}, {"year": 10, "amount": 13500000, "percentage": 0.9}]', 'created_at': datetime.datetime(2025, 7, 30, 11, 32, 44, 663856), 'user_agent': None, 'ip_address': None}]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-07-30 15:32:44,663 - NSJCalculator - INFO - ✅ Расчет завершен успешно: 6d6d681f-433d-4991-b740-8468ffed953e
+2025-07-30 15:32:44,664 - care_future_routes_updated - INFO - ✅ Расчет выполнен успешно: 6d6d681f-433d-4991-b740-8468ffed953e
+2025-07-30 15:32:44,664 - care_future_routes_updated - INFO - 📊 Результат: премия=150,000, сумма=2,595,000, доход=1,095,000
+2025-07-30 15:32:44,664 - server - INFO - 📤 POST /api/care-future/calculate -> 200
+2025-07-30 15:32:44,665 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-30 15:32:44] "POST /api/care-future/calculate HTTP/1.1" 200 690 0.024431
+2025-07-30 16:23:24,143 - server - INFO - 📨 OPTIONS /api/care-future/calculate - 127.0.0.1
+2025-07-30 16:23:24,143 - care_future_routes_updated - INFO - 🌐 ➜ OPTIONS /api/care-future/calculate
+2025-07-30 16:23:24,143 - server - INFO - 📤 OPTIONS /api/care-future/calculate -> 200
+2025-07-30 16:23:24,144 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-30 16:23:24] "OPTIONS /api/care-future/calculate HTTP/1.1" 200 345 0.001012
+2025-07-30 16:23:24,145 - server - INFO - 📨 POST /api/care-future/calculate - 127.0.0.1
+2025-07-30 16:23:24,170 - server - INFO -    📋 JSON keys: ['birthDate', 'gender', 'contractTerm', 'calculationType', 'inputAmount', 'email', 'yearlyIncome']
+2025-07-30 16:23:24,170 - care_future_routes_updated - INFO - 🌐 ➜ POST /api/care-future/calculate
+2025-07-30 16:23:24,170 - care_future_routes_updated - INFO - 📋 Content-Type: application/json
+2025-07-30 16:23:24,171 - care_future_routes_updated - INFO - 📥 JSON успешно распарсен: ['birthDate', 'gender', 'contractTerm', 'calculationType', 'inputAmount', 'email', 'yearlyIncome']
+2025-07-30 16:23:24,171 - care_future_routes_updated - INFO - 📊 Получены данные для расчета: {'birthDate': '1990-06-13', 'gender': 'male', 'contractTerm': 10, 'calculationType': 'from_premium', 'inputAmount': 150000, 'email': 'vtb@vtb.ru', 'yearlyIncome': 'up_to_2_4'}
+2025-07-30 16:23:24,171 - care_future_routes_updated - INFO - 🧮 Начинаем расчет с исправленным калькулятором...
+2025-07-30 16:23:24,172 - NSJCalculator - INFO - 🧮 Начинаем расчет: from_premium, сумма: 150000, срок: 10
+2025-07-30 16:23:24,172 - NSJCalculator - INFO - 📅 Возраст на начало: 35, на окончание: 45
+2025-07-30 16:23:24,172 - NSJCalculator - INFO - 📊 Расчет страховой суммы:
+2025-07-30 16:23:24,172 - NSJCalculator - INFO -    Премия: 150,000 руб.
+2025-07-30 16:23:24,173 - NSJCalculator - INFO -    Срок: 10 лет
+2025-07-30 16:23:24,173 - NSJCalculator - INFO -    Коэффициент дожития: 1.73
+2025-07-30 16:23:24,173 - NSJCalculator - INFO -    Результат: 150000 * 10 * 1.73 = 2,595,000 руб.
+2025-07-30 16:23:24,173 - NSJCalculator - INFO - 💰 Премия: 150000, Страховая сумма: 2595000
+2025-07-30 16:23:24,173 - NSJCalculator - INFO - 📊 Кэшбэк для срока 10 лет: 0.7300
+2025-07-30 16:23:24,173 - NSJCalculator - INFO - 💰 Налоговый вычет: 19500.0/год × 10 лет = 195000
+2025-07-30 16:23:24,857 - NSJCalculator - ERROR - ❌ Ошибка сохранения расчета: (psycopg2.OperationalError) connection to server at "176.109.110.217", port 1112 failed: server closed the connection unexpectedly
+	This probably means the server terminated abnormally
+	before or while processing the request.
+
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-07-30 16:23:24,857 - NSJCalculator - INFO - ✅ Расчет завершен успешно: 2657564a-c88e-4735-b810-561b717c23d3
+2025-07-30 16:23:24,857 - care_future_routes_updated - INFO - ✅ Расчет выполнен успешно: 2657564a-c88e-4735-b810-561b717c23d3
+2025-07-30 16:23:24,857 - care_future_routes_updated - INFO - 📊 Результат: премия=150,000, сумма=2,595,000, доход=1,095,000
+2025-07-30 16:23:24,858 - server - INFO - 📤 POST /api/care-future/calculate -> 200
+2025-07-30 16:23:24,858 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-30 16:23:24] "POST /api/care-future/calculate HTTP/1.1" 200 692 0.713714
+2025-07-30 16:34:32,321 - server - INFO - 📨 OPTIONS /api/contact-manager - 127.0.0.1
+2025-07-30 16:34:32,321 - server - INFO - 🌐 ➜ OPTIONS /api/contact-manager
+2025-07-30 16:34:32,322 - server - INFO - 📤 OPTIONS /api/contact-manager -> 200
+2025-07-30 16:34:32,322 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-30 16:34:32] "OPTIONS /api/contact-manager HTTP/1.1" 200 345 0.001022
+2025-07-30 16:34:32,325 - server - INFO - 📨 POST /api/contact-manager - 127.0.0.1
+2025-07-30 16:34:32,330 - server - INFO -    📋 JSON keys: ['surname', 'name', 'city', 'email', 'page', 'calculationId']
+2025-07-30 16:34:32,330 - server - INFO - 🌐 ➜ POST /api/contact-manager
+2025-07-30 16:34:33,001 - server - ERROR - ❌ Ошибка получения расчета: (psycopg2.OperationalError) connection to server at "176.109.110.217", port 1112 failed: server closed the connection unexpectedly
+	This probably means the server terminated abnormally
+	before or while processing the request.
+
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-07-30 16:34:33,001 - server - INFO - 📧 [CareFuture] Processing manager request from: Поляков Дмитрий
+2025-07-30 16:34:33,001 - server - INFO - 📧 [CareFuture] Added user email: vtb@vtb.ru
+2025-07-30 16:34:33,002 - server - INFO - 📧 [CareFuture] Sending email to 3 recipients: Новая заявка НСЖ «Забота о будущем» от Поляков Дмитрий
+2025-07-30 16:34:33,002 - server - INFO - 📧 [CareFuture] Recipients: zerotlt@mail.ru, I.dav@mail.ru, vtb@vtb.ru
+2025-07-30 16:34:33,951 - server - INFO - ✅ [CareFuture] Email sent successfully to zerotlt@mail.ru
+2025-07-30 16:34:34,229 - server - INFO - ✅ [CareFuture] Email sent successfully to I.dav@mail.ru
+2025-07-30 16:34:34,503 - server - INFO - ✅ [CareFuture] Email sent successfully to vtb@vtb.ru
+2025-07-30 16:34:34,531 - server - INFO - 📧 [CareFuture] Email sending summary: 3/3 successful
+2025-07-30 16:34:34,531 - server - INFO - ✅ [CareFuture] Заявка от Поляков Дмитрий отправлена
+2025-07-30 16:34:34,531 - server - INFO - 📤 POST /api/contact-manager -> 200
+2025-07-30 16:34:34,532 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-30 16:34:34] "POST /api/contact-manager HTTP/1.1" 200 402 2.208827
+2025-07-30 16:40:10,753 - server - INFO - Socket.IO: using Redis message queue redis://redis:6379/0
+2025-07-30 16:40:10,755 - db_saver - INFO - Используемая БД: postgresql://postgres:***@176.109.110.217:1112/postgres
+2025-07-30 16:55:01,860 - server - INFO - Socket.IO: using Redis message queue redis://redis:6379/0
+2025-07-30 16:55:01,862 - db_saver - INFO - Используемая БД: postgresql://postgres:***@176.109.110.217:1112/postgres
+2025-07-30 16:55:08,446 - db_saver - INFO - Таблицы созданы (или уже существуют)
+2025-07-30 16:55:11,254 - care_future_models - INFO - БД калькулятора НСЖ инициализирована: {'survival_coefficients_count': 16, 'risk_tariffs_count': 16, 'redemption_terms_count': 16, 'available_terms': [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20], 'calculations_count': 235}
+2025-07-30 16:55:11,567 - care_future_routes_updated - INFO - ✅ Care Future routes с исправленной логикой зарегистрированы успешно
+2025-07-30 16:55:11,567 - NSJCalculator - INFO - 🧮 Начинаем расчет: from_premium, сумма: 960000, срок: 5
+2025-07-30 16:55:11,568 - NSJCalculator - INFO - 📅 Возраст на начало: 35, на окончание: 40
+2025-07-30 16:55:11,568 - NSJCalculator - INFO - 📊 Расчет страховой суммы:
+2025-07-30 16:55:11,568 - NSJCalculator - INFO -    Премия: 960,000 руб.
+2025-07-30 16:55:11,568 - NSJCalculator - INFO -    Срок: 5 лет
+2025-07-30 16:55:11,568 - NSJCalculator - INFO -    Коэффициент дожития: 1.34
+2025-07-30 16:55:11,568 - NSJCalculator - INFO -    Результат: 960000 * 5 * 1.34 = 6,432,000 руб.
+2025-07-30 16:55:11,568 - NSJCalculator - INFO - 💰 Премия: 960000, Страховая сумма: 6432000
+2025-07-30 16:55:11,569 - NSJCalculator - INFO - 📊 Кэшбэк для срока 5 лет: 0.3400
+2025-07-30 16:55:11,569 - NSJCalculator - INFO - 💰 Налоговый вычет: 19500/год × 5 лет = 97500
+2025-07-30 16:55:12,505 - NSJCalculator - INFO - 💾 Расчет сохранен в БД: 81daf89f-c865-4e9f-95b7-db84b9e8877f
+2025-07-30 16:55:12,505 - NSJCalculator - INFO - ✅ Расчет завершен успешно: 81daf89f-c865-4e9f-95b7-db84b9e8877f
+2025-07-30 16:55:12,505 - care_future_routes_updated - INFO - ✅ Исправленный калькулятор НСЖ готов к работе: 81daf89f-c865-4e9f-95b7-db84b9e8877f
+2025-07-30 16:55:12,505 - care_future_routes_updated - INFO - 📍 Доступные endpoints:
+2025-07-30 16:55:12,505 - care_future_routes_updated - INFO -   - POST /api/care-future/calculate (исправленная логика)
+2025-07-30 16:55:12,505 - care_future_routes_updated - INFO -   - GET  /api/care-future/test-excel-logic
+2025-07-30 16:55:12,506 - care_future_routes_updated - INFO -   - GET  /api/care-future/admin/status
+2025-07-30 16:55:12,508 - justincase_routes - INFO - ✅ Маршруты полного калькулятора 'На всякий случай' зарегистрированы
+2025-07-30 16:55:12,508 - justincase_calculator - INFO - 🚀 Инициализация МОДУЛЬНОГО калькулятора 'На всякий случай'
+2025-07-30 16:55:12,510 - justincase_calculator - INFO - 🚀 МОДУЛЬНЫЙ расчет с правильными коэффициентами через отдельные модули
+2025-07-30 16:55:12,510 - justincase_calculator - INFO - 💰 МОДУЛЬНАЯ базовая премия:
+2025-07-30 16:55:12,510 - justincase_calculator - INFO -    Возраст: 35, пол: male, срок: 5 лет
+2025-07-30 16:55:12,510 - justincase_calculator - INFO -    Тариф жизни: 4.868
+2025-07-30 16:55:12,510 - justincase_calculator - INFO -    Премия жизни: 4868.00 руб
+2025-07-30 16:55:12,510 - justincase_calculator - INFO -    Премия инвалидности: 973.60 руб
+2025-07-30 16:55:12,511 - justincase_calculator - INFO -    Годовая база: 5841.60 руб
+2025-07-30 16:55:12,511 - justincase_calculator - INFO -    Коэфф. частоты (Ежегодно): 1.0
+2025-07-30 16:55:12,511 - justincase_calculator - INFO -    ИТОГО базовая: 5841.60 руб
+2025-07-30 16:55:12,511 - justincase_calculator - INFO - 🎯 ФИНАЛЬНЫЙ МОДУЛЬНЫЙ РЕЗУЛЬТАТ:
+2025-07-30 16:55:12,511 - justincase_calculator - INFO -    Базовая: 5,841.60 руб
+2025-07-30 16:55:12,511 - justincase_calculator - INFO -    НС: 0.00 руб
+2025-07-30 16:55:12,511 - justincase_calculator - INFO -    КЗ: 0.00 руб
+2025-07-30 16:55:12,511 - justincase_calculator - INFO -    ИТОГО: 5,841.60 руб
+2025-07-30 16:55:12,511 - justincase_calculator - INFO -    Коэффициент частоты (Ежегодно): 1.0
+2025-07-30 16:55:12,511 - justincase_routes - INFO - ✅ Полный калькулятор готов: тест-премия 5,841.6 руб.
+2025-07-30 16:55:12,511 - justincase_routes - INFO - 📍 Доступные endpoints:
+2025-07-30 16:55:12,512 - justincase_routes - INFO -   - POST /api/proxy/calculator/save (основной, для фронтенда)
+2025-07-30 16:55:12,512 - justincase_routes - INFO -   - POST /api/justincase/calculate (расширенный)
+2025-07-30 16:55:12,512 - justincase_routes - INFO -   - POST /api/justincase/validate (валидация)
+2025-07-30 16:55:12,512 - justincase_routes - INFO -   - POST /api/justincase/validate-sum (валидация суммы)
+2025-07-30 16:55:12,512 - justincase_routes - INFO -   - POST /api/justincase/recommend-sum (рекомендуемая сумма)
+2025-07-30 16:55:12,512 - justincase_routes - INFO -   - GET  /api/justincase/config (конфигурация)
+2025-07-30 16:55:12,512 - justincase_routes - INFO -   - GET  /api/justincase/test (тестирование)
+2025-07-30 16:55:12,512 - justincase_routes - INFO -   - GET  /api/justincase/status (статус)
+2025-07-30 16:55:12,516 - server - INFO - 🚀 Starting MiniApp Server...
+2025-07-30 16:55:12,517 - server - INFO - ✅ Build folder found with 6 items
+2025-07-30 16:55:12,517 - server - INFO - 📧 Email configured: rgszh-miniapp@yandex.ru -> zerotlt@mail.ru, Polina.Iureva@rgsl.ru, Polina.Iureva@rgsl.ru
+2025-07-30 16:55:12,517 - server - INFO - 📧 Additional recipient configured: Polina.Iureva@rgsl.ru
+2025-07-30 16:55:12,517 - server - INFO - 🧮 Care Future калькулятор НСЖ: ДОСТУПЕН
+2025-07-30 16:55:12,517 - server - INFO - 📍 Endpoints: /api/care-future/* и /care-future/calculate
+2025-07-30 16:55:12,518 - server - INFO - 📍 Server will run on port 4000
+2025-07-30 16:55:12,518 - server - INFO - 📍 Open http://localhost:4000/ in your browser
+2025-07-30 16:55:36,509 - server - INFO - 📨 OPTIONS /api/care-future/calculate - 127.0.0.1
+2025-07-30 16:55:36,511 - care_future_routes_updated - INFO - 🌐 ➜ OPTIONS /api/care-future/calculate
+2025-07-30 16:55:36,511 - server - INFO - 📤 OPTIONS /api/care-future/calculate -> 200
+2025-07-30 16:55:36,512 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-30 16:55:36] "OPTIONS /api/care-future/calculate HTTP/1.1" 200 345 0.002059
+2025-07-30 16:55:36,513 - server - INFO - 📨 POST /api/care-future/calculate - 127.0.0.1
+2025-07-30 16:55:36,530 - server - INFO -    📋 JSON keys: ['birthDate', 'gender', 'contractTerm', 'calculationType', 'inputAmount', 'email', 'yearlyIncome']
+2025-07-30 16:55:36,530 - care_future_routes_updated - INFO - 🌐 ➜ POST /api/care-future/calculate
+2025-07-30 16:55:36,530 - care_future_routes_updated - INFO - 📋 Content-Type: application/json
+2025-07-30 16:55:36,530 - care_future_routes_updated - INFO - 📥 JSON успешно распарсен: ['birthDate', 'gender', 'contractTerm', 'calculationType', 'inputAmount', 'email', 'yearlyIncome']
+2025-07-30 16:55:36,531 - care_future_routes_updated - INFO - 📊 Получены данные для расчета: {'birthDate': '1990-06-13', 'gender': 'male', 'contractTerm': 11, 'calculationType': 'from_premium', 'inputAmount': 100000, 'email': 'vtb@vtb.ru', 'yearlyIncome': 'up_to_2_4'}
+2025-07-30 16:55:36,531 - care_future_routes_updated - INFO - 🧮 Начинаем расчет с исправленным калькулятором...
+2025-07-30 16:55:36,531 - NSJCalculator - INFO - 🧮 Начинаем расчет: from_premium, сумма: 100000, срок: 11
+2025-07-30 16:55:36,532 - NSJCalculator - INFO - 📅 Возраст на начало: 35, на окончание: 46
+2025-07-30 16:55:36,532 - NSJCalculator - INFO - 📊 Расчет страховой суммы:
+2025-07-30 16:55:36,532 - NSJCalculator - INFO -    Премия: 100,000 руб.
+2025-07-30 16:55:36,532 - NSJCalculator - INFO -    Срок: 11 лет
+2025-07-30 16:55:36,532 - NSJCalculator - INFO -    Коэффициент дожития: 1.82
+2025-07-30 16:55:36,533 - NSJCalculator - INFO -    Результат: 100000 * 11 * 1.82 = 2,002,000 руб.
+2025-07-30 16:55:36,533 - NSJCalculator - INFO - 💰 Премия: 100000, Страховая сумма: 2002000
+2025-07-30 16:55:36,533 - NSJCalculator - INFO - 📊 Кэшбэк для срока 11 лет: 0.8200
+2025-07-30 16:55:36,533 - NSJCalculator - INFO - 💰 Налоговый вычет: 13000.0/год × 11 лет = 143000
+2025-07-30 16:55:37,470 - NSJCalculator - INFO - 💾 Расчет сохранен в БД: bf7ce2a6-74ee-421f-bff4-187bb0ba53ce
+2025-07-30 16:55:37,470 - NSJCalculator - INFO - ✅ Расчет завершен успешно: bf7ce2a6-74ee-421f-bff4-187bb0ba53ce
+2025-07-30 16:55:37,470 - care_future_routes_updated - INFO - ✅ Расчет выполнен успешно: bf7ce2a6-74ee-421f-bff4-187bb0ba53ce
+2025-07-30 16:55:37,470 - care_future_routes_updated - INFO - 📊 Результат: премия=100,000, сумма=2,002,000, доход=902,000
+2025-07-30 16:55:37,470 - server - INFO - 📤 POST /api/care-future/calculate -> 200
+2025-07-30 16:55:37,471 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-30 16:55:37] "POST /api/care-future/calculate HTTP/1.1" 200 699 0.958248
+2025-07-30 16:56:03,365 - server - INFO - 📨 OPTIONS /api/contact-manager - 127.0.0.1
+2025-07-30 16:56:03,366 - server - INFO - 🌐 ➜ OPTIONS /api/contact-manager
+2025-07-30 16:56:03,368 - server - INFO - 📤 OPTIONS /api/contact-manager -> 200
+2025-07-30 16:56:03,369 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-30 16:56:03] "OPTIONS /api/contact-manager HTTP/1.1" 200 345 0.004302
+2025-07-30 16:56:03,373 - server - INFO - 📨 POST /api/contact-manager - 127.0.0.1
+2025-07-30 16:56:03,380 - server - INFO -    📋 JSON keys: ['surname', 'name', 'city', 'email', 'page', 'calculationId']
+2025-07-30 16:56:03,381 - server - INFO - 🌐 ➜ POST /api/contact-manager
+2025-07-30 16:56:04,010 - server - INFO - ✅ Найден расчет: bf7ce2a6-74ee-421f-bff4-187bb0ba53ce
+2025-07-30 16:56:04,010 - server - INFO - 📧 [CareFuture] Processing manager request from: Поляков Дмитри
+2025-07-30 16:56:04,011 - server - INFO - 📧 [CareFuture] Added user email: vtb@vtb.ru
+2025-07-30 16:56:04,011 - server - INFO - 📧 [CareFuture] Sending email to 3 recipients: Новая заявка НСЖ «Забота о будущем» от Поляков Дмитри
+2025-07-30 16:56:04,011 - server - INFO - 📧 [CareFuture] Recipients: zerotlt@mail.ru, I.dav@mail.ru, vtb@vtb.ru
+2025-07-30 16:56:05,121 - server - INFO - ✅ [CareFuture] Email sent successfully to zerotlt@mail.ru
+2025-07-30 16:56:05,443 - server - INFO - ✅ [CareFuture] Email sent successfully to I.dav@mail.ru
+2025-07-30 16:56:05,739 - server - INFO - ✅ [CareFuture] Email sent successfully to vtb@vtb.ru
+2025-07-30 16:56:05,773 - server - INFO - 📧 [CareFuture] Email sending summary: 3/3 successful
+2025-07-30 16:56:05,773 - server - INFO - ✅ [CareFuture] Заявка от Поляков Дмитри отправлена
+2025-07-30 16:56:05,773 - server - INFO - 📤 POST /api/contact-manager -> 200
+2025-07-30 16:56:06,085 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-07-30 16:56:06] "POST /api/contact-manager HTTP/1.1" 200 402 2.711802

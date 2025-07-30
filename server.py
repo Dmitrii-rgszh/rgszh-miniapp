@@ -737,6 +737,9 @@ def care_future_calculate():
             }), 400
         
         # Создаем объект входных данных
+        # После строки: calculation_input = CalculationInput(...)
+        # Замените весь блок на:
+
         calculation_input = CalculationInput(
             birth_date=birth_date,
             gender=data['gender'],
@@ -744,12 +747,20 @@ def care_future_calculate():
             calculation_type=data['calculationType'],
             input_amount=int(data['inputAmount']),
             email=data.get('email'),
+            yearly_income=data.get('yearlyIncome'),  # ✅ ДОБАВЛЕНО
             calculation_date=date.today()
         )
-        
+
         # Выполняем расчет
         calculator = NSJCalculator()
         result = calculator.calculate(calculation_input)
+
+        # ✅ ДОБАВЬТЕ сохранение в БД
+        try:
+            calculator.save_calculation_to_db(calculation_input, result)
+            logger.info(f"💾 Расчет {result.calculation_uuid} сохранен в БД")
+        except Exception as save_error:
+            logger.warning(f"⚠️ Не удалось сохранить расчет: {save_error}")
         
         # Формируем ответ
         response_data = {
@@ -849,6 +860,7 @@ def care_future_proxy():
             calculation_type=data['calculationType'],
             input_amount=int(data['inputAmount']),
             email=data.get('email'),
+            yearly_income=data.get('yearlyIncome'),
             calculation_date=date.today()
         )
         
@@ -1108,13 +1120,22 @@ def contact_manager():
 - Город: {city}
 - Email: {user_email}
 """
-        
-        # Добавляем данные из расчета, если они есть
-        if calculation_data:
-            gender_ru = 'Мужской' if calculation_data['gender'] == 'male' else 'Женский'
-            birth_date_str = calculation_data.get('birth_date', '').split('T')[0] if calculation_data.get('birth_date') else 'Не указана'
-            
-            body += f"""
+if calculation_data:
+    gender_ru = 'Мужской' if calculation_data['gender'] == 'male' else 'Женский'
+    birth_date_str = calculation_data.get('birth_date', '').split('T')[0] if calculation_data.get('birth_date') else 'Не указана'
+    
+    # Карта уровней дохода
+    income_map = {
+        'up_to_2_4': 'До 2,4 млн ₽',
+        'over_2_4': 'Свыше 2,4 млн ₽', 
+        'over_5': 'Свыше 5 млн ₽',
+        'over_20': 'Свыше 20 млн ₽',
+        'over_50': 'Свыше 50 млн ₽'
+    }
+    
+    yearly_income_text = income_map.get(calculation_data.get('yearly_income', ''), 'Не указан')
+    
+    body += f"""
 
 ПАРАМЕТРЫ СТРАХОВАНИЯ:
 - Дата рождения: {birth_date_str}
@@ -1128,6 +1149,7 @@ def contact_manager():
 - Накопленный капитал: {calculation_data.get('accumulated_capital', 0):,} ₽
 - Доход по программе: {calculation_data.get('program_income', 0):,} ₽
 - Налоговый вычет (за весь срок): {calculation_data.get('tax_deduction', 0):,} ₽
+- Уровень дохода: {yearly_income_text}
 
 ТИП РАСЧЕТА:
 - {('По размеру взноса' if calculation_data.get('calculation_type') == 'from_premium' else 'По страховой сумме')}

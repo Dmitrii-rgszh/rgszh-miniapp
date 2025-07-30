@@ -230,8 +230,8 @@ export default function CareFuturePage() {
 
     try {
       const formattedDate = birthDate instanceof Date 
-        ? birthDate.toISOString().split('T')[0]
-        : new Date(birthDate).toISOString().split('T')[0];
+        ? `${birthDate.getFullYear()}-${String(birthDate.getMonth() + 1).padStart(2, '0')}-${String(birthDate.getDate()).padStart(2, '0')}`
+        : new Date(birthDate).toLocaleDateString('sv-SE');
       
       const requestData = {
         birthDate: formattedDate,
@@ -389,11 +389,11 @@ export default function CareFuturePage() {
           },
           { 
             label: 'Уход по ЛП (выплата в моменте):',
-            value: 'в размере уплаченных взносов на дату страхового случая'
+            value: 'возврат взносов'
           },
           { 
             label: 'Инвалидность I,II по ЛП:',
-            value: 'освобождение от уплаты взносов'
+            value: 'освобождение от<br/>уплаты взносов'
           }
         ]
       },
@@ -623,7 +623,10 @@ export default function CareFuturePage() {
                   {currentSlide.items.map((item, idx) => (
                     <div key={idx} className={`result-item-split ${item.highlight ? 'highlight' : ''}`}>
                       <span className="result-label-left">{item.label}</span>
-                      <span className="result-value-right">{item.value}</span>
+                      <span 
+                        className="result-value-right"
+                        dangerouslySetInnerHTML={{ __html: item.value }}
+                      />
                     </div>
                   ))}
                 </div>
