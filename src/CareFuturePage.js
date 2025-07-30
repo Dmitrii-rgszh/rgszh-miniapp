@@ -345,7 +345,7 @@ export default function CareFuturePage() {
     }
   };
 
-  // ===== ПОДГОТОВКА ДАННЫХ ДЛЯ КАРУСЕЛИ =====
+  // ===== ПОДГОТОВКА ДАННЫХ ДЛЯ КАРУСЕЛИ - ИСПРАВЛЕНО =====
   const getCarouselData = () => {
     if (!resultData) return [];
 
@@ -354,19 +354,24 @@ export default function CareFuturePage() {
         title: 'Ваш расчет "Забота о будущем"',
         items: [
           { 
-            text: `Ваш возраст: ${resultData.age} лет`
+            label: 'Ваш возраст:',
+            value: `${resultData.age} лет`
           },
           { 
-            text: `Срок программы: ${resultData.contract_term} лет`
+            label: 'Срок программы:',
+            value: `${resultData.contract_term} лет`
           },
           { 
-            text: `Ежегодный взнос: ${resultData.single_premium_formatted}`
+            label: 'Ежегодный взнос:',
+            value: resultData.single_premium_formatted
           },
           { 
-            text: `Сумма возврата налогов: ${resultData.tax_deduction.toLocaleString('ru-RU')} ₽`
+            label: 'Сумма возврата налогов:',
+            value: `${resultData.tax_deduction.toLocaleString('ru-RU')} ₽`
           },
           { 
-            text: `Страховая сумма: ${resultData.insurance_amount_formatted}`,
+            label: 'Страховая сумма:',
+            value: resultData.insurance_amount_formatted,
             highlight: true
           }
         ]
@@ -375,16 +380,20 @@ export default function CareFuturePage() {
         title: 'Покрытия и выплаты',
         items: [
           { 
-            text: `Дожитие ЗЛ до окончания срока страхования: ${resultData.insurance_amount_formatted}`
+            label: 'Дожитие ЗЛ до окончания срока страхования:',
+            value: resultData.insurance_amount_formatted
           },
           { 
-            text: `Уход по ЛП с отложенной выплатой: ${resultData.insurance_amount_formatted}`
+            label: 'Уход по ЛП с отложенной выплатой:',
+            value: resultData.insurance_amount_formatted
           },
           { 
-            text: `Уход по ЛП (выплата в моменте): в размере уплаченных взносов на дату страхового случая`
+            label: 'Уход по ЛП (выплата в моменте):',
+            value: 'в размере уплаченных взносов на дату страхового случая'
           },
           { 
-            text: `Инвалидность I,II по ЛП: освобождение от уплаты взносов`
+            label: 'Инвалидность I,II по ЛП:',
+            value: 'освобождение от уплаты взносов'
           }
         ]
       },
@@ -612,8 +621,9 @@ export default function CareFuturePage() {
               {currentSlide.items && (
                 <div className="result-items">
                   {currentSlide.items.map((item, idx) => (
-                    <div key={idx} className={`result-item-single ${item.highlight ? 'highlight' : ''}`}>
-                      <span className="result-text">{item.text}</span>
+                    <div key={idx} className={`result-item-split ${item.highlight ? 'highlight' : ''}`}>
+                      <span className="result-label-left">{item.label}</span>
+                      <span className="result-value-right">{item.value}</span>
                     </div>
                   ))}
                 </div>
@@ -633,7 +643,7 @@ export default function CareFuturePage() {
                 </div>
               )}
 
-              {/* Навигация карусели - ИСПРАВЛЕНО */}
+              {/* Навигация карусели */}
               <div className="carousel-navigation-bottom">
                 {/* Кнопка "Назад" - по левому краю */}
                 <button 

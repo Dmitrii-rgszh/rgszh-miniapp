@@ -677,8 +677,8 @@ select.form-input {
   padding: 16px 20px;
   background: rgba(0, 0, 0, 0.02);
   border-radius: 12px;
-  margin-bottom: 12px;
-  gap: 16px;
+  margin-bottom: 0px;
+  gap: 12px;
 }
 
 .result-item-split.highlight {
@@ -744,12 +744,12 @@ select.form-input {
 
 @media (max-width: 375px) {
   .result-item-split {
-    padding: 14px 16px;
+    padding: 8px 8px;
     gap: 12px;
   }
   
   .result-label-left {
-    font-size: 14px;
+    font-size: 15px;
   }
   
   .result-value-right {
@@ -758,7 +758,7 @@ select.form-input {
   }
   
   .result-item-split.highlight .result-label-left {
-    font-size: 15px;
+    font-size: 16px;
   }
   
   .result-item-split.highlight .result-value-right {
