@@ -742,3 +742,51 @@ select.form-input {
     font-size: 16px;
   }
 }
+
+/* ======================================
+   КНОПКИ ВАРИАНТОВ ОТВЕТОВ (ASSESSMENT)
+   ====================================== */
+
+/* Базовый стиль для кнопки варианта ответа */
+.answer-option {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  padding: 8px 12px;
+  font-size: 17px;
+  font-weight: 400;
+  font-family: "Segoe UI", sans-serif; /* из text.css */
+  margin-bottom: 12px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  transform: scale(1);
+  text-align: left;
+  cursor: pointer;
+  outline: none;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+/* Выбранный вариант ответа */
+.answer-option.selected {
+  background: linear-gradient(135deg, rgba(180, 0, 55, 0.9) 0%, rgba(0, 40, 130, 0.9) 100%);
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  font-weight: 600;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+  transform: scale(1.02);
+}
+
+/* Hover эффект */
+.answer-option:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: scale(1.01);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+}
+
+.answer-option.selected:hover {
+  transform: scale(1.03);
+}

@@ -750,12 +750,7 @@ def care_future_calculate():
         calculator = NSJCalculator()
         result = calculator.calculate(calculation_input)
 
-        # ✅ ДОБАВЬТЕ сохранение в БД
-        try:
-            calculator.save_calculation_to_db(calculation_input, result)
-            logger.info(f"💾 Расчет {result.calculation_uuid} сохранен в БД")
-        except Exception as save_error:
-            logger.warning(f"⚠️ Не удалось сохранить расчет: {save_error}")
+        logger.info(f"✅ Расчет выполнен: {result.calculation_uuid}")
         
         # Формируем ответ
         response_data = {
@@ -1083,16 +1078,15 @@ def contact_manager():
         data = request.get_json()
         
         # Получаем данные расчета из БД, если есть calculationId
+        # Получаем данные расчета из БД, если есть calculationId
         calculation_data = None
         if data.get('calculationId'):
             try:
                 calc_id = data['calculationId']
                 logger.info(f"🔍 Ищем расчет с ID: {calc_id}")
                 
-                # Используем прямой запрос через query вместо метода класса
-                calculation = NSJCalculations.query.filter_by(
-                    calculation_uuid=calc_id
-                ).first()
+                # ✅ ИСПОЛЬЗУЕМ МЕТОД КЛАССА (как было раньше)
+                calculation = NSJCalculations.find_by_uuid(calc_id)
                 
                 if calculation:
                     calculation_data = calculation.to_dict()
@@ -1101,11 +1095,10 @@ def contact_manager():
                 else:
                     logger.warning(f"⚠️ Расчет не найден в БД: {calc_id}")
                     # Проверяем, есть ли вообще расчеты в БД
-                    total_count = NSJCalculations.query.count()
+                    total_count = db.session.query(NSJCalculations).count()
                     logger.info(f"   Всего расчетов в БД: {total_count}")
             except Exception as e:
                 logger.error(f"❌ Ошибка получения расчета из БД: {e}")
-                logger.error(f"   Тип ошибки: {type(e).__name__}")
                 import traceback
                 logger.error(f"   Traceback: {traceback.format_exc()}")
         

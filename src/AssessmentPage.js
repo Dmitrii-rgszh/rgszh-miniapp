@@ -15,6 +15,8 @@ import './Styles/NextButton.css';
 import './Styles/BackButton.css';
 import './Styles/HomeButton.css';
 import './Styles/ProgressIndicator.css';
+import './Styles/text.css';  
+import './Styles/cards.css';
 
 export default function AssessmentPage() {
   const navigate = useNavigate();
@@ -455,12 +457,8 @@ export default function AssessmentPage() {
               Пройдите короткий тест для определения ваших корпоративных ценностей.
               {questionnaire?.description && ` ${questionnaire.description}`}
             </p>
-            <p className="text-small text-center" style={{ opacity: 0.9, marginBottom: '30px' }}>
-              {questionnaire?.instructions || 
-               'Здесь нет «правильных» или «неправильных» ответов — важно лишь понять ваш естественный стиль работы и взаимодействия.'}
-            </p>
             {questionnaire && (
-              <div className="card-container">
+              <div className="card-container animated">
                 <p className="text-body text-center">
                   <strong>Опросник:</strong> {questionnaire.title}
                 </p>
