@@ -317,7 +317,7 @@
   
   .card-container.card-positioned {
     top: 190px; /* Логотип 80px + высота 100px + отступ 10px */
-    width: calc(100% - 24px);
+    width: calc(100% - 50px);
   }
 }
 
@@ -526,22 +526,20 @@ select.form-input {
   margin: 0;
 }
 
-/* Карусель */
-.carousel-container {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
+/* ======================================
+   КАРУСЕЛЬ КАК НА СКРИНАХ
+   ====================================== */
 
 .carousel-navigation-bottom {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-top: auto;
-  padding: 20px 0;
+  padding: 20px;
+  width: 100%;
 }
 
+/* Стрелки */
 .carousel-arrow {
   background: rgba(0, 0, 0, 0.05);
   border: 1px solid rgba(0, 0, 0, 0.1);
@@ -555,7 +553,12 @@ select.form-input {
   transition: all 0.3s ease;
 }
 
-.carousel-arrow:hover {
+.carousel-arrow.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.carousel-arrow:hover:not(.hidden) {
   background: rgba(180, 0, 55, 0.1);
   border-color: rgba(180, 0, 55, 0.3);
 }
@@ -564,13 +567,15 @@ select.form-input {
   color: #333;
 }
 
-.carousel-arrow:hover svg {
+.carousel-arrow:hover:not(.hidden) svg {
   color: rgb(180, 0, 55);
 }
 
+/* Индикаторы */
 .carousel-dots {
   display: flex;
   gap: 8px;
+  justify-content: center;
 }
 
 .carousel-dot {
@@ -657,5 +662,106 @@ select.form-input {
   
   .result-value {
     text-align: left;
+  }
+}
+
+/* ======================================
+   РЕЗУЛЬТАТЫ В ДВУХКОЛОНОЧНОЙ СТРУКТУРЕ
+   ====================================== */
+
+/* Контейнер для двухколоночного элемента */
+.result-item-split {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 16px 20px;
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 12px;
+  margin-bottom: 12px;
+  gap: 16px;
+}
+
+.result-item-split.highlight {
+  background: linear-gradient(135deg, rgba(180, 0, 55, 0.1), rgba(0, 40, 130, 0.1));
+  border: 2px solid rgba(180, 0, 55, 0.3);
+}
+
+/* Текст слева (описание) */
+.result-label-left {
+  font-family: "Segoe UI", sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  color: #666;
+  text-align: left;
+  flex: 1;
+  line-height: 1.3;
+}
+
+/* Значение справа */
+.result-value-right {
+  font-family: "Segoe UI", sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  color: rgb(0, 40, 130);
+  text-align: right;
+  flex-shrink: 0;
+  line-height: 1.3;
+  min-width: 120px; /* минимальная ширина для значений */
+}
+
+/* Для highlight элементов - чуть крупнее шрифт */
+.result-item-split.highlight .result-label-left {
+  font-size: 17px;
+  font-weight: 500;
+  color: #333;
+}
+
+.result-item-split.highlight .result-value-right {
+  font-size: 18px;
+  font-weight: 700;
+  color: rgb(180, 0, 55);
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .result-label-left {
+    font-size: 15px;
+  }
+  
+  .result-value-right {
+    font-size: 15px;
+    min-width: 100px;
+  }
+  
+  .result-item-split.highlight .result-label-left {
+    font-size: 16px;
+  }
+  
+  .result-item-split.highlight .result-value-right {
+    font-size: 17px;
+  }
+}
+
+@media (max-width: 375px) {
+  .result-item-split {
+    padding: 14px 16px;
+    gap: 12px;
+  }
+  
+  .result-label-left {
+    font-size: 14px;
+  }
+  
+  .result-value-right {
+    font-size: 14px;
+    min-width: 80px;
+  }
+  
+  .result-item-split.highlight .result-label-left {
+    font-size: 15px;
+  }
+  
+  .result-item-split.highlight .result-value-right {
+    font-size: 16px;
   }
 }

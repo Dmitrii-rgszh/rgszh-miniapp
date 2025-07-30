@@ -34,17 +34,13 @@ class Feedback(db.Model):
 def init_db(app):
     """
     Инициализация SQLAlchemy:
-      1) Если есть SQLALCHEMY_DATABASE_URI в окружении — используем его.
-      2) Иначе, если есть DATABASE_URL — используем её (на всякий случай).
-      3) Иначе — файл sqlite:///miniapp.db.
+    ВСЕГДА подключаемся к БД на ВМ 176.109.110.217:1112
     """
-    db_uri = (
-        os.getenv("SQLALCHEMY_DATABASE_URI")
-        or os.getenv("DATABASE_URL")
-        or f"sqlite:///{os.path.abspath('miniapp.db')}"
-    )
-    logger.info("Использую базу данных: %s", db_uri)
-    app.config["SQLALCHEMY_DATABASE_URI"]        = db_uri
+    # ЖЕСТКО ПРОПИСАННЫЙ АДРЕС ВМ - ВСЕГДА ОДИН И ТОТ ЖЕ
+    db_uri = "postgresql://postgres:secret@176.109.110.217:1112/postgres"
+    
+    logger.info("Используемая БД: %s", db_uri.replace(":secret@", ":***@"))
+    app.config["SQLALCHEMY_DATABASE_URI"] = db_uri
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
     db.init_app(app)

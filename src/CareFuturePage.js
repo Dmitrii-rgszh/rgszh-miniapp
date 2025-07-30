@@ -354,24 +354,19 @@ export default function CareFuturePage() {
         title: 'Ваш расчет "Забота о будущем"',
         items: [
           { 
-            label: 'Ваш возраст:', 
-            value: `${resultData.age} лет` 
+            text: `Ваш возраст: ${resultData.age} лет`
           },
           { 
-            label: 'Срок программы:', 
-            value: `${resultData.contract_term} лет` 
+            text: `Срок программы: ${resultData.contract_term} лет`
           },
           { 
-            label: 'Ежегодный взнос:', 
-            value: resultData.single_premium_formatted 
+            text: `Ежегодный взнос: ${resultData.single_premium_formatted}`
           },
           { 
-            label: 'Сумма возврата налогов:', 
-            value: resultData.tax_deduction.toLocaleString('ru-RU') + ' ₽'
+            text: `Сумма возврата налогов: ${resultData.tax_deduction.toLocaleString('ru-RU')} ₽`
           },
           { 
-            label: 'Страховая сумма:', 
-            value: resultData.insurance_amount_formatted,
+            text: `Страховая сумма: ${resultData.insurance_amount_formatted}`,
             highlight: true
           }
         ]
@@ -380,20 +375,16 @@ export default function CareFuturePage() {
         title: 'Покрытия и выплаты',
         items: [
           { 
-            label: 'Дожитие ЗЛ до окончания срока страхования:', 
-            value: resultData.insurance_amount_formatted
+            text: `Дожитие ЗЛ до окончания срока страхования: ${resultData.insurance_amount_formatted}`
           },
           { 
-            label: 'Уход по ЛП с отложенной выплатой:', 
-            value: resultData.insurance_amount_formatted
+            text: `Уход по ЛП с отложенной выплатой: ${resultData.insurance_amount_formatted}`
           },
           { 
-            label: 'Уход по ЛП (выплата в моменте):', 
-            value: 'в размере уплаченных взносов на дату страхового случая'
+            text: `Уход по ЛП (выплата в моменте): в размере уплаченных взносов на дату страхового случая`
           },
           { 
-            label: 'Инвалидность I,II по ЛП:', 
-            value: 'освобождение от уплаты взносов'
+            text: `Инвалидность I,II по ЛП: освобождение от уплаты взносов`
           }
         ]
       },
@@ -621,9 +612,8 @@ export default function CareFuturePage() {
               {currentSlide.items && (
                 <div className="result-items">
                   {currentSlide.items.map((item, idx) => (
-                    <div key={idx} className={`result-item ${item.highlight ? 'highlight' : ''}`}>
-                      <span className="result-label">{item.label}</span>
-                      <span className="result-value">{item.value}</span>
+                    <div key={idx} className={`result-item-single ${item.highlight ? 'highlight' : ''}`}>
+                      <span className="result-text">{item.text}</span>
                     </div>
                   ))}
                 </div>
@@ -643,27 +633,27 @@ export default function CareFuturePage() {
                 </div>
               )}
 
-              {/* Навигация карусели */}
+              {/* Навигация карусели - ИСПРАВЛЕНО */}
               <div className="carousel-navigation-bottom">
-                {carouselIndex > 0 && (
-                  <button 
-                    type="button"
-                    className="carousel-arrow carousel-arrow-left"
-                    onClick={() => setCarouselIndex(prev => Math.max(0, prev - 1))}
-                  >
-                    <svg viewBox="0 0 24 24" width="20" height="20">
-                      <path 
-                        d="M15 18l-6-6 6-6" 
-                        stroke="currentColor" 
-                        strokeWidth="2.5" 
-                        fill="none"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </button>
-                )}
+                {/* Кнопка "Назад" - по левому краю */}
+                <button 
+                  type="button"
+                  className={`carousel-arrow ${carouselIndex === 0 ? 'hidden' : ''}`}
+                  onClick={() => setCarouselIndex(prev => Math.max(0, prev - 1))}
+                >
+                  <svg viewBox="0 0 24 24" width="20" height="20">
+                    <path 
+                      d="M15 18l-6-6 6-6" 
+                      stroke="currentColor" 
+                      strokeWidth="2.5" 
+                      fill="none"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
                 
+                {/* Индикаторы - по центру */}
                 <div className="carousel-dots">
                   {carouselData.map((_, idx) => (
                     <button
@@ -674,25 +664,24 @@ export default function CareFuturePage() {
                     />
                   ))}
                 </div>
-                
-                {carouselIndex < carouselData.length - 1 && (
-                  <button 
-                    type="button"
-                    className="carousel-arrow carousel-arrow-right"
-                    onClick={() => setCarouselIndex(prev => Math.min(carouselData.length - 1, prev + 1))}
-                  >
-                    <svg viewBox="0 0 24 24" width="20" height="20">
-                      <path 
-                        d="M9 18l6-6-6-6" 
-                        stroke="currentColor" 
-                        strokeWidth="2.5" 
-                        fill="none"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </button>
-                )}
+
+                {/* Кнопка "Далее" - по правому краю */}
+                <button 
+                  type="button"
+                  className={`carousel-arrow ${carouselIndex === carouselData.length - 1 ? 'hidden' : ''}`}
+                  onClick={() => setCarouselIndex(prev => Math.min(carouselData.length - 1, prev + 1))}
+                >
+                  <svg viewBox="0 0 24 24" width="20" height="20">
+                    <path 
+                      d="M9 18l6-6-6-6" 
+                      stroke="currentColor" 
+                      strokeWidth="2.5" 
+                      fill="none"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
               </div>
             </div>
 

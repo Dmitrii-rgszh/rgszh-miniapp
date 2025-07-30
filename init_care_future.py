@@ -24,14 +24,10 @@ def create_app():
     """Создает Flask приложение для работы с БД"""
     app = Flask(__name__)
     
-    # Конфигурация БД из переменных окружения
-    db_uri = (
-        os.getenv("SQLALCHEMY_DATABASE_URI") 
-        or os.getenv("DATABASE_URL") 
-        or f"postgresql://postgres:secret@{os.getenv('DB_HOST', 'localhost')}:1112/postgres"
-    )
+    # ЖЕСТКО ПРОПИСАННЫЙ АДРЕС ВМ - ВСЕГДА ОДИН И ТОТ ЖЕ
+    db_uri = "postgresql://postgres:secret@176.109.110.217:1112/postgres"
     
-    logger.info(f"Подключение к БД: {db_uri.split('@')[1] if '@' in db_uri else 'локальная БД'}")
+    logger.info(f"Подключение к БД: postgresql://postgres:***@176.109.110.217:1112/postgres")
     app.config["SQLALCHEMY_DATABASE_URI"] = db_uri
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     
