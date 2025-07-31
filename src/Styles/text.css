@@ -214,6 +214,7 @@ label {
   --text-small: 14px;
   --text-tiny: 12px;
   --text-white: #ffffff;
+  text-align: center;
 }
   
   h1 { margin-bottom: 16px; }
