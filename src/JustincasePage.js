@@ -23,6 +23,11 @@ const JustincasePage = () => {
   const [contentAnimated, setContentAnimated] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
 
+  // ===== СОСТОЯНИЯ EMAIL =====
+  const [stage, setStage] = useState('email');
+  const [email, setEmail] = useState('');
+  const [emailError, setEmailError] = useState('');
+
   // Состояния формы
   const [birthDate, setBirthDate] = useState(null);
   const [gender, setGender] = useState(null);
@@ -50,7 +55,6 @@ const JustincasePage = () => {
   const [specialCareRelatives, setSpecialCareRelatives] = useState(null);
 
   // Шаги
-  const [currentStep, setCurrentStep] = useState(1);
   const [isProcessing, setIsProcessing] = useState(false);
   const [resultData, setResultData] = useState(null);
 
@@ -63,6 +67,37 @@ const JustincasePage = () => {
     setTimeout(() => setLogoAnimated(true), 100);
     setTimeout(() => setContentAnimated(true), 600);
   }, []);
+
+  // ===== ВАЛИДАЦИЯ EMAIL =====
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return false;
+    }
+    
+    const lowerEmail = email.toLowerCase();
+    return lowerEmail.endsWith('@vtb.ru') || lowerEmail.endsWith('@rgsl.ru');
+  };
+
+  const handleEmailSubmit = () => {
+    if (!email) {
+      setEmailError('Введите email');
+      return;
+    }
+    
+    if (!validateEmail(email)) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        setEmailError('Введите корректный email');
+      } else {
+        setEmailError('Используйте корпоративную почту (@vtb.ru или @rgsl.ru)');
+      }
+      return;
+    }
+    
+    setEmailError('');
+    setStage('form1');
+  };
 
   // Форматтер для полей-сумм
   const formatSum = raw => {
@@ -96,15 +131,18 @@ const JustincasePage = () => {
 
   // Проверка возможности перехода
   const canGoNext = () => {
-    if (currentStep === 1) {
+    if (stage === 'email') {
+      return email && email.length >= 3;
+    }
+    if (stage === 'form1') {
       return birthDate && gender && insuranceInfo;
     }
-    if (currentStep === 2) {
+    if (stage === 'form2') {
       return insuranceInfo === 'yes'
         ? (insuranceTerm && insuranceSum && insuranceFrequency)
         : (hasJob && income2021 && income2022 && income2023);
     }
-    if (currentStep === 3) {
+    if (stage === 'form3') {
       if (insuranceInfo === 'yes') {
         return accidentPackage && criticalPackage && (criticalPackage === 'no' || treatmentRegion) && sportPackage;
       } else {
@@ -123,16 +161,39 @@ const JustincasePage = () => {
       alert('Не выполнены условия для перехода');
       return;
     }
-    if (currentStep < 3) {
-      setCurrentStep(s => s + 1);
-    } else if (currentStep === 3) {
+
+    if (stage === 'email') {
+      handleEmailSubmit();
+    } else if (stage === 'form1') {
+      setStage('form2');
+    } else if (stage === 'form2') {
+      setStage('form3');
+    } else if (stage === 'form3') {
       doCalculation();
     }
   };
 
   // Переход назад
   const handlePrev = () => {
-    if (currentStep > 1) setCurrentStep(s => s - 1);
+    switch (stage) {
+      case 'email':
+        navigate('/main-menu');
+        break;
+      case 'form1':
+        setStage('email');
+        break;
+      case 'form2':
+        setStage('form1');
+        break;
+      case 'form3':
+        setStage('form2');
+        break;
+      case 'result':
+        setStage('form3');
+        break;
+      default:
+        navigate('/main-menu');
+    }
   };
 
   // Сброс и повторный расчёт
@@ -143,7 +204,7 @@ const JustincasePage = () => {
     setHasJob(null); setIncome2021(''); setIncome2022(''); setIncome2023('');
     setScholarship(''); setUnsecuredLoans('');
     setBreadwinnerStatus(null); setIncomeShare(''); setChildrenCount('0'); setSpecialCareRelatives(null);
-    setResultData(null); setIsProcessing(false); setCurrentStep(1);
+    setResultData(null); setIsProcessing(false); setStage('form1');
   };
 
   // Переход в меню
@@ -157,9 +218,11 @@ const JustincasePage = () => {
   // Отправка данных на бэкенд
   const doCalculation = async () => {
     setIsProcessing(true);
+    setStage('processing');
   
     try {
       const payload = {
+        email: email,
         birthDate: birthDate ? birthDate.toISOString().split('T')[0] : null,
         gender: gender === 'Мужской' ? 'male' : 'female',
         insuranceInfo,
@@ -250,10 +313,11 @@ const JustincasePage = () => {
       console.log('✅ Обработанные данные:', processedData);
       
       setResultData(processedData);
-      setCurrentStep(4);
+      setStage('result');
     } catch (error) {
       console.error('❌ Ошибка расчета:', error);
       alert(`Ошибка при расчете: ${error.message}`);
+      setStage('form3');
     } finally {
       setIsProcessing(false);
     }
@@ -261,7 +325,36 @@ const JustincasePage = () => {
 
   // Рендер контента шага
   const renderStep = () => {
-    if (isProcessing) {
+    // Email этап
+    if (stage === 'email') {
+      return (
+        <div className={`card-container card-positioned ${contentAnimated ? 'animated' : ''}`}>
+          <div className="card-header">
+            <h1 className="text-h1-dark text-center">На всякий случай</h1>
+            <p className="text-body-dark text-center">
+              Страхование жизни и дополнительная защита от рисков
+            </p>
+          </div>
+          
+          <div className="form-group">
+            <label className="form-label text-label-large">Введите ваш email</label>
+            <input
+              type="email"
+              className={`form-input ${emailError ? 'error' : ''}`}
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (emailError) setEmailError('');
+              }}
+              placeholder="example@vtb.ru"
+            />
+            {emailError && <span className="form-error">{emailError}</span>}
+          </div>
+        </div>
+      );
+    }
+
+    if (stage === 'processing') {
       return (
         <div className={`card-container card-positioned ${contentAnimated ? 'animated' : ''}`}>
           <h2 className="text-h2 text-center">
@@ -274,8 +367,8 @@ const JustincasePage = () => {
       );
     }
 
-    // Шаг 4 - результаты
-    if (currentStep === 4 && resultData) {
+    // Шаг результатов
+    if (stage === 'result' && resultData) {
       return (
         <div className={`card-container card-positioned card-results ${contentAnimated ? 'animated' : ''}`}>
           <h2 className="text-h2 text-center">
@@ -386,7 +479,7 @@ const JustincasePage = () => {
     }
 
     // Шаг 1 - основная информация
-    if (currentStep === 1) {
+    if (stage === 'form1') {
       return (
         <div className={`card-container card-positioned ${contentAnimated ? 'animated' : ''}`}>
           <h2 className="text-h2">Расчёт по программе "На всякий случай"</h2>
@@ -449,7 +542,7 @@ const JustincasePage = () => {
     }
 
     // Шаг 2 - параметры страхования
-    if (currentStep === 2) {
+    if (stage === 'form2') {
       return (
         <div className={`card-container card-positioned ${contentAnimated ? 'animated' : ''}`}>
           <h2 className="text-h2">
@@ -490,35 +583,33 @@ const JustincasePage = () => {
 
               <div className="form-group">
                 <label className="form-label">Периодичность оплаты</label>
-                <div className="option-buttons vertical">
-                  <div className="option-buttons">
-                    <button
-                      className={`option-button ${insuranceFrequency === 'Ежегодно' ? 'selected' : ''}`}
-                      onClick={() => setInsuranceFrequency('Ежегодно')}
-                    >
-                      Ежегодно
-                    </button>
-                    <button
-                      className={`option-button ${insuranceFrequency === 'Ежемесячно' ? 'selected' : ''}`}
-                      onClick={() => setInsuranceFrequency('Ежемесячно')}
-                    >
-                      Ежемесячно
-                    </button>
-                  </div>
-                  <div className="option-buttons">
-                    <button
-                      className={`option-button ${insuranceFrequency === 'Поквартально' ? 'selected' : ''}`}
-                      onClick={() => setInsuranceFrequency('Поквартально')}
-                    >
-                      Ежеквартально
-                    </button>
-                    <button
-                      className={`option-button ${insuranceFrequency === 'Полугодие' ? 'selected' : ''}`}
-                      onClick={() => setInsuranceFrequency('Полугодие')}
-                    >
-                      Раз в пол года
-                    </button>
-                  </div>
+                <div className="option-buttons horizontal-always">
+                  <button
+                    className={`option-button ${insuranceFrequency === 'Ежегодно' ? 'selected' : ''}`}
+                    onClick={() => setInsuranceFrequency('Ежегодно')}
+                  >
+                    Ежегодно
+                  </button>
+                  <button
+                    className={`option-button ${insuranceFrequency === 'Ежемесячно' ? 'selected' : ''}`}
+                    onClick={() => setInsuranceFrequency('Ежемесячно')}
+                  >
+                    Ежемесячно
+                  </button>
+                </div>
+                <div className="option-buttons horizontal-always">
+                  <button
+                    className={`option-button ${insuranceFrequency === 'Поквартально' ? 'selected' : ''}`}
+                    onClick={() => setInsuranceFrequency('Поквартально')}
+                  >
+                    Ежеквартально
+                  </button>
+                  <button
+                    className={`option-button ${insuranceFrequency === 'Полугодие' ? 'selected' : ''}`}
+                    onClick={() => setInsuranceFrequency('Полугодие')}
+                  >
+                    Раз в пол года
+                  </button>
                 </div>
               </div>
             </>
@@ -526,15 +617,15 @@ const JustincasePage = () => {
             <>
               <div className="form-group">
                 <label className="form-label">Есть ли у вас работа?</label>
-                <div className="button-group-options">
+                <div className="option-buttons horizontal-always">
                   <button
-                    className={`button-option ${hasJob === 'yes' ? 'selected' : ''}`}
+                    className={`option-button ${hasJob === 'yes' ? 'selected' : ''}`}
                     onClick={() => setHasJob('yes')}
                   >
                     Да
                   </button>
                   <button
-                    className={`button-option ${hasJob === 'no' ? 'selected' : ''}`}
+                    className={`option-button ${hasJob === 'no' ? 'selected' : ''}`}
                     onClick={() => setHasJob('no')}
                   >
                     Нет
@@ -581,7 +672,7 @@ const JustincasePage = () => {
     }
 
     // Шаг 3 - дополнительные опции
-    if (currentStep === 3) {
+    if (stage === 'form3') {
       return (
         <div className={`card-container card-positioned ${contentAnimated ? 'animated' : ''}`}>
           <h2 className="text-h2">
@@ -714,15 +805,15 @@ const JustincasePage = () => {
 
               <div className="form-group">
                 <label className="form-label">Есть ли родственники, нуждающиеся в особом уходе?</label>
-                <div className="button-group-options">
+                <div className="option-buttons horizontal-always">
                   <button
-                    className={`button-option ${specialCareRelatives === 'yes' ? 'selected' : ''}`}
+                    className={`option-button ${specialCareRelatives === 'yes' ? 'selected' : ''}`}
                     onClick={() => setSpecialCareRelatives('yes')}
                   >
                     Да
                   </button>
                   <button
-                    className={`button-option ${specialCareRelatives === 'no' ? 'selected' : ''}`}
+                    className={`option-button ${specialCareRelatives === 'no' ? 'selected' : ''}`}
                     onClick={() => setSpecialCareRelatives('no')}
                   >
                     Нет
@@ -749,15 +840,15 @@ const JustincasePage = () => {
       {renderStep()}
 
       {/* Кнопки навигации */}
-      {currentStep > 1 && currentStep < 4 && (
-        <button className="back-btn" onClick={handlePrev}>
+      {(stage === 'form2' || stage === 'form3') && (
+        <button className="back-btn animate-home" onClick={handlePrev}>
           <svg viewBox="0 0 24 24">
             <path d="M15 18l-6-6 6-6" stroke="white" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </button>
       )}
 
-      {currentStep === 1 && (
+      {stage === 'email' && (
         <button className="home-button" onClick={goToMenu}>
           <svg viewBox="0 0 24 24">
             <path d="M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-7h-6v7H4a1 1 0 0 1-1-1V11z" stroke="white" strokeWidth="2" fill="none"/>
@@ -765,15 +856,17 @@ const JustincasePage = () => {
         </button>
       )}
 
-      {currentStep < 4 && !isProcessing && (
+      {(stage === 'email' || stage === 'form1' || stage === 'form2' || stage === 'form3') && !isProcessing && (
         <button 
-          className={`next-btn ${!canGoNext() ? 'disabled' : ''}`} 
+          className={`next-btn ${contentAnimated && canGoNext() ? 'animate-next' : ''} ${isExiting ? 'animate-next-exit' : ''} ${!canGoNext() ? 'disabled' : ''}`} 
           onClick={handleNext} 
           disabled={!canGoNext()}
         >
-          <svg viewBox="0 0 24 24">
-            <path d="M9 18l6-6-6-6" stroke="white" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
+          <div className={`shaker ${contentAnimated && canGoNext() && !isExiting ? 'shake-btn' : ''}`}>
+            <svg viewBox="0 0 24 24">
+              <path d="M9 18l6-6-6-6" stroke="white" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </div>
         </button>
       )}
     </div>

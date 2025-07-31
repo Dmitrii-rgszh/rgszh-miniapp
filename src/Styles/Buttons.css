@@ -659,3 +659,44 @@
     margin-bottom: 0;
   }
 }
+
+/* ======================================
+   КНОПКИ ВЫБОРА - ИСПРАВЛЕННЫЕ СТИЛИ
+   ====================================== */
+.form-group .option-buttons .option-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Segoe UI", sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  padding: 12px 24px;
+  min-height: 44px;
+  border-radius: 10px;
+  cursor: pointer;
+  border: 2px solid rgb(152, 164, 174);
+  background: transparent;
+  color: rgb(152, 164, 174);
+  transition: all 0.3s ease;
+  text-decoration: none;
+  outline: none;
+}
+
+.form-group .option-buttons .option-button:hover:not(.selected) {
+  border-color: rgb(118, 143, 146);
+  color: rgb(118, 143, 146);
+  background: rgba(152, 164, 174, 0.1);
+  transform: translateY(-1px);
+}
+
+.form-group .option-buttons .option-button.selected {
+  background: linear-gradient(135deg, rgb(180, 0, 55) 0%, rgb(153, 0, 55) 35%, rgb(0, 40, 130) 100%);
+  border-color: rgb(180, 0, 55);
+  color: white;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2), 0 2px 8px rgba(180, 0, 55, 0.3);
+}
+
+.form-group .option-buttons .option-button.selected:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3), 0 4px 12px rgba(180, 0, 55, 0.4);
+}

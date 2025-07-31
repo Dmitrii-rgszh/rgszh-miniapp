@@ -790,3 +790,8 @@ select.form-input {
 .answer-option.selected:hover {
   transform: scale(1.03);
 }
+
+/* Отступ между соседними группами кнопок */
+.option-buttons + .option-buttons {
+  margin-top: 12px;
+}
