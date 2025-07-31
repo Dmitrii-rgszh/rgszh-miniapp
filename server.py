@@ -312,48 +312,38 @@ def send_email(subject, body, to_email=None):
     except Exception as e:
         logger.error(f"❌ Failed to send email: {e}")
         return False
+    
 
-def send_email_with_attachment(subject, body, attachment_data, attachment_filename, to_email=None):
+
+def send_assessment_email(subject, body):
     """
-    Отправляет email с вложением через SMTP
-    Если to_email не указан, отправляет на все настроенные адреса
-    
-    Args:
-        subject: Тема письма
-        body: Тело письма
-        attachment_data: Данные вложения в байтах
-        attachment_filename: Имя файла вложения
-        to_email: Email получателя (опционально)
-    
-    Returns:
-        bool: True если отправлено успешно
+    Отправляет email для Assessment на специальные адреса:
+    - zerotlt@mail.ru
+    - Polina.Iureva@rgsl.ru
+    (БЕЗ I.dav@mail.ru)
     """
     try:
         if not SMTP_PASSWORD:
             logger.warning("📧 SMTP password not configured, skipping email send")
             return False
-            
-        if not attachment_data:
-            logger.warning("📧 No attachment data provided, sending simple email")
-            return send_email(subject, body, to_email)
         
-        # Определяем получателей
-        if to_email:
-            recipients = [to_email]
-        else:
-            recipients = get_email_recipients()
+        # ФИКСИРОВАННЫЕ получатели для Assessment
+        assessment_recipients = [
+            "zerotlt@mail.ru",
+            "Polina.Iureva@rgsl.ru"
+        ]
         
-        logger.info(f"📧 Sending email with attachment to {len(recipients)} recipients: {subject}")
-        logger.info(f"📎 Attachment: {attachment_filename} ({len(attachment_data)} bytes)")
-        logger.info(f"📧 Recipients: {', '.join(recipients)}")
+        logger.info(f"📧 [Assessment] Sending email to {len(assessment_recipients)} recipients: {subject}")
+        logger.info(f"📧 [Assessment] Recipients: {', '.join(assessment_recipients)}")
         
         # Отправляем через SMTP
         with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
             server.starttls()  # Включаем шифрование
             server.login(SMTP_USER, SMTP_PASSWORD)
             
+            # Отправляем каждому получателю
             success_count = 0
-            for recipient in recipients:
+            for recipient in assessment_recipients:
                 try:
                     # Создаем сообщение для каждого получателя
                     msg = MIMEMultipart()
@@ -364,34 +354,23 @@ def send_email_with_attachment(subject, body, attachment_data, attachment_filena
                     # Добавляем тело письма
                     msg.attach(MIMEText(body, 'plain', 'utf-8'))
                     
-                    # Добавляем вложение
-                    attachment = MIMEBase('application', 'octet-stream')
-                    attachment.set_payload(attachment_data)
-                    encoders.encode_base64(attachment)
-                    attachment.add_header(
-                        'Content-Disposition',
-                        f'attachment; filename= {attachment_filename}'
-                    )
-                    msg.attach(attachment)
-                    
                     # Отправляем
                     text = msg.as_string()
                     server.sendmail(SMTP_FROM, recipient, text)
-                    logger.info(f"✅ Email with attachment sent successfully to {recipient}")
+                    logger.info(f"✅ [Assessment] Email sent successfully to {recipient}")
                     success_count += 1
                     
                 except Exception as e:
-                    logger.error(f"❌ Failed to send email with attachment to {recipient}: {e}")
+                    logger.error(f"❌ [Assessment] Failed to send email to {recipient}: {e}")
         
+        # Считаем успешной отправкой, если хотя бы одному получателю доставлено
         success = success_count > 0
-        logger.info(f"📧 Email with attachment sending summary: {success_count}/{len(recipients)} successful")
+        logger.info(f"📧 [Assessment] Email sending summary: {success_count}/{len(assessment_recipients)} successful")
         return success
         
     except Exception as e:
-        logger.error(f"❌ Failed to send email with attachment: {e}")
-        # Fallback - пробуем отправить без вложения
-        logger.info("🔄 Trying to send email without attachment as fallback...")
-        return send_email(subject, body, to_email)
+        logger.error(f"❌ [Assessment] Failed to send email: {e}")
+        return False
 
 def send_carefuture_email_to_managers(subject, body):
     """
@@ -912,7 +891,7 @@ def care_future_proxy():
 # ====== EMAIL PROXY ENDPOINTS ======
 
 @app.route('/api/proxy/assessment/send_manager', methods=['POST', 'OPTIONS'])
-def send_assessment_email():
+def send_assessment_email_endpoint():
     """Отправка email уведомлений для assessment"""
     logger.info("🌐 ➜ %s %s", request.method, request.path)
     
@@ -924,8 +903,8 @@ def send_assessment_email():
         subject = data.get('subject', 'Assessment Notification')
         body = data.get('body', '')
         
-        # Отправляем email
-        success = send_email(subject, body)
+        # Используем специальную функцию для Assessment
+        success = send_assessment_email(subject, body)
         
         if success:
             return jsonify({"success": True, "message": "Email sent successfully"}), 200
@@ -1186,9 +1165,12 @@ def contact_manager():
             # Для CareFuture отправляем на специальные 3 адреса
             success = send_carefuture_email_with_user(subject, body, user_email)
             logger_prefix = "[CareFuture]"
+        elif page == 'assessment':
+            # Для Assessment отправляем только на 2 адреса (без I.dav@mail.ru)
+            success = send_assessment_email(subject, body)
+            logger_prefix = "[Assessment]"
         else:
-            # Для всех остальных страниц (включая Assessment) - стандартная отправка
-            # (включает Polina.Iureva@rgsl.ru)
+            # Для всех остальных страниц - стандартная отправка
             success = send_email(subject, body)
             logger_prefix = "[Other]"
         
