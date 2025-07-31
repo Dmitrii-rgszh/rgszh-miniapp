@@ -147,26 +147,6 @@
   flex-direction: column;
 }
 
-.option-button {
-  flex: 1;
-  padding: 8px 10px !important;
-  border: 1px solid #e3e7ee;
-  border-radius: 8px;
-  background: #f5f7fa;
-  color: #333;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  outline: none;
-  text-align: center;
-}
-
-.option-button:hover {
-  background: #e8ebef;
-  border-color: #d0d5dd;
-}
-
 .option-button.selected {
   background: rgb(180, 0, 55) !important;
   color: white;

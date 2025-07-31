@@ -14,13 +14,14 @@
    CSS ПЕРЕМЕННЫЕ - КОРПОРАТИВНЫЕ ЦВЕТА
    ====================================== */
 :root {
-  /* Корпоративная палитра */
   --btn-red-primary: rgb(180, 0, 55);
   --btn-red-secondary: rgb(153, 0, 55);
-  --btn-gray-primary: rgb(152, 164, 174);
-  --btn-gray-secondary: rgb(118, 143, 146);
   --btn-blue-primary: rgb(0, 40, 130);
   --btn-blue-secondary: rgb(0, 32, 104);
+  --btn-gray-primary: rgb(152, 164, 174);
+  --btn-gray-secondary: rgb(118, 143, 146);
+  --text-color-primary: white;
+  --btn-font-family: "Segoe UI", sans-serif;
 }
 
 /* ======================================

@@ -43,15 +43,15 @@ const JustincasePage = () => {
 
   // Дополнительные поля для ветки "не знает сумму"
   const [hasJob, setHasJob] = useState(null);
-  const [income2021, setIncome2021] = useState('');
   const [income2022, setIncome2022] = useState('');
   const [income2023, setIncome2023] = useState('');
+  const [income2024, setIncome2024] = useState('');
   const [scholarship, setScholarship] = useState('');
   const [unsecuredLoans, setUnsecuredLoans] = useState('');
 
   const [breadwinnerStatus, setBreadwinnerStatus] = useState(null);
   const [incomeShare, setIncomeShare] = useState('');
-  const [childrenCount, setChildrenCount] = useState('0');
+  const [childrenCount, setChildrenCount] = useState('');
   const [specialCareRelatives, setSpecialCareRelatives] = useState(null);
 
   // Шаги
@@ -112,9 +112,9 @@ const JustincasePage = () => {
   };
 
   const handleSumChange = e => setInsuranceSum(formatSum(e.target.value));
-  const handleIncome2021Change = e => setIncome2021(formatSum(e.target.value));
   const handleIncome2022Change = e => setIncome2022(formatSum(e.target.value));
   const handleIncome2023Change = e => setIncome2023(formatSum(e.target.value));
+  const handleIncome2024Change = e => setIncome2024(formatSum(e.target.value));
   const handleScholarshipChange = e => setScholarship(formatSum(e.target.value));
   const handleUnsecuredLoansChange = e => setUnsecuredLoans(formatSum(e.target.value));
 
@@ -140,7 +140,7 @@ const JustincasePage = () => {
     if (stage === 'form2') {
       return insuranceInfo === 'yes'
         ? (insuranceTerm && insuranceSum && insuranceFrequency)
-        : (hasJob && income2021 && income2022 && income2023);
+        : (hasJob && income2022 && income2023 && income2024 && (hasJob !== 'student' || scholarship));
     }
     if (stage === 'form3') {
       if (insuranceInfo === 'yes') {
@@ -148,7 +148,7 @@ const JustincasePage = () => {
       } else {
         return breadwinnerStatus &&
                (breadwinnerStatus === 'yes' || incomeShare) &&
-               childrenCount !== '' &&
+               childrenCount &&
                specialCareRelatives;
       }
     }
@@ -201,9 +201,9 @@ const JustincasePage = () => {
     setBirthDate(null); setGender(null); setInsuranceInfo(null);
     setInsuranceTerm('1'); setInsuranceSum(''); setInsuranceFrequency('');
     setAccidentPackage(null); setCriticalPackage(null); setTreatmentRegion(null); setSportPackage(null);
-    setHasJob(null); setIncome2021(''); setIncome2022(''); setIncome2023('');
+    setHasJob(null); setIncome2022(''); setIncome2023(''); setIncome2024('');
     setScholarship(''); setUnsecuredLoans('');
-    setBreadwinnerStatus(null); setIncomeShare(''); setChildrenCount('0'); setSpecialCareRelatives(null);
+    setBreadwinnerStatus(null); setIncomeShare(''); setChildrenCount(''); setSpecialCareRelatives(null);
     setResultData(null); setIsProcessing(false); setStage('form1');
   };
 
@@ -234,9 +234,9 @@ const JustincasePage = () => {
         treatmentRegion,
         sportPackage,
         hasJob,
-        income2021,
         income2022,
         income2023,
+        income2024,
         scholarship,
         unsecuredLoans,
         breadwinnerStatus,
@@ -617,31 +617,16 @@ const JustincasePage = () => {
             <>
               <div className="form-group">
                 <label className="form-label">Есть ли у вас работа?</label>
-                <div className="option-buttons horizontal-always">
-                  <button
-                    className={`option-button ${hasJob === 'yes' ? 'selected' : ''}`}
-                    onClick={() => setHasJob('yes')}
-                  >
-                    Да
-                  </button>
-                  <button
-                    className={`option-button ${hasJob === 'no' ? 'selected' : ''}`}
-                    onClick={() => setHasJob('no')}
-                  >
-                    Нет
-                  </button>
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">Доходы 2021 г. (руб.)</label>
-                <input
-                  type="text"
+                <select
                   className="form-input"
-                  value={income2021}
-                  onChange={handleIncome2021Change}
-                  placeholder="Введите сумму"
-                />
+                  value={hasJob || ''}
+                  onChange={(e) => setHasJob(e.target.value)}
+                >
+                  <option value="">Выберите вариант</option>
+                  <option value="yes">Да</option>
+                  <option value="no">Нет</option>
+                  <option value="student">Работающий студент</option>
+                </select>
               </div>
 
               <div className="form-group">
@@ -665,6 +650,30 @@ const JustincasePage = () => {
                   placeholder="Введите сумму"
                 />
               </div>
+
+              <div className="form-group">
+                <label className="form-label">Доходы 2024 г. (руб.)</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  value={income2024}
+                  onChange={handleIncome2024Change}
+                  placeholder="Введите сумму"
+                />
+              </div>
+
+              {hasJob === 'student' && (
+                <div className="form-group">
+                  <label className="form-label">Размер стипендии за предыдущий год (руб.)</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    value={scholarship}
+                    onChange={handleScholarshipChange}
+                    placeholder="Введите размер стипендии"
+                  />
+                </div>
+              )}
             </>
           )}
         </div>
@@ -779,28 +788,35 @@ const JustincasePage = () => {
               {breadwinnerStatus === 'no' && (
                 <div className="form-group">
                   <label className="form-label">Доля вашего дохода в семейном бюджете (%)</label>
-                  <input
-                    type="number"
+                  <select
                     className="form-input"
                     value={incomeShare}
                     onChange={(e) => setIncomeShare(e.target.value)}
-                    min="0"
-                    max="100"
-                    placeholder="Введите процент"
-                  />
+                  >
+                    <option value="">Выберите долю дохода</option>
+                    <option value="до 10%">до 10%</option>
+                    <option value="10-24%">10-24%</option>
+                    <option value="25-49%">25-49%</option>
+                    <option value="50-74%">50-74%</option>
+                    <option value="75-89%">75-89%</option>
+                    <option value="Более 90%">Более 90%</option>
+                  </select>
                 </div>
               )}
 
               <div className="form-group">
                 <label className="form-label">Количество детей</label>
-                <input
-                  type="number"
+                <select
                   className="form-input"
                   value={childrenCount}
                   onChange={(e) => setChildrenCount(e.target.value)}
-                  min="0"
-                  placeholder="Введите количество"
-                />
+                >
+                  <option value="">Выберите количество</option>
+                  <option value="0">0</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3 и более">3 и более</option>
+                </select>
               </div>
 
               <div className="form-group">
