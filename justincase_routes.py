@@ -278,7 +278,7 @@ def validate_insurance_sum():
 @justincase_bp.route('/api/justincase/recommend-sum', methods=['POST', 'OPTIONS'])
 def recommend_insurance_sum():
     """
-    ENDPOINT для расчета рекомендуемой страховой суммы
+    ENDPOINT для расчета рекомендуемой страховой суммы и срока
     """
     if request.method == "OPTIONS":
         return '', 200
@@ -291,23 +291,29 @@ def recommend_insurance_sum():
             return format_error_response(error, 400)
         
         calculator = JustincaseCalculatorComplete()
-        recommended_sum = calculator.calculate_recommended_sum(data)
+        result = calculator.calculate_recommended_sum(data)
+        
+        # Теперь result - это словарь с recommended_sum и recommended_term
+        recommended_sum = result.get('recommended_sum', 1000000)
+        recommended_term = result.get('recommended_term', 15)
         
         response_data = {
             'recommended_sum': recommended_sum,
+            'recommended_term': recommended_term,
             'formatted_sum': f"{recommended_sum:,}".replace(",", "."),
             'calculation_basis': {
-                'income_2021': data.get('income2021'),
-                'income_2022': data.get('income2022'), 
-                'income_2023': data.get('income2023'),
+                'income_2022': data.get('income2022'),
+                'income_2023': data.get('income2023'), 
+                'income_2024': data.get('income2024'),
                 'breadwinner_status': data.get('breadwinnerStatus'),
                 'children_count': data.get('childrenCount'),
                 'special_care_relatives': data.get('specialCareRelatives'),
-                'income_share': data.get('incomeShare')
+                'income_share': data.get('incomeShare'),
+                'unsecured_loans': data.get('unsecuredLoans')
             }
         }
         
-        return jsonify(format_success_response(response_data, "Рекомендуемая сумма рассчитана"))
+        return jsonify(format_success_response(response_data, "Рекомендуемая сумма и срок рассчитаны"))
         
     except Exception as e:
         logger.error(f"❌ Ошибка расчета рекомендуемой суммы: {e}")

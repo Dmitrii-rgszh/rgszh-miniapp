@@ -775,3 +775,93 @@ select.form-input {
 .option-buttons + .option-buttons {
   margin-top: 12px;
 }
+
+/* Добавить в конец файла src/Styles/cards.css */
+
+/* Блок отображения рекомендованной суммы */
+.recommended-sum-display {
+    background: linear-gradient(135deg, rgba(180, 0, 55, 0.1) 0%, rgba(153, 0, 55, 0.05) 100%);
+    border: 2px solid rgba(180, 0, 55, 0.3);
+    border-radius: 12px;
+    padding: 24px;
+    margin: 24px 0;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.recommended-sum-display::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(180, 0, 55, 0.1) 0%, transparent 70%);
+    animation: pulse 3s ease-in-out infinite;
+}
+
+.recommended-sum-display .text-label-large {
+    margin-bottom: 12px;
+    color: rgba(0, 40, 130, 0.8);
+    font-weight: 500;
+}
+
+.recommended-sum-display .text-h1-dark {
+    font-size: 36px;
+    font-weight: 700;
+    color: rgb(180, 0, 55);
+    margin: 0;
+    position: relative;
+    z-index: 1;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 0.5;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 0.3;
+    }
+}
+
+/* Адаптация для разных экранов */
+@media (max-width: 768px) {
+    .recommended-sum-display {
+        padding: 20px;
+        margin: 20px 0;
+    }
+    
+    .recommended-sum-display .text-h1-dark {
+        font-size: 28px;
+    }
+}
+
+@media (max-width: 375px) {
+    .recommended-sum-display {
+        padding: 16px;
+        margin: 16px 0;
+    }
+    
+    .recommended-sum-display .text-h1-dark {
+        font-size: 24px;
+    }
+}
+
+/* Анимация появления блока */
+.recommended-sum-display {
+    animation: fadeInScale 0.5s ease-out;
+}
+
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
