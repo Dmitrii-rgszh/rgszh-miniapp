@@ -132,8 +132,17 @@ def process_new_candidate_notification(candidate_data: Dict[str, Any]) -> bool:
         
         # ОТПРАВЛЯЕМ ПРОСТОЕ EMAIL БЕЗ ВЛОЖЕНИЙ
         try:
-            from server import send_email
-            success = send_email(subject, body)
+            # Отправляем через HTTP API вместо прямого импорта
+            payload = {"subject": subject, "body": body}
+            
+            response = requests.post(
+                "http://localhost:4000/api/proxy/assessment/send_manager",
+                headers={"Content-Type": "application/json"},
+                json=payload,
+                timeout=10
+            )
+            
+            success = response.status_code == 200
             logger.info(f"📧 Email notification: {'✅ SUCCESS' if success else '❌ FAILED'}")
             
             # Логируем результат ОДИН РАЗ
@@ -141,11 +150,11 @@ def process_new_candidate_notification(candidate_data: Dict[str, Any]) -> bool:
             
             return success
             
-        except ImportError as e:
-            logger.error(f"❌ Cannot import send_email function: {e}")
+        except Exception as e:
+            logger.error(f"❌ Email sending failed: {e}")
             # Fallback - просто логируем информацию
             fallback_notification_log(candidate_data)
-            return True
+            return False
         
     except Exception as e:
         logger.error(f"❌ Error in process_new_candidate_notification: {e}")

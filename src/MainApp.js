@@ -53,7 +53,7 @@ function MainApp() {
             <Route path="/snp" element={<SNPPage />} />
             <Route path="/assessment" element={<AssessmentPage />} />
             <Route path="/feedback" element={<FeedbackPage />} />
-            { /* <Route path="/justincase" element={<JustincasePage />} /> */}
+            <Route path="/justincase" element={<JustincasePage />} />
             <Route path="/care-future" element={<CareFuturePage />} />
             <Route path="/marza-poll" element={<MarzaPollPage />} />
             <Route path="*" element={<MainMenu />} />

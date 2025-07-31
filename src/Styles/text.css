@@ -378,3 +378,15 @@ label {
 .carousel-arrow svg {
   stroke: currentColor;
 }
+
+.text-thank-you-title {
+    font-family: 'Segoe UI Bold', sans-serif;
+    font-size: 28px;
+    text-align: center;
+}
+
+.text-thank-you-body {
+    font-family: 'Segoe UI Regular', sans-serif;
+    font-size: 18px;
+    text-align: center;
+}

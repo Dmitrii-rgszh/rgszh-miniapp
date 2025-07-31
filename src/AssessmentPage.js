@@ -348,39 +348,6 @@ export default function AssessmentPage() {
         body: JSON.stringify(sessionData)
       });
 
-      // ✅ ДОБАВЛЯЕМ: Отправка email уведомления менеджерам
-      try {
-        const fullName = `${surname.trim()} ${firstName.trim()} ${patronymic.trim()}`;
-        const emailData = {
-          subject: `Новый кандидат прошел assessment - ${fullName}`,
-          body: `Добрый день!
-
-  Новый кандидат прошел assessment:
-
-  ФИО: ${fullName}
-  Время прохождения: ${sessionData.completionTime} минут
-  Дата: ${new Date().toLocaleString('ru-RU')}
-
-  Результаты сохранены в системе.
-
-  ---
-  Автоматическое уведомление системы Assessment`
-        };
-
-        await apiCall('/api/proxy/assessment/send_manager', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(emailData)
-        });
-      
-        console.log('✅ Email notification sent to managers');
-      } catch (emailError) {
-        console.error('❌ Failed to send email notification:', emailError);
-        // Не прерываем процесс, если email не отправился
-      }
-
       // ✅ ПОКАЗЫВАЕМ СПИННЕР МИНИМУМ 2 СЕКУНДЫ для UX
       setTimeout(() => {
         setResult({ success: true });
