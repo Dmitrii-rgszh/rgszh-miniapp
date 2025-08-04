@@ -335,6 +335,12 @@ const JustincasePage = () => {
       };
 
       console.log('📤 Отправляем данные на расчет:', payload);
+      console.log('🔍 Локальные значения пакетов:', {
+        accidentPackage,
+        criticalPackage,
+        treatmentRegion,
+        sportPackage
+      });
 
       const apiUrl = process.env.NODE_ENV === 'development' 
         ? 'http://localhost:4000/api/proxy/calculator/save'
@@ -367,15 +373,15 @@ const JustincasePage = () => {
           insuranceTerm: calc.insuranceTerm || insuranceTerm,
           baseInsuranceSum: formatNumber(calc.baseInsuranceSum || calc.insuranceSum || insuranceSum),
           basePremium: formatNumber(calc.basePremium || calc.basePremiumAmount || calc.annualPremium || '0'),
-          accidentPackageIncluded: calc.accidentPackageIncluded || false,
+          accidentPackageIncluded: accidentPackage === 'yes',  // Используем локальное значение
           accidentInsuranceSum: formatNumber(calc.accidentInsuranceSum || calc.accidentDetails?.insuranceSum || insuranceSum),
           accidentPremium: formatNumber(calc.accidentPremium || calc.accidentDetails?.premium || '0'),
-          criticalPackageIncluded: calc.criticalPackageIncluded || false,
+          criticalPackageIncluded: criticalPackage === 'yes',  // Используем локальное значение
           criticalInsuranceSum: formatNumber(calc.criticalInsuranceSum || calc.criticalDetails?.insuranceSum || '60 000 000'),
           criticalPremium: formatNumber(calc.criticalPremium || calc.criticalDetails?.premium || '0'),
           totalPremium: formatNumber(calc.totalPremium || calc.annualPremium || '0'),
-          treatmentRegion: calc.treatmentRegion || treatmentRegion,
-          sportPackage: calc.sportPackage || (sportPackage === 'yes'),
+          treatmentRegion: treatmentRegion || calc.treatmentRegion,  // Используем локальное значение
+          sportPackage: sportPackage === 'yes',  // Используем локальное значение
           calculationId: calc.calculationId || data.calculation_id || 'unknown',
           calculator: data.calculator || 'JustincaseCalculatorComplete',
           version: data.version || '2.0.0'
@@ -389,17 +395,25 @@ const JustincasePage = () => {
           baseInsuranceSum: formatNumber(data.baseInsuranceSum || insuranceSum),
           basePremium: formatNumber(data.basePremium || '0'),
           totalPremium: formatNumber(data.totalPremium || '0'),
-          accidentPackageIncluded: data.accidentPackageIncluded || false,
-          accidentInsuranceSum: formatNumber(data.accidentInsuranceSum || '0'),
+          accidentPackageIncluded: accidentPackage === 'yes',  // Используем локальное значение
+          accidentInsuranceSum: formatNumber(data.accidentInsuranceSum || insuranceSum),
           accidentPremium: formatNumber(data.accidentPremium || '0'),
-          criticalPackageIncluded: data.criticalPackageIncluded || false,
-          criticalPremium: formatNumber(data.criticalPremium || '0')
+          criticalPackageIncluded: criticalPackage === 'yes',  // Используем локальное значение
+          criticalPremium: formatNumber(data.criticalPremium || '0'),
+          treatmentRegion: treatmentRegion,  // Используем локальное значение
+          sportPackage: sportPackage === 'yes'  // Используем локальное значение
         };
       } else {
         throw new Error(data.error || 'Неизвестная ошибка расчета');
       }
       
       console.log('✅ Обработанные данные:', processedData);
+      console.log('📊 Флаги включения пакетов в результате:', {
+        accidentPackageIncluded: processedData.accidentPackageIncluded,
+        criticalPackageIncluded: processedData.criticalPackageIncluded,
+        treatmentRegion: processedData.treatmentRegion,
+        sportPackage: processedData.sportPackage
+      });
       
       setResultData(processedData);
       setStage('result');
@@ -627,7 +641,7 @@ const JustincasePage = () => {
                     <span className="result-label-left">• Максимальная страховая сумма:</span>
                     <span className="result-value-right">
                       60 000 000 руб.,<br />
-                      дополнительно по реабилитации – 400 000 руб.
+                      дополнительно по реабилитации – 100 000 руб.
                     </span>
                   </div>
                   <div className="result-item-split">
@@ -648,12 +662,8 @@ const JustincasePage = () => {
 
               <div className="result-divider result-divider-primary"></div>
               <div className="result-item-split highlight result-total-margin">
-                <span className="result-label-left">Итого страховая премия:</span>
+                <span className="result-label-left">Итого страховая премия (руб.):</span>
                 <span className="result-value-right">—</span> {/* затычка */}
-              </div>
-              <div className="result-item-split">
-                <span className="result-label-left">Порядок оплаты премии:</span>
-                <span className="result-value-right">{insuranceFrequency || 'Ежегодно'}</span>
               </div>
             </div>
           </div>
