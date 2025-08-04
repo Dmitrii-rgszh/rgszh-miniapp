@@ -7240,3 +7240,155 @@ DETAIL:  Key (calculation_uuid)=(85872061-ff27-4e18-ba2e-a94d01c4bad7) already e
 2025-08-04 13:10:59,669 - justincase_calculator - INFO -    Коэффициент частоты (Ежегодно): 1.0
 2025-08-04 13:10:59,669 - justincase_routes - INFO - ✅ Расчет выполнен: премия 63,496.05 руб.
 2025-08-04 13:10:59,670 - server - INFO - 📤 POST /api/proxy/calculator/save -> 200
+2025-08-04 13:15:45,134 - server - INFO - 📨 OPTIONS /api/proxy/calculator/save - 127.0.0.1
+2025-08-04 13:15:45,135 - server - INFO - 📤 OPTIONS /api/proxy/calculator/save -> 200
+2025-08-04 13:15:45,443 - server - INFO - 📨 POST /api/proxy/calculator/save - 127.0.0.1
+2025-08-04 13:15:45,463 - server - INFO -    📋 JSON keys: ['email', 'birthDate', 'gender', 'insuranceInfo', 'insuranceTerm', 'insuranceSum', 'insuranceFrequency', 'accidentPackage', 'criticalPackage', 'treatmentRegion', 'sportPackage', 'hasJob', 'income2022', 'income2023', 'income2024', 'scholarship', 'unsecuredLoans', 'breadwinnerStatus', 'incomeShare', 'childrenCount', 'specialCareRelatives']
+2025-08-04 13:15:45,464 - justincase_routes - INFO - 🧮 === ОСНОВНОЙ РАСЧЕТ 'НА ВСЯКИЙ СЛУЧАЙ' ===
+2025-08-04 13:15:45,464 - justincase_routes - INFO - 📋 Content-Type: application/json
+2025-08-04 13:15:45,465 - justincase_routes - INFO - 📥 JSON получен: ['email', 'birthDate', 'gender', 'insuranceInfo', 'insuranceTerm', 'insuranceSum', 'insuranceFrequency', 'accidentPackage', 'criticalPackage', 'treatmentRegion', 'sportPackage', 'hasJob', 'income2022', 'income2023', 'income2024', 'scholarship', 'unsecuredLoans', 'breadwinnerStatus', 'incomeShare', 'childrenCount', 'specialCareRelatives']
+2025-08-04 13:15:45,465 - justincase_routes - INFO - 📝 Входные данные: ['email', 'birthDate', 'gender', 'insuranceInfo', 'insuranceTerm', 'insuranceSum', 'insuranceFrequency', 'accidentPackage', 'criticalPackage', 'treatmentRegion', 'sportPackage', 'hasJob', 'income2022', 'income2023', 'income2024', 'scholarship', 'unsecuredLoans', 'breadwinnerStatus', 'incomeShare', 'childrenCount', 'specialCareRelatives']
+2025-08-04 13:15:45,466 - justincase_calculator - INFO - 🚀 Инициализация МОДУЛЬНОГО калькулятора 'На всякий случай'
+2025-08-04 13:15:45,466 - justincase_calculator - INFO - 🚀 МОДУЛЬНЫЙ расчет с правильными коэффициентами через отдельные модули
+2025-08-04 13:15:45,468 - justincase_calculator - INFO - 💰 МОДУЛЬНАЯ базовая премия:
+2025-08-04 13:15:45,469 - justincase_calculator - INFO -    Возраст: 35, пол: male, срок: 5 лет
+2025-08-04 13:15:45,469 - justincase_calculator - INFO -    Тариф жизни: 4.868
+2025-08-04 13:15:45,469 - justincase_calculator - INFO -    Премия жизни: 4868.00 руб
+2025-08-04 13:15:45,469 - justincase_calculator - INFO -    Премия инвалидности: 973.60 руб
+2025-08-04 13:15:45,469 - justincase_calculator - INFO -    Годовая база: 5841.60 руб
+2025-08-04 13:15:45,470 - justincase_calculator - INFO -    Коэфф. частоты (Ежегодно): 1.0
+2025-08-04 13:15:45,470 - justincase_calculator - INFO -    ИТОГО базовая: 5841.60 руб
+2025-08-04 13:15:45,470 - justincase_calculator - INFO - 💥 МОДУЛЬНАЯ премия НС:
+2025-08-04 13:15:45,471 - justincase_calculator - INFO -    Смерть от НС: 1121.30 руб
+2025-08-04 13:15:45,471 - justincase_calculator - INFO -    Смерть от ДТП: 280.70 руб
+2025-08-04 13:15:45,472 - justincase_calculator - INFO -    Травма: 1834.10 руб
+2025-08-04 13:15:45,472 - justincase_calculator - INFO -    Коэфф. частоты: 1.0
+2025-08-04 13:15:45,472 - justincase_calculator - INFO -    Спорт коэфф: 1.1 (+10.0%)
+2025-08-04 13:15:45,472 - justincase_calculator - INFO -    ИТОГО НС: 3559.71 руб
+2025-08-04 13:15:45,472 - justincase_calculator - INFO - 🏥 МОДУЛЬНАЯ премия КЗ:
+2025-08-04 13:15:45,472 - justincase_calculator - INFO -    Регион: russia
+2025-08-04 13:15:45,473 - justincase_calculator - INFO -    Базовый тариф: 0.00 руб
+2025-08-04 13:15:45,473 - justincase_calculator - INFO -    Коэфф. частоты: 1.0
+2025-08-04 13:15:45,474 - justincase_calculator - INFO -    ИТОГО КЗ: 0.00 руб
+2025-08-04 13:15:45,474 - justincase_calculator - INFO - 🎯 ФИНАЛЬНЫЙ МОДУЛЬНЫЙ РЕЗУЛЬТАТ:
+2025-08-04 13:15:45,475 - justincase_calculator - INFO -    Базовая: 5,841.60 руб
+2025-08-04 13:15:45,475 - justincase_calculator - INFO -    НС: 3,559.71 руб
+2025-08-04 13:15:45,476 - justincase_calculator - INFO -    КЗ: 0.00 руб
+2025-08-04 13:15:45,476 - justincase_calculator - INFO -    ИТОГО: 9,401.31 руб
+2025-08-04 13:15:45,476 - justincase_calculator - INFO -    Коэффициент частоты (Ежегодно): 1.0
+2025-08-04 13:15:45,476 - justincase_routes - INFO - ✅ Расчет выполнен: премия 9,401.31 руб.
+2025-08-04 13:15:45,477 - server - INFO - 📤 POST /api/proxy/calculator/save -> 200
+2025-08-04 13:17:16,955 - server - INFO - 📨 OPTIONS /api/proxy/calculator/save - 127.0.0.1
+2025-08-04 13:17:16,956 - server - INFO - 📤 OPTIONS /api/proxy/calculator/save -> 200
+2025-08-04 13:17:17,265 - server - INFO - 📨 POST /api/proxy/calculator/save - 127.0.0.1
+2025-08-04 13:17:17,294 - server - INFO -    📋 JSON keys: ['email', 'birthDate', 'gender', 'insuranceInfo', 'insuranceTerm', 'insuranceSum', 'insuranceFrequency', 'accidentPackage', 'criticalPackage', 'treatmentRegion', 'sportPackage', 'hasJob', 'income2022', 'income2023', 'income2024', 'scholarship', 'unsecuredLoans', 'breadwinnerStatus', 'incomeShare', 'childrenCount', 'specialCareRelatives']
+2025-08-04 13:17:17,295 - justincase_routes - INFO - 🧮 === ОСНОВНОЙ РАСЧЕТ 'НА ВСЯКИЙ СЛУЧАЙ' ===
+2025-08-04 13:17:17,295 - justincase_routes - INFO - 📋 Content-Type: application/json
+2025-08-04 13:17:17,296 - justincase_routes - INFO - 📥 JSON получен: ['email', 'birthDate', 'gender', 'insuranceInfo', 'insuranceTerm', 'insuranceSum', 'insuranceFrequency', 'accidentPackage', 'criticalPackage', 'treatmentRegion', 'sportPackage', 'hasJob', 'income2022', 'income2023', 'income2024', 'scholarship', 'unsecuredLoans', 'breadwinnerStatus', 'incomeShare', 'childrenCount', 'specialCareRelatives']
+2025-08-04 13:17:17,296 - justincase_routes - INFO - 📝 Входные данные: ['email', 'birthDate', 'gender', 'insuranceInfo', 'insuranceTerm', 'insuranceSum', 'insuranceFrequency', 'accidentPackage', 'criticalPackage', 'treatmentRegion', 'sportPackage', 'hasJob', 'income2022', 'income2023', 'income2024', 'scholarship', 'unsecuredLoans', 'breadwinnerStatus', 'incomeShare', 'childrenCount', 'specialCareRelatives']
+2025-08-04 13:17:17,297 - justincase_calculator - INFO - 🚀 Инициализация МОДУЛЬНОГО калькулятора 'На всякий случай'
+2025-08-04 13:17:17,297 - justincase_calculator - INFO - 🚀 МОДУЛЬНЫЙ расчет с правильными коэффициентами через отдельные модули
+2025-08-04 13:17:17,298 - justincase_calculator - INFO - 💰 МОДУЛЬНАЯ базовая премия:
+2025-08-04 13:17:17,298 - justincase_calculator - INFO -    Возраст: 35, пол: male, срок: 5 лет
+2025-08-04 13:17:17,298 - justincase_calculator - INFO -    Тариф жизни: 4.868
+2025-08-04 13:17:17,299 - justincase_calculator - INFO -    Премия жизни: 4868.00 руб
+2025-08-04 13:17:17,300 - justincase_calculator - INFO -    Премия инвалидности: 973.60 руб
+2025-08-04 13:17:17,300 - justincase_calculator - INFO -    Годовая база: 5841.60 руб
+2025-08-04 13:17:17,300 - justincase_calculator - INFO -    Коэфф. частоты (Ежегодно): 1.0
+2025-08-04 13:17:17,300 - justincase_calculator - INFO -    ИТОГО базовая: 5841.60 руб
+2025-08-04 13:17:17,301 - justincase_calculator - INFO - 💥 МОДУЛЬНАЯ премия НС:
+2025-08-04 13:17:17,301 - justincase_calculator - INFO -    Смерть от НС: 1121.30 руб
+2025-08-04 13:17:17,301 - justincase_calculator - INFO -    Смерть от ДТП: 280.70 руб
+2025-08-04 13:17:17,302 - justincase_calculator - INFO -    Травма: 1834.10 руб
+2025-08-04 13:17:17,302 - justincase_calculator - INFO -    Коэфф. частоты: 1.0
+2025-08-04 13:17:17,303 - justincase_calculator - INFO -    Спорт коэфф: 1.1 (+10.0%)
+2025-08-04 13:17:17,303 - justincase_calculator - INFO -    ИТОГО НС: 3559.71 руб
+2025-08-04 13:17:17,303 - justincase_calculator - INFO - 🏥 МОДУЛЬНАЯ премия КЗ:
+2025-08-04 13:17:17,305 - justincase_calculator - INFO -    Регион: abroad
+2025-08-04 13:17:17,305 - justincase_calculator - INFO -    Базовый тариф: 54094.74 руб
+2025-08-04 13:17:17,305 - justincase_calculator - INFO -    Коэфф. частоты: 1.0
+2025-08-04 13:17:17,306 - justincase_calculator - INFO -    ИТОГО КЗ: 54094.74 руб
+2025-08-04 13:17:17,306 - justincase_calculator - INFO - 🎯 ФИНАЛЬНЫЙ МОДУЛЬНЫЙ РЕЗУЛЬТАТ:
+2025-08-04 13:17:17,306 - justincase_calculator - INFO -    Базовая: 5,841.60 руб
+2025-08-04 13:17:17,307 - justincase_calculator - INFO -    НС: 3,559.71 руб
+2025-08-04 13:17:17,307 - justincase_calculator - INFO -    КЗ: 54,094.74 руб
+2025-08-04 13:17:17,307 - justincase_calculator - INFO -    ИТОГО: 63,496.05 руб
+2025-08-04 13:17:17,307 - justincase_calculator - INFO -    Коэффициент частоты (Ежегодно): 1.0
+2025-08-04 13:17:17,307 - justincase_routes - INFO - ✅ Расчет выполнен: премия 63,496.05 руб.
+2025-08-04 13:17:17,308 - server - INFO - 📤 POST /api/proxy/calculator/save -> 200
+2025-08-04 13:20:05,951 - server - INFO - 📨 OPTIONS /api/proxy/calculator/save - 127.0.0.1
+2025-08-04 13:20:05,952 - server - INFO - 📤 OPTIONS /api/proxy/calculator/save -> 200
+2025-08-04 13:20:06,260 - server - INFO - 📨 POST /api/proxy/calculator/save - 127.0.0.1
+2025-08-04 13:20:06,284 - server - INFO -    📋 JSON keys: ['email', 'birthDate', 'gender', 'insuranceInfo', 'insuranceTerm', 'insuranceSum', 'insuranceFrequency', 'accidentPackage', 'criticalPackage', 'treatmentRegion', 'sportPackage', 'hasJob', 'income2022', 'income2023', 'income2024', 'scholarship', 'unsecuredLoans', 'breadwinnerStatus', 'incomeShare', 'childrenCount', 'specialCareRelatives']
+2025-08-04 13:20:06,284 - justincase_routes - INFO - 🧮 === ОСНОВНОЙ РАСЧЕТ 'НА ВСЯКИЙ СЛУЧАЙ' ===
+2025-08-04 13:20:06,284 - justincase_routes - INFO - 📋 Content-Type: application/json
+2025-08-04 13:20:06,285 - justincase_routes - INFO - 📥 JSON получен: ['email', 'birthDate', 'gender', 'insuranceInfo', 'insuranceTerm', 'insuranceSum', 'insuranceFrequency', 'accidentPackage', 'criticalPackage', 'treatmentRegion', 'sportPackage', 'hasJob', 'income2022', 'income2023', 'income2024', 'scholarship', 'unsecuredLoans', 'breadwinnerStatus', 'incomeShare', 'childrenCount', 'specialCareRelatives']
+2025-08-04 13:20:06,285 - justincase_routes - INFO - 📝 Входные данные: ['email', 'birthDate', 'gender', 'insuranceInfo', 'insuranceTerm', 'insuranceSum', 'insuranceFrequency', 'accidentPackage', 'criticalPackage', 'treatmentRegion', 'sportPackage', 'hasJob', 'income2022', 'income2023', 'income2024', 'scholarship', 'unsecuredLoans', 'breadwinnerStatus', 'incomeShare', 'childrenCount', 'specialCareRelatives']
+2025-08-04 13:20:06,285 - justincase_calculator - INFO - 🚀 Инициализация МОДУЛЬНОГО калькулятора 'На всякий случай'
+2025-08-04 13:20:06,285 - justincase_calculator - INFO - 🚀 МОДУЛЬНЫЙ расчет с правильными коэффициентами через отдельные модули
+2025-08-04 13:20:06,286 - justincase_calculator - INFO - 💰 МОДУЛЬНАЯ базовая премия:
+2025-08-04 13:20:06,286 - justincase_calculator - INFO -    Возраст: 35, пол: male, срок: 5 лет
+2025-08-04 13:20:06,286 - justincase_calculator - INFO -    Тариф жизни: 4.868
+2025-08-04 13:20:06,286 - justincase_calculator - INFO -    Премия жизни: 4868.00 руб
+2025-08-04 13:20:06,286 - justincase_calculator - INFO -    Премия инвалидности: 973.60 руб
+2025-08-04 13:20:06,286 - justincase_calculator - INFO -    Годовая база: 5841.60 руб
+2025-08-04 13:20:06,286 - justincase_calculator - INFO -    Коэфф. частоты (Ежегодно): 1.0
+2025-08-04 13:20:06,286 - justincase_calculator - INFO -    ИТОГО базовая: 5841.60 руб
+2025-08-04 13:20:06,286 - justincase_calculator - INFO - 💥 МОДУЛЬНАЯ премия НС:
+2025-08-04 13:20:06,286 - justincase_calculator - INFO -    Смерть от НС: 1121.30 руб
+2025-08-04 13:20:06,286 - justincase_calculator - INFO -    Смерть от ДТП: 280.70 руб
+2025-08-04 13:20:06,286 - justincase_calculator - INFO -    Травма: 1834.10 руб
+2025-08-04 13:20:06,286 - justincase_calculator - INFO -    Коэфф. частоты: 1.0
+2025-08-04 13:20:06,286 - justincase_calculator - INFO -    Спорт коэфф: 1.1 (+10.0%)
+2025-08-04 13:20:06,287 - justincase_calculator - INFO -    ИТОГО НС: 3559.71 руб
+2025-08-04 13:20:06,287 - justincase_calculator - INFO - 🏥 МОДУЛЬНАЯ премия КЗ:
+2025-08-04 13:20:06,287 - justincase_calculator - INFO -    Регион: abroad
+2025-08-04 13:20:06,287 - justincase_calculator - INFO -    Базовый тариф: 54094.74 руб
+2025-08-04 13:20:06,287 - justincase_calculator - INFO -    Коэфф. частоты: 1.0
+2025-08-04 13:20:06,287 - justincase_calculator - INFO -    ИТОГО КЗ: 54094.74 руб
+2025-08-04 13:20:06,287 - justincase_calculator - INFO - 🎯 ФИНАЛЬНЫЙ МОДУЛЬНЫЙ РЕЗУЛЬТАТ:
+2025-08-04 13:20:06,287 - justincase_calculator - INFO -    Базовая: 5,841.60 руб
+2025-08-04 13:20:06,287 - justincase_calculator - INFO -    НС: 3,559.71 руб
+2025-08-04 13:20:06,287 - justincase_calculator - INFO -    КЗ: 54,094.74 руб
+2025-08-04 13:20:06,288 - justincase_calculator - INFO -    ИТОГО: 63,496.05 руб
+2025-08-04 13:20:06,288 - justincase_calculator - INFO -    Коэффициент частоты (Ежегодно): 1.0
+2025-08-04 13:20:06,288 - justincase_routes - INFO - ✅ Расчет выполнен: премия 63,496.05 руб.
+2025-08-04 13:20:06,288 - server - INFO - 📤 POST /api/proxy/calculator/save -> 200
+2025-08-04 13:21:20,660 - server - INFO - 📨 OPTIONS /api/proxy/calculator/save - 127.0.0.1
+2025-08-04 13:21:20,661 - server - INFO - 📤 OPTIONS /api/proxy/calculator/save -> 200
+2025-08-04 13:21:20,968 - server - INFO - 📨 POST /api/proxy/calculator/save - 127.0.0.1
+2025-08-04 13:21:20,984 - server - INFO -    📋 JSON keys: ['email', 'birthDate', 'gender', 'insuranceInfo', 'insuranceTerm', 'insuranceSum', 'insuranceFrequency', 'accidentPackage', 'criticalPackage', 'treatmentRegion', 'sportPackage', 'hasJob', 'income2022', 'income2023', 'income2024', 'scholarship', 'unsecuredLoans', 'breadwinnerStatus', 'incomeShare', 'childrenCount', 'specialCareRelatives']
+2025-08-04 13:21:20,985 - justincase_routes - INFO - 🧮 === ОСНОВНОЙ РАСЧЕТ 'НА ВСЯКИЙ СЛУЧАЙ' ===
+2025-08-04 13:21:20,985 - justincase_routes - INFO - 📋 Content-Type: application/json
+2025-08-04 13:21:20,986 - justincase_routes - INFO - 📥 JSON получен: ['email', 'birthDate', 'gender', 'insuranceInfo', 'insuranceTerm', 'insuranceSum', 'insuranceFrequency', 'accidentPackage', 'criticalPackage', 'treatmentRegion', 'sportPackage', 'hasJob', 'income2022', 'income2023', 'income2024', 'scholarship', 'unsecuredLoans', 'breadwinnerStatus', 'incomeShare', 'childrenCount', 'specialCareRelatives']
+2025-08-04 13:21:20,986 - justincase_routes - INFO - 📝 Входные данные: ['email', 'birthDate', 'gender', 'insuranceInfo', 'insuranceTerm', 'insuranceSum', 'insuranceFrequency', 'accidentPackage', 'criticalPackage', 'treatmentRegion', 'sportPackage', 'hasJob', 'income2022', 'income2023', 'income2024', 'scholarship', 'unsecuredLoans', 'breadwinnerStatus', 'incomeShare', 'childrenCount', 'specialCareRelatives']
+2025-08-04 13:21:20,986 - justincase_calculator - INFO - 🚀 Инициализация МОДУЛЬНОГО калькулятора 'На всякий случай'
+2025-08-04 13:21:20,987 - justincase_calculator - INFO - 🚀 МОДУЛЬНЫЙ расчет с правильными коэффициентами через отдельные модули
+2025-08-04 13:21:20,987 - justincase_calculator - INFO - 💰 МОДУЛЬНАЯ базовая премия:
+2025-08-04 13:21:20,988 - justincase_calculator - INFO -    Возраст: 35, пол: male, срок: 5 лет
+2025-08-04 13:21:20,988 - justincase_calculator - INFO -    Тариф жизни: 4.868
+2025-08-04 13:21:20,988 - justincase_calculator - INFO -    Премия жизни: 4868.00 руб
+2025-08-04 13:21:20,988 - justincase_calculator - INFO -    Премия инвалидности: 973.60 руб
+2025-08-04 13:21:20,989 - justincase_calculator - INFO -    Годовая база: 5841.60 руб
+2025-08-04 13:21:20,989 - justincase_calculator - INFO -    Коэфф. частоты (Ежегодно): 1.0
+2025-08-04 13:21:20,989 - justincase_calculator - INFO -    ИТОГО базовая: 5841.60 руб
+2025-08-04 13:21:20,989 - justincase_calculator - INFO - 💥 МОДУЛЬНАЯ премия НС:
+2025-08-04 13:21:20,989 - justincase_calculator - INFO -    Смерть от НС: 1121.30 руб
+2025-08-04 13:21:20,989 - justincase_calculator - INFO -    Смерть от ДТП: 280.70 руб
+2025-08-04 13:21:20,990 - justincase_calculator - INFO -    Травма: 1834.10 руб
+2025-08-04 13:21:20,990 - justincase_calculator - INFO -    Коэфф. частоты: 1.0
+2025-08-04 13:21:20,991 - justincase_calculator - INFO -    Спорт коэфф: 1.1 (+10.0%)
+2025-08-04 13:21:20,991 - justincase_calculator - INFO -    ИТОГО НС: 3559.71 руб
+2025-08-04 13:21:20,991 - justincase_calculator - INFO - 🏥 МОДУЛЬНАЯ премия КЗ:
+2025-08-04 13:21:20,991 - justincase_calculator - INFO -    Регион: abroad
+2025-08-04 13:21:20,993 - justincase_calculator - INFO -    Базовый тариф: 54094.74 руб
+2025-08-04 13:21:20,993 - justincase_calculator - INFO -    Коэфф. частоты: 1.0
+2025-08-04 13:21:20,993 - justincase_calculator - INFO -    ИТОГО КЗ: 54094.74 руб
+2025-08-04 13:21:20,994 - justincase_calculator - INFO - 🎯 ФИНАЛЬНЫЙ МОДУЛЬНЫЙ РЕЗУЛЬТАТ:
+2025-08-04 13:21:20,994 - justincase_calculator - INFO -    Базовая: 5,841.60 руб
+2025-08-04 13:21:20,994 - justincase_calculator - INFO -    НС: 3,559.71 руб
+2025-08-04 13:21:20,995 - justincase_calculator - INFO -    КЗ: 54,094.74 руб
+2025-08-04 13:21:20,995 - justincase_calculator - INFO -    ИТОГО: 63,496.05 руб
+2025-08-04 13:21:20,995 - justincase_calculator - INFO -    Коэффициент частоты (Ежегодно): 1.0
+2025-08-04 13:21:20,996 - justincase_routes - INFO - ✅ Расчет выполнен: премия 63,496.05 руб.
+2025-08-04 13:21:20,996 - server - INFO - 📤 POST /api/proxy/calculator/save -> 200

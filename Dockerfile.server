@@ -25,6 +25,9 @@ COPY email_sender.py .
 COPY poll_manager.py .
 COPY init_assessment_db.py .
 COPY migrate_assessment_questions.py .
+COPY base_calculation_models.py* .
+COPY base_calculation_routes.py* .
+COPY init_base_calculation.py* .
 
 # Копируем файлы калькулятора НСЖ (если есть)
 COPY care_future_models.py* .
