@@ -5,26 +5,36 @@ services:
       - "4000:4000"
     env_file:
       - .env
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=secret
+      - DB_NAME=miniapp
+      - SQLALCHEMY_DATABASE_URI=postgresql://postgres:secret@postgres:5432/miniapp
+      - DATABASE_URL=postgresql://postgres:secret@postgres:5432/miniapp
     networks:
       - rgszh-miniapp-network
     restart: always
-    # Переопределяем entrypoint и command для обхода проблемы с docker-entrypoint.sh
     entrypoint: ["python"]
     command: ["server.py"]
     working_dir: /app
     depends_on:
       - redis
-
-  frontend:
-    image: zerotlt/rgszh-miniapp:latest
+      - postgres
+  postgres:
+    image: postgres:15-alpine
     restart: always
+    environment:
+      POSTGRES_DB: miniapp
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secret
     ports:
-      - "8080:80"
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
     networks:
       - rgszh-miniapp-network
-    depends_on:
-      - server
-
   proxy:
     image: nginx:stable-alpine
     restart: always
@@ -39,7 +49,6 @@ services:
       - frontend
     networks:
       - rgszh-miniapp-network
-
   redis:
     image: redis:7-alpine
     restart: always
@@ -47,10 +56,21 @@ services:
       - "6379:6379"
     networks:
       - rgszh-miniapp-network
-
-environment:
-  - DB_HOST=172.17.0.1
-
+  frontend:
+    image: zerotlt/rgszh-miniapp-client:latest
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    networks:
+      - rgszh-miniapp-network
+    restart: always
+    depends_on:
+      - server
+      - redis
+      - postgres
+volumes:
+  postgres_data:
 networks:
   rgszh-miniapp-network:
     driver: bridge

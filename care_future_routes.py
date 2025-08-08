@@ -2,6 +2,9 @@
 
 import os
 import logging
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 from datetime import datetime, date
 from typing import Dict, Any, List, Optional
 from flask import Blueprint, request, jsonify, current_app
@@ -23,6 +26,90 @@ logger = logging.getLogger("care_future_routes_updated")
 
 # Создаем Blueprint для API калькулятора НСЖ
 care_future_bp = Blueprint('care_future', __name__, url_prefix='/api/care-future')
+
+# =============================================================================
+# ФУНКЦИЯ ОТПРАВКИ EMAIL ДЛЯ КАЛЬКУЛЯТОРА НСЖ
+# =============================================================================
+
+def send_calculation_email(to_email, calculation_result):
+    """Отправка результатов расчета калькулятора по email"""
+    try:
+        smtp_server = "smtp.yandex.ru"
+        smtp_port = 465
+        smtp_username = "rgszh-miniapp@yandex.ru"
+        smtp_password = "rbclbdyejwwxrisg"
+        
+        # Формируем содержимое письма
+        subject = "Результаты расчета калькулятора НСЖ 'Забота о будущем Ультра'"
+        
+        # Получаем данные из результата
+        input_params = calculation_result.get('inputParameters', {})
+        results = calculation_result.get('results', {})
+        redemption_values = calculation_result.get('redemptionValues', [])
+        
+        # Форматируем суммы
+        def format_amount(amount):
+            return f"{amount:,}".replace(',', ' ')
+        
+        # Формируем текст письма
+        body = f"""
+Результаты расчета калькулятора НСЖ "Забота о будущем Ультра"
+
+ВХОДНЫЕ ДАННЫЕ:
+• Дата рождения: {input_params.get('birthDate', 'Не указано')}
+• Пол: {'Мужской' if input_params.get('gender') == 'male' else 'Женский'}
+• Возраст при оформлении: {input_params.get('ageAtStart', 'Не указан')} лет
+• Возраст при окончании: {input_params.get('ageAtEnd', 'Не указан')} лет
+• Срок договора: {input_params.get('contractTerm', 'Не указан')} лет
+• Тип расчета: {'От суммы взноса' if input_params.get('calculationType') == 'from_premium' else 'От страховой суммы'}
+• Сумма для расчета: {format_amount(input_params.get('inputAmount', 0))} руб.
+
+РЕЗУЛЬТАТЫ РАСЧЕТА:
+• Страховой взнос: {format_amount(results.get('premiumAmount', 0))} руб.
+• Страховая сумма: {format_amount(results.get('insuranceSum', 0))} руб.
+• Накопленный капитал: {format_amount(results.get('accumulatedCapital', 0))} руб.
+• Доход по программе: {format_amount(results.get('programIncome', 0))} руб.
+• Налоговый вычет: {format_amount(results.get('taxDeduction', 0))} руб.
+
+ВЫКУПНЫЕ СУММЫ ПО ГОДАМ:
+"""
+        
+        # Добавляем таблицу выкупных сумм
+        for redemption in redemption_values:
+            year = redemption.get('year', 0)
+            amount = redemption.get('amount', 0)
+            percentage = int(redemption.get('percentage', 0) * 100)
+            body += f"Год {year}: {format_amount(amount)} руб. ({percentage}%)\n"
+        
+        body += f"""
+
+Расчет выполнен: {datetime.now().strftime('%d.%m.%Y в %H:%M')}
+ID расчета: {calculation_result.get('calculationId', 'Не указан')}
+
+С уважением,
+Команда РГСЗН
+"""
+        
+        # Создаем сообщение
+        msg = MIMEMultipart()
+        msg['From'] = smtp_username
+        msg['To'] = to_email
+        msg['Subject'] = subject
+        
+        # Добавляем текст
+        msg.attach(MIMEText(body, 'plain', 'utf-8'))
+        
+        # Отправляем через SMTP_SSL для порта 465
+        with smtplib.SMTP_SSL(smtp_server, smtp_port) as server:
+            server.login(smtp_username, smtp_password)
+            server.send_message(msg)
+            
+        logger.info(f"✅ Email с результатами калькулятора успешно отправлен на {to_email}")
+        return True
+        
+    except Exception as e:
+        logger.error(f"❌ Ошибка отправки email калькулятора: {e}")
+        return False
 
 # =============================================================================
 # ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
@@ -160,6 +247,9 @@ def calculate_insurance():
         
         logger.info(f"✅ Расчет выполнен успешно: {result.calculation_uuid}")
         logger.info(f"📊 Результат: премия={result.premium_amount:,}, сумма={result.insurance_sum:,}, доход={result.program_income:,}")
+        
+        # Email будет отправлен только на этапе "Связаться с менеджером"
+        response_data['emailSent'] = False  # Изменено: email не отправляется на этапе расчета
         
         return jsonify(response_data)
         

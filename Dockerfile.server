@@ -28,6 +28,8 @@ COPY migrate_assessment_questions.py .
 COPY base_calculation_models.py* .
 COPY base_calculation_routes.py* .
 COPY init_base_calculation.py* .
+COPY justincase_routes.py .
+COPY justincase_models.py* . 
 
 # Копируем файлы калькулятора НСЖ (если есть)
 COPY care_future_models.py* .

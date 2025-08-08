@@ -225,6 +225,8 @@ export default function AssessmentPage() {
 
   // ===== ОБРАБОТЧИКИ =====
   const handleNext = useCallback(() => {
+    console.log('🔽 handleNext called - step:', currentStep, 'question:', currentQuestion);
+    
     if (currentStep === 1) {
       setCurrentStep(2);
     } else if (currentStep === 2) {
@@ -243,10 +245,12 @@ export default function AssessmentPage() {
       setCurrentStep(3);
     } else if (currentStep === 3) {
       if (!selectedAnswer) {
+        console.log('❌ No answer selected');
         setErrorMessage('Выберите один из вариантов ответа');
         return;
       }
 
+      console.log('✅ Answer selected:', selectedAnswer);
       setErrorMessage('');
       
       const existingAnswerIndex = userAnswers.findIndex(ans => ans.question_id === questions[currentQuestion].id);
@@ -269,8 +273,10 @@ export default function AssessmentPage() {
       setUserAnswers(updatedAnswers);
 
       if (currentQuestion === questions.length - 1) {
+        console.log('🏁 Final question - calling finishAssessment');
         finishAssessment(updatedAnswers);
       } else {
+        console.log('➡️ Moving to next question');
         setFadeTransition(true);
         setTimeout(() => {
           setCurrentQuestion(currentQuestion + 1);
@@ -315,16 +321,30 @@ export default function AssessmentPage() {
 
   // Обработчик выбора ответа
   const handleAnswerSelect = (answerText) => {
+    console.log('🔔 Answer selected:', answerText);
+    console.log('🔢 Current question:', currentQuestion, 'of', questions.length);
     setSelectedAnswer(answerText);
+    
+    // На последнем вопросе - автоматический переход через небольшую задержку
+    if (currentQuestion === questions.length - 1) {
+      console.log('🎯 Last question - triggering auto-submit in 800ms');
+      setTimeout(() => {
+        console.log('🚀 Auto-submitting last question');
+        handleNext();
+      }, 800);
+    }
   };
 
   const finishAssessment = async (answers) => {
+    console.log('🎬 finishAssessment called with', answers.length, 'answers');
     try {
       setIsProcessing(true);
       setErrorMessage('');
 
       const uniqueAnswers = answers.slice(0, 25);
-    const answersTextArray = uniqueAnswers.map(answer => answer.answer_text);
+      const answersTextArray = uniqueAnswers.map(answer => answer.answer_text);
+      
+      console.log('📝 Sending answers:', answersTextArray);
   
       if (uniqueAnswers.length !== 25) {
         throw new Error(`Expected 25 answers, got ${uniqueAnswers.length}`);
@@ -339,6 +359,8 @@ export default function AssessmentPage() {
         completionTime: Math.max(1, Math.round((Date.now() - startTimeRef.current) / 60000))
       };
 
+      console.log('📤 Sending session data:', sessionData);
+
       // Сохраняем результаты
       const response = await apiCall('/api/assessment/save', {
         method: 'POST',
@@ -348,14 +370,18 @@ export default function AssessmentPage() {
         body: JSON.stringify(sessionData)
       });
 
+      console.log('📥 Assessment response:', response);
+
       // ✅ ПОКАЗЫВАЕМ СПИННЕР МИНИМУМ 2 СЕКУНДЫ для UX
       setTimeout(() => {
+        console.log('✅ Assessment completed successfully');
         setResult({ success: true });
         setIsFinished(true);
         setIsProcessing(false);
       }, 2000);
   
     } catch (error) {
+      console.error('❌ Assessment error:', error);
       setErrorMessage('Ошибка при отправке результатов. Попробуйте еще раз.');
       setIsProcessing(false);
     }

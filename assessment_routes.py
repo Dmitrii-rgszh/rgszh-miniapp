@@ -1,26 +1,59 @@
 # assessment_routes.py - Исправленная версия БЕЗ дублирующего эндпоинта
 import traceback
 import logging
+import smtplib
 from datetime import datetime
 from flask import request, jsonify
 from sqlalchemy import text
 from db_saver import db
 from email_sender import process_new_candidate_notification
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 logger = logging.getLogger("assessment_routes")
+
+def send_test_email(to_email, subject, body):
+    """Отправка email через Yandex SMTP"""
+    try:
+        # Настройки SMTP для Yandex
+        smtp_server = "smtp.yandex.ru"
+        smtp_port = 465
+        smtp_username = "rgszh-miniapp@yandex.ru"
+        smtp_password = "rbclbdyejwwxrisg"
+        
+        # Создаем сообщение
+        msg = MIMEMultipart()
+        msg['From'] = smtp_username
+        msg['To'] = to_email
+        msg['Subject'] = subject
+        
+        # Добавляем текст
+        msg.attach(MIMEText(body, 'plain', 'utf-8'))
+        
+        # Отправляем через SMTP_SSL для порта 465
+        with smtplib.SMTP_SSL(smtp_server, smtp_port) as server:
+            server.login(smtp_username, smtp_password)
+            server.send_message(msg)
+            
+        logger.info(f"✅ Email успешно отправлен на {to_email}")
+        return True
+        
+    except Exception as e:
+        logger.error(f"❌ Ошибка отправки email: {e}")
+        return False
 
 def register_assessment_routes(app):
     """Регистрирует маршруты для оценки кандидатов"""
     
-    @app.route('/api/questionnaire/<int:questionnaire_id>', methods=['GET'])
-    def get_questionnaire(questionnaire_id):
+    @app.route('/api/assessment/questionnaire/<int:questionnaire_id>', methods=['GET'])
+    def get_assessment_questionnaire(questionnaire_id):
         """Получение опросника с вопросами"""
         try:
             include_questions = request.args.get('include_questions', 'false').lower() == 'true'
             
             # Получаем опросник
             query = text("""
-                SELECT id, title, description, questions_count, max_time_minutes, is_active
+                SELECT id, title, description, max_time_minutes, is_active
                 FROM questionnaires 
                 WHERE id = :questionnaire_id AND is_active = true
             """)
@@ -35,21 +68,30 @@ def register_assessment_routes(app):
                 "id": questionnaire.id,
                 "title": questionnaire.title,
                 "description": questionnaire.description,
-                "questions_count": questionnaire.questions_count,
                 "max_time_minutes": questionnaire.max_time_minutes,
                 "is_active": questionnaire.is_active
             }
             
+            # Получаем количество вопросов
+            count_query = text("""
+                SELECT COUNT(*) as questions_count
+                FROM questions 
+                WHERE questionnaire_id = :questionnaire_id
+            """)
+            count_result = db.session.execute(count_query, {"questionnaire_id": questionnaire_id})
+            questions_count = count_result.fetchone().questions_count
+            questionnaire_data["questions_count"] = questions_count
+            
             # Если нужны вопросы, загружаем их
             if include_questions:
                 questions_query = text("""
-                    SELECT q.id, q.question_order, q.question_text, q.description,
-                           qo.id as option_id, qo.option_order, qo.option_text, 
-                           qo.option_type, qo.score_value
+                    SELECT q.id, q.order_index as question_order, q.text as question_text, q.description,
+                           qo.id as option_id, qo.order_index as option_order, qo.text as option_text, 
+                           qo.score_type as option_type, qo.score_value
                     FROM questions q
                     LEFT JOIN question_options qo ON q.id = qo.question_id
                     WHERE q.questionnaire_id = :questionnaire_id
-                    ORDER BY q.question_order, qo.option_order
+                    ORDER BY q.order_index, qo.order_index
                 """)
                 
                 questions_result = db.session.execute(questions_query, {"questionnaire_id": questionnaire_id})
@@ -141,6 +183,10 @@ def register_assessment_routes(app):
             # Вычисляем процент (максимум 50 баллов)
             percentage = round((total_score / 50.0) * 100, 2)
       
+            # Определяем доминирующий тип
+            dominant_type = max(type_scores, key=type_scores.get) if max(type_scores.values()) > 0 else None
+            logger.info(f"🏆 Dominant type: {dominant_type}")
+      
             # Получаем транскрипцию на основе баллов
             transcription = get_transcription_by_score(total_score)
             logger.info(f"📝 Transcription: {transcription[:50]}...")
@@ -151,11 +197,11 @@ def register_assessment_routes(app):
             # Сохраняем результат в БД (со ВСЕМИ столбцами)
             insert_query = text("""
                 INSERT INTO assessment_candidates 
-                (surname, first_name, patronymic, full_name, total_score, percentage, 
-                 innovator_score, optimizer_score, executor_score, transcription, 
+                (surname, first_name, patronymic, total_score, percentage, 
+                 innovator_score, optimizer_score, executor_score, dominant_type, transcription, 
                  completion_time_minutes, created_at, updated_at)
-                VALUES (:surname, :first_name, :patronymic, :full_name, :total_score, :percentage,
-                        :innovator_score, :optimizer_score, :executor_score, :transcription,
+                VALUES (:surname, :first_name, :patronymic, :total_score, :percentage,
+                        :innovator_score, :optimizer_score, :executor_score, :dominant_type, :transcription,
                         :completion_time_minutes, :created_at, :updated_at)
                 RETURNING id
             """)
@@ -168,12 +214,12 @@ def register_assessment_routes(app):
                 "surname": data['surname'],
                 "first_name": data['firstName'], 
                 "patronymic": data['patronymic'],
-                "full_name": full_name,
                 "total_score": total_score,
                 "percentage": percentage,
                 "innovator_score": type_scores.get('innovator', 0),
                 "optimizer_score": type_scores.get('optimizer', 0),
                 "executor_score": type_scores.get('executor', 0),
+                "dominant_type": dominant_type,
                 "transcription": transcription,
                 "completion_time_minutes": completion_time,
                 "created_at": current_time,
@@ -192,7 +238,7 @@ def register_assessment_routes(app):
                         FROM question_options qo
                         JOIN questions q ON qo.question_id = q.id
                         WHERE q.questionnaire_id = 1 
-                        AND qo.option_text = :answer_text
+                        AND qo.text = :answer_text
                         LIMIT 1
                     """)
               
@@ -222,23 +268,38 @@ def register_assessment_routes(app):
             
             # ОТПРАВЛЯЕМ EMAIL УВЕДОМЛЕНИЕ
             try:
-                candidate_data = {
-                    "full_name": full_name,
-                    "surname": data['surname'],
-                    "first_name": data['firstName'],
-                    "patronymic": data['patronymic'],
-                    "total_score": total_score,
-                    "percentage": percentage,
-                    "innovator_score": type_scores.get('innovator', 0),
-                    "optimizer_score": type_scores.get('optimizer', 0),
-                    "executor_score": type_scores.get('executor', 0),
-                    "transcription": transcription,
-                    "completion_time_minutes": completion_time,
-                    "created_at": current_time
-                }
+                # ВКЛЮЧАЕМ отправку email через нашу функцию
+                subject = f"Новый кандидат прошел опрос - {full_name}"
+                body = f"""
+Кандидат: {full_name}
+Общий балл: {total_score}/50 ({percentage}%)
+Доминирующий тип: {dominant_type}
+
+Баллы по типам:
+- Инноватор: {type_scores.get('innovator', 0)}
+- Оптимизатор: {type_scores.get('optimizer', 0)} 
+- Исполнитель: {type_scores.get('executor', 0)}
+
+Время прохождения: {completion_time} минут
+Дата: {current_time.strftime('%Y-%m-%d %H:%M:%S')}
+
+Расшифровка:
+{transcription}
+                """
                 
-                email_sent = process_new_candidate_notification(candidate_data)
-                logger.info(f"📧 Email уведомление {'успешно отправлено' if email_sent else 'не отправлено'}")
+                # Отправляем email на оба адреса
+                email_addresses = ["zerotlt@mail.ru", "Polina.Iureva@rgsl.ru"]
+                email_sent = True
+                
+                for email_addr in email_addresses:
+                    success = send_test_email(email_addr, subject, body)
+                    if success:
+                        logger.info(f"📧 Email успешно отправлен на {email_addr}")
+                    else:
+                        logger.error(f"❌ Ошибка отправки email на {email_addr}")
+                        email_sent = False
+                
+                logger.info(f"📧 Email уведомления {'успешно отправлены' if email_sent else 'отправлены частично или не отправлены'}")
                 
             except Exception as email_error:
                 logger.error(f"❌ Ошибка отправки email: {email_error}")
@@ -257,6 +318,7 @@ def register_assessment_routes(app):
                     "innovator_score": type_scores.get('innovator', 0),
                     "optimizer_score": type_scores.get('optimizer', 0),
                     "executor_score": type_scores.get('executor', 0),
+                    "dominant_type": dominant_type,
                     "transcription": transcription
                 },
                 "email_sent": email_sent
@@ -272,6 +334,24 @@ def register_assessment_routes(app):
             logger.error(f"❌ Error saving assessment: {e}", exc_info=True)
             return jsonify({"error": "Internal server error"}), 500
 
+    @app.route('/api/test-email', methods=['GET'])
+    def test_email_send():
+        """Тестовая отправка email"""
+        try:
+            subject = "Тестовое письмо из RGSZH Mini App"
+            body = f"Это тестовое письмо для проверки работы SMTP. Отправлено {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+            
+            success = send_test_email("zerotlt@mail.ru", subject, body)
+            
+            return jsonify({
+                "status": "success" if success else "failed",
+                "message": "Email отправлен" if success else "Ошибка отправки email"
+            }), 200
+            
+        except Exception as e:
+            logger.error(f"❌ Test email error: {e}")
+            return jsonify({"status": "error", "message": str(e)}), 500
+
     # ❌ УДАЛЕН ДУБЛИРУЮЩИЙ ЭНДПОИНТ send_assessment_manager
     # Он уже есть в server.py и создавал конфликт
 
@@ -281,13 +361,13 @@ def calculate_total_score(answers):
         total_score = 0
         
         for answer_text in answers:
-            # Находим балл для данного ответа
+            # Находим балл для данного ответа по тексту
             query = text("""
                 SELECT qo.score_value
                 FROM question_options qo
                 JOIN questions q ON qo.question_id = q.id
                 WHERE q.questionnaire_id = 1 
-                AND qo.option_text = :answer_text
+                AND qo.text = :answer_text
                 LIMIT 1
             """)
             
@@ -313,13 +393,13 @@ def calculate_type_scores(answers):
         }
         
         for answer_text in answers:
-            # Находим тип и балл для данного ответа
+            # Находим тип и балл для данного ответа по тексту
             query = text("""
-                SELECT qo.option_type, qo.score_value
+                SELECT qo.score_type as option_type, qo.score_value
                 FROM question_options qo
                 JOIN questions q ON qo.question_id = q.id
                 WHERE q.questionnaire_id = 1 
-                AND qo.option_text = :answer_text
+                AND qo.text = :answer_text
                 LIMIT 1
             """)
             

@@ -122,7 +122,7 @@ def process_new_candidate_notification(candidate_data: Dict[str, Any]) -> bool:
             f"{candidate_data.get('transcription', 'Не доступна')}",
             "",
             "---",
-            "Автоматическое уведомление из MiniApp Telegram",
+            "Автоматическое уведомление из MiniApp",
             "",
             "Для получения подробных данных всех кандидатов воспользуйтесь",
             "функцией экспорта в административной панели системы."

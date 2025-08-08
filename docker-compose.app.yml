@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    container_name: rgszh-server
+    restart: always
+    environment:
+      - DB_HOST=176.108.243.189
+      - DB_PORT=1112
+      - DB_USER=postgres
+      - DB_PASSWORD=secret
+      - DB_NAME=postgres
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./:/app
+    networks:
+      - app_network
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.client
+    container_name: rgszh-frontend
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - app_network
+    depends_on:
+      - server
+
+networks:
+  app_network:
+    driver: bridge 

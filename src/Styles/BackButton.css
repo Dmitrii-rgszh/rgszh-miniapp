@@ -9,7 +9,7 @@
   flex-shrink: 0;
   flex-grow: 0;
   top: 87px;
-  right: calc(50% - 128px - 50px);
+  left: calc(50% - 128px - 50px);
   
   /* Стили */
   background: rgba(255, 255, 255, 0.1);
@@ -168,6 +168,26 @@
   .back-btn svg {
     width: 30px;
     height: 30px;
+  }
+}
+
+/* ======================================
+   СПЕЦИАЛЬНЫЕ ИСПРАВЛЕНИЯ ДЛЯ iOS SAFARI
+   ====================================== */
+/* iPhone с notch - добавляем safe area */
+@supports (padding: max(0px)) {
+  .back-btn {
+    top: max(87px, calc(87px + env(safe-area-inset-top)));
+    left: max(calc(50% - 128px - 50px), calc(50% - 128px - 50px + env(safe-area-inset-left)));
+  }
+}
+
+/* Дополнительные исправления для iOS в портретной ориентации */
+@media screen and (orientation: portrait) and (-webkit-min-device-pixel-ratio: 2) {
+  .back-btn {
+    /* Улучшенная обработка touch событий */
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
   }
 }
 

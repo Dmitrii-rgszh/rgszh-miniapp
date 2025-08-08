@@ -59,10 +59,6 @@ nginx/default.conf.local
 .env.prod
 .env.production
 
-# Telegram bot
-API.txt
-bot.log
-
 # Docker
 docker-compose.override.yml
 .dockerignore.local

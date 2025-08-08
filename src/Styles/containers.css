@@ -172,6 +172,12 @@ button {
   pointer-events: auto;
 }
 
+/* Убираем паддинг у form-container внутри card-container, чтобы избежать двойного паддинга */
+.card-container .form-container {
+  padding: 0;
+  max-width: none;
+}
+
 /* ======================================
    WELCOME КОНТЕЙНЕР
    ====================================== */

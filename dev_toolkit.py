@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Development Toolkit - Материнская программа для инструментов разработки
-Главное меню с доступом ко всем инструментам разработки Telegram MiniApp
+Главное меню с доступом ко всем инструментам разработки MiniApp
 """
 
 import sys
@@ -25,7 +25,7 @@ except ImportError:
 class DevelopmentToolkit:
     def __init__(self):
         self.root = tk.Tk()
-        self.root.title("🚀 Development Toolkit - Telegram MiniApp")
+        self.root.title("🚀 Development Toolkit - MiniApp")
         self.root.geometry("1000x700")
         self.root.minsize(800, 600)
         
@@ -131,7 +131,7 @@ class DevelopmentToolkit:
         
         subtitle_label = tk.Label(
             title_frame,
-            text="Инструменты разработки для Telegram MiniApp",
+            text="Инструменты разработки для MiniApp",
             font=('Segoe UI', 12),
             fg='white',
             bg=self.colors['primary_red']

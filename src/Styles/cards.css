@@ -164,7 +164,13 @@
 .processing-container,
 .success-container {
   text-align: center;
-  padding: 40px 20px;
+  padding: 40px 0; /* Убираем горизонтальный паддинг чтобы кнопка не выходила за границы */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px; /* Добавляем равномерные отступы между элементами */
+  width: 100%; /* Занимаем всю ширину родителя */
+  box-sizing: border-box; /* Учитываем паддинг в ширине */
 }
 
 .progress-spinner {
@@ -175,6 +181,16 @@
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin: 0 auto 24px;
+}
+
+.assessment-spinner {
+  width: 64px;
+  height: 64px;
+  border: 4px solid rgba(180, 0, 55, 0.1);
+  border-top-color: rgb(180, 0, 55);
+  border-radius: 50%;
+  animation: spin 1.2s linear infinite;
+  margin: 0 auto 32px;
 }
 
 @keyframes spin {

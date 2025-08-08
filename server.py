@@ -22,6 +22,7 @@ from db_saver import init_db, save_feedback_to_db
 from polls_ws import register_poll_ws
 from polls_routes import register_poll_routes
 from assessment_routes import register_assessment_routes  # Новый импорт
+from questionnaire_routes import register_questionnaire_routes  # Добавляем поддержку опросников
 
 # ===== ИМПОРТЫ ДЛЯ КАЛЬКУЛЯТОРА НСЖ =====
 CARE_FUTURE_AVAILABLE = False
@@ -169,6 +170,9 @@ register_poll_routes(app, socketio)
 # Регистрируем маршруты для assessment
 register_assessment_routes(app)
 
+# Регистрируем маршруты для опросников
+register_questionnaire_routes(app)
+
 # ====== Database setup (для остального функционала) ======
 init_db(app)
 
@@ -243,9 +247,9 @@ else:
 # ====== Email Configuration ======
 SMTP_SERVER = os.environ.get("SMTP_SERVER", "smtp.yandex.ru")
 SMTP_PORT = int(os.environ.get("SMTP_PORT", "587"))
-SMTP_USER = os.environ.get("SMTP_USER", "rgszh-miniapp@yandex.ru")
+SMTP_USER = os.environ.get("SMTP_USERNAME", "rgszh-miniapp@yandex.ru")
 SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD", "")
-SMTP_FROM = os.environ.get("SMTP_FROM", "rgszh-miniapp@yandex.ru")
+SMTP_FROM = os.environ.get("EMAIL_FROM", "rgszh-miniapp@yandex.ru")
 SMTP_TO = os.environ.get("SMTP_TO", "zerotlt@mail.ru")
 SMTP_TO_ADDITIONAL = os.environ.get("SMTP_TO_ADDITIONAL", "")
 
@@ -278,8 +282,14 @@ def send_email(subject, body, to_email=None):
         logger.info(f"📧 Recipients: {', '.join(recipients)}")
         
         # Отправляем через SMTP
-        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+        # Используем SMTP_SSL для порта 465, обычный SMTP + starttls для порта 587
+        if SMTP_PORT == 465:
+            server = smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT)
+        else:
+            server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
             server.starttls()  # Включаем шифрование
+        
+        try:
             server.login(SMTP_USER, SMTP_PASSWORD)
             
             # Отправляем каждому получателю
@@ -303,6 +313,13 @@ def send_email(subject, body, to_email=None):
                     
                 except Exception as e:
                     logger.error(f"❌ Failed to send email to {recipient}: {e}")
+            
+            # Закрываем соединение
+            server.quit()
+        
+        except Exception as smtp_error:
+            logger.error(f"❌ SMTP connection error: {smtp_error}")
+            return False
         
         # Считаем успешной отправкой, если хотя бы одному получателю доставлено
         success = success_count > 0
@@ -430,7 +447,7 @@ def send_carefuture_email_to_managers(subject, body):
 def print_startup_summary():
     """Выводит сводку по запущенным сервисам"""
     print("\n" + "="*60)
-    print("🚀 СЕРВЕР TELEGRAM MINIAPP ЗАПУЩЕН")
+    print("🚀 СЕРВЕР MINIAPP ЗАПУЩЕН")
     print("="*60)
     print(f"📅 Время запуска: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print(f"🌐 URL: http://176.109.110.217")
@@ -677,28 +694,34 @@ def care_future_calculate():
                 'success': False,
                 'error': 'Неверный формат даты рождения. Используйте YYYY-MM-DD'
             }), 400
-        
+
         # Валидация обязательных полей
         required_fields = ['gender', 'contractTerm', 'calculationType', 'inputAmount']
-        missing_fields = [field for field in required_fields if field not in data]
+        missing_fields = [field for field in required_fields if field not in data or not str(data[field]).strip()]
         if missing_fields:
             return jsonify({
                 'success': False,
-                'error': f'Отсутствуют обязательные поля: {", ".join(missing_fields)}'
+                'error': f'Отсутствуют или пусты обязательные поля: {", ".join(missing_fields)}'
             }), 400
-        
-        # Создаем объект входных данных
-        # После строки: calculation_input = CalculationInput(...)
-        # Замените весь блок на:
+
+        # Проверка числовых параметров
+        try:
+            contract_term = int(data['contractTerm'])
+        except Exception:
+            return jsonify({'success': False, 'error': 'Срок программы должен быть числом'}), 400
+        try:
+            input_amount = int(data['inputAmount'])
+        except Exception:
+            return jsonify({'success': False, 'error': 'Введенная сумма должна быть числом'}), 400
 
         calculation_input = CalculationInput(
             birth_date=birth_date,
             gender=data['gender'],
-            contract_term=int(data['contractTerm']),
+            contract_term=contract_term,
             calculation_type=data['calculationType'],
-            input_amount=int(data['inputAmount']),
+            input_amount=input_amount,
             email=data.get('email'),
-            yearly_income=data.get('yearlyIncome'),  # ✅ ДОБАВЛЕНО
+            yearly_income=data.get('yearlyIncome'),
             calculation_date=date.today()
         )
 
@@ -788,23 +811,32 @@ def care_future_proxy():
                 'success': False,
                 'error': 'Неверный формат даты рождения. Используйте YYYY-MM-DD'
             }), 400
-        
+
         # Валидация обязательных полей
         required_fields = ['gender', 'contractTerm', 'calculationType', 'inputAmount']
-        missing_fields = [field for field in required_fields if field not in data]
+        missing_fields = [field for field in required_fields if field not in data or not str(data[field]).strip()]
         if missing_fields:
             return jsonify({
                 'success': False,
-                'error': f'Отсутствуют обязательные поля: {", ".join(missing_fields)}'
+                'error': f'Отсутствуют или пусты обязательные поля: {", ".join(missing_fields)}'
             }), 400
-        
-        # Создаем объект входных данных
+
+        # Проверка числовых параметров
+        try:
+            contract_term = int(data['contractTerm'])
+        except Exception:
+            return jsonify({'success': False, 'error': 'Срок программы должен быть числом'}), 400
+        try:
+            input_amount = int(data['inputAmount'])
+        except Exception:
+            return jsonify({'success': False, 'error': 'Введенная сумма должна быть числом'}), 400
+
         calculation_input = CalculationInput(
             birth_date=birth_date,
             gender=data['gender'],
-            contract_term=int(data['contractTerm']),
+            contract_term=contract_term,
             calculation_type=data['calculationType'],
-            input_amount=int(data['inputAmount']),
+            input_amount=input_amount,
             email=data.get('email'),
             yearly_income=data.get('yearlyIncome'),
             calculation_date=date.today()
@@ -974,8 +1006,8 @@ def send_carefuture_email_with_user(subject, body, user_email):
         # ✅ Добавляем email пользователя если он валидный
         if user_email and user_email.strip():
             user_email_clean = user_email.strip().lower()
-            # Проверяем что это корпоративный email
-            if user_email_clean.endswith('@vtb.ru') or user_email_clean.endswith('@rgsl.ru'):
+            # Простая проверка на валидность email
+            if '@' in user_email_clean and '.' in user_email_clean:
                 carefuture_recipients.append(user_email_clean)
                 logger.info(f"📧 [CareFuture] Added user email: {user_email_clean}")
             else:
@@ -984,9 +1016,8 @@ def send_carefuture_email_with_user(subject, body, user_email):
         logger.info(f"📧 [CareFuture] Sending email to {len(carefuture_recipients)} recipients: {subject}")
         logger.info(f"📧 [CareFuture] Recipients: {', '.join(carefuture_recipients)}")
         
-        # Отправляем через SMTP
-        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
-            server.starttls()
+        # Отправляем через SMTP_SSL для порта 465
+        with smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT) as server:
             server.login(SMTP_USER, SMTP_PASSWORD)
             
             success_count = 0
@@ -1142,6 +1173,10 @@ def contact_manager():
             # Для CareFuture отправляем на специальные 3 адреса
             success = send_carefuture_email_with_user(subject, body, user_email)
             logger_prefix = "[CareFuture]"
+            
+            # TODO: Отправка результатов расчета пользователю будет добавлена позже
+            # из-за возможного циклического импорта с care_future_routes
+                    
         elif page == 'assessment':
             # Для Assessment отправляем только на 2 адреса (без I.dav@mail.ru)
             success = send_assessment_email(subject, body)

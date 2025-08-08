@@ -34,10 +34,15 @@ class Feedback(db.Model):
 def init_db(app):
     """
     Инициализация SQLAlchemy:
-    ВСЕГДА подключаемся к БД на ВМ 176.109.110.217:1112
+    Используем переменные окружения для подключения к БД
     """
-    # ЖЕСТКО ПРОПИСАННЫЙ АДРЕС ВМ - ВСЕГДА ОДИН И ТОТ ЖЕ
-    db_uri = "postgresql://postgres:secret@176.109.110.217:1112/postgres"
+    # Получаем URI из переменных окружения или используем дефолтный
+    db_uri = os.getenv("SQLALCHEMY_DATABASE_URI") or os.getenv("DATABASE_URL")
+    
+    if not db_uri:
+        # Fallback к жестко прописанному адресу ВМ для продакшена
+        db_uri = "postgresql://postgres:secret@176.109.110.217:1112/postgres"
+        logger.warning("Переменные SQLALCHEMY_DATABASE_URI и DATABASE_URL не найдены, использую дефолтную БД на ВМ")
     
     logger.info("Используемая БД: %s", db_uri.replace(":secret@", ":***@"))
     app.config["SQLALCHEMY_DATABASE_URI"] = db_uri

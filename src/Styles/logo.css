@@ -159,6 +159,28 @@
 }
 
 /* ======================================
+   СПЕЦИАЛЬНЫЕ ИСПРАВЛЕНИЯ ДЛЯ iOS SAFARI
+   ====================================== */
+/* iPhone с notch - добавляем safe area */
+@supports (padding: max(0px)) {
+  .logo-wrapper.animated {
+    top: max(25px, calc(25px + env(safe-area-inset-top)));
+  }
+  
+  @media (max-width: 768px) and (min-width: 375px) {
+    .logo-wrapper.animated {
+      top: max(40px, calc(40px + env(safe-area-inset-top)));
+    }
+  }
+  
+  @media (max-width: 374px) {
+    .logo-wrapper.animated {
+      top: max(80px, calc(80px + env(safe-area-inset-top)));
+    }
+  }
+}
+
+/* ======================================
    УТИЛИТАРНЫЕ КЛАССЫ
    ====================================== */
 .logo-wrapper.hidden {

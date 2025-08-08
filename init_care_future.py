@@ -124,13 +124,13 @@ def init_care_future_database():
             
             # 2. Создаем схему таблиц
             logger.info("📋 Создание схемы таблиц...")
-            if not execute_sql_file('care_future_schema.sql'):
+            if not execute_sql_file('care_future_schema_utf8.sql'):
                 logger.error("Ошибка создания схемы")
                 return False
             
             # 3. Загружаем данные
             logger.info("📊 Загрузка данных из Excel...")
-            if not execute_sql_file('care_future_data.sql'):
+            if not execute_sql_file('care_future_data_utf8.sql'):
                 logger.error("Ошибка загрузки данных")
                 return False
             
@@ -287,7 +287,7 @@ def main():
     print("-" * 60)
     
     # Проверяем наличие необходимых файлов
-    required_files = ['care_future_schema.sql', 'care_future_data.sql']
+    required_files = ['care_future_schema_utf8.sql', 'care_future_data_utf8.sql']
     missing_files = [f for f in required_files if not os.path.exists(f)]
     
     if missing_files:

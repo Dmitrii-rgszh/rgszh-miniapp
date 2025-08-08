@@ -30,7 +30,7 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎨 CSS Text Editor - Telegram MiniApp</title>
+    <title>🎨 CSS Text Editor - MiniApp</title>
     <style>
         :root {
             --editor-bg: linear-gradient(135deg, #b40037, #002682);

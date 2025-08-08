@@ -11,7 +11,7 @@ param(
 
 # Настройки
 $VM_USER = "admin"
-$VM_HOST = "176.109.110.217"
+$VM_HOST = "176.109.109.47"
 $DOCKER_REGISTRY = "zerotlt"
 $PROJECT_NAME = "rgszh-miniapp"
 $SOCKET_URL = "https://rgszh-miniapp.org"
@@ -149,24 +149,24 @@ function Build-And-Push-Images {
         
         Write-Success "Серверный образ собран и отправлен (тег: $DEPLOY_TAG)"
         
-        # Сборка клиентского образа с уникальным тегом
-        Write-Log "📦 Сборка клиентского образа..."
-        $cmd = "docker build --no-cache -f Dockerfile.client --build-arg REACT_APP_SOCKET_URL=`"$SOCKET_URL`" -t ${DOCKER_REGISTRY}/${PROJECT_NAME}:$DEPLOY_TAG -t ${DOCKER_REGISTRY}/${PROJECT_NAME}:latest ."
+        # Сборка клиентского образа с уникальным тегом (frontend)
+        Write-Log "📦 Сборка клиентского образа (frontend)..."
+        $cmd = "docker build --no-cache -f Dockerfile.client --build-arg REACT_APP_SOCKET_URL=`"$SOCKET_URL`" -t ${DOCKER_REGISTRY}/${PROJECT_NAME}-client:$DEPLOY_TAG -t ${DOCKER_REGISTRY}/${PROJECT_NAME}-client:latest ."
         if ($Verbose) { Write-Info "Выполняем: $cmd" }
         Invoke-Expression $cmd
-        
+
         if ($LASTEXITCODE -ne 0) {
-            throw "Ошибка сборки клиентского образа"
+            throw "Ошибка сборки клиентского образа (frontend)"
         }
-        
-        Write-Log "📤 Отправка клиентского образа..."
-        $success = Invoke-WithRetry -Command "docker push ${DOCKER_REGISTRY}/${PROJECT_NAME}:$DEPLOY_TAG"
-        if (-not $success) { throw "Ошибка отправки клиентского образа с тегом" }
-        
-        $success = Invoke-WithRetry -Command "docker push ${DOCKER_REGISTRY}/${PROJECT_NAME}:latest"
-        if (-not $success) { throw "Ошибка отправки клиентского образа latest" }
-        
-        Write-Success "Клиентский образ собран и отправлен (тег: $DEPLOY_TAG)"
+
+        Write-Log "📤 Отправка клиентского образа (frontend)..."
+        $success = Invoke-WithRetry -Command "docker push ${DOCKER_REGISTRY}/${PROJECT_NAME}-client:$DEPLOY_TAG"
+        if (-not $success) { throw "Ошибка отправки клиентского образа (frontend) с тегом" }
+
+        $success = Invoke-WithRetry -Command "docker push ${DOCKER_REGISTRY}/${PROJECT_NAME}-client:latest"
+        if (-not $success) { throw "Ошибка отправки клиентского образа (frontend) latest" }
+
+        Write-Success "Клиентский образ (frontend) собран и отправлен (тег: $DEPLOY_TAG)"
         
     } catch {
         Write-Error "Ошибка при сборке/отправке образов: $_"
@@ -180,38 +180,46 @@ function Copy-Files-To-VM {
         Write-Warning "Пропуск копирования файлов (параметр -SkipCopy)"
         return
     }
-    
     Write-Log "📁 Копирование файлов на ВМ..."
-    
     # Основные файлы, которые ВСЕГДА копируем
     $alwaysCopyFiles = @(
         "docker-compose.yml",
         "Dockerfile.client", 
         "Dockerfile.server",
-        ".env"
+        ".env",
+        "justincase_routes.py",
+        "justincase_calculator.py",
+        "care_future_routes.py",
+        "assessment_routes.py",
+        "assessment_models.py",
+        "assessment_questions.sql",
+        "init_assessment_db.py",
+        "questionnaire_models.py",
+        "questionnaire_routes.py",
+        "server.py"
     )
-    
     try {
         # Создаем папку если не существует
-        $cmd = "ssh $SSH_OPTIONS ${VM_USER}@${VM_HOST} 'mkdir -p /home/${VM_USER}/${PROJECT_NAME}'"
+        $cmd = "ssh $VM_USER@$VM_HOST 'mkdir -p /home/${VM_USER}/${PROJECT_NAME}'"
         $success = Invoke-WithRetry -Command $cmd
         if (-not $success) { throw "Не удалось создать папку на сервере" }
-        
         # Копируем основные файлы по одному с паузами для стабильности
         foreach ($file in $alwaysCopyFiles) {
             if (Test-Path $file) {
                 Write-Log "📋 Копируем $file..."
-                
-                # Добавляем небольшую паузу между файлами
                 Start-Sleep -Seconds 2
-                
-                $cmd = "scp $SSH_OPTIONS $file ${VM_USER}@${VM_HOST}:/home/${VM_USER}/${PROJECT_NAME}/"
+                # Для .py файлов кладём в отдельную папку src на сервере
+                if ($file -like "*.py") {
+                    $cmd = "ssh ${VM_USER}@${VM_HOST} 'mkdir -p /home/${VM_USER}/${PROJECT_NAME}/src'"
+                    Invoke-WithRetry -Command $cmd
+                    $cmd = "scp ${file} ${VM_USER}@${VM_HOST}:/home/${VM_USER}/${PROJECT_NAME}/src/"
+                } else {
+                    $cmd = "scp ${file} ${VM_USER}@${VM_HOST}:/home/${VM_USER}/${PROJECT_NAME}/"
+                }
                 $success = Invoke-WithRetry -Command $cmd -MaxAttempts 5 -DelaySeconds 10
-                
                 if (-not $success) {
                     throw "Ошибка копирования $file после нескольких попыток"
                 }
-                
                 Write-Success "$file скопирован"
             } else {
                 Write-Warning "Файл $file не найден, пропускаем"
@@ -313,45 +321,32 @@ function Deploy-To-VM {
         Write-Warning "Пропуск деплоя на ВМ (параметр -SkipDeploy)"
         return
     }
-    
     Write-Log "🚀 Деплой на виртуальную машину (тег: $DEPLOY_TAG)..."
-    
     # Создаем bash скрипт для выполнения на сервере
     $scriptContent = @"
 #!/bin/bash
 set -e
-
 cd /home/${VM_USER}/${PROJECT_NAME}
-
 echo "🛑 Остановка контейнеров..."
 docker compose down || echo "Контейнеры уже остановлены"
-
 echo "🗑️ Удаление старых образов..."
 docker image rm ${DOCKER_REGISTRY}/${PROJECT_NAME}-api:latest || true
-docker image rm ${DOCKER_REGISTRY}/${PROJECT_NAME}:latest || true
-
+docker image rm ${DOCKER_REGISTRY}/${PROJECT_NAME}-client:latest || true
 echo "🧹 Очистка Docker кэша..."
 docker system prune -f
-
 echo "📥 Получение новых образов..."
 docker pull ${DOCKER_REGISTRY}/${PROJECT_NAME}-api:latest
-docker pull ${DOCKER_REGISTRY}/${PROJECT_NAME}:latest
-
+docker pull ${DOCKER_REGISTRY}/${PROJECT_NAME}-client:latest
 echo "🚀 Запуск контейнеров..."
 docker compose up -d --force-recreate
-
 echo "⏳ Ожидание запуска контейнеров..."
 sleep 20
-
 echo "📊 Проверка статуса контейнеров..."
 docker compose ps
-
 echo "📋 Показ логов сервера..."
 docker compose logs server --tail=30
-
 echo "🎉 Деплой завершен! Тег образов: $DEPLOY_TAG"
 "@
-    
     # Создаем временный файл с правильными Unix переводами строк
     $tempScriptPath = [System.IO.Path]::GetTempFileName()
     
@@ -399,17 +394,16 @@ echo "🎉 Деплой завершен! Тег образов: $DEPLOY_TAG"
 function Test-Deployment {
     Write-Log "🏥 Проверка работоспособности..."
     
-    # Очистка кэша Telegram
-    Write-Log "🧹 Напоминание про кэш Telegram..."
-    Write-Info "Для обновления в Telegram:"
-    Write-Info "1. Закройте MiniApp в Telegram"
-    Write-Info "2. Очистите кэш Telegram: Настройки → Данные и память → Очистить кэш"
-    Write-Info "3. Перезапустите Telegram"
-    Write-Info "4. Откройте MiniApp заново"
+    # Очистка кэша браузера
+    Write-Log "🧹 Напоминание про кэш браузера..."
+    Write-Info "Для обновления в браузере:"
+    Write-Info "1. Обновите страницу (Ctrl+F5)"
+    Write-Info "2. Очистите кэш браузера при необходимости"
+    Write-Info "3. Проверьте работу приложения"
     
     # Проверка SSL статуса
     Write-Log "🔐 Проверка SSL..."
-    $sslCheck = ssh $SSH_OPTIONS ${VM_USER}@${VM_HOST} "cd ${PROJECT_NAME} && test -f certs/fullchain.pem && echo 'SSL OK' || echo 'NO SSL'"
+    $sslCheck = ssh "${VM_USER}@${VM_HOST}" "cd ${PROJECT_NAME} && test -f certs/fullchain.pem && echo 'SSL OK' || echo 'NO SSL'"
     if ($sslCheck -eq "SSL OK") {
         Write-Success "SSL сертификаты на месте"
     } else {
@@ -448,19 +442,23 @@ function Main {
     Write-Host "🔐 SSL Protection: ENABLED" -ForegroundColor Green
     Write-Host "===============================================" -ForegroundColor Magenta
     Write-Host ""
-    
     $startTime = Get-Date
-    
     try {
         Test-Dependencies
+        # Проверяем наличие всех ключевых файлов
+        $mustExist = @("docker-compose.yml", "Dockerfile.client", "Dockerfile.server", ".env", "justincase_routes.py", "care_future_routes.py", "assessment_routes.py", "assessment_questions.sql", "questionnaire_routes.py", "server.py")
+        foreach ($f in $mustExist) {
+            if (-not (Test-Path $f)) {
+                Write-Error "Ключевой файл отсутствует: $f"
+                exit 1
+            }
+        }
         Build-And-Push-Images
         Copy-Files-To-VM
         Deploy-To-VM
         Test-Deployment
-        
         $endTime = Get-Date
         $duration = $endTime - $startTime
-        
         Write-Host ""
         Write-Host "===============================================" -ForegroundColor Magenta
         Write-Success "Деплой завершен успешно! 🎉"
@@ -468,7 +466,6 @@ function Main {
         Write-Info "Время выполнения: $($duration.Minutes)м $($duration.Seconds)с"
         Write-Info "URL: https://rgszh-miniapp.org"
         Write-Host "===============================================" -ForegroundColor Magenta
-        
     } catch {
         Write-Error "Критическая ошибка: $_"
         exit 1

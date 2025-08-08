@@ -118,10 +118,19 @@
   animation: shakeArrow 2s ease-in-out infinite;
 }
 
+.shaker.pop-btn {
+  animation: popCheckmark 1.5s ease-in-out infinite;
+}
+
 @keyframes shakeArrow {
   0%, 100% { transform: translateX(0); }
   10%, 30%, 50%, 70%, 90% { transform: translateX(3px); }
   20%, 40%, 60%, 80% { transform: translateX(-3px); }
+}
+
+@keyframes popCheckmark {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.2); }
 }
 
 /* ======================================
@@ -157,5 +166,25 @@
   .next-btn svg {
     width: 30px;
     height: 30px;
+  }
+}
+
+/* ======================================
+   СПЕЦИАЛЬНЫЕ ИСПРАВЛЕНИЯ ДЛЯ iOS SAFARI
+   ====================================== */
+/* iPhone с notch - добавляем safe area */
+@supports (padding: max(0px)) {
+  .next-btn {
+    top: max(87px, calc(87px + env(safe-area-inset-top)));
+    right: max(calc(50% - 128px - 50px), calc(50% - 128px - 50px + env(safe-area-inset-right)));
+  }
+}
+
+/* Дополнительные исправления для iOS в портретной ориентации */
+@media screen and (orientation: portrait) and (-webkit-min-device-pixel-ratio: 2) {
+  .next-btn {
+    /* Улучшенная обработка touch событий */
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
   }
 }

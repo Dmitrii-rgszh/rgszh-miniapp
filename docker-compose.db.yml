@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  postgres:
+    build:
+      context: .
+      dockerfile: Dockerfile.postgres
+    container_name: rgszh-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: postgres
+    ports:
+      - "1112:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./assessment_schema.sql:/docker-entrypoint-initdb.d/01-assessment-schema.sql
+      - ./assessment_questions.sql:/docker-entrypoint-initdb.d/02-assessment-questions.sql
+    networks:
+      - postgres_network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  postgres_network:
+    driver: bridge 

@@ -243,7 +243,7 @@ export default function CareFuturePage() {
         yearlyIncome: yearlyIncome
       };
 
-      const data = await apiCall('/care-future/calculate', {
+      const data = await apiCall('/api/care-future/calculate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(requestData)
@@ -720,7 +720,7 @@ export default function CareFuturePage() {
               </p>
             </div>
 
-            <form onSubmit={handleManagerSubmit}>
+            <form onSubmit={handleManagerSubmit} className="form-container">
               <div className="form-group">
                 <label className="form-label text-label">Фамилия</label>
                 <input

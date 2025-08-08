@@ -4,9 +4,10 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
 // Импорт CSS
 import './Styles/containers.css';
+import './Styles/ios-safari-fixes.css';
 
 // Импорт фонового изображения
-import backgroundImage from './components/background/background2.png';
+import backgroundImage from './components/background/background2.jpg';
 
 // Импорты компонентов
 import MainMenu        from './MainMenu';

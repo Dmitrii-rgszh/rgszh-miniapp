@@ -1,0 +1,16 @@
+FROM postgres:15
+
+# Копируем SQL файлы для инициализации
+COPY assessment_schema.sql /docker-entrypoint-initdb.d/01-assessment-schema.sql
+COPY assessment_questions.sql /docker-entrypoint-initdb.d/02-assessment-questions.sql
+
+# Устанавливаем переменные окружения
+ENV POSTGRES_USER=postgres
+ENV POSTGRES_PASSWORD=secret
+ENV POSTGRES_DB=postgres
+
+# Открываем порт
+EXPOSE 5432
+
+# Создаем volume для данных
+VOLUME ["/var/lib/postgresql/data"] 
