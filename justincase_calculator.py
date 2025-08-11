@@ -322,7 +322,7 @@ class JustInCaseCalculator:
             cursor.execute("""
                 SELECT DISTINCT term_years 
                 FROM justincase_base_tariffs
-                WHERE age = %s AND gender = %s
+                WHERE age = ? AND gender = ?
                 ORDER BY term_years
             """, (age, gender))
             

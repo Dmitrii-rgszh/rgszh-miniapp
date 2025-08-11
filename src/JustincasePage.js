@@ -335,37 +335,36 @@ const JustincasePage = () => {
     setStage('processing');
   
     try {
+      // Рассчитываем возраст из даты рождения
+      const calculateAge = (birthDate) => {
+        const today = new Date();
+        const birth = new Date(birthDate);
+        let age = today.getFullYear() - birth.getFullYear();
+        const monthDiff = today.getMonth() - birth.getMonth();
+        
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+          age--;
+        }
+        
+        return age;
+      };
+
+      const age = birthDate ? calculateAge(birthDate) : null;
+
       const payload = {
-        email: email,
-        birthDate: birthDate ? birthDate.toISOString().split('T')[0] : null,
-        gender: gender === 'Мужской' ? 'male' : 'female',
-        insuranceInfo: insuranceInfo === 'no' ? 'yes' : insuranceInfo, // Всегда отправляем 'yes' для расчета
-        insuranceTerm: parseInt(insuranceTerm),
-        insuranceSum: insuranceSum ? insuranceSum.replace(/\./g, '') : '',
-        insuranceFrequency,
-        accidentPackage,
-        criticalPackage,
-        treatmentRegion,
-        sportPackage,
-        hasJob,
-        income2022,
-        income2023,
-        income2024,
-        scholarship,
-        unsecuredLoans,
-        breadwinnerStatus,
-        incomeShare,
-        childrenCount,
-        specialCareRelatives
+        age: age,
+        gender: gender === 'Мужской' ? 'm' : 'f',
+        term_years: parseInt(insuranceTerm),
+        sum_insured: parseFloat(insuranceSum ? insuranceSum.replace(/\./g, '') : '0'),
+        include_accident: accidentPackage !== 'Нет',
+        include_critical_illness: criticalPackage !== 'Нет',
+        critical_illness_type: treatmentRegion === 'За границей' ? 'abroad' : 'rf',
+        payment_frequency: insuranceFrequency === 'Раз в год' ? 'annual' : 
+                          insuranceFrequency === 'Раз в полгода' ? 'semi_annual' :
+                          insuranceFrequency === 'Раз в квартал' ? 'quarterly' : 'monthly'
       };
 
       console.log('📤 Отправляем данные на расчет:', payload);
-      console.log('🔍 Локальные значения пакетов:', {
-        accidentPackage,
-        criticalPackage,
-        treatmentRegion,
-        sportPackage
-      });
 
       const apiUrl = process.env.NODE_ENV === 'development' 
         ? 'http://localhost:4000/api/proxy/calculator/save'
@@ -404,7 +403,7 @@ const JustincasePage = () => {
           accidentPremium: formatNumber(calc.accidentPremium || calc.accidentDetails?.premium || '0'),
           criticalPackageIncluded: criticalPackage === 'yes',  // Используем локальное значение
           criticalInsuranceSum: formatNumber(calc.criticalInsuranceSum || calc.criticalDetails?.insuranceSum || '60 000 000'),
-          criticalPremium: formatNumber(calc.criticalPremium || calc.criticalDetails?.premium || '0'),
+          criticalPremium: calc.criticalPremium || calc.criticalDetails?.premium || 0,
           totalPremium: formatNumber(calc.totalPremium || calc.annualPremium || '0'),
           treatmentRegion: treatmentRegion || calc.treatmentRegion,  // Используем локальное значение
           sportPackage: sportPackage === 'yes',  // Используем локальное значение
@@ -426,7 +425,7 @@ const JustincasePage = () => {
           accidentInsuranceSum: formatNumber(data.accidentInsuranceSum || insuranceSum),
           accidentPremium: formatNumber(data.accidentPremium || '0'),
           criticalPackageIncluded: criticalPackage === 'yes',  // Используем локальное значение
-          criticalPremium: formatNumber(data.criticalPremium || '0'),
+          criticalPremium: data.criticalPremium || 0,
           treatmentRegion: treatmentRegion,  // Используем локальное значение
           sportPackage: sportPackage === 'yes'  // Используем локальное значение
         };
