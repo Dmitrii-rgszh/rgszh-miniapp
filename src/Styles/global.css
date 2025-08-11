@@ -1,24 +1,47 @@
 /* =============================================================================
    src/Styles/global.css
-   Базовые глобальные стили (текстовые стили перенесены в text.css)
+   Базовые глобальные стили с 100% покрытием экрана включая safe area
    ============================================================================= */
 
-/* Сброс стилей и базовая структура */
+/* Сброс стилей и базовая структура для полного покрытия экрана */
 html, body, #root {
   margin: 0;
   padding: 0;
-  width: 100%;
-  height: 100%;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh; /* Динамическая высота viewport для iOS */
+  overflow-x: hidden;
+  
+  /* КРИТИЧЕСКИ ВАЖНО: расширение в safe area для iOS */
+  padding-top: env(safe-area-inset-top, 0);
+  padding-bottom: env(safe-area-inset-bottom, 0);
+  padding-left: env(safe-area-inset-left, 0);
+  padding-right: env(safe-area-inset-right, 0);
 }
 
 * {
   box-sizing: border-box;
 }
 
-/* Базовые стили body (шрифты определены в text.css) */
+/* Базовые стили body для полного покрытия */
 body {
   margin: 0;
   overflow: hidden;
-  width: 100%;
+  width: 100vw;
   height: 100vh;
+  height: 100dvh;
+  
+  /* Специально для iOS Safari - предотвращение белых полос */
+  -webkit-text-size-adjust: 100%;
+  -webkit-overflow-scrolling: touch;
+  position: fixed;
+}
+
+/* Корневой элемент тоже должен покрывать весь экран */
+#root {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
 }

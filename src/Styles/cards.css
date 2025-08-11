@@ -287,6 +287,37 @@
   transform: scale(1.2);
 }
 
+/* Индикаторы страниц (альтернативный стиль для результатов) */
+.page-indicators {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  background: #f7f7fa;
+  border-radius: 16px;
+  padding: 0 16px;
+  height: 32px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  margin: 0 8px;
+}
+
+.page-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #E0E0E0;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  transition: background 0.2s;
+  display: inline-block;
+}
+
+.page-indicator.active {
+  background: #C3002F;
+  transform: scale(1.2);
+}
+
 /* ======================================
    СЕРВИСЫ
    ====================================== */

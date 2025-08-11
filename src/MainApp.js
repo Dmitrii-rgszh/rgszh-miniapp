@@ -24,23 +24,30 @@ function MainApp() {
   return (
     <BrowserRouter>
       <div className="main-app-container">
-        {/* Фоновое изображение */}
+        {/* Фоновое изображение с ПРИНУДИТЕЛЬНЫМ полным покрытием */}
         <div 
           className="app-background"
           style={{
             position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            width: '100vw',
-            height: '100vh',
+            top: 'calc(-20px - env(safe-area-inset-top, 0))',
+            left: 'calc(-20px - env(safe-area-inset-left, 0))',
+            right: 'calc(-20px - env(safe-area-inset-right, 0))',
+            bottom: 'calc(-50px - env(safe-area-inset-bottom, 0))',
+            width: 'calc(100vw + 40px + env(safe-area-inset-left, 0) + env(safe-area-inset-right, 0))',
+            height: 'calc(100vh + 70px + env(safe-area-inset-top, 0) + env(safe-area-inset-bottom, 0))',
+            marginTop: 'calc(-20px - env(safe-area-inset-top, 0))',
+            marginBottom: 'calc(-50px - env(safe-area-inset-bottom, 0))',
+            marginLeft: 'calc(-20px - env(safe-area-inset-left, 0))',
+            marginRight: 'calc(-20px - env(safe-area-inset-right, 0))',
             backgroundImage: `url(${backgroundImage})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             backgroundRepeat: 'no-repeat',
             zIndex: -1,
-            pointerEvents: 'none'
+            pointerEvents: 'none',
+            overflow: 'hidden',
+            transform: 'scale(1.2)',
+            transformOrigin: 'center center'
           }}
         />
         

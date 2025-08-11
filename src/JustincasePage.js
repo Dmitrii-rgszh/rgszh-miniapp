@@ -71,6 +71,19 @@ const JustincasePage = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [resultData, setResultData] = useState(null);
 
+  // Функция для расчета возраста из даты рождения
+  const calculateAge = (birthDate) => {
+    if (!birthDate) return 35; // По умолчанию
+    const today = new Date();
+    const birth = new Date(birthDate);
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+      age--;
+    }
+    return age;
+  };
+
   // Инициализация
   useEffect(() => {
     const storedName = localStorage.getItem('userName');
@@ -197,11 +210,23 @@ const JustincasePage = () => {
   const formatNumber = (value) => {
     if (!value) return '0';
     
-    // Убираем все нецифровые символы
-    const cleanValue = value.toString().replace(/[^\d]/g, '');
+    // Преобразуем в число, если это строка с десятичной частью
+    let numValue = parseFloat(value);
+    if (isNaN(numValue)) return '0';
     
-    // Форматируем с пробелами
-    return cleanValue.replace(/(\d)(?=(\d{3})+$)/g, '$1 ');
+    // Округляем до целого числа (премии в рублях обычно целые)
+    numValue = Math.round(numValue);
+    
+    // Форматируем с пробелами как разделителями тысяч
+    return numValue.toString().replace(/(\d)(?=(\d{3})+$)/g, '$1 ');
+  };
+
+  // Функция очистки пользовательского ввода суммы
+  const parseUserSum = (value) => {
+    if (!value) return '';
+    // Удаляем точки и пробелы, оставляем только цифры
+    const cleanValue = value.toString().replace(/[.\s]/g, '');
+    return cleanValue;
   };
 
   // Проверка возможности перехода
@@ -373,6 +398,7 @@ const JustincasePage = () => {
           insuranceTerm: calc.insuranceTerm || insuranceTerm,
           baseInsuranceSum: formatNumber(calc.baseInsuranceSum || calc.insuranceSum || insuranceSum),
           basePremium: formatNumber(calc.basePremium || calc.basePremiumAmount || calc.annualPremium || '0'),
+          basePremiumRaw: calc.basePremium || calc.basePremiumAmount || calc.annualPremium || 0, // Сырое значение для расчетов
           accidentPackageIncluded: accidentPackage === 'yes',  // Используем локальное значение
           accidentInsuranceSum: formatNumber(calc.accidentInsuranceSum || calc.accidentDetails?.insuranceSum || insuranceSum),
           accidentPremium: formatNumber(calc.accidentPremium || calc.accidentDetails?.premium || '0'),
@@ -394,6 +420,7 @@ const JustincasePage = () => {
           insuranceTerm: data.insuranceTerm || insuranceTerm,
           baseInsuranceSum: formatNumber(data.baseInsuranceSum || insuranceSum),
           basePremium: formatNumber(data.basePremium || '0'),
+          basePremiumRaw: data.basePremium || 0, // Сырое значение для расчетов
           totalPremium: formatNumber(data.totalPremium || '0'),
           accidentPackageIncluded: accidentPackage === 'yes',  // Используем локальное значение
           accidentInsuranceSum: formatNumber(data.accidentInsuranceSum || insuranceSum),
@@ -559,9 +586,9 @@ const JustincasePage = () => {
     // Шаг результатов
     if (stage === 'result' && resultData) {
       const carouselPages = [
-        // 1. Зеленый блок
+        // Страница 1: Основные риски (Смерть ЛП + Инвалидность + Итог)
         (
-          <div key="main-info">
+          <div key="main-risks">
             <h2 className="text-h2 text-center">
               Ваша программа <br/>«На всякий случай»
             </h2>
@@ -569,13 +596,45 @@ const JustincasePage = () => {
               (расчет от {resultData.calculationDate || new Date().toLocaleDateString('ru-RU')})
             </p>
             <div className="result-section">
+              <h3 className="text-h3">Основная программа</h3>
+              <p className="text-small">
+                Страхование на случай ухода из жизни и инвалидности I и II группы по любой причине
+              </p>
+
+              {/* Смерть ЛП */}
               <div className="result-item-split">
-                <span className="result-label-left">Возраст клиента:</span>
-                <span className="result-value-right">{resultData.clientAge} лет</span>
+                <span className="result-label-left">• Смерть ЛП:</span>
+                <span className="result-value-right">
+                  {formatNumber(Math.round(resultData.deathPremium || 0))} руб.
+                </span>
               </div>
+
+              {/* Инвалидность */}
               <div className="result-item-split">
-                <span className="result-label-left">Пол клиента:</span>
-                <span className="result-value-right">{resultData.clientGender}</span>
+                <span className="result-label-left">• Инвалидность 1,2 гр.:</span>
+                <span className="result-value-right">
+                  {formatNumber(Math.round(resultData.disabilityPremium || 0))} руб.
+                </span>
+              </div>
+
+              <div className="result-divider"></div>
+
+              {/* Итоговая стоимость полиса */}
+              <div className="result-item-split highlight">
+                <span className="result-label-left"><strong>Итоговая стоимость полиса:</strong></span>
+                <span className="result-value-right">
+                  <strong>{formatNumber(resultData.totalPremium || resultData.annualPremium)} руб.</strong>
+                </span>
+              </div>
+
+              <div className="result-divider"></div>
+
+              {/* Информация о покрытии */}
+              <div className="result-item-split">
+                <span className="result-label-left">Страховая сумма:</span>
+                <span className="result-value-right">
+                  {resultData.baseInsuranceSum || parseUserSum(resultData.insuranceSum)} руб.
+                </span>
               </div>
               <div className="result-item-split">
                 <span className="result-label-left">Срок страхования:</span>
@@ -588,83 +647,89 @@ const JustincasePage = () => {
             </div>
           </div>
         ),
-        // 2. Красный блок
+
+        // Страница 2: Дополнительные риски (НС + Любительский спорт)
         (
-          <div key="main-program">
+          <div key="additional-risks">
             <div className="result-section">
-              <h3 className="text-h3">
-                Основная программа
-                <br />
-                <span className="text-small">
-                  (страхование на случай ухода из жизни и инвалидности I и II группы по любой причине)
-                </span>
-              </h3>
-              <div className="result-item-split">
-                <span className="result-label-left">• Страховая сумма:</span>
-                <span className="result-value-right">
-                  {formatNumber(resultData.baseInsuranceSum || resultData.insuranceSum)} руб.
-                </span>
-              </div>
-              <div className="result-item-split">
-                <span className="result-label-left">• Страховая премия:</span>
-                <span className="result-value-right">—</span> {/* затычка */}
-              </div>
+              <h3 className="text-h3">Дополнительные риски</h3>
 
               {/* Пакет "Несчастный случай" */}
-              {resultData.accidentPackageIncluded && (
+              {resultData.accidentPackageIncluded ? (
                 <>
-                  <div className="result-divider"></div>
-                  <h3 className="text-h3">Пакет «Несчастный случай»</h3>
+                  <h4 className="text-h4">Пакет «Несчастный случай»</h4>
                   <div className="result-item-split">
-                    <span className="result-label-left">• Страховая сумма:</span>
+                    <span className="result-label-left">• Смерть НС:</span>
                     <span className="result-value-right">
-                      {formatNumber(resultData.accidentInsuranceSum)} руб.
+                      {formatNumber(Math.round(resultData.accidentDeathPremium || (resultData.accidentPremium * 0.4) || 0))} руб.
                     </span>
                   </div>
                   <div className="result-item-split">
-                    <span className="result-label-left">• Страховая премия:</span>
-                    <span className="result-value-right">—</span> {/* затычка */}
+                    <span className="result-label-left">• Смерть ДТП:</span>
+                    <span className="result-value-right">
+                      {formatNumber(Math.round(resultData.trafficDeathPremium || (resultData.accidentPremium * 0.3) || 0))} руб.
+                    </span>
+                  </div>
+                  <div className="result-item-split">
+                    <span className="result-label-left">• Травмы:</span>
+                    <span className="result-value-right">
+                      {formatNumber(Math.round(resultData.injuryPremium || (resultData.accidentPremium * 0.3) || 0))} руб.
+                    </span>
+                  </div>
+                  <div className="result-item-split">
+                    <span className="result-label-left">Страховая сумма НС:</span>
+                    <span className="result-value-right">
+                      {resultData.accidentInsuranceSum || parseUserSum(resultData.insuranceSum)} руб.
+                    </span>
                   </div>
                 </>
+              ) : (
+                <p className="text-small">Пакет «Несчастный случай» не включён</p>
               )}
+
+              <div className="result-divider"></div>
 
               {/* Пакет "Критические заболевания" */}
-              {resultData.criticalPackageIncluded && (
+              {resultData.criticalPackageIncluded ? (
                 <>
-                  <div className="result-divider"></div>
-                  <h3 className="text-h3">
-                    {resultData.treatmentRegion === 'russia'
-                      ? 'Пакет «Критические заболевания (лечение в РФ)»'
-                      : 'Пакет «Критические заболевания (лечение за рубежом)»'}
-                  </h3>
+                  <h4 className="text-h4">
+                    Пакет «Критические заболевания
+                    {resultData.treatmentRegion === 'russia' ? ' (лечение в РФ)' : ' (лечение за рубежом)'}»
+                  </h4>
                   <div className="result-item-split">
-                    <span className="result-label-left">• Максимальная страховая сумма:</span>
+                    <span className="result-label-left">• Стоимость защиты:</span>
                     <span className="result-value-right">
-                      60 000 000 руб.,<br />
-                      дополнительно по реабилитации – 100 000 руб.
+                      {formatNumber(resultData.criticalPremium)} руб.
                     </span>
                   </div>
                   <div className="result-item-split">
-                    <span className="result-label-left">• Страховая премия:</span>
-                    <span className="result-value-right">—</span> {/* затычка */}
+                    <span className="result-label-left">• Защита:</span>
+                    <span className="result-value-right">
+                      60 000 000 руб.
+                    </span>
+                  </div>
+                  <div className="result-item-split">
+                    <span className="result-label-left">• Реабилитация:</span>
+                    <span className="result-value-right">
+                      400 000 руб.
+                    </span>
                   </div>
                 </>
+              ) : (
+                <p className="text-small">Пакет «Критические заболевания» не включён</p>
               )}
 
-              {/* Опция "Любительский спорт" */}
+              <div className="result-divider"></div>
+
+              {/* Опция "Любительский спорт" - показываем только если выбрана */}
               {resultData.sportPackage && (
                 <>
-                  <div className="result-divider"></div>
-                  <h3 className="text-h3">Опция «Любительский спорт»</h3>
-                  <p className="text-small">(учтена в расчете премий НС)</p>
+                  <h4 className="text-h4">Опция «Любительский спорт»</h4>
+                  <p className="text-small">
+                    ✅ Включена (учтена в расчете премий НС)
+                  </p>
                 </>
               )}
-
-              <div className="result-divider result-divider-primary"></div>
-              <div className="result-item-split highlight result-total-margin">
-                <span className="result-label-left">Итого страховая премия (руб.):</span>
-                <span className="result-value-right">—</span> {/* затычка */}
-              </div>
             </div>
           </div>
         )
@@ -673,6 +738,8 @@ const JustincasePage = () => {
   return (
     <div className={`card-container card-positioned card-results scrollable ${contentAnimated ? 'animated' : ''}`}>
       {carouselPages[resultPage]}
+      
+      {/* Навигация карусели */}
       <div className="carousel-navigation-bottom">
         {resultPage > 0 ? (
           <button
@@ -689,20 +756,18 @@ const JustincasePage = () => {
           <span className="carousel-arrow-placeholder" />
         )}
 
-        {/* Индикаторы по центру */}
-        <div className="carousel-dots">
-          {carouselPages.map((_, idx) => (
+        {/* Индикаторы страниц */}
+        <div className="page-indicators">
+          {carouselPages.map((_, index) => (
             <button
-              key={idx}
-              type="button"
-              className={`carousel-dot${resultPage === idx ? ' active' : ''}`}
-              onClick={() => setResultPage(idx)}
-              aria-label={`Страница ${idx + 1}`}
+              key={index}
+              className={`page-indicator ${index === resultPage ? 'active' : ''}`}
+              onClick={() => setResultPage(index)}
+              aria-label={`Страница ${index + 1}`}
             />
           ))}
         </div>
 
-        {/* Кнопка "Далее" справа, только если не последний слайд */}
         {resultPage < carouselPages.length - 1 ? (
           <button
             type="button"
@@ -711,7 +776,7 @@ const JustincasePage = () => {
             aria-label="Вперёд"
           >
             <svg viewBox="0 0 24 24" width="20" height="20">
-              <path d="M9 6l6 6-6 6" stroke="#7B7B7B" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M9 18l6-6-6-6" stroke="#7B7B7B" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </button>
         ) : (
@@ -1110,23 +1175,34 @@ const JustincasePage = () => {
 
   return (
     <div className={`main-container ${isExiting ? 'exiting' : ''}`}>
-      {/* Кнопка "Назад" для всех нужных этапов, включая result */}
-      {(stage === 'form2' || stage === 'form3' || stage === 'recommended' || stage === 'result') && (
+      {/* Кнопка "Назад" для всех нужных этапов, кроме result */}
+      {(stage === 'form2' || stage === 'form3' || stage === 'recommended') && (
         <button className="back-btn animate-home" onClick={handlePrev}>
           <svg viewBox="0 0 24 24">
             <path d="M15 18l-6-6 6-6" stroke="white" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </button>
       )}
+      
+      {/* Для результатов - кнопка "Назад" с другим позиционированием */}
+      {stage === 'result' && (
+        <button className="back-btn animate-home" style={{ left: '20px' }} onClick={handlePrev}>
+          <svg viewBox="0 0 24 24">
+            <path d="M15 18l-6-6 6-6" stroke="white" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </button>
+      )}
+      
       {/* Логотип */}
       <div className={`logo-wrapper ${logoAnimated ? 'animated' : ''}`}>
         <img src={logoImage} alt="Logo" className="logo-image" />
       </div>
-      {/* Кнопка "Повторить расчет" */}
+      
+      {/* Кнопка "Повторить расчет" только для результатов */}
       {stage === 'result' && (
         <button
           className="next-btn repeat-btn"
-          style={{ right: '60px', left: 'auto' }} // если нужно позиционировать справа
+          style={{ right: '20px', left: 'auto' }}
           onClick={repeatCalculation}
           title="Повторить расчет"
         >
@@ -1154,14 +1230,7 @@ const JustincasePage = () => {
       {/* Контент */}
       {renderStep()}
 
-      {/* Кнопки навигации */}
-      {(stage === 'form2' || stage === 'form3' || stage === 'recommended') && (
-        <button className="back-btn animate-home" onClick={handlePrev}>
-          <svg viewBox="0 0 24 24">
-            <path d="M15 18l-6-6 6-6" stroke="white" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        </button>
-      )}
+      {/* Кнопки навигации для других этапов убраны, так как уже есть выше */}
 
       {stage === 'email' && (
         <button className="home-button" onClick={goToMenu}>
@@ -1229,3 +1298,4 @@ export default JustincasePage;
 
 
 
+/* Force rebuild 08/09/2025 20:01:19 */

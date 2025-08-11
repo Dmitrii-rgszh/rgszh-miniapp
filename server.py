@@ -54,7 +54,7 @@ except Exception as e:
 
 # ИМПОРТ ПОЛНОГО КАЛЬКУЛЯТОРА "НА ВСЯКИЙ СЛУЧАЙ"
 try:
-    from justincase_routes import register_justincase_routes
+    from justincase_routes_new import register_justincase_routes
     JUSTINCASE_AVAILABLE = True
     JUSTINCASE_ERROR = None
     print("✅ Полный модуль калькулятора 'На всякий случай' загружен")

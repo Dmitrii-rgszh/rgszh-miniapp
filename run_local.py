@@ -33,7 +33,7 @@ try:
     import server
     
     # Запускаем сервер вручную, т.к. мы импортируем его как модуль
-    port = int(os.environ.get("FLASK_PORT", "5000"))
+    port = int(os.environ.get("FLASK_PORT", "4000"))
     print(f"🚀 Запускаем локальный сервер на порту {port}...")
     server.socketio.run(server.app, host='127.0.0.1', port=port, debug=True)
     

@@ -11,7 +11,7 @@ param(
 
 # Настройки
 $VM_USER = "admin"
-$VM_HOST = "176.109.109.47"
+$VM_HOST = "176.108.243.189"
 $DOCKER_REGISTRY = "zerotlt"
 $PROJECT_NAME = "rgszh-miniapp"
 $SOCKET_URL = "https://rgszh-miniapp.org"
