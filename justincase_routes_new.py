@@ -12,7 +12,7 @@ import uuid
 
 # Импортируем новый калькулятор
 import justincase_calculator
-from justincase_calculator import calculate_premium
+from justincase_calculator import JustInCaseCalculator
 
 logger = logging.getLogger(__name__)
 
@@ -98,7 +98,8 @@ def calculate_premium():
         calculation_id = str(uuid.uuid4())
         
         # Выполняем расчет
-        result = calculate_premium(
+        calculator = JustInCaseCalculator()
+        result = calculator.calculate_premium(
             age=age,
             gender=gender,
             term_years=term_years,
@@ -304,40 +305,91 @@ def proxy_calculator_save():
             return format_error_response(error)
         
         # Преобразуем данные фронтенда в формат нового API
-        api_data = {
-            'age': None,
-            'gender': 'm' if data.get('gender') == 'male' else 'f',
-            'sum_insured': int(data.get('insuranceSum', '').replace('.', '').replace(' ', '')) if data.get('insuranceSum') else 1000000,
-            'term_years': int(data.get('insuranceTerm', 1)),
-            'include_accident': data.get('accidentPackage') == 'yes',
-            'include_critical_illness': data.get('criticalPackage') == 'yes',
-            'critical_illness_type': 'rf' if data.get('treatmentRegion') == 'russia' else 'abroad',
-            'payment_frequency': 'annual'  # По умолчанию годовая
-        }
+        # Поддерживаем как новый формат (напрямую), так и старый формат (через birthDate и пол)
         
-        # Рассчитываем возраст из даты рождения
-        if data.get('birthDate'):
+        # Определяем возраст
+        age = data.get('age')
+        if not age and data.get('birthDate'):
+            # Если возраст не передан, вычисляем из даты рождения
             from datetime import date
             birth_date = date.fromisoformat(data['birthDate'])
             today = date.today()
             age = today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
-            api_data['age'] = age
-        else:
-            api_data['age'] = 30  # По умолчанию
+        elif not age:
+            age = 30  # По умолчанию
+            
+        # Определяем пол
+        gender = data.get('gender', 'm')
+        if gender in ['male', 'Мужской']:
+            gender = 'm'
+        elif gender in ['female', 'Женский']:
+            gender = 'f'
         
-        # Преобразуем частоту платежей
-        frequency_map = {
-            'Ежегодно': 'annual',
-            'Полугодие': 'semi_annual', 
-            'Поквартально': 'quarterly',
-            'Ежемесячно': 'monthly'
+        # Определяем страховую сумму
+        sum_insured = data.get('sum_insured')
+        if not sum_insured:
+            # Пробуем старый формат
+            insurance_sum = data.get('insuranceSum', '')
+            if isinstance(insurance_sum, str):
+                sum_insured = int(insurance_sum.replace('.', '').replace(' ', '')) if insurance_sum else 1000000
+            else:
+                sum_insured = insurance_sum or 1000000
+        
+        # Определяем срок страхования
+        term_years = data.get('term_years')
+        if not term_years:
+            term_years = int(data.get('insuranceTerm', 5))
+            
+        # Определяем включение НС
+        include_accident = data.get('include_accident')
+        if include_accident is None:
+            include_accident = data.get('accidentPackage') in ['yes', 'Да', True]
+        
+        # Определяем включение КЗ
+        include_critical_illness = data.get('include_critical_illness')
+        if include_critical_illness is None:
+            include_critical_illness = data.get('criticalPackage') in ['yes', 'Да', True]
+            
+        # Определяем тип КЗ
+        critical_illness_type = data.get('critical_illness_type', 'rf')
+        if critical_illness_type == 'rf':
+            # Проверяем старый формат
+            treatment_region = data.get('treatmentRegion', 'russia')
+            if treatment_region in ['abroad', 'За границей']:
+                critical_illness_type = 'abroad'
+        
+        # Определяем частоту платежей
+        payment_frequency = data.get('payment_frequency', 'annual')
+        if payment_frequency == 'annual':
+            # Проверяем старый формат
+            insurance_frequency = data.get('insuranceFrequency', 'Ежегодно')
+            frequency_map = {
+                'Ежегодно': 'annual',
+                'Раз в год': 'annual',
+                'Полугодие': 'semi_annual',
+                'Раз в полгода': 'semi_annual',
+                'Поквартально': 'quarterly',
+                'Раз в квартал': 'quarterly',
+                'Ежемесячно': 'monthly',
+                'Раз в месяц': 'monthly'
+            }
+            payment_frequency = frequency_map.get(insurance_frequency, 'annual')
+
+        api_data = {
+            'age': age,
+            'gender': gender,
+            'sum_insured': sum_insured,
+            'term_years': term_years,
+            'include_accident': include_accident,
+            'include_critical_illness': include_critical_illness,
+            'critical_illness_type': critical_illness_type,
+            'payment_frequency': payment_frequency
         }
-        api_data['payment_frequency'] = frequency_map.get(data.get('insuranceFrequency'), 'annual')
         
-        logger.info(f"🔄 Преобразованные данные: {api_data}")
         
-        # Вызываем новый API
-        result = justincase_calculator.calculate_premium(
+        logger.info(f"🔄 Преобразованные данные: {api_data}")        # Вызываем новый API
+        calculator = JustInCaseCalculator()
+        result = calculator.calculate_premium(
             age=api_data['age'],
             gender=api_data['gender'],
             sum_insured=api_data['sum_insured'],
@@ -382,8 +434,14 @@ def proxy_calculator_save():
             'version': '2.0.0'
         }
         
+        # Оборачиваем результат в формат, ожидаемый фронтендом
+        final_response = {
+            'success': True,
+            'calculation_result': frontend_result
+        }
+        
         logger.info("✅ Proxy запрос обработан успешно")
-        return jsonify(frontend_result)
+        return jsonify(final_response)
         
     except Exception as e:
         logger.error(f"❌ Ошибка proxy запроса: {e}")

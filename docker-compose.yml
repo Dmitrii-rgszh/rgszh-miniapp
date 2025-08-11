@@ -57,7 +57,7 @@ services:
     networks:
       - rgszh-miniapp-network
   frontend:
-    image: zerotlt/rgszh-miniapp-client:latest
+    image: zerotlt/rgszh-miniapp-client:20250811-final-fixed7
     ports:
       - "3000:3000"
     env_file:

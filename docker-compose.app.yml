@@ -21,9 +21,7 @@ services:
       - app_network
 
   frontend:
-    build:
-      context: .
-      dockerfile: Dockerfile.client
+    image: zerotlt/rgszh-miniapp-client:20250811-final-ui
     container_name: rgszh-frontend
     restart: always
     ports:

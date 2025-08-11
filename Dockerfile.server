@@ -7,6 +7,7 @@ RUN apt-get update && apt-get install -y \
     gcc \
     libpq-dev \
     python3-dev \
+    postgresql-client \
     && rm -rf /var/lib/apt/lists/*
 
 # Копируем requirements.txt и устанавливаем зависимости
@@ -24,10 +25,16 @@ COPY questionnaire_models.py .
 COPY email_sender.py .
 COPY poll_manager.py .
 COPY justincase_routes.py . 
+COPY justincase_routes_new.py . 
 COPY justincase_calculator.py .
 COPY actuarial_tables.py .
 COPY frequency_coefficients.py .
 COPY tariffs.py . 
+
+# Копируем локальную SQLite базу и скрипт инициализации
+COPY miniapp.db .
+COPY init_postgres_data.sh .
+RUN chmod +x init_postgres_data.sh
 
 # Копируем файлы калькулятора НСЖ (если есть)
 COPY care_future_models.py* .
@@ -45,5 +52,5 @@ RUN if [ -f docker-entrypoint.sh ]; then chmod +x docker-entrypoint.sh; fi
 
 EXPOSE 4000
 
-# Запускаем напрямую Python, обходя проблемы с entrypoint
-CMD ["python", "server.py"]
+# Запускаем инициализацию данных, а затем сервер
+CMD ["sh", "-c", "./init_postgres_data.sh && python server.py"]

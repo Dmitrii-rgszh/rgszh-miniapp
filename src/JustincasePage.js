@@ -356,9 +356,9 @@ const JustincasePage = () => {
         gender: gender === 'Мужской' ? 'm' : 'f',
         term_years: parseInt(insuranceTerm),
         sum_insured: parseFloat(insuranceSum ? insuranceSum.replace(/\./g, '') : '0'),
-        include_accident: accidentPackage !== 'Нет',
-        include_critical_illness: criticalPackage !== 'Нет',
-        critical_illness_type: treatmentRegion === 'За границей' ? 'abroad' : 'rf',
+        include_accident: accidentPackage === 'yes',
+        include_critical_illness: criticalPackage === 'yes',
+        critical_illness_type: treatmentRegion === 'abroad' ? 'abroad' : 'rf',
         payment_frequency: insuranceFrequency === 'Раз в год' ? 'annual' : 
                           insuranceFrequency === 'Раз в полгода' ? 'semi_annual' :
                           insuranceFrequency === 'Раз в квартал' ? 'quarterly' : 'monthly'
@@ -386,8 +386,15 @@ const JustincasePage = () => {
 
       let processedData;
       
+      console.log('🔍 ОТЛАДКА: Полученные данные от API:', data);
+      
       if (data.success && data.calculation_result) {
         const calc = data.calculation_result;
+        
+        console.log('📊 ОТЛАДКА: calculation_result:', calc);
+        console.log('💰 ОТЛАДКА: criticalPremium:', calc.criticalPremium);
+        console.log('💰 ОТЛАДКА: totalPremium:', calc.totalPremium);
+        console.log('💰 ОТЛАДКА: deathPremium:', calc.deathPremium);
         
         processedData = {
           success: true,
@@ -398,19 +405,35 @@ const JustincasePage = () => {
           baseInsuranceSum: formatNumber(calc.baseInsuranceSum || calc.insuranceSum || insuranceSum),
           basePremium: formatNumber(calc.basePremium || calc.basePremiumAmount || calc.annualPremium || '0'),
           basePremiumRaw: calc.basePremium || calc.basePremiumAmount || calc.annualPremium || 0, // Сырое значение для расчетов
+          
+          // Основные премии
+          deathPremium: calc.deathPremium || 0,
+          disabilityPremium: calc.disabilityPremium || 0,
+          
+          // Несчастный случай
           accidentPackageIncluded: accidentPackage === 'yes',  // Используем локальное значение
           accidentInsuranceSum: formatNumber(calc.accidentInsuranceSum || calc.accidentDetails?.insuranceSum || insuranceSum),
           accidentPremium: formatNumber(calc.accidentPremium || calc.accidentDetails?.premium || '0'),
+          accidentDeathPremium: calc.accidentDeathPremium || 0,
+          trafficDeathPremium: calc.trafficDeathPremium || 0,
+          injuryPremium: calc.injuryPremium || 0,
+          
+          // Критические заболевания
           criticalPackageIncluded: criticalPackage === 'yes',  // Используем локальное значение
           criticalInsuranceSum: formatNumber(calc.criticalInsuranceSum || calc.criticalDetails?.insuranceSum || '60 000 000'),
           criticalPremium: calc.criticalPremium || calc.criticalDetails?.premium || 0,
-          totalPremium: formatNumber(calc.totalPremium || calc.annualPremium || '0'),
+          criticalRehabilitationSum: calc.criticalRehabilitationSum || 0,
+          
+          totalPremium: calc.totalPremium || calc.annualPremium || 0,
           treatmentRegion: treatmentRegion || calc.treatmentRegion,  // Используем локальное значение
           sportPackage: sportPackage === 'yes',  // Используем локальное значение
           calculationId: calc.calculationId || data.calculation_id || 'unknown',
           calculator: data.calculator || 'JustincaseCalculatorComplete',
           version: data.version || '2.0.0'
         };
+        
+        console.log('💰 ОТЛАДКА: processedData.totalPremium:', processedData.totalPremium);
+        console.log('💰 ОТЛАДКА: processedData.criticalPremium:', processedData.criticalPremium);
       } else if (data.success) {
         processedData = {
           ...data,
@@ -420,12 +443,25 @@ const JustincasePage = () => {
           baseInsuranceSum: formatNumber(data.baseInsuranceSum || insuranceSum),
           basePremium: formatNumber(data.basePremium || '0'),
           basePremiumRaw: data.basePremium || 0, // Сырое значение для расчетов
-          totalPremium: formatNumber(data.totalPremium || '0'),
+          
+          // Основные премии
+          deathPremium: data.deathPremium || 0,
+          disabilityPremium: data.disabilityPremium || 0,
+          
+          // Несчастный случай
+          totalPremium: data.totalPremium || 0,
           accidentPackageIncluded: accidentPackage === 'yes',  // Используем локальное значение
           accidentInsuranceSum: formatNumber(data.accidentInsuranceSum || insuranceSum),
           accidentPremium: formatNumber(data.accidentPremium || '0'),
+          accidentDeathPremium: data.accidentDeathPremium || 0,
+          trafficDeathPremium: data.trafficDeathPremium || 0,
+          injuryPremium: data.injuryPremium || 0,
+          
+          // Критические заболевания
           criticalPackageIncluded: criticalPackage === 'yes',  // Используем локальное значение
           criticalPremium: data.criticalPremium || 0,
+          criticalRehabilitationSum: data.criticalRehabilitationSum || 0,
+          
           treatmentRegion: treatmentRegion,  // Используем локальное значение
           sportPackage: sportPackage === 'yes'  // Используем локальное значение
         };
@@ -584,8 +620,22 @@ const JustincasePage = () => {
 
     // Шаг результатов
     if (stage === 'result' && resultData) {
+      
+      // Компонент итоговой стоимости для отображения внизу каждой страницы
+      const TotalCostBlock = () => (
+        <div className="total-cost-block">
+          <div className="result-divider"></div>
+          <div className="result-item-split highlight">
+            <span className="result-label-left"><strong>Итоговая стоимость полиса:</strong></span>
+            <span className="result-value-right">
+              <strong>{(typeof resultData.totalPremium === 'string' ? resultData.totalPremium : Number(resultData.totalPremium || 0).toLocaleString('ru-RU'))} руб.</strong>
+            </span>
+          </div>
+        </div>
+      );
+
       const carouselPages = [
-        // Страница 1: Основные риски (Смерть ЛП + Инвалидность + Итог)
+        // Страница 1: Основные риски (Смерть ЛП + Инвалидность)
         (
           <div key="main-risks">
             <h2 className="text-h2 text-center">
@@ -594,64 +644,71 @@ const JustincasePage = () => {
             <p className="text-small text-center">
               (расчет от {resultData.calculationDate || new Date().toLocaleDateString('ru-RU')})
             </p>
+
+            {/* Основные параметры */}
             <div className="result-section">
-              <h3 className="text-h3">Основная программа</h3>
-              <p className="text-small">
+              <h3 className="text-h3 text-center">Основные параметры</h3>
+              <div className="result-item-split" style={{marginBottom: '8px'}}>
+                <span className="result-label-left">Возраст:</span>
+                <span className="result-value-right">{resultData.clientAge} лет</span>
+              </div>
+              <div className="result-item-split" style={{marginBottom: '8px'}}>
+                <span className="result-label-left">Пол:</span>
+                <span className="result-value-right">{resultData.clientGender}</span>
+              </div>
+              <div className="result-item-split" style={{marginBottom: '8px'}}>
+                <span className="result-label-left">Срок страхования:</span>
+                <span className="result-value-right">{resultData.insuranceTerm} лет</span>
+              </div>
+              <div className="result-item-split" style={{marginBottom: '8px'}}>
+                <span className="result-label-left">Порядок оплаты премии:</span>
+                <span className="result-value-right">{insuranceFrequency || 'Ежегодно'}</span>
+              </div>
+            </div>
+
+            <div className="result-section">
+              <h3 className="text-h3 text-center">Основная программа</h3>
+              <p className="text-small text-center">
                 Страхование на случай ухода из жизни и инвалидности I и II группы по любой причине
               </p>
 
+              {/* Страховая сумма */}
+              <div className="result-item-split" style={{marginBottom: '8px'}}>
+                <span className="result-label-left">Страховая сумма:</span>
+                <span className="result-value-right">
+                  {(resultData.baseInsuranceSum || parseUserSum(resultData.insuranceSum))} руб.
+                </span>
+              </div>
+
+              <h4 className="text-h4 text-center">Страховая премия по рискам:</h4>
+
               {/* Смерть ЛП */}
-              <div className="result-item-split">
-                <span className="result-label-left">• Смерть ЛП:</span>
+              <div className="result-item-split" style={{marginBottom: '8px'}}>
+                <span className="result-label-left">Смерть ЛП:</span>
                 <span className="result-value-right">
                   {formatNumber(Math.round(resultData.deathPremium || 0))} руб.
                 </span>
               </div>
 
               {/* Инвалидность */}
-              <div className="result-item-split">
-                <span className="result-label-left">• Инвалидность 1,2 гр.:</span>
+              <div className="result-item-split" style={{marginBottom: '8px'}}>
+                <span className="result-label-left">Инвалидность 1,2 гр.:</span>
                 <span className="result-value-right">
                   {formatNumber(Math.round(resultData.disabilityPremium || 0))} руб.
                 </span>
               </div>
-
-              <div className="result-divider"></div>
-
-              {/* Итоговая стоимость полиса */}
-              <div className="result-item-split highlight">
-                <span className="result-label-left"><strong>Итоговая стоимость полиса:</strong></span>
-                <span className="result-value-right">
-                  <strong>{formatNumber(resultData.totalPremium || resultData.annualPremium)} руб.</strong>
-                </span>
-              </div>
-
-              <div className="result-divider"></div>
-
-              {/* Информация о покрытии */}
-              <div className="result-item-split">
-                <span className="result-label-left">Страховая сумма:</span>
-                <span className="result-value-right">
-                  {resultData.baseInsuranceSum || parseUserSum(resultData.insuranceSum)} руб.
-                </span>
-              </div>
-              <div className="result-item-split">
-                <span className="result-label-left">Срок страхования:</span>
-                <span className="result-value-right">{resultData.insuranceTerm} лет</span>
-              </div>
-              <div className="result-item-split">
-                <span className="result-label-left">Порядок оплаты премии:</span>
-                <span className="result-value-right">{insuranceFrequency || 'Ежегодно'}</span>
-              </div>
             </div>
+            
+            {/* Итоговая стоимость внизу страницы */}
+            <TotalCostBlock />
           </div>
         ),
 
-        // Страница 2: Дополнительные риски (НС + Любительский спорт)
+        // Страница 2: Дополнительные риски (НС + КЗ + Любительский спорт)
         (
           <div key="additional-risks">
+            <h2 className="text-h2 text-center">Дополнительные риски</h2>
             <div className="result-section">
-              <h3 className="text-h3">Дополнительные риски</h3>
 
               {/* Пакет "Несчастный случай" */}
               {resultData.accidentPackageIncluded ? (
@@ -678,7 +735,7 @@ const JustincasePage = () => {
                   <div className="result-item-split">
                     <span className="result-label-left">Страховая сумма НС:</span>
                     <span className="result-value-right">
-                      {resultData.accidentInsuranceSum || parseUserSum(resultData.insuranceSum)} руб.
+                      {(resultData.accidentInsuranceSum || parseUserSum(resultData.insuranceSum))} руб.
                     </span>
                   </div>
                 </>
@@ -698,7 +755,7 @@ const JustincasePage = () => {
                   <div className="result-item-split">
                     <span className="result-label-left">• Стоимость защиты:</span>
                     <span className="result-value-right">
-                      {formatNumber(resultData.criticalPremium)} руб.
+                      {(typeof resultData.criticalPremium === 'string' ? resultData.criticalPremium : Number(resultData.criticalPremium || 0).toLocaleString('ru-RU'))} руб.
                     </span>
                   </div>
                   <div className="result-item-split">
@@ -730,6 +787,9 @@ const JustincasePage = () => {
                 </>
               )}
             </div>
+            
+            {/* Итоговая стоимость внизу страницы */}
+            <TotalCostBlock />
           </div>
         )
       ];

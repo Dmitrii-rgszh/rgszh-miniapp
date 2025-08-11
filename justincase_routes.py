@@ -22,17 +22,29 @@ justincase_bp = Blueprint('justincase', __name__)
 def safe_get_json():
     """Безопасное получение JSON из запроса"""
     try:
+        logger.info(f"📥 Request Content-Type: {request.content_type}")
+        logger.info(f"📥 Request is_json: {request.is_json}")
+        logger.info(f"📥 Request headers: {dict(request.headers)}")
+        
         if not request.is_json:
+            logger.error(f"❌ Неверный Content-Type: {request.content_type}")
             return None, "Content-Type должен быть application/json"
         
+        raw_data = request.get_data(as_text=True)
+        logger.info(f"📥 Raw request data: {raw_data}")
+        
         data = request.get_json()
+        logger.info(f"📥 Parsed JSON data: {data}")
+        
         if data is None:
+            logger.error("❌ Пустые данные после парсинга JSON")
             return None, "Пустое тело запроса или невалидный JSON"
         
         return data, None
         
     except Exception as e:
-        logger.error(f"Ошибка получения JSON: {e}")
+        logger.error(f"❌ Ошибка получения JSON: {e}")
+        traceback.print_exc()
         return None, f"Ошибка обработки запроса: {str(e)}"
 
 def format_success_response(data: Any, message: str = "Успешно") -> Dict[str, Any]:
@@ -303,6 +315,8 @@ def proxy_calculator_save():
         if error:
             return format_error_response(error)
         
+        logger.info(f"📋 RAW FRONTEND DATA: {data}")
+        
         # Преобразуем данные фронтенда в формат нового API
         api_data = {
             'age': None,
@@ -315,15 +329,26 @@ def proxy_calculator_save():
             'payment_frequency': 'annual'  # По умолчанию годовая
         }
         
+        logger.info(f"📋 RAW FRONTEND MAPPING:")
+        logger.info(f"  gender: '{data.get('gender')}' -> '{api_data['gender']}'")
+        logger.info(f"  insuranceSum: '{data.get('insuranceSum')}' -> {api_data['sum_insured']}")
+        logger.info(f"  insuranceTerm: '{data.get('insuranceTerm')}' -> {api_data['term_years']}")
+        logger.info(f"  accidentPackage: '{data.get('accidentPackage')}' -> {api_data['include_accident']}")
+        logger.info(f"  criticalPackage: '{data.get('criticalPackage')}' -> {api_data['include_critical_illness']}")
+        logger.info(f"  treatmentRegion: '{data.get('treatmentRegion')}' -> '{api_data['critical_illness_type']}'")
+        
         # Рассчитываем возраст из даты рождения
         if data.get('birthDate'):
             from datetime import date
+            logger.info(f"📅 Получена дата рождения: {data['birthDate']}")
             birth_date = date.fromisoformat(data['birthDate'])
             today = date.today()
             age = today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
             api_data['age'] = age
+            logger.info(f"📅 Рассчитан возраст: {age}")
         else:
             api_data['age'] = 30  # По умолчанию
+            logger.info(f"❌ Дата рождения не найдена, используем возраст по умолчанию: 30")
         
         # Преобразуем частоту платежей
         frequency_map = {
@@ -352,6 +377,18 @@ def proxy_calculator_save():
             return format_error_response(result.get('error', 'Ошибка расчёта'))
         
         # Преобразуем результат в формат, ожидаемый фронтендом
+        death_premium = result['calculation_details']['sum_insured'] * result['calculation_details']['tariff_rates']['death_rate']
+        disability_premium = result['calculation_details']['sum_insured'] * result['calculation_details']['tariff_rates']['disability_rate']
+        
+        logger.info(f"🧮 РАСЧЕТ ПРЕМИЙ:")
+        logger.info(f"  Страховая сумма: {result['calculation_details']['sum_insured']}")
+        logger.info(f"  death_rate: {result['calculation_details']['tariff_rates']['death_rate']}")
+        logger.info(f"  disability_rate: {result['calculation_details']['tariff_rates']['disability_rate']}")
+        logger.info(f"  deathPremium: {death_premium}")
+        logger.info(f"  disabilityPremium: {disability_premium}")
+        logger.info(f"  basePremium: {result['base_premium']}")
+        logger.info(f"  totalPremium: {result['final_premium']}")
+        
         frontend_result = {
             'success': True,
             'calculator': 'JustincaseCalculatorComplete',
@@ -362,8 +399,8 @@ def proxy_calculator_save():
             'baseInsuranceSum': api_data['sum_insured'],
             'basePremium': result['base_premium'],
             # Разделяем премии по смерти и инвалидности
-            'deathPremium': result['calculation_details']['sum_insured'] * result['calculation_details']['tariff_rates']['death_rate'],
-            'disabilityPremium': result['calculation_details']['sum_insured'] * result['calculation_details']['tariff_rates']['disability_rate'],
+            'deathPremium': death_premium,
+            'disabilityPremium': disability_premium,
             'accidentPackageIncluded': api_data['include_accident'],
             'accidentInsuranceSum': api_data['sum_insured'] if api_data['include_accident'] else 0,
             'accidentPremium': result['accident_premium'] if api_data['include_accident'] else 0,
