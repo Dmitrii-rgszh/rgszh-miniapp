@@ -23,21 +23,17 @@ COPY questionnaire_routes.py .
 COPY questionnaire_models.py .
 COPY email_sender.py .
 COPY poll_manager.py .
-COPY init_assessment_db.py .
-COPY migrate_assessment_questions.py .
-COPY base_calculation_models.py* .
-COPY base_calculation_routes.py* .
-COPY init_base_calculation.py* .
-COPY justincase_routes.py .
-COPY justincase_models.py* . 
+COPY justincase_routes.py . 
+COPY justincase_calculator.py .
+COPY actuarial_tables.py .
+COPY frequency_coefficients.py .
+COPY tariffs.py . 
 
 # Копируем файлы калькулятора НСЖ (если есть)
 COPY care_future_models.py* .
 COPY care_future_routes.py* .
-COPY init_care_future.py* .
 
 # Копируем SQL файлы для инициализации assessment таблиц
-COPY assessment_schema.sql* .
 COPY assessment_questions.sql* .
 
 # Копируем React build для раздачи статики

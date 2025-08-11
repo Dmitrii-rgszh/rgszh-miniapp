@@ -84,11 +84,11 @@ class JustInCaseCalculator:
         try:
             cursor = conn.cursor()
             cursor.execute("""
-                SELECT death_rate, disability_rate, death_accident_rate, 
-                       death_traffic_rate, trauma_rate, kz_rf_payment, 
-                       kz_abroad_payment, additional_rate
+                SELECT death_rate, disability_rate, accident_death_rate, 
+                       traffic_death_rate, injury_rate, critical_illness_rf_fee, 
+                       critical_illness_abroad_fee, coefficient_i
                 FROM justincase_base_tariffs
-                WHERE age = %s AND gender = %s AND period = %s
+                WHERE age = %s AND gender = %s AND term_years = %s
             """, (age, gender, term_years))
             
             result = cursor.fetchone()
