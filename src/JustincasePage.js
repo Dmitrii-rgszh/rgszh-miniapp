@@ -73,7 +73,7 @@ const JustincasePage = () => {
 
   // Функция для расчета возраста из даты рождения
   const calculateAge = (birthDate) => {
-    if (!birthDate) return 35; // По умолчанию
+    if (!birthDate) return null; // Не устанавливаем значение по умолчанию
     const today = new Date();
     const birth = new Date(birthDate);
     let age = today.getFullYear() - birth.getFullYear();
@@ -393,7 +393,7 @@ const JustincasePage = () => {
         processedData = {
           success: true,
           calculationDate: new Date().toLocaleDateString('ru-RU'),
-          clientAge: calc.clientAge || 35,
+          clientAge: calc.clientAge,
           clientGender: calc.clientGender || (gender === 'Мужской' ? 'Мужской' : 'Женский'),
           insuranceTerm: calc.insuranceTerm || insuranceTerm,
           baseInsuranceSum: formatNumber(calc.baseInsuranceSum || calc.insuranceSum || insuranceSum),
@@ -415,7 +415,7 @@ const JustincasePage = () => {
       } else if (data.success) {
         processedData = {
           ...data,
-          clientAge: data.clientAge || 35,
+          clientAge: data.clientAge,
           clientGender: data.clientGender || (gender === 'Мужской' ? 'Мужской' : 'Женский'),
           insuranceTerm: data.insuranceTerm || insuranceTerm,
           baseInsuranceSum: formatNumber(data.baseInsuranceSum || insuranceSum),
