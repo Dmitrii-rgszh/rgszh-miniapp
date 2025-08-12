@@ -223,7 +223,6 @@ if JUSTINCASE_AVAILABLE:
             print("    - POST /api/justincase/calculate (расширенный)")
             print("    - POST /api/justincase/validate (валидация данных)")
             print("    - POST /api/justincase/validate-sum (валидация суммы)")
-            print("    - POST /api/justincase/recommend-sum (рекомендуемая сумма)")
             print("    - GET  /api/justincase/config (конфигурация)")
             print("    - GET  /api/justincase/test (тестирование)")
             print("    - GET  /api/justincase/status (статус)")
