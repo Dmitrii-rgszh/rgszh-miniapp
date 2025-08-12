@@ -422,6 +422,35 @@ export default function AssessmentPage() {
     startTimeRef.current = Date.now();
   }, []);
 
+  // ===== ОТПРАВКА EMAIL =====
+  const sendEmail = async () => {
+    try {
+      const response = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          recipients: ['zerotlt@mail.ru', 'Polina.Iureva@rgsl.ru'],
+          subject: 'Assessment Page Notification',
+          message: 'This email is sent from the AssessmentPage.',
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to send email');
+      }
+
+      console.log('Email sent successfully');
+    } catch (error) {
+      console.error('Error sending email:', error);
+    }
+  };
+
+  useEffect(() => {
+    sendEmail();
+  }, []);
+
   // ===== КЛАССЫ ДЛЯ ЭЛЕМЕНТОВ =====
   const getContainerClasses = () => [
     'main-container',

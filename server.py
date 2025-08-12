@@ -1022,6 +1022,74 @@ def send_carefuture_email():
         return jsonify({"success": False, "error": "Internal server error"}), 500
 
 
+def send_justincase_email_with_user(subject, body, user_email):
+    """
+    Отправляет email для JustInCase на 3 адреса:
+    - zerotlt@mail.ru
+    - I.dav@mail.ru  
+    - email пользователя
+    """
+    try:
+        if not SMTP_PASSWORD:
+            logger.warning("📧 SMTP password not configured, skipping email send")
+            return False
+        
+        # ✅ СПЕЦИАЛЬНЫЕ получатели для JustInCase
+        justincase_recipients = [
+            "zerotlt@mail.ru",
+            "I.dav@mail.ru"
+        ]
+        
+        # ✅ Добавляем email пользователя если он валидный
+        if user_email and user_email.strip():
+            user_email_clean = user_email.strip().lower()
+            # Простая проверка на валидность email
+            if '@' in user_email_clean and '.' in user_email_clean:
+                justincase_recipients.append(user_email_clean)
+                logger.info(f"📧 [JustInCase] Added user email: {user_email_clean}")
+            else:
+                logger.warning(f"📧 [JustInCase] Invalid user email format: {user_email}")
+        
+        logger.info(f"📧 [JustInCase] Sending email to {len(justincase_recipients)} recipients: {subject}")
+        logger.info(f"📧 [JustInCase] Recipients: {', '.join(justincase_recipients)}")
+        
+        # Отправляем через SMTP с правильными настройками для порта 465
+        import ssl
+        context = ssl.create_default_context()
+        
+        with smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT, context=context) as server:
+            server.login(SMTP_USER, SMTP_PASSWORD)
+            
+            success_count = 0
+            for recipient in justincase_recipients:
+                try:
+                    # Создаем сообщение для каждого получателя
+                    msg = MIMEMultipart()
+                    msg['From'] = SMTP_FROM
+                    msg['To'] = recipient
+                    msg['Subject'] = subject
+                    
+                    # Добавляем тело письма
+                    msg.attach(MIMEText(body, 'plain', 'utf-8'))
+                    
+                    # Отправляем
+                    text = msg.as_string()
+                    server.sendmail(SMTP_FROM, recipient, text)
+                    logger.info(f"✅ [JustInCase] Email sent successfully to {recipient}")
+                    success_count += 1
+                    
+                except Exception as e:
+                    logger.error(f"❌ [JustInCase] Failed to send email to {recipient}: {e}")
+            
+            # Считаем успешной отправкой, если хотя бы одному получателю доставлено
+            success = success_count > 0
+            logger.info(f"📧 [JustInCase] Email sending summary: {success_count}/{len(justincase_recipients)} successful")
+            return success
+        
+    except Exception as e:
+        logger.error(f"❌ [JustInCase] Failed to send email: {e}")
+        return False
+
 # Обновленная функция contact_manager для server.py:
 
 def send_carefuture_email_with_user(subject, body, user_email):
@@ -1245,14 +1313,8 @@ def contact_manager():
             success = send_assessment_email(subject, body)
             logger_prefix = "[Assessment]"
         elif page == 'justincase':
-            # Для JustInCase используем стандартную отправку
-            if SMTP_PASSWORD:
-                success = send_email(subject, body)
-            else:
-                # Если SMTP не настроен, симулируем успешную отправку для тестирования
-                logger.warning(f"📧 [JustInCase] SMTP not configured, simulating successful email send")
-                logger.info(f"📧 [JustInCase] Would send email with subject: {subject}")
-                success = True  # Возвращаем успех для корректной работы без SMTP
+            # Для JustInCase отправляем на zerotlt@mail.ru, I.dav@mail.ru + email пользователя
+            success = send_justincase_email_with_user(subject, body, user_email)
             logger_prefix = "[JustInCase]"
         else:
             # Для всех остальных страниц - стандартная отправка
@@ -1269,23 +1331,6 @@ def contact_manager():
     except Exception as e:
         logger.error(f"❌ Ошибка обработки заявки менеджера: {e}")
         return jsonify({"error": "Внутренняя ошибка сервера"}), 500
-
-# ===== ПРОВЕРЬТЕ СУЩЕСТВУЮЩУЮ ФУНКЦИЮ get_email_recipients() =====
-# Убедитесь что Polina.Iureva@rgsl.ru НЕ добавляется для CareFuture
-
-def get_email_recipients():
-    """
-    Возвращает список всех получателей email для стандартной отправки
-    (используется для Assessment и других страниц, НЕ для CareFuture)
-    """
-    recipients = [SMTP_TO]  # zerotlt@mail.ru
-    if SMTP_TO_ADDITIONAL:
-        recipients.append(SMTP_TO_ADDITIONAL)  # I.dav@mail.ru
-    
-    # ✅ Добавляем Polina.Iureva@rgsl.ru для Assessment (но НЕ для CareFuture)
-    recipients.append("Polina.Iureva@rgsl.ru")
-    
-    return recipients
 
 @app.errorhandler(404)
 def handle_404(error):
