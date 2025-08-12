@@ -1,6 +1,12 @@
 services:
   server:
+    # Собираем образ сервера из локального кода. Чтобы изменения сразу попадали в контейнер,
+    # монтируем текущий каталог как /app, в котором работает Python-приложение.
+    build:
+      context: .
     image: zerotlt/rgszh-miniapp-api:latest
+    volumes:
+      - .:/app
     ports:
       - "4000:4000"
     env_file:
@@ -57,7 +63,13 @@ services:
     networks:
       - rgszh-miniapp-network
   frontend:
+    # Собираем образ фронтенда из локального кода. Чтобы отдавать актуальный билд, монтируем
+    # содержимое текущего каталога как /usr/share/nginx/html, где nginx ищет статические файлы.
+    build:
+      context: .
     image: zerotlt/rgszh-miniapp-client:20250811-final-fixed7
+    volumes:
+      - ./build:/usr/share/nginx/html
     ports:
       - "3000:3000"
     env_file:

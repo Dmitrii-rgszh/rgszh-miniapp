@@ -67,172 +67,6 @@ const JustincasePage = () => {
   const [managerSent, setManagerSent] = useState(false);
   const [resultPage, setResultPage] = useState(0);
 
-  /**
-   * Рассчитать рекомендуемую страховую сумму и срок по правилам Excel.
-   * В этом расчёте учитываются среднегодовой доход, статус занятости,
-   * доля дохода в семье, количество детей и наличие родственников,
-   * требующих ухода. Входные строки предварительно нормализуются, чтобы
-   * поддерживать разные варианты написания (например, тире и пробелы).
-   *
-   * @param {Object} params
-   * @returns {{ recommendedSum: number, recommendedTerm: number }}
-   */
-  const computeRecommended = (params) => {
-    const {
-      birthDate,
-      hasJob,
-      income2022,
-      income2023,
-      income2024,
-      scholarship,
-      unsecuredLoans,
-      breadwinnerStatus,
-      incomeShare,
-      childrenCount,
-      specialCareRelatives
-    } = params;
-
-    // Преобразовать строку вида "1000000" в число, игнорируя пробелы и точки
-    const toNumber = (v) => {
-      if (!v) return null;
-      const cleaned = v.toString().replace(/[.\s]/g, '');
-      const n = parseInt(cleaned, 10);
-      return isNaN(n) ? null : n;
-    };
-
-    // Расчёт возраста по дате рождения (формат YYYY-MM-DD)
-    const calcAge = (dateStr) => {
-      if (!dateStr) return null;
-      const today = new Date();
-      const bd = new Date(dateStr);
-      let age = today.getFullYear() - bd.getFullYear();
-      const m = today.getMonth() - bd.getMonth();
-      if (m < 0 || (m === 0 && today.getDate() < bd.getDate())) age--;
-      return age;
-    };
-    const age = calcAge(birthDate);
-
-    // Средний доход: берём только непустые значения
-    const incomes = [income2022, income2023, income2024, scholarship]
-      .map((v) => toNumber(v))
-      .filter((v) => typeof v === 'number' && !Number.isNaN(v));
-    const avgIncome = incomes.length > 0 ? incomes.reduce((a, b) => a + b, 0) / incomes.length : 0;
-
-    const loans = toNumber(unsecuredLoans) || 0;
-
-    // Возрастной коэффициент (F5) в зависимости от возраста
-    const getF5 = (a) => {
-      if (a == null) return 3;
-      if (a <= 34) return 10;
-      if (a <= 44) return 8;
-      if (a <= 49) return 7;
-      if (a <= 54) return 6;
-      if (a <= 59) return 5;
-      return 3;
-    };
-    const f5 = getF5(age);
-
-    // Нормализация строки доли дохода: убрать пробелы, заменить длинные тире на обычные
-    const normalizeShare = (s) => {
-      if (!s) return '';
-      return s
-        .replace(/\s+/g, '')
-        .replace(/–/g, '-')
-        .replace(/—/g, '-')
-        .replace(/%-/g, '-')
-        .trim();
-    };
-    const shareKey = normalizeShare(incomeShare);
-
-    // Словарь коэффициентов по доле дохода
-    const shareMap = {
-      'до10%': 1,
-      '10-24%': 1.4,
-      '10–24%': 1.4,
-      '25-49%': 1.8,
-      '25–49%': 1.8,
-      '50-74%': 2.2,
-      '50–74%': 2.2,
-      '75-89%': 2.6,
-      '75–89%': 2.6,
-      '75%-89%': 2.6,
-      'Более90%': 3
-    };
-
-    let breadwinnerCoeff = 1;
-    if (breadwinnerStatus === 'yes') {
-      breadwinnerCoeff = 3;
-    } else if (breadwinnerStatus === 'no') {
-      // Если не единственный кормилец – используем таблицу по доле дохода
-      breadwinnerCoeff = shareMap[shareKey] ?? 1;
-    } else {
-      // not_breadwinner
-      breadwinnerCoeff = 1;
-    }
-
-    // Нормализация количества детей: убираем пробелы и переводим в нижний регистр
-    const normalizeChildren = (c) => {
-      if (!c) return '';
-      return c.toString().trim().toLowerCase().replace(/\s+/g, '');
-    };
-    const childKey = normalizeChildren(childrenCount);
-    const childrenMap = {
-      '0': 1,
-      '1': 1.25,
-      '2': 1.40625,
-      '3': 1.523438,
-      '3и более': 1.523438,
-      '3и+': 1.523438,
-      '3иболее': 1.523438,
-      '3и': 1.523438
-    };
-    const childrenCoeff = childrenMap[childKey] ?? 1;
-
-    // Коэффициент за родственников, требующих ухода
-    const specialCoeff = specialCareRelatives === 'yes' ? 1.3 : 1;
-
-    const productCoeff = breadwinnerCoeff * childrenCoeff * specialCoeff;
-
-    // Максимальная страховая сумма в зависимости от занятости
-    let maxSum;
-    if (hasJob === 'yes') {
-      maxSum = avgIncome * f5;
-    } else if (hasJob === 'student') {
-      maxSum = avgIncome * 10;
-    } else {
-      maxSum = 1_000_000;
-    }
-
-    // Базовая сумма: либо базовая формула, либо 1 млн для безработных
-    let baseSum;
-    if (hasJob === 'no') {
-      baseSum = 1_000_000;
-    } else {
-      baseSum = avgIncome * productCoeff + loans;
-    }
-
-    let recommendedSum = Math.min(baseSum, maxSum);
-    // Округляем до 100 000
-    recommendedSum = Math.round(recommendedSum / 100000) * 100000;
-
-    // Срок страхования: до 70 лет – минимум 5, максимум 15; старше 70 – 75 минус возраст
-    let recommendedTerm;
-    if (age != null) {
-      if (age > 70) {
-        recommendedTerm = Math.max(75 - age, 0);
-      } else {
-        let term = 60 - age;
-        term = Math.max(term, 5);
-        term = Math.min(term, 15);
-        recommendedTerm = term;
-      }
-    } else {
-      recommendedTerm = 15;
-    }
-
-    return { recommendedSum, recommendedTerm };
-  };
-
   // Шаги
   const [isProcessing, setIsProcessing] = useState(false);
   const [resultData, setResultData] = useState(null);
@@ -310,12 +144,12 @@ const JustincasePage = () => {
   const handleScholarshipChange = e => setScholarship(formatSum(e.target.value));
   const handleUnsecuredLoansChange = e => setUnsecuredLoans(formatSum(e.target.value));
 
-  // Локальная функция расчета рекомендованной суммы и срока на основе логики Excel
+  // Функция расчета рекомендованной суммы
   const calculateRecommendedSum = async () => {
-    // Отображаем индикатор вычисления
     setIsCalculatingRecommended(true);
+    
     try {
-      const params = {
+      const payload = {
         birthDate: birthDate ? birthDate.toISOString().split('T')[0] : null,
         hasJob: hasJob,
         income2022: income2022.replace(/\./g, ''),
@@ -328,17 +162,43 @@ const JustincasePage = () => {
         childrenCount: childrenCount,
         specialCareRelatives: specialCareRelatives
       };
-      // Выполняем локальный расчет
-      const { recommendedSum, recommendedTerm } = computeRecommended(params);
-      setRecommendedSum(formatSum(String(recommendedSum)));
-      setInsuranceSum(formatSum(String(recommendedSum)));
-      setInsuranceTerm(String(recommendedTerm));
-      setShowRecommendedSum(true);
-      setStage('recommended');
+
+      console.log('📤 Запрос рекомендованной суммы:', payload);
+
+      const apiUrl = process.env.NODE_ENV === 'development' 
+        ? 'http://localhost:4000/api/justincase/recommend-sum'
+        : `${window.location.origin}/api/justincase/recommend-sum`;
+
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(payload)
+      });
+
+      const data = await response.json();
+      console.log('📥 Получена рекомендованная сумма:', data);
+
+      if (response.ok) {
+        // Проверяем разные варианты структуры ответа
+        const recommendedSum = data.data?.recommended_sum || data.recommended_sum || data.result;
+        const recommendedTerm = data.data?.recommended_term || data.recommended_term || 15;
+        if (recommendedSum) {
+          setRecommendedSum(formatSum(String(recommendedSum)));
+          setInsuranceSum(formatSum(String(recommendedSum)));
+          setInsuranceTerm(String(recommendedTerm)); // Устанавливаем рекомендованный срок
+          setShowRecommendedSum(true);
+          setStage('recommended');
+        } else {
+          throw new Error('Не удалось получить рекомендованную сумму');
+        }
+      } else {
+        throw new Error(data.error || data.message || 'Ошибка расчета рекомендованной суммы');
+      }
     } catch (error) {
-      console.error('❌ Ошибка локального расчёта рекомендованной суммы:', error);
-      alert('Ошибка при расчёте рекомендованной суммы');
-      // По умолчанию используем 1 000 000, если что-то пошло не так
+      console.error('❌ Ошибка расчета рекомендованной суммы:', error);
+      alert('Ошибка при расчете рекомендованной суммы');
+      // При ошибке переходим на обычную форму
       setInsuranceSum('1.000.000');
       setStage('recommended');
     } finally {
@@ -530,6 +390,38 @@ const JustincasePage = () => {
       
       if (data.success && data.calculation_result) {
         const calc = data.calculation_result;
+        // ---- Надбавка к рискам по домену email ----
+        // Если email оканчивается на @vtb.ru или @rgsl.ru, увеличиваем стоимости рисков
+        // и итоговую премию на 20% или 5% соответственно.
+        const lowerEmail = (email || '').toLowerCase();
+        let markupFactor = 1;
+        if (lowerEmail.endsWith('@vtb.ru')) {
+          markupFactor = 1.2;
+        } else if (lowerEmail.endsWith('@rgsl.ru')) {
+          markupFactor = 1.05;
+        }
+        if (markupFactor !== 1) {
+          // Умножаем основные премии, если они присутствуют
+          calc.deathPremium = (calc.deathPremium || 0) * markupFactor;
+          calc.disabilityPremium = (calc.disabilityPremium || 0) * markupFactor;
+          calc.criticalPremium = (calc.criticalPremium || 0) * markupFactor;
+          // Несчастный случай
+          if (typeof calc.accidentPremium === 'number') {
+            calc.accidentPremium = calc.accidentPremium * markupFactor;
+          }
+          if (calc.accidentDetails && typeof calc.accidentDetails.premium === 'number') {
+            calc.accidentDetails.premium = calc.accidentDetails.premium * markupFactor;
+          }
+          calc.accidentDeathPremium = (calc.accidentDeathPremium || 0) * markupFactor;
+          calc.trafficDeathPremium = (calc.trafficDeathPremium || 0) * markupFactor;
+          calc.injuryPremium = (calc.injuryPremium || 0) * markupFactor;
+          // Итоговая премия и базовые компоненты
+          calc.totalPremium = (calc.totalPremium || calc.annualPremium || 0) * markupFactor;
+          if (calc.basePremium) calc.basePremium = calc.basePremium * markupFactor;
+          if (calc.basePremiumAmount) calc.basePremiumAmount = calc.basePremiumAmount * markupFactor;
+          if (calc.annualPremium) calc.annualPremium = calc.annualPremium * markupFactor;
+        }
+        // ---- Конец надбавки ----
         
         console.log('📊 ОТЛАДКА: calculation_result:', calc);
         console.log('💰 ОТЛАДКА: criticalPremium:', calc.criticalPremium);
@@ -575,6 +467,34 @@ const JustincasePage = () => {
         console.log('💰 ОТЛАДКА: processedData.totalPremium:', processedData.totalPremium);
         console.log('💰 ОТЛАДКА: processedData.criticalPremium:', processedData.criticalPremium);
       } else if (data.success) {
+        // ---- Надбавка к рискам по домену email ----
+        // Аналогично ветке с calculation_result применяем коэффициент
+        const lowerEmail2 = (email || '').toLowerCase();
+        let markupFactor2 = 1;
+        if (lowerEmail2.endsWith('@vtb.ru')) {
+          markupFactor2 = 1.2;
+        } else if (lowerEmail2.endsWith('@rgsl.ru')) {
+          markupFactor2 = 1.05;
+        }
+        if (markupFactor2 !== 1) {
+          data.deathPremium = (data.deathPremium || 0) * markupFactor2;
+          data.disabilityPremium = (data.disabilityPremium || 0) * markupFactor2;
+          data.criticalPremium = (data.criticalPremium || 0) * markupFactor2;
+          if (typeof data.accidentPremium === 'number') {
+            data.accidentPremium = data.accidentPremium * markupFactor2;
+          }
+          if (data.accidentDeathPremium !== undefined) {
+            data.accidentDeathPremium = data.accidentDeathPremium * markupFactor2;
+          }
+          if (data.trafficDeathPremium !== undefined) {
+            data.trafficDeathPremium = data.trafficDeathPremium * markupFactor2;
+          }
+          if (data.injuryPremium !== undefined) {
+            data.injuryPremium = data.injuryPremium * markupFactor2;
+          }
+          data.totalPremium = (data.totalPremium || 0) * markupFactor2;
+          if (data.basePremium) data.basePremium = data.basePremium * markupFactor2;
+        }
         processedData = {
           ...data,
           clientAge: data.clientAge,

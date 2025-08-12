@@ -12,19 +12,25 @@ Write-Host "   ВМ: $VmIp" -ForegroundColor Yellow
 Write-Host ""
 
 try {
-    Write-Host "📥 Подтягиваем новый образ сервера..." -ForegroundColor Cyan
-    ssh admin@$VmIp "cd /home/admin/rgszh-miniapp && docker compose pull server"
-    
-    Write-Host "🔄 Перезапускаем сервер..." -ForegroundColor Cyan
-    ssh admin@$VmIp "cd /home/admin/rgszh-miniapp && docker compose stop server"
-    ssh admin@$VmIp "cd /home/admin/rgszh-miniapp && docker compose up -d server"
-    
-    Write-Host "⏳ Ждем запуска сервиса..." -ForegroundColor Yellow
+    # Сборка свежих образов для всех сервисов (бэкенда и фронтенда)
+    Write-Host "🔧 Собираем новые Docker-образы (server и frontend)..." -ForegroundColor Cyan
+    ssh admin@$VmIp "cd /home/admin/rgszh-miniapp && docker compose build --pull"
+
+    # Публикация образов в реестр (если указан image в docker-compose.yml)
+    Write-Host "⬆️  Публикуем образы в реестр..." -ForegroundColor Cyan
+    ssh admin@$VmIp "cd /home/admin/rgszh-miniapp && docker compose push"
+
+    # Перезапуск всех сервисов
+    Write-Host "🔄 Перезапускаем сервисы..." -ForegroundColor Cyan
+    ssh admin@$VmIp "cd /home/admin/rgszh-miniapp && docker compose stop"
+    ssh admin@$VmIp "cd /home/admin/rgszh-miniapp && docker compose up -d"
+
+    Write-Host "⏳ Ждем запуска контейнеров..." -ForegroundColor Yellow
     Start-Sleep -Seconds 20
-    
+
     Write-Host "📊 Проверяем статус..." -ForegroundColor Cyan
     ssh admin@$VmIp "cd /home/admin/rgszh-miniapp && docker compose ps"
-    
+
     Write-Host ""
     Write-Host "✅ === ДЕПЛОЙ ЗАВЕРШЕН ===" -ForegroundColor Green
     Write-Host "   🌐 Приложение: https://${VmIp}/" -ForegroundColor Yellow
