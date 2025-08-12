@@ -59,52 +59,48 @@ const JustincasePage = () => {
   const [isCalculatingRecommended, setIsCalculatingRecommended] = useState(false);
   const [showRecommendedSum, setShowRecommendedSum] = useState(false);
 
+  const [managerSurname, setManagerSurname] = useState('');
+  const [managerName, setManagerName] = useState('');
+  const [managerCity, setManagerCity] = useState('');
+  const [managerError, setManagerError] = useState('');
+  const [isSendingManager, setIsSendingManager] = useState(false);
+  const [managerSent, setManagerSent] = useState(false);
+  const [resultPage, setResultPage] = useState(0);
+
   /**
-   * Вспомогательная функция для подсчёта рекомендуемой страховой суммы и срока
-   * на основании данных пользователя. Реализует формулы из Excel листа
-   * «Подбор суммы», включая подбор возрастного коэффициента, произведение
-   * коэффициентов по доле дохода, количеству иждивенцев и наличию родственников,
-   * ограничение максимальной суммы по риску «Смерть по любой причине»,
-   * округление до 100 000 ₽ и подбор срока страхования в диапазонах.
+   * Рассчитать рекомендуемую страховую сумму и срок по правилам Excel.
+   * В этом расчёте учитываются среднегодовой доход, статус занятости,
+   * доля дохода в семье, количество детей и наличие родственников,
+   * требующих ухода. Входные строки предварительно нормализуются, чтобы
+   * поддерживать разные варианты написания (например, тире и пробелы).
    *
    * @param {Object} params
-   * @param {string|null} params.birthDate – дата рождения пользователя в ISO‑формате (YYYY-MM-DD)
-   * @param {string|null} params.hasJob – статус занятости: 'yes', 'no' или 'student'
-   * @param {string} params.income2022 – доход за 2022 год (строка, может содержать точки-разделители тысяч)
-   * @param {string} params.income2023 – доход за 2023 год
-   * @param {string} params.income2024 – доход за 2024 год
-   * @param {string} params.scholarship – стипендия (для работающих студентов)
-   * @param {string} params.unsecuredLoans – сумма незастрахованных кредитов
-   * @param {string|null} params.breadwinnerStatus – статус кормильца: 'yes', 'no' или 'not_breadwinner'
-   * @param {string} params.incomeShare – доля дохода в семейном бюджете (для варианта breadwinnerStatus === 'no')
-   * @param {string} params.childrenCount – количество детей: '0', '1', '2' или '3 и более'
-   * @param {string|null} params.specialCareRelatives – есть ли родственники, нуждающиеся в уходе: 'yes' или 'no'
-   * @returns {{ recommendedSum: number, recommendedTerm: number }} Рекомендуемая сумма и срок
+   * @returns {{ recommendedSum: number, recommendedTerm: number }}
    */
-  const computeRecommended = ({
-    birthDate,
-    hasJob,
-    income2022,
-    income2023,
-    income2024,
-    scholarship,
-    unsecuredLoans,
-    breadwinnerStatus,
-    incomeShare,
-    childrenCount,
-    specialCareRelatives
-  }) => {
-    // Утилита для преобразования строк с разделителями в числа
+  const computeRecommended = (params) => {
+    const {
+      birthDate,
+      hasJob,
+      income2022,
+      income2023,
+      income2024,
+      scholarship,
+      unsecuredLoans,
+      breadwinnerStatus,
+      incomeShare,
+      childrenCount,
+      specialCareRelatives
+    } = params;
+
+    // Преобразовать строку вида "1000000" в число, игнорируя пробелы и точки
     const toNumber = (v) => {
-      if (v === 0) return 0;
       if (!v) return null;
-      // удаляем точки, пробелы и запятые, затем преобразуем в целое
-      const cleaned = v.toString().replace(/[\s.,]/g, '');
-      const parsed = parseInt(cleaned, 10);
-      return isNaN(parsed) ? null : parsed;
+      const cleaned = v.toString().replace(/[.\s]/g, '');
+      const n = parseInt(cleaned, 10);
+      return isNaN(n) ? null : n;
     };
 
-    // Рассчитываем возраст пользователя
+    // Расчёт возраста по дате рождения (формат YYYY-MM-DD)
     const calcAge = (dateStr) => {
       if (!dateStr) return null;
       const today = new Date();
@@ -116,18 +112,15 @@ const JustincasePage = () => {
     };
     const age = calcAge(birthDate);
 
-    // Составляем массив доходов и превращаем их в числа
+    // Средний доход: берём только непустые значения
     const incomes = [income2022, income2023, income2024, scholarship]
       .map((v) => toNumber(v))
       .filter((v) => typeof v === 'number' && !Number.isNaN(v));
-
-    // Средний годовой доход (усредняем только непустые значения)
     const avgIncome = incomes.length > 0 ? incomes.reduce((a, b) => a + b, 0) / incomes.length : 0;
 
-    // Сумма незастрахованных кредитов
     const loans = toNumber(unsecuredLoans) || 0;
 
-    // Возрастной коэффициент F5: зависит от возраста
+    // Возрастной коэффициент (F5) в зависимости от возраста
     const getF5 = (a) => {
       if (a == null) return 3;
       if (a <= 34) return 10;
@@ -139,147 +132,106 @@ const JustincasePage = () => {
     };
     const f5 = getF5(age);
 
-    // Определяем максимальную страховую сумму по риску «Смерть по любой причине»
+    // Нормализация строки доли дохода: убрать пробелы, заменить длинные тире на обычные
+    const normalizeShare = (s) => {
+      if (!s) return '';
+      return s
+        .replace(/\s+/g, '')
+        .replace(/–/g, '-')
+        .replace(/—/g, '-')
+        .replace(/%-/g, '-')
+        .trim();
+    };
+    const shareKey = normalizeShare(incomeShare);
+
+    // Словарь коэффициентов по доле дохода
+    const shareMap = {
+      'до10%': 1,
+      '10-24%': 1.4,
+      '10–24%': 1.4,
+      '25-49%': 1.8,
+      '25–49%': 1.8,
+      '50-74%': 2.2,
+      '50–74%': 2.2,
+      '75-89%': 2.6,
+      '75–89%': 2.6,
+      '75%-89%': 2.6,
+      'Более90%': 3
+    };
+
+    let breadwinnerCoeff = 1;
+    if (breadwinnerStatus === 'yes') {
+      breadwinnerCoeff = 3;
+    } else if (breadwinnerStatus === 'no') {
+      // Если не единственный кормилец – используем таблицу по доле дохода
+      breadwinnerCoeff = shareMap[shareKey] ?? 1;
+    } else {
+      // not_breadwinner
+      breadwinnerCoeff = 1;
+    }
+
+    // Нормализация количества детей: убираем пробелы и переводим в нижний регистр
+    const normalizeChildren = (c) => {
+      if (!c) return '';
+      return c.toString().trim().toLowerCase().replace(/\s+/g, '');
+    };
+    const childKey = normalizeChildren(childrenCount);
+    const childrenMap = {
+      '0': 1,
+      '1': 1.25,
+      '2': 1.40625,
+      '3': 1.523438,
+      '3и более': 1.523438,
+      '3и+': 1.523438,
+      '3иболее': 1.523438,
+      '3и': 1.523438
+    };
+    const childrenCoeff = childrenMap[childKey] ?? 1;
+
+    // Коэффициент за родственников, требующих ухода
+    const specialCoeff = specialCareRelatives === 'yes' ? 1.3 : 1;
+
+    const productCoeff = breadwinnerCoeff * childrenCoeff * specialCoeff;
+
+    // Максимальная страховая сумма в зависимости от занятости
     let maxSum;
     if (hasJob === 'yes') {
       maxSum = avgIncome * f5;
     } else if (hasJob === 'student') {
       maxSum = avgIncome * 10;
     } else {
-      // Если работы нет – 1 000 000 ₽
       maxSum = 1_000_000;
     }
 
-    // Коэффициент за долю дохода (breadwinnerStatus / incomeShare)
-    let breadwinnerCoeff = 1;
-    if (breadwinnerStatus === 'yes') {
-      // Кормилец семьи
-      breadwinnerCoeff = 3;
-    } else if (breadwinnerStatus === 'no') {
-      // Не кормилец, но участвует в бюджете – берём коэффициент по доле
-      // Нормализуем строку доли, чтобы не зависеть от пробелов и знаков '%'
-      const normShare = (s) => {
-        if (!s) return '';
-        const t = s.toString().toLowerCase().replace(/\s/g, '').replace(/%/g, '');
-        // Приведём варианты вроде "75%-89%" и "75-89" к единому виду
-        return t
-          .replace('до10', 'до10')
-          .replace('более90', 'более90')
-          .replace('>=90', 'более90')
-          .replace('>90', 'более90');
-      };
-      const key = normShare(incomeShare)
-        .replace('до10%', 'до10')
-        .replace('до10', 'до10')
-        .replace('10-24', '10-24')
-        .replace('25-49', '25-49')
-        .replace('50-74', '50-74')
-        .replace('75-89', '75-89')
-        .replace('90иБолее', 'более90');
-
-      const shareMap = {
-        'до10': 1,
-        '10-24': 1.4,
-        '25-49': 1.8,
-        '50-74': 2.2,
-        '75-89': 2.6,
-        'более90': 3
-      };
-      // Пытаемся распознать и нотации вида "до 10%", "75%-89%", "75-89%"
-      breadwinnerCoeff = shareMap[key]
-        ?? shareMap[normShare(incomeShare).replace('до10%', 'до10')]
-        ?? ({ 'до 10%': 1, '10-24%': 1.4, '25-49%': 1.8, '50-74%': 2.2, '75-89%': 2.6, 'более 90%': 3, 'более90%': 3 }[incomeShare?.toLowerCase?.()] ?? 1);
-    } else {
-      // not_breadwinner
-      breadwinnerCoeff = 1;
-    }
-
-    // Коэффициент по количеству детей
-    const normChildren = (v) => {
-      if (v === null || v === undefined) return '0';
-      const s = String(v).trim().toLowerCase();
-      if (s === '' || s === 'нет' || s === 'none') return '0';
-      if (s === '3+' || s.includes('3 и более') || s.includes('3илиболее')) return '3 и более';
-      return s;
-    };
-    const childrenMap = {
-      '0': 1,
-      '1': 1.25,
-      '2': 1.40625,
-      '3 и более': 1.523438
-    };
-    const childrenCoeff = childrenMap[normChildren(childrenCount)] ?? 1;
-
-    // Коэффициент за наличие родственников, требующих ухода
-    const specialCoeff = specialCareRelatives === 'yes' ? 1.3 : 1;
-
-    // Совокупный коэффициент
-    const productCoeff = breadwinnerCoeff * childrenCoeff * specialCoeff;
-
-    // Базовая сумма: доход * коэффициенты + незастрахованные кредиты
+    // Базовая сумма: либо базовая формула, либо 1 млн для безработных
     let baseSum;
     if (hasJob === 'no') {
-      // Для безработных устанавливаем фиксированную базовую сумму, как и максимальную
       baseSum = 1_000_000;
     } else {
       baseSum = avgIncome * productCoeff + loans;
     }
 
-  // Итоговая сумма – минимум из базовой и максимальной
-  let recommendedSum = Math.min(baseSum, maxSum);
-    // Округляем до 100 000
+    let recommendedSum = Math.min(baseSum, maxSum);
+    // Округляем до 100 000
     recommendedSum = Math.round(recommendedSum / 100000) * 100000;
 
-    // Рассчитываем рекомендуемый срок страхования
+    // Срок страхования: до 70 лет – минимум 5, максимум 15; старше 70 – 75 минус возраст
     let recommendedTerm;
     if (age != null) {
       if (age > 70) {
-        // Старше 70 лет – срок равен 75‑возраст, но не меньше нуля
         recommendedTerm = Math.max(75 - age, 0);
       } else {
-        // До 70 лет: ограничиваем 5–15 лет
         let term = 60 - age;
         term = Math.max(term, 5);
         term = Math.min(term, 15);
         recommendedTerm = term;
       }
     } else {
-      // Если возраст не определён – устанавливаем срок по умолчанию, например 15
       recommendedTerm = 15;
     }
 
-    // Небольшой лог для быстрой валидации в браузере
-    try {
-      console.log('[JIC] Разбор:', {
-        age,
-        avgIncome,
-        loans,
-        f5,
-        maxSum,
-        breadwinnerStatus,
-        incomeShare,
-        breadwinnerCoeff,
-        childrenCount,
-        childrenCoeff,
-        specialCareRelatives,
-        specialCoeff,
-        productCoeff,
-        baseSum,
-        recommendedSum,
-        recommendedTerm
-      });
-    } catch {}
-
     return { recommendedSum, recommendedTerm };
   };
-
-  const [managerSurname, setManagerSurname] = useState('');
-  const [managerName, setManagerName] = useState('');
-  const [managerCity, setManagerCity] = useState('');
-  const [managerError, setManagerError] = useState('');
-  const [isSendingManager, setIsSendingManager] = useState(false);
-  const [managerSent, setManagerSent] = useState(false);
-  const [resultPage, setResultPage] = useState(0);
 
   // Шаги
   const [isProcessing, setIsProcessing] = useState(false);
@@ -358,13 +310,12 @@ const JustincasePage = () => {
   const handleScholarshipChange = e => setScholarship(formatSum(e.target.value));
   const handleUnsecuredLoansChange = e => setUnsecuredLoans(formatSum(e.target.value));
 
-  // Функция расчета рекомендованной суммы (клиентская логика)
-  const calculateRecommendedSum = () => {
+  // Локальная функция расчета рекомендованной суммы и срока на основе логики Excel
+  const calculateRecommendedSum = async () => {
+    // Отображаем индикатор вычисления
     setIsCalculatingRecommended(true);
-    
     try {
-      // Подготавливаем данные для клиентского расчета
-      const payload = {
+      const params = {
         birthDate: birthDate ? birthDate.toISOString().split('T')[0] : null,
         hasJob: hasJob,
         income2022: income2022.replace(/\./g, ''),
@@ -377,25 +328,17 @@ const JustincasePage = () => {
         childrenCount: childrenCount,
         specialCareRelatives: specialCareRelatives
       };
-
-      console.log('🧮 Клиентский расчет рекомендованной суммы:', payload);
-
-      // Используем клиентскую функцию расчета
-      const { recommendedSum, recommendedTerm } = computeRecommended(payload);
-
-      if (recommendedSum) {
-        setRecommendedSum(formatSum(String(recommendedSum)));
-        setInsuranceSum(formatSum(String(recommendedSum)));
-        setInsuranceTerm(String(recommendedTerm));
-        setShowRecommendedSum(true);
-        setStage('recommended');
-      } else {
-        throw new Error('Не удалось рассчитать рекомендованную сумму');
-      }
+      // Выполняем локальный расчет
+      const { recommendedSum, recommendedTerm } = computeRecommended(params);
+      setRecommendedSum(formatSum(String(recommendedSum)));
+      setInsuranceSum(formatSum(String(recommendedSum)));
+      setInsuranceTerm(String(recommendedTerm));
+      setShowRecommendedSum(true);
+      setStage('recommended');
     } catch (error) {
-      console.error('❌ Ошибка расчета рекомендованной суммы:', error);
-      alert('Ошибка при расчете рекомендованной суммы');
-      // При ошибке переходим на обычную форму
+      console.error('❌ Ошибка локального расчёта рекомендованной суммы:', error);
+      alert('Ошибка при расчёте рекомендованной суммы');
+      // По умолчанию используем 1 000 000, если что-то пошло не так
       setInsuranceSum('1.000.000');
       setStage('recommended');
     } finally {
