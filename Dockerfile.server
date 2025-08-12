@@ -24,7 +24,6 @@ COPY questionnaire_routes.py .
 COPY questionnaire_models.py .
 COPY email_sender.py .
 COPY poll_manager.py .
-COPY justincase_routes.py . 
 COPY justincase_routes_new.py . 
 COPY justincase_calculator.py .
 COPY actuarial_tables.py .

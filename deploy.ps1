@@ -112,28 +112,6 @@ if (-not $SkipTest) {
         Write-Host "✅ API доступен" -ForegroundColor Green
         Write-Host "   Статус: $($response.status)" -ForegroundColor Yellow
         
-        # Тестируем новый эндпоинт recommend-sum
-        $recommendUrl = "https://${VmIp}/api/justincase/recommend-sum"
-        Write-Host "   🧪 Тестирую новый эндпоинт: $recommendUrl"
-        
-        try {
-            $testPayload = @{
-                birthDate = "1990-01-01"
-                hasJob = $true
-                income2023 = "1000000"
-            }
-            
-            $recommendResponse = Invoke-RestMethod -Uri $recommendUrl -Method POST -Body ($testPayload | ConvertTo-Json) -ContentType "application/json" -TimeoutSec 10 -SkipCertificateCheck
-            Write-Host "✅ Эндпоинт recommend-sum работает!" -ForegroundColor Green
-        } catch {
-            if ($_.Exception.Response.StatusCode -eq 400) {
-                Write-Host "✅ Эндпоинт recommend-sum работает (ошибка валидации нормальна)" -ForegroundColor Green
-            } elseif ($_.Exception.Response.StatusCode -eq 405) {
-                Write-Host "❌ Эндпоинт recommend-sum НЕ обновился (405 Method Not Allowed)" -ForegroundColor Red
-            } else {
-                Write-Host "⚠️  Эндпоинт recommend-sum: $($_.Exception.Message)" -ForegroundColor Yellow
-            }
-        }
     } catch {
         Write-Host "⚠️  API недоступен: $($_.Exception.Message)" -ForegroundColor Yellow
     }
