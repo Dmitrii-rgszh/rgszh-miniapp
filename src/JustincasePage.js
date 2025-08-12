@@ -634,78 +634,83 @@ const JustincasePage = () => {
         </div>
       );
 
-      const carouselPages = [
-        // Страница 1: Основные риски (Смерть ЛП + Инвалидность)
-        (
-          <div key="main-risks">
-            <h2 className="text-h2 text-center">
-              Ваша программа <br/>«На всякий случай»
-            </h2>
+      // Создаем массив страниц карусели динамически
+      const carouselPages = [];
+      
+      // Страница 1: Основные риски (всегда показываем)
+      carouselPages.push(
+        <div key="main-risks">
+          <h2 className="text-h2 text-center">
+            Ваша программа <br/>«На всякий случай»
+          </h2>
+          <p className="text-small text-center">
+            (расчет от {resultData.calculationDate || new Date().toLocaleDateString('ru-RU')})
+          </p>
+
+          {/* Основные параметры */}
+          <div className="result-section">
+            <h3 className="text-h3 text-center">Основные параметры</h3>
+            <div className="result-item-split" style={{marginBottom: '8px'}}>
+              <span className="result-label-left">Возраст:</span>
+              <span className="result-value-right">{resultData.clientAge} лет</span>
+            </div>
+            <div className="result-item-split" style={{marginBottom: '8px'}}>
+              <span className="result-label-left">Пол:</span>
+              <span className="result-value-right">{resultData.clientGender}</span>
+            </div>
+            <div className="result-item-split" style={{marginBottom: '8px'}}>
+              <span className="result-label-left">Срок страхования:</span>
+              <span className="result-value-right">{resultData.insuranceTerm} лет</span>
+            </div>
+            <div className="result-item-split" style={{marginBottom: '8px'}}>
+              <span className="result-label-left">Порядок оплаты премии:</span>
+              <span className="result-value-right">{insuranceFrequency || 'Ежегодно'}</span>
+            </div>
+          </div>
+
+          <div className="result-section">
+            <h3 className="text-h3 text-center">Основная программа</h3>
             <p className="text-small text-center">
-              (расчет от {resultData.calculationDate || new Date().toLocaleDateString('ru-RU')})
+              Страхование на случай ухода из жизни и инвалидности I и II группы по любой причине
             </p>
 
-            {/* Основные параметры */}
-            <div className="result-section">
-              <h3 className="text-h3 text-center">Основные параметры</h3>
-              <div className="result-item-split" style={{marginBottom: '8px'}}>
-                <span className="result-label-left">Возраст:</span>
-                <span className="result-value-right">{resultData.clientAge} лет</span>
-              </div>
-              <div className="result-item-split" style={{marginBottom: '8px'}}>
-                <span className="result-label-left">Пол:</span>
-                <span className="result-value-right">{resultData.clientGender}</span>
-              </div>
-              <div className="result-item-split" style={{marginBottom: '8px'}}>
-                <span className="result-label-left">Срок страхования:</span>
-                <span className="result-value-right">{resultData.insuranceTerm} лет</span>
-              </div>
-              <div className="result-item-split" style={{marginBottom: '8px'}}>
-                <span className="result-label-left">Порядок оплаты премии:</span>
-                <span className="result-value-right">{insuranceFrequency || 'Ежегодно'}</span>
-              </div>
+            {/* Страховая сумма */}
+            <div className="result-item-split" style={{marginBottom: '8px'}}>
+              <span className="result-label-left">Страховая сумма:</span>
+              <span className="result-value-right">
+                {(resultData.baseInsuranceSum || parseUserSum(resultData.insuranceSum))} руб.
+              </span>
             </div>
 
-            <div className="result-section">
-              <h3 className="text-h3 text-center">Основная программа</h3>
-              <p className="text-small text-center">
-                Страхование на случай ухода из жизни и инвалидности I и II группы по любой причине
-              </p>
+            <h4 className="text-h4 text-center">Страховая премия по рискам:</h4>
 
-              {/* Страховая сумма */}
-              <div className="result-item-split" style={{marginBottom: '8px'}}>
-                <span className="result-label-left">Страховая сумма:</span>
-                <span className="result-value-right">
-                  {(resultData.baseInsuranceSum || parseUserSum(resultData.insuranceSum))} руб.
-                </span>
-              </div>
-
-              <h4 className="text-h4 text-center">Страховая премия по рискам:</h4>
-
-              {/* Смерть ЛП */}
-              <div className="result-item-split" style={{marginBottom: '8px'}}>
-                <span className="result-label-left">Смерть ЛП:</span>
-                <span className="result-value-right">
-                  {formatNumber(Math.round(resultData.deathPremium || 0))} руб.
-                </span>
-              </div>
-
-              {/* Инвалидность */}
-              <div className="result-item-split" style={{marginBottom: '8px'}}>
-                <span className="result-label-left">Инвалидность 1,2 гр.:</span>
-                <span className="result-value-right">
-                  {formatNumber(Math.round(resultData.disabilityPremium || 0))} руб.
-                </span>
-              </div>
+            {/* Смерть ЛП */}
+            <div className="result-item-split" style={{marginBottom: '8px'}}>
+              <span className="result-label-left">Смерть ЛП:</span>
+              <span className="result-value-right">
+                {formatNumber(Math.round(resultData.deathPremium || 0))} руб.
+              </span>
             </div>
-            
-            {/* Итоговая стоимость внизу страницы */}
-            <TotalCostBlock />
+
+            {/* Инвалидность */}
+            <div className="result-item-split" style={{marginBottom: '8px'}}>
+              <span className="result-label-left">Инвалидность 1,2 гр.:</span>
+              <span className="result-value-right">
+                {formatNumber(Math.round(resultData.disabilityPremium || 0))} руб.
+              </span>
+            </div>
           </div>
-        ),
+          
+          {/* Итоговая стоимость внизу страницы */}
+          <TotalCostBlock />
+        </div>
+      );
 
-        // Страница 2: Дополнительные риски (НС + КЗ + Любительский спорт)
-        (
+      // Страница 2: Дополнительные риски (показываем только если есть дополнительные пакеты)
+      const hasAdditionalPackages = resultData.accidentPackageIncluded || resultData.criticalPackageIncluded || resultData.sportPackage;
+      
+      if (hasAdditionalPackages) {
+        carouselPages.push(
           <div key="additional-risks">
             <h2 className="text-h2 text-center">Дополнительные риски</h2>
             <div className="result-section">
@@ -791,8 +796,8 @@ const JustincasePage = () => {
             {/* Итоговая стоимость внизу страницы */}
             <TotalCostBlock />
           </div>
-        )
-      ];
+        );
+      }
 
   return (
     <div className={`card-container card-positioned card-results scrollable ${contentAnimated ? 'animated' : ''}`}>
@@ -1229,7 +1234,173 @@ const JustincasePage = () => {
       );
     }
 
+    // Форма связи с менеджером
+    if (stage === 'manager') {
+      return (
+        <div className={`card-container card-positioned ${contentAnimated ? 'animated' : ''}`}>
+          <h2 className="text-h2">Введите Ваши данные</h2>
+          <p className="text-small text-center">
+            Для связи с менеджером заполните форму ниже
+          </p>
+          
+          <div className="form-group">
+            <label className="form-label">Фамилия</label>
+            <input
+              type="text"
+              className={`form-input ${managerError && !managerSurname.trim() ? 'error' : ''}`}
+              value={managerSurname}
+              onChange={(e) => {
+                setManagerSurname(e.target.value);
+                if (managerError) setManagerError('');
+              }}
+              placeholder="Введите фамилию"
+              disabled={isSendingManager}
+            />
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Имя</label>
+            <input
+              type="text"
+              className={`form-input ${managerError && !managerName.trim() ? 'error' : ''}`}
+              value={managerName}
+              onChange={(e) => {
+                setManagerName(e.target.value);
+                if (managerError) setManagerError('');
+              }}
+              placeholder="Введите имя"
+              disabled={isSendingManager}
+            />
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Город работы</label>
+            <input
+              type="text"
+              className={`form-input ${managerError && !managerCity.trim() ? 'error' : ''}`}
+              value={managerCity}
+              onChange={(e) => {
+                setManagerCity(e.target.value);
+                if (managerError) setManagerError('');
+              }}
+              placeholder="Введите город"
+              disabled={isSendingManager}
+            />
+          </div>
+
+          {managerError && <div className="form-error">{managerError}</div>}
+
+          <div className="button-group">
+            <button 
+              className="btn-universal btn-secondary btn-medium" 
+              onClick={() => setStage('result')}
+              disabled={isSendingManager}
+            >
+              Назад
+            </button>
+            <button 
+              className="btn-universal btn-primary btn-medium" 
+              onClick={sendManagerData}
+              disabled={isSendingManager}
+            >
+              {isSendingManager ? 'Отправляем...' : 'Отправить запрос'}
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    // Сообщение об успешной отправке
+    if (stage === 'sent') {
+      return (
+        <div className={`card-container card-positioned ${contentAnimated ? 'animated' : ''}`}>
+          <h2 className="text-h2">Запрос отправлен!</h2>
+          <p className="text-body-dark text-center">
+            Ваш запрос успешно отправлен менеджеру. 
+            В ближайшее время с Вами свяжутся для консультации.
+          </p>
+          
+          <div className="button-group">
+            <button 
+              className="btn-universal btn-primary btn-medium" 
+              onClick={() => setStage('result')}
+            >
+              Вернуться к результатам
+            </button>
+          </div>
+        </div>
+      );
+    }
+
     return null;
+  };
+
+  // Функция отправки данных менеджера (используем тот же endpoint что и CareFuture)
+  const sendManagerData = async () => {
+    // Валидация полей
+    if (!managerSurname.trim() || !managerName.trim() || !managerCity.trim()) {
+      setManagerError('Пожалуйста, заполните все поля формы');
+      return;
+    }
+
+    setIsSendingManager(true);
+    setManagerError('');
+
+    try {
+      const apiUrl = process.env.NODE_ENV === 'development' 
+        ? 'http://localhost:4000/api/contact-manager'
+        : `${window.location.origin}/api/contact-manager`;
+
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          surname: managerSurname.trim(),
+          name: managerName.trim(),
+          city: managerCity.trim(),
+          email: email,
+          page: 'justincase',
+          // Можно добавить данные расчета если нужно
+          additionalData: {
+            insuranceSum: insuranceSum,
+            insuranceTerm: insuranceTerm,
+            insuranceFrequency: insuranceFrequency,
+            accidentPackage: accidentPackage,
+            criticalPackage: criticalPackage,
+            treatmentRegion: treatmentRegion,
+            sportPackage: sportPackage,
+            totalPremium: resultData?.totalPremium
+          }
+        })
+      });
+
+      const result = await response.json();
+      console.log('📧 Ответ от API contact-manager:', result);
+
+      if (!response.ok) {
+        throw new Error(result.message || `Ошибка сервера: ${response.status}`);
+      }
+
+      if (result.success) {
+        console.log('✅ Запрос успешно отправлен менеджеру');
+        setManagerSent(true);
+        setStage('sent');
+
+        // Очищаем форму
+        setManagerSurname('');
+        setManagerName('');
+        setManagerCity('');
+      } else {
+        throw new Error(result.message || 'Ошибка при отправке запроса');
+      }
+
+    } catch (error) {
+      console.error('❌ Ошибка при отправке запроса менеджеру:', error);
+      setManagerError('Ошибка при отправке запроса. Попробуйте еще раз.');
+    } finally {
+      setIsSendingManager(false);
+    }
   };
 
   return (

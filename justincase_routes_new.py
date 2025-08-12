@@ -251,6 +251,231 @@ def health_check():
             'timestamp': datetime.now().isoformat()
         }), 500
 
+def safe_parse_number(value, default=0):
+    """Безопасное преобразование значения в число"""
+    if value is None or value == '':
+        return default
+    
+    # Обработка строковых boolean значений
+    if isinstance(value, str):
+        value_lower = value.lower().strip()
+        if value_lower in ['yes', 'да', 'true']:
+            return 1
+        elif value_lower in ['no', 'нет', 'false']:
+            return 0
+        elif value_lower == '':
+            return default
+    
+    try:
+        return float(value) if '.' in str(value) else int(value)
+    except (ValueError, TypeError):
+        return default
+
+def safe_parse_boolean(value, default=False):
+    """Безопасное преобразование значения в boolean"""
+    if value is None:
+        return default
+    
+    if isinstance(value, bool):
+        return value
+    
+    if isinstance(value, str):
+        value_lower = value.lower().strip()
+        if value_lower in ['yes', 'да', 'true', '1']:
+            return True
+        elif value_lower in ['no', 'нет', 'false', '0']:
+            return False
+    
+    return bool(value)
+
+@justincase_bp.route('/api/justincase/recommend-sum', methods=['POST', 'OPTIONS'])
+def recommend_sum():
+    """
+    Расчет рекомендованной суммы страхования на основе данных о доходах и семье
+    """
+    if request.method == "OPTIONS":
+        return '', 200
+        
+    try:
+        # Получаем данные из запроса
+        data, error = safe_get_json()
+        if error:
+            return format_error_response(error, 400)
+        
+        logger.info(f"📨 Запрос рекомендованной суммы: {data}")
+        
+        # Извлекаем параметры с безопасным парсингом
+        birth_date = data.get('birthDate')
+        has_job = safe_parse_boolean(data.get('hasJob'), False)
+        income_2022 = safe_parse_number(data.get('income2022'), 0)
+        income_2023 = safe_parse_number(data.get('income2023'), 0)
+        income_2024 = safe_parse_number(data.get('income2024'), 0)
+        scholarship = safe_parse_number(data.get('scholarship'), 0)
+        unsecured_loans = safe_parse_number(data.get('unsecuredLoans'), 0)
+        breadwinner_status = data.get('breadwinnerStatus', 'not_breadwinner')
+        income_share = safe_parse_number(data.get('incomeShare'), 0)
+        children_count = safe_parse_number(data.get('childrenCount'), 0)
+        special_care_relatives = safe_parse_number(data.get('specialCareRelatives'), 0)
+        
+        # Нормализуем breadwinner_status
+        if isinstance(breadwinner_status, str):
+            breadwinner_lower = breadwinner_status.lower().strip()
+            if breadwinner_lower in ['yes', 'да', 'true', '1']:
+                breadwinner_status = 'main_breadwinner'
+            elif breadwinner_lower in ['no', 'нет', 'false', '0']:
+                breadwinner_status = 'not_breadwinner'
+        
+        # Рассчитываем возраст
+        age = 30  # По умолчанию
+        if birth_date:
+            try:
+                birth_dt = datetime.strptime(birth_date, '%Y-%m-%d')
+                age = (datetime.now() - birth_dt).days // 365
+            except:
+                logger.warning(f"Не удалось разобрать дату рождения: {birth_date}")
+        
+        # Логика расчета рекомендованной суммы
+        recommended_sum = calculate_recommended_insurance_sum(
+            age=age,
+            has_job=has_job,
+            income_2022=income_2022,
+            income_2023=income_2023,
+            income_2024=income_2024,
+            scholarship=scholarship,
+            unsecured_loans=unsecured_loans,
+            breadwinner_status=breadwinner_status,
+            income_share=income_share,
+            children_count=children_count,
+            special_care_relatives=special_care_relatives
+        )
+        
+        # Рекомендованный срок в зависимости от возраста
+        if age <= 30:
+            recommended_term = 25
+        elif age <= 40:
+            recommended_term = 20
+        elif age <= 50:
+            recommended_term = 15
+        else:
+            recommended_term = 10
+            
+        result = {
+            'recommended_sum': int(recommended_sum),
+            'recommended_term': recommended_term,
+            'calculation_details': {
+                'age': age,
+                'average_income': (income_2022 + income_2023 + income_2024) / 3 if any([income_2022, income_2023, income_2024]) else scholarship,
+                'family_multiplier': get_family_multiplier(breadwinner_status, children_count, special_care_relatives),
+                'debt_factor': unsecured_loans
+            }
+        }
+        
+        logger.info(f"✅ Рекомендованная сумма рассчитана: {recommended_sum}")
+        return jsonify(format_success_response(result, "Рекомендованная сумма рассчитана"))
+        
+    except Exception as e:
+        logger.error(f"❌ Ошибка расчета рекомендованной суммы: {e}")
+        traceback.print_exc()
+        return format_error_response(f'Ошибка расчета рекомендованной суммы: {str(e)}', 500)
+
+def calculate_recommended_insurance_sum(age, has_job, income_2022, income_2023, income_2024, 
+                                       scholarship, unsecured_loans, breadwinner_status, 
+                                       income_share, children_count, special_care_relatives):
+    """
+    Расчет рекомендованной суммы страхования
+    """
+    # Определяем средний доход
+    incomes = [income_2022, income_2023, income_2024]
+    valid_incomes = [inc for inc in incomes if inc > 0]
+    
+    if valid_incomes:
+        average_income = sum(valid_incomes) / len(valid_incomes)
+    elif scholarship > 0:
+        average_income = scholarship
+    else:
+        # Минимальная сумма, если нет данных о доходах
+        return 500000
+    
+    # Базовый множитель - от 1.5 до 3 годовых доходов (более консервативно)
+    base_multiplier = 2  # Стандартная рекомендация
+    
+    # Корректировки в зависимости от возраста
+    if age <= 25:
+        base_multiplier = 2.5  # Больше для молодых
+    elif age <= 35:
+        base_multiplier = 2.2  # Наш случай - должен дать ~2.2млн для 1млн дохода
+    elif age <= 45:
+        base_multiplier = 2.0
+    elif age <= 55:
+        base_multiplier = 1.8
+    else:
+        base_multiplier = 1.5  # Меньше для старших
+    
+    # Семейные обстоятельства - более умеренные множители
+    family_multiplier = get_family_multiplier_conservative(breadwinner_status, children_count, special_care_relatives)
+    
+    # Учет доли дохода - более умеренный
+    if breadwinner_status == 'main_breadwinner' and income_share > 0:
+        share_multiplier = 1.0 + (income_share - 50) / 100  # Добавляем только превышение над 50%
+        share_multiplier = max(1.0, min(1.3, share_multiplier))  # Ограничиваем 1.0-1.3
+    else:
+        share_multiplier = 1.0
+    
+    # Базовая сумма
+    base_sum = average_income * base_multiplier * family_multiplier * share_multiplier
+    
+    # Добавляем покрытие долгов
+    total_recommended = base_sum + unsecured_loans
+    
+    # Ограничения
+    min_sum = 500000   # Минимум 500 тыс
+    max_sum = 10000000 # Максимум 10 млн
+    
+    recommended = max(min_sum, min(max_sum, total_recommended))
+    
+    # Округляем до 100 тысяч
+    return round(recommended / 100000) * 100000
+
+def get_family_multiplier_conservative(breadwinner_status, children_count, special_care_relatives):
+    """
+    Более консервативный множитель в зависимости от семейных обстоятельств
+    """
+    multiplier = 1.0
+    
+    # Статус кормильца - более умеренно
+    if breadwinner_status == 'main_breadwinner':
+        multiplier += 0.1  # Было 0.5, теперь 0.1
+    elif breadwinner_status == 'co_breadwinner':
+        multiplier += 0.05  # Было 0.3, теперь 0.05
+    
+    # Дети - более умеренно
+    multiplier += children_count * 0.1  # Было 0.3, теперь 0.1
+    
+    # Родственники, требующие ухода - более умеренно
+    multiplier += special_care_relatives * 0.15  # Было 0.4, теперь 0.15
+    
+    return min(multiplier, 1.5)  # Максимум в 1.5 раза (было 3.0)
+
+def get_family_multiplier(breadwinner_status, children_count, special_care_relatives):
+    """
+    Множитель в зависимости от семейных обстоятельств
+    """
+    multiplier = 1.0
+    
+    # Статус кормильца
+    if breadwinner_status == 'main_breadwinner':
+        multiplier += 0.5
+    elif breadwinner_status == 'co_breadwinner':
+        multiplier += 0.3
+    
+    # Дети
+    multiplier += children_count * 0.3
+    
+    # Родственники, требующие ухода
+    multiplier += special_care_relatives * 0.4
+    
+    return min(multiplier, 3.0)  # Максимум в 3 раза
+
 def register_justincase_routes(app):
     """
     Регистрация всех маршрутов калькулятора JustInCase
@@ -362,16 +587,20 @@ def proxy_calculator_save():
         payment_frequency = data.get('payment_frequency', 'annual')
         if payment_frequency == 'annual':
             # Проверяем старый формат
-            insurance_frequency = data.get('insuranceFrequency', 'Ежегодно')
+            insurance_frequency = data.get('insuranceFrequency') or data.get('paymentFrequency', 'Ежегодно')
             frequency_map = {
                 'Ежегодно': 'annual',
                 'Раз в год': 'annual',
+                'ежегодно': 'annual',
                 'Полугодие': 'semi_annual',
                 'Раз в полгода': 'semi_annual',
+                'полугодие': 'semi_annual',
                 'Поквартально': 'quarterly',
                 'Раз в квартал': 'quarterly',
+                'поквартально': 'quarterly',
                 'Ежемесячно': 'monthly',
-                'Раз в месяц': 'monthly'
+                'Раз в месяц': 'monthly',
+                'ежемесячно': 'monthly'
             }
             payment_frequency = frequency_map.get(insurance_frequency, 'annual')
 
@@ -413,16 +642,28 @@ def proxy_calculator_save():
             'insuranceTerm': api_data['term_years'],
             'baseInsuranceSum': api_data['sum_insured'],
             'basePremium': result['base_premium'],
-            # Разделяем премии по смерти и инвалидности
-            'deathPremium': result['calculation_details']['sum_insured'] * result['calculation_details']['tariff_rates']['death_rate'],
-            'disabilityPremium': result['calculation_details']['sum_insured'] * result['calculation_details']['tariff_rates']['disability_rate'],
+            # Используем размеры одного платежа из per_payment_breakdown
+            'deathPremium': result['per_payment_breakdown']['death'],
+            'disabilityPremium': result['per_payment_breakdown']['disability'],
             'accidentPackageIncluded': api_data['include_accident'],
             'accidentInsuranceSum': api_data['sum_insured'] if api_data['include_accident'] else 0,
             'accidentPremium': result['accident_premium'] if api_data['include_accident'] else 0,
-            # Разделяем премии НС
-            'accidentDeathPremium': result['calculation_details']['sum_insured'] * result['calculation_details']['tariff_rates']['accident_death_rate'] if api_data['include_accident'] else 0,
-            'trafficDeathPremium': result['calculation_details']['sum_insured'] * result['calculation_details']['tariff_rates']['traffic_death_rate'] if api_data['include_accident'] else 0,
-            'injuryPremium': result['calculation_details']['sum_insured'] * result['calculation_details']['tariff_rates']['injury_rate'] if api_data['include_accident'] else 0,
+            # Используем размер одного платежа для НС и разбиваем пропорционально
+            'accidentDeathPremium': (result['per_payment_breakdown']['accident'] * 
+                                   result['calculation_details']['tariff_rates']['accident_death_rate'] / 
+                                   (result['calculation_details']['tariff_rates']['accident_death_rate'] + 
+                                    result['calculation_details']['tariff_rates']['traffic_death_rate'] + 
+                                    result['calculation_details']['tariff_rates']['injury_rate'])) if api_data['include_accident'] else 0,
+            'trafficDeathPremium': (result['per_payment_breakdown']['accident'] * 
+                                  result['calculation_details']['tariff_rates']['traffic_death_rate'] / 
+                                  (result['calculation_details']['tariff_rates']['accident_death_rate'] + 
+                                   result['calculation_details']['tariff_rates']['traffic_death_rate'] + 
+                                   result['calculation_details']['tariff_rates']['injury_rate'])) if api_data['include_accident'] else 0,
+            'injuryPremium': (result['per_payment_breakdown']['accident'] * 
+                            result['calculation_details']['tariff_rates']['injury_rate'] / 
+                            (result['calculation_details']['tariff_rates']['accident_death_rate'] + 
+                             result['calculation_details']['tariff_rates']['traffic_death_rate'] + 
+                             result['calculation_details']['tariff_rates']['injury_rate'])) if api_data['include_accident'] else 0,
             'criticalPackageIncluded': api_data['include_critical_illness'],
             'criticalInsuranceSum': 60000000,  # Фиксированная сумма покрытия КЗ
             'criticalRehabilitationSum': 400000,  # Фиксированная сумма реабилитации

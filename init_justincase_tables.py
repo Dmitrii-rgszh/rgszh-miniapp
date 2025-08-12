@@ -57,10 +57,10 @@ def init_justincase_tables():
         
         # Загружаем коэффициенты частоты
         coefficients = [
-            ('annual', 1.0),
-            ('semi_annual', 0.52),
-            ('quarterly', 0.27),
-            ('monthly', 0.09)
+            ('annual', 1.0),       # 1 × 1.0 = 1.00
+            ('semi_annual', 0.51), # 2 × 0.51 = 1.02
+            ('quarterly', 0.2575), # 4 × 0.2575 = 1.03
+            ('monthly', 0.0867)    # 12 × 0.0867 = 1.04
         ]
         
         for freq, coeff in coefficients:

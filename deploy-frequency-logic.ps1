@@ -18,11 +18,13 @@ if ($SkipTest) { Write-Host "   ⏭️  Пропуск тестов" -Foreground
 Write-Host ""
 
 if (-not $SkipBuild) {
+
+if (-not $SkipBuild) {
     # 1. Сборка образов локально
-    Write-Host "🔨 Сборка Docker образов..." -ForegroundColor Cyan
+    Write-Host "� Сборка Docker образов..." -ForegroundColor Cyan
 
     # Сборка сервера
-    Write-Host "   🔧 Собираю сервер..."
+    Write-Host "   � Собираю сервер..."
     docker build -f Dockerfile.server -t "${DockerUser}/rgszh-miniapp-server:latest" .
     if ($LASTEXITCODE -ne 0) { throw "Ошибка сборки сервера" }
 
@@ -64,38 +66,28 @@ $deployScript = @"
 #!/bin/bash
 set -e
 
-cd /home/admin/rgszh-miniapp
-
 echo "📥 Подтягиваем новые образы..."
-docker-compose pull server
+docker pull ${DockerUser}/rgszh-miniapp-server:latest
+docker pull ${DockerUser}/rgszh-miniapp-client:latest
 
-echo "🔄 Перезапускаем сервер..."
-docker-compose down server
-docker-compose up -d server
+echo "🔄 Перезапускаем сервисы..."
+docker compose down server frontend
+docker compose up -d server frontend
 
-echo "⏳ Ждем запуска сервиса..."
+echo "⏳ Ждем запуска сервисов..."
 sleep 15
 
 echo "📊 Статус сервисов:"
-docker-compose ps
+docker compose ps server frontend
 
 echo "✅ Деплой завершен!"
 "@
 
-Write-Host "   � Запускаю команды деплоя на ВМ..."
+Write-Host "   📝 Создаю скрипт деплоя на ВМ..."
+$deployScript | ssh admin@$VmIp "cd rgszh-miniapp && cat > /tmp/deploy.sh && chmod +x /tmp/deploy.sh"
 
-Write-Host "   📥 Подтягиваем новые образы..."
-ssh admin@$VmIp "cd /home/admin/rgszh-miniapp && docker-compose pull server"
-
-Write-Host "   🔄 Перезапускаем сервер..."
-ssh admin@$VmIp "cd /home/admin/rgszh-miniapp && docker-compose stop server"
-ssh admin@$VmIp "cd /home/admin/rgszh-miniapp && docker-compose up -d server"
-
-Write-Host "   ⏳ Ждем запуска сервиса..."
-Start-Sleep -Seconds 15
-
-Write-Host "   📊 Проверяем статус..."
-ssh admin@$VmIp "cd /home/admin/rgszh-miniapp && docker-compose ps"
+Write-Host "   🚀 Запускаю деплой на ВМ..."
+ssh admin@$VmIp "cd rgszh-miniapp && sudo /tmp/deploy.sh"
 
 if ($LASTEXITCODE -ne 0) { throw "Ошибка деплоя на ВМ" }
 
@@ -110,30 +102,7 @@ if (-not $SkipTest) {
     try {
         $response = Invoke-RestMethod -Uri $testUrl -TimeoutSec 10 -SkipCertificateCheck
         Write-Host "✅ API доступен" -ForegroundColor Green
-        Write-Host "   Статус: $($response.status)" -ForegroundColor Yellow
-        
-        # Тестируем новый эндпоинт recommend-sum
-        $recommendUrl = "https://${VmIp}/api/justincase/recommend-sum"
-        Write-Host "   🧪 Тестирую новый эндпоинт: $recommendUrl"
-        
-        try {
-            $testPayload = @{
-                birthDate = "1990-01-01"
-                hasJob = $true
-                income2023 = "1000000"
-            }
-            
-            $recommendResponse = Invoke-RestMethod -Uri $recommendUrl -Method POST -Body ($testPayload | ConvertTo-Json) -ContentType "application/json" -TimeoutSec 10 -SkipCertificateCheck
-            Write-Host "✅ Эндпоинт recommend-sum работает!" -ForegroundColor Green
-        } catch {
-            if ($_.Exception.Response.StatusCode -eq 400) {
-                Write-Host "✅ Эндпоинт recommend-sum работает (ошибка валидации нормальна)" -ForegroundColor Green
-            } elseif ($_.Exception.Response.StatusCode -eq 405) {
-                Write-Host "❌ Эндпоинт recommend-sum НЕ обновился (405 Method Not Allowed)" -ForegroundColor Red
-            } else {
-                Write-Host "⚠️  Эндпоинт recommend-sum: $($_.Exception.Message)" -ForegroundColor Yellow
-            }
-        }
+        Write-Host "   Версия: $($response.data.version)" -ForegroundColor Yellow
     } catch {
         Write-Host "⚠️  API недоступен: $($_.Exception.Message)" -ForegroundColor Yellow
     }

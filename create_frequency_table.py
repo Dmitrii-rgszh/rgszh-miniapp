@@ -23,10 +23,10 @@ def create_frequency_coefficients_table():
         
         # Стандартные коэффициенты частоты платежей
         coefficients = [
-            ('annual', 1.0),      # Ежегодно
-            ('semi_annual', 0.52), # Раз в полгода
-            ('quarterly', 0.27),   # Раз в квартал  
-            ('monthly', 0.09)      # Ежемесячно
+            ('annual', 1.0),       # Ежегодно: 1 × 1.0 = 1.00
+            ('semi_annual', 0.51), # Полугодие: 2 × 0.51 = 1.02
+            ('quarterly', 0.2575), # Поквартально: 4 × 0.2575 = 1.03  
+            ('monthly', 0.0867)    # Ежемесячно: 12 × 0.0867 = 1.04
         ]
         
         for freq, coeff in coefficients:

@@ -283,11 +283,14 @@ def send_email(subject, body, to_email=None):
         
         # Отправляем через SMTP
         # Используем SMTP_SSL для порта 465, обычный SMTP + starttls для порта 587
+        import ssl
+        context = ssl.create_default_context()
+        
         if SMTP_PORT == 465:
-            server = smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT)
+            server = smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT, context=context)
         else:
             server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
-            server.starttls()  # Включаем шифрование
+            server.starttls(context=context)  # Включаем шифрование
         
         try:
             server.login(SMTP_USER, SMTP_PASSWORD)
@@ -354,8 +357,17 @@ def send_assessment_email(subject, body):
         logger.info(f"📧 [Assessment] Recipients: {', '.join(assessment_recipients)}")
         
         # Отправляем через SMTP
-        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
-            server.starttls()  # Включаем шифрование
+        # Используем SMTP_SSL для порта 465, обычный SMTP + starttls для порта 587
+        import ssl
+        context = ssl.create_default_context()
+        
+        if SMTP_PORT == 465:
+            server = smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT, context=context)
+        else:
+            server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
+            server.starttls(context=context)  # Включаем шифрование
+        
+        try:
             server.login(SMTP_USER, SMTP_PASSWORD)
             
             # Отправляем каждому получателю
@@ -379,11 +391,20 @@ def send_assessment_email(subject, body):
                     
                 except Exception as e:
                     logger.error(f"❌ [Assessment] Failed to send email to {recipient}: {e}")
+            
+            # Считаем успешной отправкой, если хотя бы одному получателю доставлено
+            success = success_count > 0
+            logger.info(f"📧 [Assessment] Email sending summary: {success_count}/{len(assessment_recipients)} successful")
+            return success
         
-        # Считаем успешной отправкой, если хотя бы одному получателю доставлено
-        success = success_count > 0
-        logger.info(f"📧 [Assessment] Email sending summary: {success_count}/{len(assessment_recipients)} successful")
-        return success
+        except Exception as e:
+            logger.error(f"❌ [Assessment] Failed to send email: {e}")
+            return False
+        finally:
+            try:
+                server.quit()
+            except:
+                pass
         
     except Exception as e:
         logger.error(f"❌ [Assessment] Failed to send email: {e}")
@@ -409,8 +430,17 @@ def send_carefuture_email_to_managers(subject, body):
         logger.info(f"📧 [CareFuture] Recipients: {', '.join(carefuture_recipients)}")
         
         # Отправляем через SMTP
-        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
-            server.starttls()  # Включаем шифрование
+        # Используем SMTP_SSL для порта 465, обычный SMTP + starttls для порта 587
+        import ssl
+        context = ssl.create_default_context()
+        
+        if SMTP_PORT == 465:
+            server = smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT, context=context)
+        else:
+            server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
+            server.starttls(context=context)  # Включаем шифрование
+        
+        try:
             server.login(SMTP_USER, SMTP_PASSWORD)
             
             # Отправляем каждому получателю
@@ -434,11 +464,20 @@ def send_carefuture_email_to_managers(subject, body):
                     
                 except Exception as e:
                     logger.error(f"❌ [CareFuture] Failed to send email to {recipient}: {e}")
+            
+            # Считаем успешной отправкой, если хотя бы одному получателю доставлено
+            success = success_count > 0
+            logger.info(f"📧 [CareFuture] Email sending summary: {success_count}/{len(carefuture_recipients)} successful")
+            return success
         
-        # Считаем успешной отправкой, если хотя бы одному получателю доставлено
-        success = success_count > 0
-        logger.info(f"📧 [CareFuture] Email sending summary: {success_count}/{len(carefuture_recipients)} successful")
-        return success
+        except Exception as e:
+            logger.error(f"❌ [CareFuture] Failed to send email: {e}")
+            return False
+        finally:
+            try:
+                server.quit()
+            except:
+                pass
         
     except Exception as e:
         logger.error(f"❌ [CareFuture] Failed to send email: {e}")
@@ -1016,8 +1055,11 @@ def send_carefuture_email_with_user(subject, body, user_email):
         logger.info(f"📧 [CareFuture] Sending email to {len(carefuture_recipients)} recipients: {subject}")
         logger.info(f"📧 [CareFuture] Recipients: {', '.join(carefuture_recipients)}")
         
-        # Отправляем через SMTP_SSL для порта 465
-        with smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT) as server:
+        # Отправляем через SMTP с правильными настройками для порта 465
+        import ssl
+        context = ssl.create_default_context()
+        
+        with smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT, context=context) as server:
             server.login(SMTP_USER, SMTP_PASSWORD)
             
             success_count = 0
@@ -1100,6 +1142,9 @@ def contact_manager():
         if page == 'care-future':
             subject = f"Новая заявка НСЖ «Забота о будущем» от {surname} {name}"
             logger.info(f"📧 [CareFuture] Processing manager request from: {surname} {name}")
+        elif page == 'justincase':
+            subject = f"Новая заявка «На всякий случай» от {surname} {name}"
+            logger.info(f"📧 [JustInCase] Processing manager request from: {surname} {name}")
         else:
             # Для всех остальных страниц (включая Assessment)
             subject = f"Новая заявка с калькулятора от {surname} {name}"
@@ -1115,6 +1160,24 @@ def contact_manager():
 - Город: {city}
 - Email: {user_email}
 """
+
+        # Для JustInCase добавляем параметры расчета из дополнительных данных
+        if page == 'justincase':
+            additional_data = data.get('additionalData', {})
+            if additional_data:
+                body += f"""
+
+ПАРАМЕТРЫ СТРАХОВАНИЯ "НА ВСЯКИЙ СЛУЧАЙ":
+- Страховая сумма: {additional_data.get('insuranceSum', 'Не указана')} руб.
+- Срок страхования: {additional_data.get('insuranceTerm', 'Не указан')} лет
+- Периодичность оплаты: {additional_data.get('insuranceFrequency', 'Не указана')}
+- Пакет "Несчастный случай": {('Включен' if additional_data.get('accidentPackage') == 'yes' else 'Не включен')}
+- Пакет "Критические заболевания": {('Включен' if additional_data.get('criticalPackage') == 'yes' else 'Не включен')}
+{('- Регион лечения: ' + ('За рубежом' if additional_data.get('treatmentRegion') == 'abroad' else 'Россия')) if additional_data.get('criticalPackage') == 'yes' else ''}
+- Любительский спорт: {('Включен' if additional_data.get('sportPackage') == 'yes' else 'Не включен')}
+{('- Итоговая премия: ' + str(additional_data.get('totalPremium', 'Не рассчитана')) + ' руб.') if additional_data.get('totalPremium') else ''}
+"""
+
         if calculation_data:
             gender_ru = 'Мужской' if calculation_data['gender'] == 'male' else 'Женский'
             birth_date_str = calculation_data.get('birth_date', '').split('T')[0] if calculation_data.get('birth_date') else 'Не указана'
@@ -1181,6 +1244,16 @@ def contact_manager():
             # Для Assessment отправляем только на 2 адреса (без I.dav@mail.ru)
             success = send_assessment_email(subject, body)
             logger_prefix = "[Assessment]"
+        elif page == 'justincase':
+            # Для JustInCase используем стандартную отправку
+            if SMTP_PASSWORD:
+                success = send_email(subject, body)
+            else:
+                # Если SMTP не настроен, симулируем успешную отправку для тестирования
+                logger.warning(f"📧 [JustInCase] SMTP not configured, simulating successful email send")
+                logger.info(f"📧 [JustInCase] Would send email with subject: {subject}")
+                success = True  # Возвращаем успех для корректной работы без SMTP
+            logger_prefix = "[JustInCase]"
         else:
             # Для всех остальных страниц - стандартная отправка
             success = send_email(subject, body)

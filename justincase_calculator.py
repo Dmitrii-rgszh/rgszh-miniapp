@@ -85,10 +85,10 @@ class JustInCaseCalculator:
             cursor = conn.cursor()
             cursor.execute("""
                 SELECT death_rate, disability_rate, accident_death_rate, 
-                       traffic_death_rate, injury_rate, critical_rf_fee, 
-                       critical_abroad_fee, i_rate
-                FROM justincase_tariffs
-                WHERE age = %s AND gender = %s AND payment_period = %s
+                       traffic_death_rate, injury_rate, critical_illness_rf_fee, 
+                       critical_illness_abroad_fee, coefficient_i
+                FROM justincase_base_tariffs
+                WHERE age = %s AND gender = %s AND term_years = %s
             """, (age, gender, term_years))
             
             result = cursor.fetchone()
@@ -171,8 +171,25 @@ class JustInCaseCalculator:
                     'error': f'Тариф не найден для возраста {age}, пола {gender}, срока {term_years} лет'
                 }
             
-            # Получаем коэффициент частоты
-            freq_coeff = self.get_frequency_coefficient(payment_frequency)
+            # Получаем коэффициент частоты (из БД может прийти как коэффициент одного платежа или как годовой)
+            coeff_raw = self.get_frequency_coefficient(payment_frequency)
+            # Количество платежей в год
+            payments_map = {
+                'annual': 1,
+                'semi_annual': 2,
+                'quarterly': 4,
+                'monthly': 12
+            }
+            payments_per_year = payments_map.get(payment_frequency, 1)
+            # Нормализуем коэффициенты: определяем коэффициент одного платежа и годовой коэффициент
+            if coeff_raw > 1.0:
+                # Пришёл годовой коэффициент (например, 1.02, 1.03, 1.04)
+                per_payment_coeff = coeff_raw / payments_per_year
+                freq_coeff = coeff_raw
+            else:
+                # Пришёл коэффициент одного платежа (например, 0.51, 0.2575, 0.0867)
+                per_payment_coeff = coeff_raw
+                freq_coeff = per_payment_coeff * payments_per_year
             
             # Базовая премия по смерти и инвалидности
             death_premium = sum_insured * tariff['death_rate']
@@ -196,33 +213,68 @@ class JustInCaseCalculator:
                                      tariff['injury_rate'])
                 accident_premium = sum_insured * total_accident_rate
             
-            # Общая премия
+            # Общая премия до учёта частоты (годовая база)
             total_annual_premium = base_premium + critical_premium + accident_premium
-            
-            # Применяем коэффициент частоты выплат
-            final_premium = total_annual_premium * freq_coeff
-            
-            # Округляем до 2 знаков
-            final_premium = float(Decimal(str(final_premium)).quantize(
-                Decimal('0.01'), rounding=ROUND_HALF_UP))
-            base_premium = float(Decimal(str(base_premium)).quantize(
-                Decimal('0.01'), rounding=ROUND_HALF_UP))
-            critical_premium = float(Decimal(str(critical_premium)).quantize(
-                Decimal('0.01'), rounding=ROUND_HALF_UP))
-            accident_premium = float(Decimal(str(accident_premium)).quantize(
-                Decimal('0.01'), rounding=ROUND_HALF_UP))
+
+            # Применяем коэффициент частоты по-рисково с округлением каждого платежа
+            def q2(x: float) -> float:
+                return float(Decimal(str(x)).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP))
+
+            # Базовые компоненты (до частоты)
+            death_premium = sum_insured * tariff['death_rate']
+            disability_premium = sum_insured * tariff['disability_rate']
+
+            # Пер-платёжные суммы по каждому риску
+            per_payment = {
+                'death': q2(death_premium * per_payment_coeff),
+                'disability': q2(disability_premium * per_payment_coeff),
+                'accident': q2(accident_premium * per_payment_coeff),
+                'critical': q2(critical_premium * per_payment_coeff)
+            }
+            per_payment['base'] = q2(per_payment['death'] + per_payment['disability'])
+            per_payment['total'] = q2(per_payment['death'] + per_payment['disability'] + per_payment['accident'] + per_payment['critical'])
+
+            # Годовые суммы после учёта частоты (через пер-платёжные суммы)
+            premium_by_risk = {
+                'death': q2(per_payment['death'] * payments_per_year),
+                'disability': q2(per_payment['disability'] * payments_per_year),
+                'accident': q2(per_payment['accident'] * payments_per_year),
+                'critical': q2(per_payment['critical'] * payments_per_year)
+            }
+            premium_by_risk['base'] = q2(premium_by_risk['death'] + premium_by_risk['disability'])
+            final_premium = q2(premium_by_risk['death'] + premium_by_risk['disability'] + premium_by_risk['accident'] + premium_by_risk['critical'])
+
+            # Округляем базовые (до частоты) компоненты для обратной совместимости полей
+            base_premium = q2(base_premium)
+            critical_premium = q2(critical_premium)
+            accident_premium = q2(accident_premium)
             
             return {
                 'success': True,
-                'base_premium': base_premium,
-                'critical_illness_premium': critical_premium,
-                'accident_premium': accident_premium,
-                'total_annual_premium': float(Decimal(str(total_annual_premium)).quantize(
-                    Decimal('0.01'), rounding=ROUND_HALF_UP)),
+                # Основные поля - размер одного платежа
+                'base_premium': per_payment['base'],
+                'critical_illness_premium': per_payment['critical'],
+                'accident_premium': per_payment['accident'],
+                'final_premium': per_payment['total'],
+                # Дополнительная информация
                 'payment_frequency': payment_frequency,
-                'frequency_coefficient': freq_coeff,
-                'final_premium': final_premium,
+                'frequency_coefficient': q2(freq_coeff),
                 'critical_illness_type': critical_illness_type,
+                'payments_per_year': payments_per_year,
+                'per_payment_coefficient': per_payment_coeff,
+                # Детальная разбивка по платежам
+                'per_payment_breakdown': per_payment,
+                # Годовые суммы с учетом коэффициентов
+                'annual_breakdown': premium_by_risk,
+                'total_annual_premium': final_premium,
+                # Базовые годовые суммы (без коэффициентов)
+                'base_annual_amounts': {
+                    'base_premium': base_premium,
+                    'critical_illness_premium': critical_premium,
+                    'accident_premium': accident_premium,
+                    'total_annual_premium': float(Decimal(str(total_annual_premium)).quantize(
+                        Decimal('0.01'), rounding=ROUND_HALF_UP))
+                },
                 'calculation_details': {
                     'age': age,
                     'gender': gender,
@@ -231,6 +283,8 @@ class JustInCaseCalculator:
                     'include_accident': include_accident,
                     'include_critical_illness': include_critical_illness,
                     'critical_illness_type': critical_illness_type,
+                    'payments_per_year': payments_per_year,
+                    'per_payment_coefficient': per_payment_coeff,
                     'tariff_rates': {
                         'death_rate': tariff['death_rate'],
                         'disability_rate': tariff['disability_rate'],
