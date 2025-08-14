@@ -987,6 +987,103 @@ def send_snp_email():
         logger.error(f"❌ Error in SNP email endpoint: {e}")
         return jsonify({"error": "Internal server error"}), 500
 
+@app.route('/api/proxy/snp/calculate', methods=['POST', 'OPTIONS'])
+def snp_calculate():
+    """Расчет по программе 'Стратегия на пять. Гарант'"""
+    if request.method == "OPTIONS":
+        return '', 200
+    
+    try:
+        # Получаем данные запроса
+        data = request.get_json()
+        if not data:
+            return jsonify({
+                'success': False,
+                'error': 'Отсутствуют данные запроса'
+            }), 400
+        
+        # Извлекаем параметры
+        email = data.get('email', '')
+        birthdate = data.get('birthdate', '')
+        age = data.get('age', 0)
+        gender = data.get('gender', '')
+        payment = data.get('payment', '')
+        sum_amount = data.get('sum', 0)
+        
+        logger.info(f"SNP расчет для: email={email}, age={age}, gender={gender}, payment={payment}, sum={sum_amount}")
+        
+        # Базовые расчеты без корпоративных коэффициентов
+        base_contribution = sum_amount if payment == 'Страхового взноса' else sum_amount * 0.2
+        contribution = int(base_contribution)
+        total_contribution = contribution * 5  # за 5 лет
+        
+        # Процент начислений (44%)
+        accrual_percent = 0.44
+        accrual_amount = int(contribution * accrual_percent)
+        total_accrual = accrual_amount * 5
+        
+        # Финальные суммы
+        final_annual = contribution + accrual_amount
+        final_total = total_contribution + total_accrual
+        
+        # Формируем ответ
+        result = {
+            'calculationDate': datetime.now().strftime('%d.%m.%Y'),
+            'gender': gender,
+            'age': age,
+            'payment': payment,
+            'contribution': contribution,
+            'totalContribution': total_contribution,
+            'accrualPercent': accrual_percent,
+            'accrualAmount': accrual_amount,
+            'totalAccrual': total_accrual,
+            'finalAnnual': final_annual,
+            'finalTotal': final_total
+        }
+        
+        logger.info(f"SNP расчет завершен: contribution={contribution}")
+        
+        return jsonify(result), 200
+        
+    except Exception as e:
+        logger.error(f"❌ Error in SNP calculate endpoint: {e}")
+        return jsonify({"error": "Internal server error"}), 500
+
+@app.route('/api/proxy/snp/send_results', methods=['POST', 'OPTIONS'])
+def snp_send_results():
+    """Отправка результатов расчета SNP на почту пользователя"""
+    logger.info("🌐 ➜ %s %s", request.method, request.path)
+    
+    if request.method == "OPTIONS":
+        return '', 200
+    
+    try:
+        data = request.get_json()
+        if not data:
+            logger.error("❌ [SNP] No JSON data received")
+            return jsonify({"success": False, "message": "No data provided"}), 400
+            
+        to_email = data.get('to_email', '')
+        subject = data.get('subject', 'Результаты расчета SNP')
+        body = data.get('body', '')
+        user_data = data.get('user_data', {})
+        
+        logger.info(f"📧 [SNP] Sending results to: {to_email}")
+        
+        # Отправляем результаты на почту пользователя и менеджерам
+        success = send_snp_results_email(to_email, subject, body, user_data)
+        
+        if success:
+            logger.info("✅ [SNP] Results sent successfully")
+            return jsonify({"success": True, "message": "Results sent successfully"}), 200
+        else:
+            logger.error("❌ [SNP] Failed to send results")
+            return jsonify({"success": False, "message": "Failed to send results"}), 500
+            
+    except Exception as e:
+        logger.error(f"❌ [SNP] Error in SNP send results endpoint: {e}")
+        return jsonify({"success": False, "error": "Internal server error"}), 500
+
 @app.route('/api/proxy/carefuture/send_manager', methods=['POST', 'OPTIONS'])
 def send_carefuture_email():
     """Отправка email уведомлений для Care Future НА ФИКСИРОВАННЫЕ АДРЕСА МЕНЕДЖЕРОВ"""
@@ -1164,6 +1261,72 @@ def send_carefuture_email_with_user(subject, body, user_email):
         import traceback
         logger.error(f"❌ [CareFuture] Traceback: {traceback.format_exc()}")
         return False
+
+def send_snp_results_email(to_email, subject, body, user_data):
+    """
+    Отправляет результаты расчета SNP на email пользователя и менеджерам
+    """
+    try:
+        logger.info(f"📧 [SNP] Starting email send process to: {to_email}")
+        
+        if not SMTP_PASSWORD:
+            logger.warning("📧 [SNP] SMTP password not configured, skipping email send")
+            return False
+        
+        # Получатели для SNP результатов: пользователь + менеджеры
+        snp_recipients = [
+            "zerotlt@mail.ru",
+            "I.dav@mail.ru"
+        ]
+        
+        # Добавляем email пользователя если он валидный
+        if to_email and to_email.strip():
+            user_email_clean = to_email.strip().lower()
+            if '@' in user_email_clean and '.' in user_email_clean:
+                snp_recipients.append(user_email_clean)
+                logger.info(f"📧 [SNP] Added user email: {user_email_clean}")
+            else:
+                logger.warning(f"📧 [SNP] Invalid user email format: {to_email}")
+        
+        logger.info(f"📧 [SNP] Sending email to {len(snp_recipients)} recipients")
+        
+        # Отправляем через SMTP
+        import ssl
+        context = ssl.create_default_context()
+        
+        with smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT, context=context) as server:
+            server.login(SMTP_USER, SMTP_PASSWORD)
+            
+            success_count = 0
+            for recipient in snp_recipients:
+                try:
+                    # Создаем сообщение для каждого получателя
+                    msg = MIMEMultipart()
+                    msg['From'] = SMTP_FROM
+                    msg['To'] = recipient
+                    msg['Subject'] = subject
+                    
+                    # Добавляем тело письма
+                    msg.attach(MIMEText(body, 'plain', 'utf-8'))
+                    
+                    # Отправляем
+                    text = msg.as_string()
+                    server.sendmail(SMTP_FROM, recipient, text)
+                    logger.info(f"✅ [SNP] Email sent successfully to {recipient}")
+                    success_count += 1
+                    
+                except Exception as e:
+                    logger.error(f"❌ [SNP] Failed to send email to {recipient}: {e}")
+            
+            success = success_count > 0
+            logger.info(f"📧 [SNP] Email sending summary: {success_count}/{len(snp_recipients)} successful")
+            return success
+        
+    except Exception as e:
+        logger.error(f"❌ [SNP] Failed to send email: {e}")
+        import traceback
+        logger.error(f"❌ [SNP] Traceback: {traceback.format_exc()}")
+        return False
     
 @app.route('/api/contact-manager', methods=['POST', 'OPTIONS'])
 def contact_manager():
@@ -1221,7 +1384,7 @@ def contact_manager():
         
         # ✅ РАЗНАЯ ЛОГИКА ДЛЯ РАЗНЫХ СТРАНИЦ
         if page == 'care-future':
-            subject = f"Новая заявка НСЖ «Забота о будущем» от {surname} {name}"
+            subject = f"Новая заявка «Забота о будущем» от {surname} {name}"
             logger.info(f"📧 [CareFuture] Processing manager request from: {surname} {name}")
         elif page == 'justincase':
             subject = f"Новая заявка «На всякий случай» от {surname} {name}"

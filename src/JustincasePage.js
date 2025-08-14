@@ -206,6 +206,7 @@ const JustincasePage = () => {
   const [stage, setStage] = useState('email');
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState('');
+  const [ageError, setAgeError] = useState('');
 
   // Состояния формы
   const [birthDate, setBirthDate] = useState(null);
@@ -276,12 +277,7 @@ const JustincasePage = () => {
   // ===== ВАЛИДАЦИЯ EMAIL =====
   const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return false;
-    }
-    
-    const lowerEmail = email.toLowerCase();
-    return lowerEmail.endsWith('@vtb.ru') || lowerEmail.endsWith('@rgsl.ru');
+    return emailRegex.test(email);
   };
 
   const handleEmailSubmit = () => {
@@ -291,12 +287,7 @@ const JustincasePage = () => {
     }
     
     if (!validateEmail(email)) {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) {
-        setEmailError('Введите корректный email');
-      } else {
-        setEmailError('Используйте корпоративную почту');
-      }
+      setEmailError('Введите корректный email');
       return;
     }
     
@@ -386,7 +377,7 @@ const JustincasePage = () => {
       return email && email.length >= 3;
     }
     if (stage === 'form1') {
-      return birthDate && gender && insuranceInfo;
+      return birthDate && gender && insuranceInfo && !ageError;
     }
     if (stage === 'form2') {
       return insuranceInfo === 'yes'
@@ -471,6 +462,7 @@ const JustincasePage = () => {
   // Сброс и повторный расчёт
   const repeatCalculation = () => {
     setBirthDate(null); setGender(null); setInsuranceInfo(null);
+    setAgeError('');
     setInsuranceTerm('1'); setInsuranceSum(''); setInsuranceFrequency('');
     setAccidentPackage(null); setCriticalPackage(null); setTreatmentRegion(null); setSportPackage(null);
     setHasJob(null); setIncome2022(''); setIncome2023(''); setIncome2024('');
@@ -663,7 +655,7 @@ const JustincasePage = () => {
           </div>
           
           <div className="form-group">
-            <label className="form-label text-label-large" style={{ color: '#1f4e79' }}>Введите ваш корпоративный email для индивидуального расчета</label>
+            <label className="form-label text-label-large" style={{ color: '#1f4e79' }}>Введите ваш email для индивидуального расчета</label>
             <input
               type="email"
               className={`form-input ${emailError ? 'error' : ''}`}
@@ -672,7 +664,7 @@ const JustincasePage = () => {
                 setEmail(e.target.value);
                 if (emailError) setEmailError('');
               }}
-              placeholder="example@vtb.ru"
+              placeholder="example@mail.ru"
             />
             {emailError && <span className="form-error">{emailError}</span>}
           </div>
@@ -707,12 +699,13 @@ const JustincasePage = () => {
             </p>
             
             <div className="recommended-sum-display">
-              <p className="text-label-large">Рекомендованная сумма:</p>
-              <p className="text-h1-dark">{recommendedSum} руб.</p>
+              <p className="text-label-large">Рекомендованные по результатам расчета:</p>
+              <p className="text-h1-dark">Сумма {recommendedSum} руб.</p>
+              <p className="text-h1-dark">Срок {insuranceTerm} лет</p>
             </div>
 
             <div className="form-group">
-              <label className="form-label">
+              <label className="form-label" style={{ color: '#1f4e79' }}>
                 Срок страхования: <span className="form-value-highlight">{insuranceTerm} лет</span>
               </label>
               <div className="range-container">
@@ -730,7 +723,7 @@ const JustincasePage = () => {
             </div>
 
             <div className="form-group">
-              <label className="form-label">Страховая сумма (руб.)</label>
+              <label className="form-label" style={{ color: '#1f4e79' }}>Страховая сумма (руб.)</label>
               <input
                 type="text"
                 className="form-input"
@@ -744,7 +737,7 @@ const JustincasePage = () => {
             </div>
 
             <div className="form-group">
-              <label className="form-label">Периодичность оплаты</label>
+              <label className="form-label" style={{ color: '#1f4e79' }}>Периодичность оплаты</label>
               <div className="option-buttons horizontal-always">
                 <button
                   className={`option-button ${insuranceFrequency === 'Ежегодно' ? 'selected' : ''}`}
@@ -788,7 +781,7 @@ const JustincasePage = () => {
             <p className="text-small text-center">Выберите дополнительные опции</p>
             
             <div className="form-group">
-              <label className="form-label">Пакет «Несчастный случай»</label>
+              <label className="form-label" style={{ color: '#1f4e79' }}>Пакет «Несчастный случай»</label>
               <div className="option-buttons horizontal-always">
                 <button
                   className={`option-button ${accidentPackage === 'yes' ? 'selected' : ''}`}
@@ -806,7 +799,7 @@ const JustincasePage = () => {
             </div>
 
             <div className="form-group">
-              <label className="form-label">Пакет «Критические заболевания»</label>
+              <label className="form-label" style={{ color: '#1f4e79' }}>Пакет «Критические заболевания»</label>
               <div className="option-buttons horizontal-always">
                 <button
                   className={`option-button ${criticalPackage === 'yes' ? 'selected' : ''}`}
@@ -825,7 +818,7 @@ const JustincasePage = () => {
 
             {criticalPackage === 'yes' && (
               <div className="form-group">
-                <label className="form-label">Регион лечения</label>
+                <label className="form-label" style={{ color: '#1f4e79' }}>Регион лечения</label>
                 <div className="option-buttons horizontal-always">
                   <button
                     className={`option-button ${treatmentRegion === 'russia' ? 'selected' : ''}`}
@@ -844,7 +837,7 @@ const JustincasePage = () => {
             )}
 
             <div className="form-group">
-              <label className="form-label">Любительский спорт</label>
+              <label className="form-label" style={{ color: '#1f4e79' }}>Любительский спорт</label>
               <div className="option-buttons horizontal-always">
                 <button
                   className={`option-button ${sportPackage === 'yes' ? 'selected' : ''}`}
@@ -959,13 +952,19 @@ const JustincasePage = () => {
       if (hasAdditionalPackages) {
         carouselPages.push(
           <div key="additional-risks">
-            <h2 className="text-h2 text-center">Дополнительные риски</h2>
+            <h2 className="text-h2 text-center">Дополнительные пакеты</h2>
             <div className="result-section">
 
               {/* Пакет "Несчастный случай" */}
               {resultData.accidentPackageIncluded ? (
                 <>
-                  <h4 className="text-h4">Пакет «Несчастный случай»</h4>
+                  <h4 className="text-h4">«Несчастный случай»</h4>
+                  <div className="result-item-split">
+                    <span className="result-label-left">Страховая сумма НС:</span>
+                    <span className="result-value-right">
+                      {(resultData.accidentInsuranceSum || parseUserSum(resultData.insuranceSum))} руб.
+                    </span>
+                  </div>
                   <div className="result-item-split">
                     <span className="result-label-left">• Смерть НС:</span>
                     <span className="result-value-right">
@@ -984,12 +983,7 @@ const JustincasePage = () => {
                       {formatNumber(Math.round(resultData.injuryPremium || (resultData.accidentPremium * 0.3) || 0))} руб.
                     </span>
                   </div>
-                  <div className="result-item-split">
-                    <span className="result-label-left">Страховая сумма НС:</span>
-                    <span className="result-value-right">
-                      {(resultData.accidentInsuranceSum || parseUserSum(resultData.insuranceSum))} руб.
-                    </span>
-                  </div>
+                  
                 </>
               ) : (
                 <p className="text-small">Пакет «Несчастный случай» не включён</p>
@@ -1001,17 +995,12 @@ const JustincasePage = () => {
               {resultData.criticalPackageIncluded ? (
                 <>
                   <h4 className="text-h4">
-                    Пакет «Критические заболевания
+                    «Критические заболевания
                     {resultData.treatmentRegion === 'russia' ? ' (лечение в РФ)' : ' (лечение за рубежом)'}»
                   </h4>
+                  
                   <div className="result-item-split">
-                    <span className="result-label-left">• Стоимость защиты:</span>
-                    <span className="result-value-right">
-                      {(typeof resultData.criticalPremium === 'string' ? resultData.criticalPremium : Number(resultData.criticalPremium || 0).toLocaleString('ru-RU'))} руб.
-                    </span>
-                  </div>
-                  <div className="result-item-split">
-                    <span className="result-label-left">• Защита:</span>
+                    <span className="result-label-left">• Лечение:</span>
                     <span className="result-value-right">
                       60 000 000 руб.
                     </span>
@@ -1020,6 +1009,12 @@ const JustincasePage = () => {
                     <span className="result-label-left">• Реабилитация:</span>
                     <span className="result-value-right">
                       400 000 руб.
+                    </span>
+                  </div>
+                  <div className="result-item-split">
+                    <span className="result-label-left">• Стоимость защиты:</span>
+                    <span className="result-value-right">
+                      {(typeof resultData.criticalPremium === 'string' ? resultData.criticalPremium : Number(resultData.criticalPremium || 0).toLocaleString('ru-RU'))} руб.
                     </span>
                   </div>
                 </>
@@ -1114,7 +1109,7 @@ const JustincasePage = () => {
           <p className="text-small text-center">Шаг 1 из 3</p>
           
           <div className="form-group">
-            <label className="form-label">Дата рождения</label>
+            <label className="form-label" style={{ color: '#1f4e79' }}>Дата рождения</label>
             <DateWheelPicker
               value={{
                 day: birthDate ? birthDate.getDate().toString().padStart(2, '0') : '01',
@@ -1124,14 +1119,28 @@ const JustincasePage = () => {
               onChange={(val) => {
                 if (val?.day && val?.month && val?.year) {
                   const date = new Date(parseInt(val.year), parseInt(val.month) - 1, parseInt(val.day));
-                  setBirthDate(date);
+                  
+                  // Проверяем возраст (минимум 18 лет)
+                  const today = new Date();
+                  const age = today.getFullYear() - date.getFullYear() - 
+                    ((today.getMonth() < date.getMonth() || 
+                      (today.getMonth() === date.getMonth() && today.getDate() < date.getDate())) ? 1 : 0);
+                  
+                  if (age < 18) {
+                    setAgeError('Возраст должен быть не менее 18 лет');
+                    setBirthDate(null);
+                  } else {
+                    setAgeError('');
+                    setBirthDate(date);
+                  }
                 }
               }}
             />
+            {ageError && <span className="form-error" style={{ color: '#B71C3A' }}>{ageError}</span>}
           </div>
 
           <div className="form-group">
-            <label className="form-label">Пол</label>
+            <label className="form-label" style={{ color: '#1f4e79' }}>Пол</label>
             <div className="option-buttons horizontal-always">
               <button
                 className={`option-button ${gender === 'Мужской' ? 'selected' : ''}`}
@@ -1149,7 +1158,7 @@ const JustincasePage = () => {
           </div>
 
           <div className="form-group">
-            <label className="form-label">Знаете ли вы необходимую сумму страхования?</label>
+            <label className="form-label" style={{ color: '#1f4e79' }}>Знаете ли вы необходимую сумму страхования?</label>
             <div className="option-buttons horizontal-always">
               <button
                 className={`option-button ${insuranceInfo === 'yes' ? 'selected' : ''}`}
@@ -1182,7 +1191,7 @@ const JustincasePage = () => {
             {insuranceInfo === 'yes' ? (
               <>
                 <div className="form-group">
-                  <label className="form-label">
+                  <label className="form-label" style={{ color: '#1f4e79' }}>
                     Срок страхования: <span className="form-value-highlight">{insuranceTerm} лет</span>
                   </label>
                   <div className="range-container">
@@ -1200,7 +1209,7 @@ const JustincasePage = () => {
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label">Страховая сумма (руб.)</label>
+                  <label className="form-label" style={{ color: '#1f4e79' }}>Страховая сумма (руб.)</label>
                   <input
                     type="text"
                     className="form-input"
@@ -1211,7 +1220,7 @@ const JustincasePage = () => {
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label">Периодичность оплаты</label>
+                  <label className="form-label" style={{ color: '#1f4e79' }}>Периодичность оплаты</label>
                   <div className="option-buttons horizontal-always">
                     <button
                       className={`option-button ${insuranceFrequency === 'Ежегодно' ? 'selected' : ''}`}
@@ -1245,7 +1254,7 @@ const JustincasePage = () => {
             ) : (
               <>
                 <div className="form-group">
-                  <label className="form-label">Есть ли у вас работа?</label>
+                  <label className="form-label" style={{ color: '#1f4e79' }}>Есть ли у вас работа?</label>
                   <select
                     className="form-input"
                     value={hasJob || ''}
@@ -1259,7 +1268,7 @@ const JustincasePage = () => {
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label">Доходы 2022 г. (руб.)</label>
+                  <label className="form-label" style={{ color: '#1f4e79' }}>Доходы 2022 г. (руб.)</label>
                   <input
                     type="text"
                     className="form-input"
@@ -1270,7 +1279,7 @@ const JustincasePage = () => {
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label">Доходы 2023 г. (руб.)</label>
+                  <label className="form-label" style={{ color: '#1f4e79' }}>Доходы 2023 г. (руб.)</label>
                   <input
                     type="text"
                     className="form-input"
@@ -1281,7 +1290,7 @@ const JustincasePage = () => {
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label">Доходы 2024 г. (руб.)</label>
+                  <label className="form-label" style={{ color: '#1f4e79' }}>Доходы 2024 г. (руб.)</label>
                   <input
                     type="text"
                     className="form-input"
@@ -1292,7 +1301,7 @@ const JustincasePage = () => {
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label">Есть ли незащищенные (незастрахованные) кредиты? (руб.)</label>
+                  <label className="form-label" style={{ color: '#1f4e79' }}>Есть ли незащищенные (незастрахованные) кредиты? (руб.)</label>
                   <input
                     type="text"
                     className="form-input"
@@ -1304,7 +1313,7 @@ const JustincasePage = () => {
 
                 {hasJob === 'student' && (
                   <div className="form-group">
-                    <label className="form-label">Размер стипендии за предыдущий год (руб.)</label>
+                    <label className="form-label" style={{ color: '#1f4e79' }}>Размер стипендии за предыдущий год (руб.)</label>
                     <input
                       type="text"
                       className="form-input"
@@ -1334,7 +1343,7 @@ const JustincasePage = () => {
             {insuranceInfo === 'yes' ? (
               <>
                 <div className="form-group">
-                  <label className="form-label">Пакет «Несчастный случай»</label>
+                  <label className="form-label" style={{ color: '#1f4e79' }}>Пакет «Несчастный случай»</label>
                   <div className="option-buttons horizontal-always">
                     <button
                       className={`option-button ${accidentPackage === 'yes' ? 'selected' : ''}`}
@@ -1352,7 +1361,7 @@ const JustincasePage = () => {
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label">Пакет «Критические заболевания»</label>
+                  <label className="form-label" style={{ color: '#1f4e79' }}>Пакет «Критические заболевания»</label>
                   <div className="option-buttons horizontal-always">
                     <button
                       className={`option-button ${criticalPackage === 'yes' ? 'selected' : ''}`}
@@ -1371,7 +1380,7 @@ const JustincasePage = () => {
 
                 {criticalPackage === 'yes' && (
                   <div className="form-group">
-                    <label className="form-label">Регион лечения</label>
+                    <label className="form-label" style={{ color: '#1f4e79' }}>Регион лечения</label>
                     <div className="option-buttons horizontal-always">
                       <button
                         className={`option-button ${treatmentRegion === 'russia' ? 'selected' : ''}`}
@@ -1390,7 +1399,7 @@ const JustincasePage = () => {
                 )}
 
                 <div className="form-group">
-                  <label className="form-label">Любительский спорт</label>
+                  <label className="form-label" style={{ color: '#1f4e79' }}>Любительский спорт</label>
                   <div className="option-buttons horizontal-always">
                     <button
                       className={`option-button ${sportPackage === 'yes' ? 'selected' : ''}`}
@@ -1410,7 +1419,7 @@ const JustincasePage = () => {
             ) : (
               <>
                 <div className="form-group">
-                  <label className="form-label">Вы единственный кормилец в семье?</label>
+                  <label className="form-label" style={{ color: '#1f4e79' }}>Вы единственный кормилец в семье?</label>
                   <select
                     className="form-input"
                     value={breadwinnerStatus || ''}
@@ -1425,7 +1434,7 @@ const JustincasePage = () => {
 
                 {breadwinnerStatus === 'no' && (
                   <div className="form-group">
-                    <label className="form-label">Доля вашего дохода в семейном бюджете (%)</label>
+                    <label className="form-label" style={{ color: '#1f4e79' }}>Доля вашего дохода в семейном бюджете (%)</label>
                     <select
                       className="form-input"
                       value={incomeShare}
@@ -1443,7 +1452,7 @@ const JustincasePage = () => {
                 )}
 
                 <div className="form-group">
-                  <label className="form-label">Количество детей</label>
+                  <label className="form-label" style={{ color: '#1f4e79' }}>Количество детей</label>
                   <select
                     className="form-input"
                     value={childrenCount}
@@ -1458,7 +1467,7 @@ const JustincasePage = () => {
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label">Есть ли родственники, нуждающиеся в особом уходе?</label>
+                  <label className="form-label" style={{ color: '#1f4e79' }}>Есть ли родственники, нуждающиеся в особом уходе?</label>
                   <div className="option-buttons horizontal-always">
                     <button
                       className={`option-button ${specialCareRelatives === 'yes' ? 'selected' : ''}`}
@@ -1491,7 +1500,7 @@ const JustincasePage = () => {
           </p>
           
           <div className="form-group">
-            <label className="form-label">Фамилия</label>
+            <label className="form-label" style={{ color: '#1f4e79' }}>Фамилия</label>
             <input
               type="text"
               className={`form-input ${managerError && !managerSurname.trim() ? 'error' : ''}`}
@@ -1506,7 +1515,7 @@ const JustincasePage = () => {
           </div>
 
           <div className="form-group">
-            <label className="form-label">Имя</label>
+            <label className="form-label" style={{ color: '#1f4e79' }}>Имя</label>
             <input
               type="text"
               className={`form-input ${managerError && !managerName.trim() ? 'error' : ''}`}
@@ -1521,7 +1530,7 @@ const JustincasePage = () => {
           </div>
 
           <div className="form-group">
-            <label className="form-label">Город работы</label>
+            <label className="form-label" style={{ color: '#1f4e79' }}>Город работы</label>
             <input
               type="text"
               className={`form-input ${managerError && !managerCity.trim() ? 'error' : ''}`}
@@ -1652,6 +1661,24 @@ const JustincasePage = () => {
 
   return (
     <div className={`main-container ${isExiting ? 'exiting' : ''}`}>
+      {/* Кнопка "Назад" для email - переход на EmployeePage */}
+      {stage === 'email' && (
+        <button className="back-btn animate-home" onClick={() => navigate('/employee')}>
+          <svg viewBox="0 0 24 24">
+            <path d="M15 18l-6-6 6-6" stroke="white" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </button>
+      )}
+      
+      {/* Кнопка "Назад" для form1 - переход к этапу email */}
+      {stage === 'form1' && (
+        <button className="back-btn animate-home" onClick={() => setStage('email')}>
+          <svg viewBox="0 0 24 24">
+            <path d="M15 18l-6-6 6-6" stroke="white" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </button>
+      )}
+      
       {/* Кнопка "Назад" для всех нужных этапов, кроме result */}
       {(stage === 'form2' || stage === 'form3' || stage === 'recommended' || stage === 'packages') && (
         <button className="back-btn animate-home" onClick={handlePrev}>
@@ -1663,7 +1690,7 @@ const JustincasePage = () => {
       
       {/* Для результатов - кнопка "Назад" с другим позиционированием */}
       {stage === 'result' && (
-        <button className="back-btn animate-home" style={{ left: '20px' }} onClick={handlePrev}>
+        <button className="back-btn animate-home" onClick={handlePrev}>
           <svg viewBox="0 0 24 24">
             <path d="M15 18l-6-6 6-6" stroke="white" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
@@ -1679,7 +1706,6 @@ const JustincasePage = () => {
       {stage === 'result' && (
         <button
           className="next-btn repeat-btn"
-          style={{ right: '20px', left: 'auto' }}
           onClick={repeatCalculation}
           title="Повторить расчет"
         >

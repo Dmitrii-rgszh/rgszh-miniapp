@@ -70,6 +70,43 @@
   max-height: calc(100vh - 240px);
   overflow-y: auto;
   overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ======================================
+   СПЕЦИАЛЬНЫЙ КЛАСС ДЛЯ SNP PAGE
+   ====================================== */
+/* Особый wrapper для SNP страницы */
+.snp-page-wrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding-top: 150px;
+  padding-bottom: 50px;
+}
+
+/* Полностью новый подход для SNP результатов - используем flexbox */
+.card-container.scrollable.snp-results {
+  position: relative !important;
+  top: auto !important;
+  left: auto !important;
+  right: auto !important;
+  transform: none !important;
+  width: 95% !important;
+  margin: 10px auto !important;
+  max-height: calc(100vh - 200px) !important;
+  height: auto !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Отменяем абсолютное позиционирование для SNP */
+.card-container.card-positioned.snp-results {
+  position: relative !important;
+  bottom: auto !important;
+  top: auto !important;
 }
 
 /* ======================================
@@ -173,11 +210,21 @@
   box-sizing: border-box; /* Учитываем паддинг в ширине */
 }
 
+/* Специальный контейнер для страницы загрузки с темным фоном */
+.card-container.processing-card {
+  background: rgba(31, 78, 121, 0.95); /* Темно-синий фон */
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  padding: 40px 24px;
+}
+
 .progress-spinner {
   width: 48px;
   height: 48px;
-  border: 3px solid rgba(180, 0, 55, 0.1);
-  border-top-color: rgb(180, 0, 55);
+  border: 3px solid rgba(255, 255, 255, 0.2);
+  border-top-color: #ffffff;
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin: 0 auto 24px;
@@ -345,8 +392,8 @@
   }
   
   .card-container.card-positioned {
-    top: 120px; /* Уменьшенный отступ для планшетов */
-    width: calc(100% - 32px);
+    top: 150px; /* Уменьшенный отступ для планшетов */
+    width: calc(100% - 40px);
   }
   .carousel-arrow {
     width: 36px;

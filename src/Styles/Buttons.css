@@ -538,7 +538,7 @@
   white-space: nowrap;
   
   /* Размеры */
-  padding: 12px 24px;
+  padding: 6px 12px;
   min-height: 44px;
   border-radius: 10px;
   
@@ -655,7 +655,7 @@
 /* Mobile: кнопки на всю ширину контейнера */
 @media (max-width: 374px) {
   .option-button {
-    padding: 12px 20px;
+    padding: 6px 10px;
     font-size: 16px;
     min-height: 44px;
     width: 100%;
@@ -663,7 +663,7 @@
   }
   
   .option-buttons.vertical .option-button {
-    margin-bottom: 8px;
+    margin-bottom: 4px;
   }
   
   .option-buttons.vertical .option-button:last-child {
@@ -681,7 +681,7 @@
   font-family: "Segoe UI", sans-serif;
   font-weight: 600;
   font-size: 16px;
-  padding: 12px 24px;
+  padding: 6px 12px;
   min-height: 44px;
   border-radius: 10px;
   cursor: pointer;
