@@ -140,19 +140,19 @@
   }
   
   .logo-wrapper.animated {
-    top: 80px;
+    top: 60px;
   }
   
   @keyframes slideDown {
     to {
-      top: 80px;
+      top: 60px;
       opacity: 1;
     }
   }
   
   @keyframes slideUp {
     from {
-      top: 80px;
+      top: 60px;
       opacity: 1;
     }
   }
@@ -164,7 +164,7 @@
 /* iPhone с notch - добавляем safe area */
 @supports (padding: max(0px)) {
   .logo-wrapper.animated {
-    top: max(25px, calc(25px + env(safe-area-inset-top)));
+    top: max(50px, calc(50px + env(safe-area-inset-top)));
   }
   
   @media (max-width: 768px) and (min-width: 375px) {
@@ -175,7 +175,7 @@
   
   @media (max-width: 374px) {
     .logo-wrapper.animated {
-      top: max(80px, calc(80px + env(safe-area-inset-top)));
+      top: max(60px, calc(60px + env(safe-area-inset-top)));
     }
   }
 }

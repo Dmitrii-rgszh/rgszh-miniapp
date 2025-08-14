@@ -14,6 +14,168 @@ import uuid
 import justincase_calculator
 from justincase_calculator import JustInCaseCalculator
 
+
+def parse_int(value: Any) -> float:
+    """Утилита для безопасного преобразования строки или числа в float/None."""
+    if value is None:
+        return None
+    if isinstance(value, (int, float)):
+        return float(value)
+    # Удаляем пробелы, точки-разделители тысяч
+    s = str(value).strip().replace(' ', '').replace('.', '')
+    try:
+        return float(s)
+    except ValueError:
+        return None
+
+
+def compute_recommended_sum_and_term(payload: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Вычисляет рекомендованную страховую сумму и срок по логике из Excel.
+
+    Ожидает словарь с полями:
+    birthDate (строка YYYY-MM-DD), hasJob (yes/no/student),
+    income2022, income2023, income2024, scholarship, unsecuredLoans,
+    breadwinnerStatus, incomeShare, childrenCount, specialCareRelatives.
+    Возвращает словарь { recommended_sum: int, recommended_term: int }.
+    """
+    from datetime import date, datetime
+
+    birth_date_str = payload.get('birthDate')
+    has_job = payload.get('hasJob')
+    # normalize hasJob (case-insensitive)
+    if isinstance(has_job, str):
+        has_job = has_job.lower()
+    # parse date
+    age = None
+    if birth_date_str:
+        try:
+            bd = datetime.strptime(birth_date_str, '%Y-%m-%d').date()
+            today = date.today()
+            age = today.year - bd.year - ((today.month, today.day) < (bd.month, bd.day))
+        except Exception:
+            age = None
+
+    # parse incomes
+    incomes = []
+    for key in ('income2022', 'income2023', 'income2024', 'scholarship'):
+        val = parse_int(payload.get(key))
+        if isinstance(val, (int, float)) and not isinstance(val, bool):
+            incomes.append(val)
+    avg_income = sum(incomes) / len(incomes) if incomes else 0
+
+    # breadwinner coefficient
+    breadwinner_status = payload.get('breadwinnerStatus')
+    income_share = (payload.get('incomeShare') or '').strip()
+    # normalize strings: remove spaces, unify hyphen types
+    norm_share = income_share.replace('–', '-').replace(' ', '').replace(' ', '')
+    # mapping
+    share_map = {
+        'до10%': 1.0,
+        '10-24%': 1.4,
+        '25-49%': 1.8,
+        '50-74%': 2.2,
+        '75-89%': 2.6,
+        '75%-89%': 2.6,
+        'Более90%': 3.0,
+        'Более90%': 3.0,
+        'Более90%': 3.0,
+        'более90%': 3.0,
+        'Более 90%': 3.0,
+        'более 90%': 3.0
+    }
+    if breadwinner_status == 'yes' or breadwinner_status == 'кормилец':
+        breadwinner_coeff = 3.0
+    elif breadwinner_status in ('no', 'not_breadwinner'):
+        breadwinner_coeff = share_map.get(norm_share, 1.0)
+    else:
+        # default to coefficient based on income share if provided
+        breadwinner_coeff = share_map.get(norm_share, 1.0)
+
+    # children coefficient
+    children_count = (payload.get('childrenCount') or '').strip()
+    # normalize spaces and case
+    child_key = children_count.replace(' ', '')
+    children_map = {
+        '0': 1.0,
+        '1': 1.25,
+        '2': 1.40625,
+        '3имолее': 1.523438,
+        '3имолее': 1.523438,
+        '3иБолее': 1.523438,
+        '3иБольше': 1.523438,
+        '3': 1.523438,
+        '3ибо': 1.523438,
+        '3иближе': 1.523438
+    }
+    # handle Russian phrase '3 и более'
+    if child_key in children_map:
+        children_coeff = children_map[child_key]
+    elif '3' in child_key:
+        children_coeff = 1.523438
+    else:
+        children_coeff = 1.0
+
+    # special care relatives coefficient
+    special_care = payload.get('specialCareRelatives')
+    special_coeff = 1.3 if str(special_care).lower() == 'yes' else 1.0
+
+    # loans
+    loans = parse_int(payload.get('unsecuredLoans')) or 0.0
+
+    # combined coefficient
+    product_coeff = breadwinner_coeff * children_coeff * special_coeff
+
+    # f5 based on age
+    f5 = 3.0
+    if isinstance(age, int):
+        if age <= 34:
+            f5 = 10.0
+        elif age <= 44:
+            f5 = 8.0
+        elif age <= 49:
+            f5 = 7.0
+        elif age <= 54:
+            f5 = 6.0
+        elif age <= 59:
+            f5 = 5.0
+        else:
+            f5 = 3.0
+
+    # maximum sum
+    if has_job == 'yes':
+        max_sum = avg_income * f5
+    elif has_job == 'student':
+        max_sum = avg_income * 10
+    else:
+        max_sum = 1_000_000.0
+
+    # base sum
+    if has_job == 'no':
+        base_sum = 1_000_000.0
+    else:
+        base_sum = avg_income * product_coeff + loans
+
+    # recommended sum
+    rec_sum = min(base_sum, max_sum)
+    # round to nearest 100k
+    rec_sum = round(rec_sum / 100000) * 100000
+
+    # recommended term
+    rec_term = 0
+    if isinstance(age, int):
+        if age > 70:
+            rec_term = max(75 - age, 0)
+        else:
+            rec_term = min(max(5, 60 - age), 15)
+
+    return {
+        'recommended_sum': int(rec_sum),
+        'recommended_term': int(rec_term)
+    }
+
+
+
 logger = logging.getLogger(__name__)
 
 # Создаем Blueprint
@@ -90,6 +252,7 @@ def calculate_premium():
             include_critical_illness = data.get('include_critical_illness', True)
             critical_illness_type = data.get('critical_illness_type', 'rf')  # 'rf' или 'abroad'
             payment_frequency = data.get('payment_frequency', 'annual')
+            email = data.get('email')  # Извлекаем email для корпоративных коэффициентов
             
         except (TypeError, ValueError) as e:
             return format_error_response(f"Неверный формат данных: {str(e)}", 400)
@@ -107,7 +270,8 @@ def calculate_premium():
             include_accident=include_accident,
             include_critical_illness=include_critical_illness,
             critical_illness_type=critical_illness_type,
-            payment_frequency=payment_frequency
+            payment_frequency=payment_frequency,
+            email=email  # Передаем email для корпоративных коэффициентов
         )
         
         if result['success']:
@@ -211,6 +375,31 @@ def get_available_terms():
     except Exception as e:
         logger.error(f"❌ Ошибка получения доступных сроков: {e}")
         return format_error_response(f'Ошибка получения доступных сроков: {str(e)}', 500)
+
+
+@justincase_bp.route('/api/justincase/recommend-sum', methods=['POST', 'OPTIONS'])
+def recommend_sum():
+    """
+    Расчет рекомендованной страховой суммы и срока по данным клиента.
+
+    Ожидает JSON с полями, описанными в функции compute_recommended_sum_and_term.
+    Возвращает recommended_sum и recommended_term.
+    """
+    if request.method == "OPTIONS":
+        return '', 200
+
+    try:
+        data, error = safe_get_json()
+        if error:
+            return format_error_response(error, 400)
+
+        result = compute_recommended_sum_and_term(data or {})
+        return jsonify(format_success_response(result, "Рекомендованная сумма рассчитана"))
+
+    except Exception as e:
+        logger.error(f"❌ Ошибка расчета рекомендованной суммы: {e}")
+        logger.error(traceback.format_exc())
+        return format_error_response(f'Ошибка расчета рекомендованной суммы: {str(e)}', 500)
 
 @justincase_bp.route('/api/justincase/health', methods=['GET'])
 def health_check():
@@ -382,19 +571,27 @@ def proxy_calculator_save():
         # Определяем включение НС
         include_accident = data.get('include_accident')
         if include_accident is None:
-            include_accident = data.get('accidentPackage') in ['yes', 'Да', True]
+            # Поддерживаем разные форматы
+            include_accident = (data.get('accidentPackage') in ['yes', 'Да', True] or
+                              data.get('includeAccidentInsurance') in ['да', 'yes', 'Да', True])
         
         # Определяем включение КЗ
         include_critical_illness = data.get('include_critical_illness')
         if include_critical_illness is None:
-            include_critical_illness = data.get('criticalPackage') in ['yes', 'Да', True]
+            # Поддерживаем разные форматы
+            include_critical_illness = (data.get('criticalPackage') in ['yes', 'Да', True] or
+                                      data.get('criticalIllnessOption') not in [None, '', 'Нет'] or
+                                      data.get('criticalIllnessOption') in ['Лечение в РФ', 'Лечение за рубежом'])
             
         # Определяем тип КЗ
         critical_illness_type = data.get('critical_illness_type', 'rf')
         if critical_illness_type == 'rf':
             # Проверяем старый формат
             treatment_region = data.get('treatmentRegion', 'russia')
-            if treatment_region in ['abroad', 'За границей']:
+            critical_illness_option = data.get('criticalIllnessOption', '')
+            
+            if (treatment_region in ['abroad', 'За границей'] or 
+                critical_illness_option in ['Лечение за рубежом']):
                 critical_illness_type = 'abroad'
         
         # Определяем частоту платежей
@@ -418,6 +615,9 @@ def proxy_calculator_save():
             }
             payment_frequency = frequency_map.get(insurance_frequency, 'annual')
 
+        # Получаем email из данных
+        email = data.get('email', '')
+
         api_data = {
             'age': age,
             'gender': gender,
@@ -426,7 +626,8 @@ def proxy_calculator_save():
             'include_accident': include_accident,
             'include_critical_illness': include_critical_illness,
             'critical_illness_type': critical_illness_type,
-            'payment_frequency': payment_frequency
+            'payment_frequency': payment_frequency,
+            'email': email
         }
         
         
@@ -440,7 +641,8 @@ def proxy_calculator_save():
             critical_illness_type=api_data['critical_illness_type'],
             include_accident=api_data['include_accident'],
             include_critical_illness=api_data['include_critical_illness'],
-            payment_frequency=api_data['payment_frequency']
+            payment_frequency=api_data['payment_frequency'],
+            email=api_data['email']
         )
         
         if not result.get('success'):

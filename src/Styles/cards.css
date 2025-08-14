@@ -39,7 +39,7 @@
 /* Позиционированная карточка - С ПРАВИЛЬНЫМ ОТСТУПОМ */
 .card-container.card-positioned {
   position: absolute;
-  top: 200px; /* Логотип на 55px + высота логотипа 128px + отступ 20px = ~203px */
+  top: 150px; /* Уменьшенный отступ для приближения к логотипу */
   left: 50%;
   transform: translateX(-50%);
 }
@@ -345,7 +345,7 @@
   }
   
   .card-container.card-positioned {
-    top: 170px; /* Логотип 60px + высота 96px + отступ 14px */
+    top: 120px; /* Уменьшенный отступ для планшетов */
     width: calc(100% - 32px);
   }
   .carousel-arrow {
@@ -361,7 +361,7 @@
   }
   
   .card-container.card-positioned {
-    top: 190px; /* Логотип 80px + высота 100px + отступ 10px */
+    top: 170px; /* Уменьшенный отступ для мобильных */
     width: calc(100% - 50px);
   }
 }

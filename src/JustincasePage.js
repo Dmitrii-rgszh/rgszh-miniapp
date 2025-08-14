@@ -295,7 +295,7 @@ const JustincasePage = () => {
       if (!emailRegex.test(email)) {
         setEmailError('Введите корректный email');
       } else {
-        setEmailError('Используйте корпоративную почту (@vtb.ru или @rgsl.ru)');
+        setEmailError('Используйте корпоративную почту');
       }
       return;
     }
@@ -406,6 +406,9 @@ const JustincasePage = () => {
     if (stage === 'recommended') {
       return insuranceSum && insuranceTerm && insuranceFrequency;
     }
+    if (stage === 'packages') {
+      return accidentPackage && criticalPackage && (criticalPackage === 'no' || treatmentRegion) && sportPackage;
+    }
     return true;
   };
 
@@ -430,7 +433,9 @@ const JustincasePage = () => {
         doCalculation();
       }
     } else if (stage === 'recommended') {
-      doCalculation();
+      setStage('packages'); // Переход к выбору дополнительных пакетов
+    } else if (stage === 'packages') {
+      doCalculation(); // Расчет после выбора пакетов
     }
   };
 
@@ -452,8 +457,11 @@ const JustincasePage = () => {
       case 'recommended':
         setStage('form3');
         break;
+      case 'packages':
+        setStage('recommended');
+        break;
       case 'result':
-        setStage(insuranceInfo === 'no' ? 'recommended' : 'form3');
+        setStage(insuranceInfo === 'no' ? 'packages' : 'form3');
         break;
       default:
         navigate('/main-menu');
@@ -510,9 +518,11 @@ const JustincasePage = () => {
         include_accident: accidentPackage === 'yes',
         include_critical_illness: criticalPackage === 'yes',
         critical_illness_type: treatmentRegion === 'abroad' ? 'abroad' : 'rf',
-        payment_frequency: insuranceFrequency === 'Раз в год' ? 'annual' : 
-                          insuranceFrequency === 'Раз в полгода' ? 'semi_annual' :
-                          insuranceFrequency === 'Раз в квартал' ? 'quarterly' : 'monthly'
+        payment_frequency: insuranceFrequency === 'Раз в год' || insuranceFrequency === 'Ежегодно' ? 'annual' : 
+                          insuranceFrequency === 'Раз в полгода' || insuranceFrequency === 'Полугодие' ? 'semi_annual' :
+                          insuranceFrequency === 'Раз в квартал' || insuranceFrequency === 'Поквартально' ? 'quarterly' : 
+                          insuranceFrequency === 'Раз в месяц' || insuranceFrequency === 'Ежемесячно' ? 'monthly' : 'annual',
+        email: email
       };
 
       console.log('📤 Отправляем данные на расчет:', payload);
@@ -653,7 +663,7 @@ const JustincasePage = () => {
           </div>
           
           <div className="form-group">
-            <label className="form-label text-label-large">Введите ваш email</label>
+            <label className="form-label text-label-large" style={{ color: '#1f4e79' }}>Введите ваш корпоративный email для индивидуального расчета</label>
             <input
               type="email"
               className={`form-input ${emailError ? 'error' : ''}`}
@@ -761,6 +771,92 @@ const JustincasePage = () => {
                   onClick={() => setInsuranceFrequency('Полугодие')}
                 >
                   Раз в пол года
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Экран выбора дополнительных пакетов
+    if (stage === 'packages') {
+      return (
+        <div className={`card-container card-positioned scrollable ${contentAnimated ? 'animated' : ''}`}>
+          <div className="card-content">
+            <h2 className="text-h2">Дополнительные пакеты</h2>
+            <p className="text-small text-center">Выберите дополнительные опции</p>
+            
+            <div className="form-group">
+              <label className="form-label">Пакет «Несчастный случай»</label>
+              <div className="option-buttons horizontal-always">
+                <button
+                  className={`option-button ${accidentPackage === 'yes' ? 'selected' : ''}`}
+                  onClick={() => setAccidentPackage('yes')}
+                >
+                  Включить
+                </button>
+                <button
+                  className={`option-button ${accidentPackage === 'no' ? 'selected' : ''}`}
+                  onClick={() => setAccidentPackage('no')}
+                >
+                  Не включать
+                </button>
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Пакет «Критические заболевания»</label>
+              <div className="option-buttons horizontal-always">
+                <button
+                  className={`option-button ${criticalPackage === 'yes' ? 'selected' : ''}`}
+                  onClick={() => setCriticalPackage('yes')}
+                >
+                  Включить
+                </button>
+                <button
+                  className={`option-button ${criticalPackage === 'no' ? 'selected' : ''}`}
+                  onClick={() => setCriticalPackage('no')}
+                >
+                  Не включать
+                </button>
+              </div>
+            </div>
+
+            {criticalPackage === 'yes' && (
+              <div className="form-group">
+                <label className="form-label">Регион лечения</label>
+                <div className="option-buttons horizontal-always">
+                  <button
+                    className={`option-button ${treatmentRegion === 'russia' ? 'selected' : ''}`}
+                    onClick={() => setTreatmentRegion('russia')}
+                  >
+                    Россия
+                  </button>
+                  <button
+                    className={`option-button ${treatmentRegion === 'abroad' ? 'selected' : ''}`}
+                    onClick={() => setTreatmentRegion('abroad')}
+                  >
+                    За рубежом
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <div className="form-group">
+              <label className="form-label">Любительский спорт</label>
+              <div className="option-buttons horizontal-always">
+                <button
+                  className={`option-button ${sportPackage === 'yes' ? 'selected' : ''}`}
+                  onClick={() => setSportPackage('yes')}
+                >
+                  Включить
+                </button>
+                <button
+                  className={`option-button ${sportPackage === 'no' ? 'selected' : ''}`}
+                  onClick={() => setSportPackage('no')}
+                >
+                  Не включать
                 </button>
               </div>
             </div>
@@ -1014,7 +1110,7 @@ const JustincasePage = () => {
     if (stage === 'form1') {
       return (
         <div className={`card-container card-positioned ${contentAnimated ? 'animated' : ''}`}>
-          <h2 className="text-h2">Расчёт по программе "На всякий случай"</h2>
+          <h2 className="text-h2">Введите ваши данные для расчёта</h2>
           <p className="text-small text-center">Шаг 1 из 3</p>
           
           <div className="form-group">
@@ -1557,7 +1653,7 @@ const JustincasePage = () => {
   return (
     <div className={`main-container ${isExiting ? 'exiting' : ''}`}>
       {/* Кнопка "Назад" для всех нужных этапов, кроме result */}
-      {(stage === 'form2' || stage === 'form3' || stage === 'recommended') && (
+      {(stage === 'form2' || stage === 'form3' || stage === 'recommended' || stage === 'packages') && (
         <button className="back-btn animate-home" onClick={handlePrev}>
           <svg viewBox="0 0 24 24">
             <path d="M15 18l-6-6 6-6" stroke="white" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
@@ -1621,7 +1717,7 @@ const JustincasePage = () => {
         </button>
       )}
 
-      {(stage === 'email' || stage === 'form1' || stage === 'form2' || stage === 'form3' || stage === 'recommended') && !isProcessing && !isCalculatingRecommended && (
+      {(stage === 'email' || stage === 'form1' || stage === 'form2' || stage === 'form3' || stage === 'recommended' || stage === 'packages') && !isProcessing && !isCalculatingRecommended && (
         <button 
           className={`next-btn ${contentAnimated && canGoNext() ? 'animate-next' : ''} ${isExiting ? 'animate-next-exit' : ''} ${!canGoNext() ? 'disabled' : ''}`} 
           onClick={handleNext} 

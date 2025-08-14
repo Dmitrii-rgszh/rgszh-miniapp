@@ -52,9 +52,40 @@ export const apiCall = async (endpoint, options = {}) => {
   console.log('📄 Response headers:', Object.fromEntries(response.headers.entries()));
   
   if (!response.ok) {
-    const errorText = await response.text();
-    console.log('❌ Error response body:', errorText);
-    throw new Error(`HTTP error! status: ${response.status}`);
+    // Попробуем получить текст ответа один раз
+    try {
+      const responseText = await response.text();
+      console.log('❌ Error response body:', responseText);
+      
+      // Попробуем распарсить как JSON
+      try {
+        const errorData = JSON.parse(responseText);
+        console.log('📋 Parsed error data:', errorData);
+        
+        if (errorData.error) {
+          // Извлекаем только текст ошибки
+          throw new Error(errorData.error);
+        }
+        // Если в JSON есть сообщение об ошибке в другом поле
+        if (errorData.message) {
+          throw new Error(errorData.message);
+        }
+        // Если в JSON нет понятного поля ошибки, используем стандартное сообщение
+        throw new Error(`HTTP error! status: ${response.status}`);
+      } catch (jsonError) {
+        console.log('📋 JSON parse error:', jsonError);
+        // Если не удалось распарсить JSON, используем стандартное сообщение
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+    } catch (textError) {
+      console.log('❌ Could not read response body:', textError);
+      // Если это уже Error с нашим сообщением, перебрасываем его
+      if (textError instanceof Error && textError.message !== `HTTP error! status: ${response.status}`) {
+        throw textError;
+      }
+      // Иначе используем стандартное сообщение
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
   }
   
   return response.json();

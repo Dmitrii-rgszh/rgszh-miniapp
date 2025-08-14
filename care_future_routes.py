@@ -1,4 +1,5 @@
-# care_future_routes_updated.py - ОБНОВЛЕННАЯ версия с исправленной логикой расчетов
+
+# care_future_routes.py - Маршруты для калькулятора НСЖ
 
 import os
 import logging
@@ -22,11 +23,73 @@ from care_future_models import (
 from db_saver import db
 
 # Настройка логирования
-logger = logging.getLogger("care_future_routes_updated")
+logger = logging.getLogger("care_future_routes")
 
 # Создаем Blueprint для API калькулятора НСЖ
 care_future_bp = Blueprint('care_future', __name__, url_prefix='/api/care-future')
 
+# =============================================================================
+# ENDPOINT ДЛЯ ОТПРАВКИ ЗАЯВКИ МЕНЕДЖЕРУ (contact-manager)
+# =============================================================================
+
+@care_future_bp.route('/contact-manager', methods=['POST', 'OPTIONS'])
+def contact_manager():
+    """Обработка заявки: отправка письма менеджерам и пользователю"""
+    logger.info("🌐 ➜ %s %s", request.method, request.path)
+    if request.method == "OPTIONS":
+        return '', 200
+
+    data, error = safe_get_json()
+    if error:
+        return jsonify({'success': False, 'error': error}), 400
+
+    # Ожидаемые поля: name, phone, email, message, calculation (может быть None)
+    user_email = data.get('email')
+    name = data.get('name', 'Не указано')
+    phone = data.get('phone', 'Не указано')
+    message = data.get('message', '')
+    calculation = data.get('calculation')
+
+    # Кому отправлять
+    recipients = ['zerotlt@mail.ru', 'I.dav@mail.ru']
+    if user_email:
+        recipients.append(user_email)
+
+    # Формируем тело письма
+    subject = "Заявка с калькулятора 'Забота о будущем Ультра'"
+    body = f"""
+Поступила новая заявка с калькулятора 'Забота о будущем Ультра'.
+
+Имя: {name}
+Телефон: {phone}
+Email: {user_email}
+Сообщение: {message}
+"""
+    if calculation:
+        body += "\nДанные расчёта:\n" + str(calculation)
+
+    # Отправка письма всем адресатам
+    try:
+        smtp_server = "smtp.yandex.ru"
+        smtp_port = 465
+        smtp_username = "rgszh-miniapp@yandex.ru"
+        smtp_password = "rbclbdyejwwxrisg"
+
+        msg = MIMEMultipart()
+        msg['From'] = smtp_username
+        msg['To'] = ", ".join(recipients)
+        msg['Subject'] = subject
+        msg.attach(MIMEText(body, 'plain', 'utf-8'))
+
+        with smtplib.SMTP_SSL(smtp_server, smtp_port) as server:
+            server.login(smtp_username, smtp_password)
+            server.sendmail(smtp_username, recipients, msg.as_string())
+
+        logger.info(f"✅ Заявка успешно отправлена: {recipients}")
+        return jsonify({'success': True, 'message': 'Заявка успешно отправлена'})
+    except Exception as e:
+        logger.error(f"❌ Ошибка отправки заявки: {e}")
+        return jsonify({'success': False, 'error': f'Ошибка отправки письма: {e}'})
 # =============================================================================
 # ФУНКЦИЯ ОТПРАВКИ EMAIL ДЛЯ КАЛЬКУЛЯТОРА НСЖ
 # =============================================================================
@@ -176,9 +239,23 @@ def calculate_insurance():
         
         logger.info(f"📊 Получены данные для расчета: {data}")
         
+        # Нормализация полей (поддерживаем оба формата)
+        normalized_data = {}
+        
+        # Поддерживаем и старый, и новый формат полей
+        normalized_data['birthDate'] = data.get('birthDate') or data.get('birth_date')
+        normalized_data['gender'] = data.get('gender')
+        normalized_data['contractTerm'] = data.get('contractTerm') or data.get('term')
+        normalized_data['calculationType'] = data.get('calculationType') or data.get('calculation_type')
+        normalized_data['inputAmount'] = data.get('inputAmount') or data.get('sum')
+        normalized_data['email'] = data.get('email')
+        normalized_data['income'] = data.get('income')
+        
+        logger.info(f"📊 Нормализованные данные: {normalized_data}")
+        
         # Валидация обязательных полей
         required_fields = ['birthDate', 'gender', 'contractTerm', 'calculationType', 'inputAmount']
-        missing_fields = [field for field in required_fields if field not in data]
+        missing_fields = [field for field in required_fields if not normalized_data.get(field)]
         if missing_fields:
             logger.error(f"❌ Отсутствуют поля: {missing_fields}")
             return jsonify({
@@ -188,9 +265,9 @@ def calculate_insurance():
         
         # Парсинг даты рождения
         try:
-            birth_date = datetime.strptime(data['birthDate'], '%Y-%m-%d').date()
+            birth_date = datetime.strptime(normalized_data['birthDate'], '%Y-%m-%d').date()
         except (ValueError, TypeError) as e:
-            logger.error(f"❌ Неверная дата рождения: {data['birthDate']}")
+            logger.error(f"❌ Неверная дата рождения: {normalized_data['birthDate']}")
             return jsonify({
                 'success': False,
                 'error': 'Неверный формат даты рождения. Используйте YYYY-MM-DD'
@@ -200,11 +277,11 @@ def calculate_insurance():
         try:
             calculation_input = CalculationInput(
                 birth_date=birth_date,
-                gender=data['gender'],
-                contract_term=int(data['contractTerm']),
-                calculation_type=data['calculationType'],
-                input_amount=int(data['inputAmount']),
-                email=data.get('email'),
+                gender=normalized_data['gender'],
+                contract_term=int(normalized_data['contractTerm']),
+                calculation_type=normalized_data['calculationType'],
+                input_amount=int(normalized_data['inputAmount']),
+                email=normalized_data.get('email'),
                 calculation_date=date.today()
             )
         except (ValueError, TypeError) as e:
@@ -219,6 +296,7 @@ def calculate_insurance():
         calculator = NSJCalculator()
         result = calculator.calculate(calculation_input)
         
+
         # Формируем ответ
         response_data = {
             'success': True,
@@ -242,15 +320,27 @@ def calculate_insurance():
             },
             'redemptionValues': result.redemption_values,
             'calculatedAt': datetime.now().isoformat(),
-            'version': 'fixed_v1.15'  # Указываем что используем исправленную версию
+            'version': 'fixed_v1.15'
         }
-        
+
         logger.info(f"✅ Расчет выполнен успешно: {result.calculation_uuid}")
         logger.info(f"📊 Результат: премия={result.premium_amount:,}, сумма={result.insurance_sum:,}, доход={result.program_income:,}")
-        
-        # Email будет отправлен только на этапе "Связаться с менеджером"
-        response_data['emailSent'] = False  # Изменено: email не отправляется на этапе расчета
-        
+
+        # Если указан email, отправляем письмо
+        email_sent = False
+        if calculation_input.email:
+            try:
+                email_sent = send_calculation_email(calculation_input.email, {
+                    'inputParameters': response_data['inputParameters'],
+                    'results': response_data['results'],
+                    'redemptionValues': response_data['redemptionValues'],
+                    'calculationId': response_data['calculationId']
+                })
+            except Exception as e:
+                logger.error(f"Ошибка отправки email: {e}")
+                email_sent = False
+        response_data['emailSent'] = email_sent
+
         return jsonify(response_data)
         
     except ValueError as e:

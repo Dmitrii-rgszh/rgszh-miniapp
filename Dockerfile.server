@@ -45,11 +45,11 @@ COPY assessment_questions.sql* .
 # Копируем React build для раздачи статики
 COPY build/ ./build/
 
-# Скрипт запуска (копируем, но не используем как ENTRYPOINT)
-COPY docker-entrypoint.sh* .
-RUN if [ -f docker-entrypoint.sh ]; then chmod +x docker-entrypoint.sh; fi
+# Скрипт запуска SQLite (копируем новый entrypoint)
+COPY docker-entrypoint-sqlite.sh .
+RUN chmod +x docker-entrypoint-sqlite.sh
 
 EXPOSE 4000
 
-# Запускаем инициализацию данных, а затем сервер
-CMD ["sh", "-c", "./init_postgres_data.sh && python server.py"]
+# Запускаем с принудительным использованием SQLite
+CMD ["./docker-entrypoint-sqlite.sh"]

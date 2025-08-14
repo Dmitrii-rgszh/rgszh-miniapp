@@ -40,9 +40,9 @@ def init_db(app):
     db_uri = os.getenv("SQLALCHEMY_DATABASE_URI") or os.getenv("DATABASE_URL")
     
     if not db_uri:
-        # Fallback к жестко прописанному адресу ВМ для продакшена
-        db_uri = "postgresql://postgres:secret@176.109.110.217:1112/postgres"
-        logger.warning("Переменные SQLALCHEMY_DATABASE_URI и DATABASE_URL не найдены, использую дефолтную БД на ВМ")
+        # Используем локальную SQLite базу данных для избежания проблем с кодировкой
+        db_uri = "sqlite:///miniapp.db"
+        logger.warning("Переменные SQLALCHEMY_DATABASE_URI и DATABASE_URL не найдены, использую локальную SQLite БД")
     
     logger.info("Используемая БД: %s", db_uri.replace(":secret@", ":***@"))
     app.config["SQLALCHEMY_DATABASE_URI"] = db_uri

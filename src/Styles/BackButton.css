@@ -177,8 +177,8 @@
 /* iPhone с notch - добавляем safe area */
 @supports (padding: max(0px)) {
   .back-btn {
-    top: max(87px, calc(87px + env(safe-area-inset-top)));
-    left: max(calc(50% - 128px - 50px), calc(50% - 128px - 50px + env(safe-area-inset-left)));
+    top: max(80px, calc(80px + env(safe-area-inset-top)));
+    left: max(calc(50% - 128px - 10px), calc(50% - 128px - 10px + env(safe-area-inset-left)));
   }
 }
 

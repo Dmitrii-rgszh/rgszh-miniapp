@@ -245,7 +245,7 @@ else:
 
 # ====== Email Configuration ======
 SMTP_SERVER = os.environ.get("SMTP_SERVER", "smtp.yandex.ru")
-SMTP_PORT = int(os.environ.get("SMTP_PORT", "587"))
+SMTP_PORT = int(os.environ.get("SMTP_PORT", "465"))
 SMTP_USER = os.environ.get("SMTP_USERNAME", "rgszh-miniapp@yandex.ru")
 SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD", "")
 SMTP_FROM = os.environ.get("EMAIL_FROM", "rgszh-miniapp@yandex.ru")
@@ -1099,8 +1099,11 @@ def send_carefuture_email_with_user(subject, body, user_email):
     - email пользователя
     """
     try:
+        logger.info(f"📧 [CareFuture] Starting email send process")
+        logger.info(f"📧 [CareFuture] SMTP config: {SMTP_SERVER}:{SMTP_PORT}, user: {SMTP_USER}")
+        
         if not SMTP_PASSWORD:
-            logger.warning("📧 SMTP password not configured, skipping email send")
+            logger.error("📧 [CareFuture] SMTP password not configured, skipping email send")
             return False
         
         # ✅ СПЕЦИАЛЬНЫЕ получатели для CareFuture
@@ -1127,7 +1130,9 @@ def send_carefuture_email_with_user(subject, body, user_email):
         context = ssl.create_default_context()
         
         with smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT, context=context) as server:
+            logger.info(f"📧 [CareFuture] Connected to SMTP server")
             server.login(SMTP_USER, SMTP_PASSWORD)
+            logger.info(f"📧 [CareFuture] SMTP login successful")
             
             success_count = 0
             for recipient in carefuture_recipients:
@@ -1156,6 +1161,8 @@ def send_carefuture_email_with_user(subject, body, user_email):
         
     except Exception as e:
         logger.error(f"❌ [CareFuture] Failed to send email: {e}")
+        import traceback
+        logger.error(f"❌ [CareFuture] Traceback: {traceback.format_exc()}")
         return False
     
 @app.route('/api/contact-manager', methods=['POST', 'OPTIONS'])
@@ -1165,13 +1172,20 @@ def contact_manager():
     ✅ CareFuture: отправляет на zerotlt@mail.ru, I.dav@mail.ru + email пользователя
     ✅ Assessment: отправляет на стандартные адреса (включая Polina.Iureva@rgsl.ru)
     """
-    logger.info("🌐 ➜ %s %s", request.method, request.path)
-    
-    if request.method == "OPTIONS":
-        return '', 200
-    
     try:
+        logger.info("🔥 CONTACT MANAGER CALLED: %s %s", request.method, request.path)
+        
+        if request.method == "OPTIONS":
+            logger.info("🔥 RETURNING OPTIONS")
+            return '', 200
+        
+        logger.info("🔥 GETTING JSON DATA...")
         data = request.get_json()
+        logger.info("🔥 RECEIVED DATA: %s", data)
+        
+        if not data:
+            logger.error("🔥 NO DATA RECEIVED")
+            return jsonify({"error": "Нет данных"}), 400
         
         # Получаем данные расчета из БД, если есть calculationId
         # Получаем данные расчета из БД, если есть calculationId

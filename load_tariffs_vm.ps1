@@ -1,10 +1,13 @@
-# PowerShell скрипт для загрузки тарифов на ВМ
+# Скрипт для загрузки тарифов на ВМ
 param(
-    [string]$SSHHost = "176.108.243.189",
-    [string]$SSHUser = "admin"
+    [string]$VmIp = "176.108.243.189"
 )
 
-Write-Host "🔧 Загрузка тарифов в PostgreSQL на ВМ..." -ForegroundColor Green
+$ErrorActionPreference = "Stop"
+
+Write-Host "� === ЗАГРУЗКА ТАРИФОВ НА ВМ ===" -ForegroundColor Green
+Write-Host "   ВМ: $VmIp" -ForegroundColor Yellow
+Write-Host ""
 
 # Команды для выполнения на ВМ
 $RemoteCommands = @"

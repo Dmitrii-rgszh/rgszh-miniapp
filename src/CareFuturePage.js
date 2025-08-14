@@ -157,7 +157,7 @@ export default function CareFuturePage() {
       if (!emailRegex.test(email)) {
         setEmailError('Введите корректный email');
       } else {
-        setEmailError('Используйте корпоративную почту (@vtb.ru или @rgsl.ru)');
+        setEmailError('Используйте корпоративную почту');
       }
       return;
     }
@@ -194,12 +194,20 @@ export default function CareFuturePage() {
     } else {
       const amount = parseInt(amountRaw);
       
-      if (calcType === 'from_premium' && amount < 100000) {
-        errors.amount = 'Минимальный взнос 100 000 рублей';
-      }
-      
-      if (amount > 100000000) {
-        errors.amount = 'Максимальная сумма 100 000 000 рублей';
+      if (calcType === 'from_premium') {
+        if (amount < 100000) {
+          errors.amount = 'Минимальный взнос 100 000 рублей';
+        }
+        if (amount > 50000000) {
+          errors.amount = 'Максимальный взнос 50 000 000 рублей';
+        }
+      } else if (calcType === 'from_sum') {
+        if (amount < 500000) {
+          errors.amount = 'Минимальная страховая сумма 500 000 рублей';
+        }
+        if (amount > 100000000) {
+          errors.amount = 'Максимальная страховая сумма 100 000 000 рублей';
+        }
       }
     }
 
@@ -278,7 +286,26 @@ export default function CareFuturePage() {
       }
     } catch (error) {
       console.error('Ошибка расчета:', error);
-      setValidationErrors({ general: error.message || 'Ошибка при выполнении расчета' });
+      
+      // Специальная обработка ошибки минимальной премии
+      const errorMessage = error.message || 'Ошибка при выполнении расчета';
+      
+      // Если это 400 ошибка и страховая сумма низкая, показываем специальное сообщение
+      if (errorMessage.includes('400') && parseInt(amountRaw) <= 1000000) {
+        // Ошибка минимальной премии - показываем под полем страховой суммы
+        setValidationErrors({ 
+          amount: 'Увеличьте страховую сумму' 
+        });
+      } else if (errorMessage.includes('Рассчитанная премия') && errorMessage.includes('меньше минимального взноса')) {
+        // Ошибка минимальной премии - показываем под полем страховой суммы
+        setValidationErrors({ 
+          amount: 'Увеличьте размер страховой суммы, чтобы сумма ежегодного пополнения превышала 100 000 рублей' 
+        });
+      } else {
+        // Общая ошибка
+        setValidationErrors({ general: errorMessage });
+      }
+      
       setStage('form');
     }
   };
@@ -339,7 +366,7 @@ export default function CareFuturePage() {
       }
     } catch (error) {
       console.error('Ошибка отправки заявки:', error);
-      setMgrError('Не удалось отправить заявку. Попробуйте позже.');
+      setMgrError(error?.message || (error?.response?.data?.message) || 'Не удалось отправить заявку. Попробуйте позже.');
     } finally {
       setIsSendingMgr(false);
     }
@@ -435,7 +462,7 @@ export default function CareFuturePage() {
             </div>
             
             <div className="form-group">
-              <label className="form-label text-label-large">Введите ваш email</label>
+              <label className="form-label text-label-large" style={{ color: '#1f4e79' }}>Введите ваш корпоративный email для индивидуального расчета</label>
               <input
                 type="email"
                 className={`form-input ${emailError ? 'error' : ''}`}
@@ -446,7 +473,7 @@ export default function CareFuturePage() {
                 }}
                 placeholder="example@mail.ru"
               />
-              {emailError && <span className="form-error">{emailError}</span>}
+              {emailError && <span className="form-error" style={{ color: '#B71C3A' }}>{emailError}</span>}
             </div>
           </div>
         );
@@ -455,13 +482,13 @@ export default function CareFuturePage() {
         return (
           <div className="card-container card-positioned scrollable animated">
             <div className="card-header">
-              <h2 className="text-h2-dark text-center">Параметры расчёта</h2>
+              <h2 className="text-h2-dark text-center">Введите данные для расчета</h2>
             </div>
             
             <div className="card-content">
               {/* Дата рождения */}
               <div className="form-group">
-                <label className="form-label text-label">Дата рождения</label>
+                <label className="form-label text-label" style={{ color: '#1f4e79' }}>Дата рождения</label>
                 <DateWheelPicker 
                   value={birthParts}
                   onChange={(newParts) => {
@@ -483,13 +510,13 @@ export default function CareFuturePage() {
                   }}
                 />
                 {validationErrors.birthDate && (
-                  <span className="form-error">{validationErrors.birthDate}</span>
+                  <span className="form-error" style={{ color: '#B71C3A' }}>{validationErrors.birthDate}</span>
                 )}
               </div>
 
               {/* Пол */}
               <div className="form-group">
-                <label className="form-label text-label">Пол</label>
+                <label className="form-label text-label" style={{ color: '#1f4e79' }}>Пол</label>
                 <div className="option-buttons horizontal-always">
                   <button
                     type="button"
@@ -507,13 +534,13 @@ export default function CareFuturePage() {
                   </button>
                 </div>
                 {validationErrors.gender && (
-                  <span className="form-error">{validationErrors.gender}</span>
+                  <span className="form-error" style={{ color: '#B71C3A' }}>{validationErrors.gender}</span>
                 )}
               </div>
 
               {/* Срок программы */}
               <div className="form-group">
-                <label className="form-label text-label">Срок программы (лет)</label>
+                <label className="form-label text-label" style={{ color: '#1f4e79' }}>Срок программы (лет)</label>
                 <div className="range-container">
                   <input
                     type="range"
@@ -532,7 +559,7 @@ export default function CareFuturePage() {
 
               {/* Тип расчёта */}
               <div className="form-group">
-                <label className="form-label text-label">Тип расчёта</label>
+                <label className="form-label text-label" style={{ color: '#1f4e79' }}>Тип расчёта</label>
                 <div className="option-buttons horizontal-always">
                   <button
                     type="button"
@@ -550,13 +577,13 @@ export default function CareFuturePage() {
                   </button>
                 </div>
                 {validationErrors.calcType && (
-                  <span className="form-error">{validationErrors.calcType}</span>
+                  <span className="form-error" style={{ color: '#B71C3A' }}>{validationErrors.calcType}</span>
                 )}
               </div>
 
               {/* Сумма */}
               <div className="form-group">
-                <label className="form-label text-label">
+                <label className="form-label text-label" style={{ color: '#1f4e79' }}>
                   {calcType === 'from_premium' ? 'Размер взноса' : 'Страховая сумма'} (₽)
                 </label>
                 <input
@@ -564,16 +591,16 @@ export default function CareFuturePage() {
                   className={`form-input form-input-narrow ${validationErrors.amount ? 'error' : ''}`}
                   value={amountDisplay}
                   onChange={handleAmountChange}
-                  placeholder={calcType === 'from_premium' ? 'от 100 000 рублей' : 'Введите сумму'}
+                  placeholder={calcType === 'from_premium' ? 'от 100 000 рублей' : 'от 500 000 рублей'}
                 />
                 {validationErrors.amount && (
-                  <span className="form-error">{validationErrors.amount}</span>
+                  <span className="form-error" style={{ color: '#B71C3A' }}>{validationErrors.amount}</span>
                 )}
               </div>
 
               {/* Доход в год */}
               <div className="form-group">
-                <label className="form-label text-label">Мой доход в год:</label>
+                <label className="form-label text-label" style={{ color: '#1f4e79' }}>Мой доход в год (в рублях)</label>
                 <select
                   className={`form-input form-input-narrow ${validationErrors.yearlyIncome ? 'error' : ''}`}
                   value={yearlyIncome}
@@ -587,12 +614,12 @@ export default function CareFuturePage() {
                   <option value="over_50">Свыше 50 млн</option>
                 </select>
                 {validationErrors.yearlyIncome && (
-                  <span className="form-error">{validationErrors.yearlyIncome}</span>
+                  <span className="form-error" style={{ color: '#B71C3A' }}>{validationErrors.yearlyIncome}</span>
                 )}
               </div>
 
               {validationErrors.general && (
-                <div className="form-error-block">{validationErrors.general}</div>
+                <div className="form-error-block" style={{ color: '#B71C3A' }}>{validationErrors.general}</div>
               )}
             </div>
           </div>
@@ -722,7 +749,7 @@ export default function CareFuturePage() {
 
             <form onSubmit={handleManagerSubmit} className="form-container">
               <div className="form-group">
-                <label className="form-label text-label">Фамилия</label>
+                <label className="form-label text-label" style={{ color: '#1f4e79' }}>Фамилия</label>
                 <input
                   type="text"
                   className="form-input"
@@ -733,7 +760,7 @@ export default function CareFuturePage() {
               </div>
 
               <div className="form-group">
-                <label className="form-label text-label">Имя</label>
+                <label className="form-label text-label" style={{ color: '#1f4e79' }}>Имя</label>
                 <input
                   type="text"
                   className="form-input"
@@ -744,7 +771,7 @@ export default function CareFuturePage() {
               </div>
 
               <div className="form-group">
-                <label className="form-label text-label">Город</label>
+                <label className="form-label text-label" style={{ color: '#1f4e79' }}>Город</label>
                 <input
                   type="text"
                   className="form-input"
@@ -754,15 +781,18 @@ export default function CareFuturePage() {
                 />
               </div>
 
-              {mgrError && <div className="form-error-block">{mgrError}</div>}
+              {mgrError && <div className="form-error-block" style={{ color: '#B71C3A' }}>{mgrError}</div>}
 
-              <button
-                type="submit"
-                className={`btn-universal btn-primary btn-large btn-fullwidth ${isSendingMgr ? 'btn-loading' : ''}`}
-                disabled={isSendingMgr}
-              >
-                {isSendingMgr ? '' : 'Отправить заявку'}
-              </button>
+              <div style={{ display: 'flex', justifyContent: 'center', width: '100%', marginTop: '20px' }}>
+                <button
+                  type="submit"
+                  className={`btn-universal btn-primary btn-large btn-fullwidth ${isSendingMgr ? 'btn-loading' : ''}`}
+                  disabled={isSendingMgr}
+                  style={{ maxWidth: '300px' }}
+                >
+                  {isSendingMgr ? '' : 'Отправить заявку'}
+                </button>
+              </div>
             </form>
           </div>
         );

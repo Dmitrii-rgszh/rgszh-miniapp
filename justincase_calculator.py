@@ -4,7 +4,7 @@
 """
 
 import logging
-import psycopg2
+import sqlite3
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Dict, Any, Optional
 import os
@@ -13,13 +13,46 @@ logger = logging.getLogger(__name__)
 
 class JustInCaseCalculator:
     def __init__(self):
-        self.db_config = {
-            'host': os.getenv('DB_HOST', 'localhost'),
-            'port': int(os.getenv('DB_PORT', 5432)),
-            'database': os.getenv('DB_NAME', 'miniapp'),
-            'user': os.getenv('DB_USER', 'postgres'),
-            'password': os.getenv('DB_PASSWORD', 'secret')
-        }
+        # Принудительно используем SQLite файл miniapp.db
+        self.db_path = 'miniapp.db'
+        
+        # Диагностика базы данных при инициализации
+        self._diagnose_database()
+        
+        logger.info(f"🗄️ JustInCaseCalculator инициализирован с БД: {self.db_path}")
+    
+    def _diagnose_database(self):
+        """Диагностика состояния базы данных"""
+        try:
+            if not os.path.exists(self.db_path):
+                logger.error(f"❌ Файл базы данных не найден: {self.db_path}")
+                return
+            
+            file_size = os.path.getsize(self.db_path) / 1024 / 1024  # MB
+            logger.info(f"📊 Размер БД: {file_size:.2f} MB")
+            
+            conn = self.connect()
+            if conn:
+                cursor = conn.cursor()
+                
+                # Проверяем наличие таблиц
+                cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
+                tables = cursor.fetchall()
+                logger.info(f"📋 Найдено таблиц: {len(tables)}")
+                
+                # Проверяем количество записей в ключевых таблицах
+                for table_name in ['nsj_tariffs', 'nsj_accident_tariffs', 'nsj_critical_tariffs', 'justincase_frequency_coefficients']:
+                    try:
+                        cursor.execute(f"SELECT COUNT(*) FROM {table_name}")
+                        count = cursor.fetchone()[0]
+                        logger.info(f"📊 {table_name}: {count} записей")
+                    except sqlite3.OperationalError:
+                        logger.warning(f"⚠️ Таблица {table_name} не найдена")
+                
+                conn.close()
+            
+        except Exception as e:
+            logger.error(f"❌ Ошибка диагностики БД: {e}")
     
     def validate_input_data(self, data: Dict[str, Any]) -> tuple[bool, Dict[str, str]]:
         """Валидация входных данных"""
@@ -67,9 +100,10 @@ class JustInCaseCalculator:
         return len(errors) == 0, errors
     
     def connect(self):
-        """Подключение к базе данных"""
+        """Подключение к SQLite базе данных"""
         try:
-            conn = psycopg2.connect(**self.db_config)
+            conn = sqlite3.connect(self.db_path, check_same_thread=False)
+            conn.row_factory = sqlite3.Row  # Для доступа к колонкам по имени
             return conn
         except Exception as e:
             logger.error(f"Ошибка подключения к БД: {e}")
@@ -83,27 +117,57 @@ class JustInCaseCalculator:
             
         try:
             cursor = conn.cursor()
+            
+            # Получаем базовый тариф НСЖ
             cursor.execute("""
-                SELECT death_rate, disability_rate, accident_death_rate, 
-                       traffic_death_rate, injury_rate, critical_illness_rf_fee, 
-                       critical_illness_abroad_fee, coefficient_i
-                FROM justincase_base_tariffs
-                WHERE age = %s AND gender = %s AND term_years = %s
+                SELECT death_rate, disability_rate
+                FROM nsj_tariffs
+                WHERE age = ? AND gender = ? AND term_years = ?
             """, (age, gender, term_years))
             
-            result = cursor.fetchone()
-            if result:
-                return {
-                    'death_rate': float(result[0]),
-                    'disability_rate': float(result[1]),
-                    'accident_death_rate': float(result[2]) if result[2] else 0.0,
-                    'traffic_death_rate': float(result[3]) if result[3] else 0.0,
-                    'injury_rate': float(result[4]) if result[4] else 0.0,
-                    'critical_illness_rf_fee': float(result[5]) if result[5] else 0.0,
-                    'critical_illness_abroad_fee': float(result[6]) if result[6] else 0.0,
-                    'coefficient_i': float(result[7]) if result[7] else 0.0
-                }
-            return None
+            base_result = cursor.fetchone()
+            if not base_result:
+                logger.warning(f"Тариф не найден для возраста {age}, пола {gender}, срока {term_years} лет")
+                return None
+            
+            # Получаем тариф НС
+            cursor.execute("""
+                SELECT death_rate, traffic_death_rate, injury_rate
+                FROM nsj_accident_tariffs
+                WHERE age = ? AND gender = ? AND term_years = ?
+            """, (age, gender, term_years))
+            
+            accident_result = cursor.fetchone()
+            
+            # Получаем тарифы КЗ
+            cursor.execute("""
+                SELECT region, rate
+                FROM nsj_critical_tariffs
+                WHERE age = ? AND gender = ? AND term_years = ?
+            """, (age, gender, term_years))
+            
+            critical_results = cursor.fetchall()
+            
+            # Формируем результат
+            result = {
+                'death_rate': float(base_result[0]),
+                'disability_rate': float(base_result[1]),
+                'accident_death_rate': float(accident_result[0]) if accident_result else 0.0,
+                'traffic_death_rate': float(accident_result[1]) if accident_result else 0.0,
+                'injury_rate': float(accident_result[2]) if accident_result else 0.0,
+                'critical_illness_rf_fee': 0.0,
+                'critical_illness_abroad_fee': 0.0,
+                'coefficient_i': 0.08  # Базовый коэффициент
+            }
+            
+            # Добавляем тарифы КЗ
+            for critical in critical_results:
+                if critical[0] == 'russia':
+                    result['critical_illness_rf_fee'] = float(critical[1])
+                elif critical[0] == 'abroad':
+                    result['critical_illness_abroad_fee'] = float(critical[1])
+            
+            return result
             
         except Exception as e:
             logger.error(f"Ошибка получения тарифа: {e}")
@@ -123,7 +187,7 @@ class JustInCaseCalculator:
             cursor.execute("""
                 SELECT coefficient 
                 FROM justincase_frequency_coefficients
-                WHERE payment_frequency = %s
+                WHERE payment_frequency = ?
             """, (payment_frequency,))
             
             result = cursor.fetchone()
@@ -136,6 +200,46 @@ class JustInCaseCalculator:
             cursor.close()
             conn.close()
     
+    def get_corporate_coefficients(self, email: str) -> Dict[str, float]:
+        """
+        Получение корпоративных коэффициентов на основе домена email
+        
+        Returns:
+            dict: {
+                'base_coefficient': float,     # Для базовых рисков (смерть, инвалидность, НС)
+                'critical_coefficient': float  # Для критических заболеваний
+            }
+        """
+        if not email or '@' not in email:
+            # Если email не указан или некорректный - применяем максимальную наценку
+            return {
+                'base_coefficient': 1.30,     # +30% для всех рисков кроме КЗ
+                'critical_coefficient': 1.35  # +35% для КЗ
+            }
+        
+        # Извлекаем домен
+        domain = email.lower().split('@')[-1]
+        
+        # Определяем коэффициенты на основе домена
+        if domain == 'rgsl.ru':
+            # Сотрудники РГСЛ - скидка 5%
+            return {
+                'base_coefficient': 1.05,     # +5% для всех рисков
+                'critical_coefficient': 1.05  # +5% для КЗ
+            }
+        elif domain == 'vtb.ru':
+            # Сотрудники ВТБ - наценка 20%
+            return {
+                'base_coefficient': 1.20,     # +20% для всех рисков
+                'critical_coefficient': 1.20  # +20% для КЗ
+            }
+        else:
+            # Все остальные домены - максимальная наценка
+            return {
+                'base_coefficient': 1.30,     # +30% для всех рисков кроме КЗ
+                'critical_coefficient': 1.35  # +35% для КЗ
+            }
+    
     def calculate_premium(self, 
                          age: int, 
                          gender: str, 
@@ -144,7 +248,8 @@ class JustInCaseCalculator:
                          include_accident: bool = True,
                          include_critical_illness: bool = True,
                          critical_illness_type: str = 'rf',
-                         payment_frequency: str = 'annual') -> Dict[str, Any]:
+                         payment_frequency: str = 'annual',
+                         email: str = None) -> Dict[str, Any]:
         """
         Основной расчет премии
         
@@ -157,6 +262,7 @@ class JustInCaseCalculator:
             include_critical_illness: Включить покрытие критических заболеваний
             critical_illness_type: Тип КЗ ('rf' - РФ, 'abroad' - зарубеж)
             payment_frequency: Частота выплат (annual, semi_annual, quarterly, monthly)
+            email: Email пользователя для определения корпоративных коэффициентов
         
         Returns:
             Словарь с результатами расчета
@@ -191,18 +297,22 @@ class JustInCaseCalculator:
                 per_payment_coeff = coeff_raw
                 freq_coeff = per_payment_coeff * payments_per_year
             
+            # Получаем корпоративные коэффициенты на основе email
+            corporate_coeffs = self.get_corporate_coefficients(email)
+            logger.info(f"📧 Email: {email}, корпоративные коэффициенты: {corporate_coeffs}")
+            
             # Базовая премия по смерти и инвалидности
-            death_premium = sum_insured * tariff['death_rate']
-            disability_premium = sum_insured * tariff['disability_rate']
+            death_premium = sum_insured * tariff['death_rate'] * corporate_coeffs['base_coefficient']
+            disability_premium = sum_insured * tariff['disability_rate'] * corporate_coeffs['base_coefficient']
             base_premium = death_premium + disability_premium
             
             # Премия по критическим заболеваниям (ФИКСИРОВАННАЯ СУММА)
             critical_premium = 0
             if include_critical_illness:
                 if critical_illness_type == 'abroad':
-                    critical_premium = tariff['critical_illness_abroad_fee']
+                    critical_premium = tariff['critical_illness_abroad_fee'] * corporate_coeffs['critical_coefficient']
                 else:
-                    critical_premium = tariff['critical_illness_rf_fee']
+                    critical_premium = tariff['critical_illness_rf_fee'] * corporate_coeffs['critical_coefficient']
             
             # Премия по несчастному случаю
             accident_premium = 0
@@ -211,7 +321,7 @@ class JustInCaseCalculator:
                 total_accident_rate = (tariff['accident_death_rate'] + 
                                      tariff['traffic_death_rate'] + 
                                      tariff['injury_rate'])
-                accident_premium = sum_insured * total_accident_rate
+                accident_premium = sum_insured * total_accident_rate * corporate_coeffs['base_coefficient']
             
             # Общая премия до учёта частоты (годовая база)
             total_annual_premium = base_premium + critical_premium + accident_premium
@@ -220,14 +330,14 @@ class JustInCaseCalculator:
             def q2(x: float) -> float:
                 return float(Decimal(str(x)).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP))
 
-            # Базовые компоненты (до частоты)
-            death_premium = sum_insured * tariff['death_rate']
-            disability_premium = sum_insured * tariff['disability_rate']
+            # Базовые компоненты (уже с учетом корпоративных коэффициентов)
+            death_premium_base = sum_insured * tariff['death_rate'] * corporate_coeffs['base_coefficient']
+            disability_premium_base = sum_insured * tariff['disability_rate'] * corporate_coeffs['base_coefficient']
 
             # Пер-платёжные суммы по каждому риску
             per_payment = {
-                'death': q2(death_premium * per_payment_coeff),
-                'disability': q2(disability_premium * per_payment_coeff),
+                'death': q2(death_premium_base * per_payment_coeff),
+                'disability': q2(disability_premium_base * per_payment_coeff),
                 'accident': q2(accident_premium * per_payment_coeff),
                 'critical': q2(critical_premium * per_payment_coeff)
             }
@@ -285,6 +395,8 @@ class JustInCaseCalculator:
                     'critical_illness_type': critical_illness_type,
                     'payments_per_year': payments_per_year,
                     'per_payment_coefficient': per_payment_coeff,
+                    'email': email,
+                    'corporate_coefficients': corporate_coeffs,
                     'tariff_rates': {
                         'death_rate': tariff['death_rate'],
                         'disability_rate': tariff['disability_rate'],
@@ -322,7 +434,7 @@ class JustInCaseCalculator:
                 (calculation_id, age, gender, term_years, sum_insured,
                  include_accident, include_critical_illness, critical_illness_type, payment_frequency,
                  base_premium, accident_premium, critical_premium, total_premium)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT (calculation_id) 
                 DO UPDATE SET 
                     age = EXCLUDED.age,

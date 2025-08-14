@@ -23,12 +23,14 @@ if (-not $SkipBuild) {
 
     # Сборка сервера
     Write-Host "   🔧 Собираю сервер..."
-    docker build -f Dockerfile.server -t "${DockerUser}/rgszh-miniapp-server:latest" .
+    # Собираем и тегируем сервер под именем rgszh-miniapp-server:latest, чтобы соответствовать docker-compose.yml
+    docker build --pull --no-cache -f Dockerfile.server -t "${DockerUser}/rgszh-miniapp-server:latest" .
     if ($LASTEXITCODE -ne 0) { throw "Ошибка сборки сервера" }
 
     # Сборка клиента
     Write-Host "   🌐 Собираю клиент..."
-    docker build -f Dockerfile.client -t "${DockerUser}/rgszh-miniapp-client:latest" .
+    # Тегируем клиент с суффиксом -client для использования в docker-compose.yml
+    docker build --pull --no-cache -f Dockerfile.client -t "${DockerUser}/rgszh-miniapp-client:latest" .
     if ($LASTEXITCODE -ne 0) { throw "Ошибка сборки клиента" }
 
     Write-Host "✅ Образы собраны" -ForegroundColor Green
@@ -67,17 +69,19 @@ set -e
 cd /home/admin/rgszh-miniapp
 
 echo "📥 Подтягиваем новые образы..."
-docker-compose pull server
+# Use the `docker compose` CLI instead of `docker-compose` (not available on the VM)
+docker compose pull server frontend || docker compose pull server || docker compose pull
 
-echo "🔄 Перезапускаем сервер..."
-docker-compose down server
-docker-compose up -d server
+echo "🔄 Перезапускаем сервисы..."
+# Stop and start both server and frontend services. Use docker compose to ensure compatibility.
+docker compose stop server frontend || docker compose stop server
+docker compose up -d server frontend || docker compose up -d server
 
-echo "⏳ Ждем запуска сервиса..."
+echo "⏳ Ждем запуска сервисов..."
 sleep 15
 
 echo "📊 Статус сервисов:"
-docker-compose ps
+docker compose ps || docker compose ls
 
 echo "✅ Деплой завершен!"
 "@
@@ -85,17 +89,17 @@ echo "✅ Деплой завершен!"
 Write-Host "   � Запускаю команды деплоя на ВМ..."
 
 Write-Host "   📥 Подтягиваем новые образы..."
-ssh admin@$VmIp "cd /home/admin/rgszh-miniapp && docker-compose pull server"
+ssh admin@$VmIp "cd /home/admin/rgszh-miniapp && (docker compose pull server frontend || docker compose pull server || docker compose pull)"
 
 Write-Host "   🔄 Перезапускаем сервер..."
-ssh admin@$VmIp "cd /home/admin/rgszh-miniapp && docker-compose stop server"
-ssh admin@$VmIp "cd /home/admin/rgszh-miniapp && docker-compose up -d server"
+ssh admin@$VmIp "cd /home/admin/rgszh-miniapp && (docker compose stop server frontend || docker compose stop server)"
+ssh admin@$VmIp "cd /home/admin/rgszh-miniapp && (docker compose up -d server frontend || docker compose up -d server)"
 
 Write-Host "   ⏳ Ждем запуска сервиса..."
 Start-Sleep -Seconds 15
 
 Write-Host "   📊 Проверяем статус..."
-ssh admin@$VmIp "cd /home/admin/rgszh-miniapp && docker-compose ps"
+ssh admin@$VmIp "cd /home/admin/rgszh-miniapp && (docker compose ps || docker compose ls)"
 
 if ($LASTEXITCODE -ne 0) { throw "Ошибка деплоя на ВМ" }
 
